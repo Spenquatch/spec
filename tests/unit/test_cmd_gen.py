@@ -27,20 +27,22 @@ class TestCmdGen:
         assert "❌ Path not found:" in captured.out
         assert "nonexistent_file.py" in captured.out
 
-    def test_cmd_gen_with_file_path_calls_handler(self, capsys):
+    @patch("spec_cli.__main__.should_generate_spec", return_value=True)
+    def test_cmd_gen_with_file_path_calls_handler(self, mock_should_generate, capsys):
         """Test that cmd_gen with valid file path calls the file handler."""
         # Import ROOT to create file in project directory
         from spec_cli.__main__ import ROOT
 
-        test_file = ROOT / "test_cmd_gen.py"
+        test_file = ROOT / "example_app.py"
         test_file.write_text("# test")
 
         try:
-            cmd_gen(["test_cmd_gen.py"])
+            cmd_gen(["example_app.py"])
 
             captured = capsys.readouterr()
             assert "📝 Generating spec for file:" in captured.out
-            assert "test_cmd_gen.py" in captured.out
+            assert "example_app.py" in captured.out
+            mock_should_generate.assert_called_once()
         finally:
             test_file.unlink()
 

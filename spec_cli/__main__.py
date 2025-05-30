@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
+import fnmatch
 import os
 import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Set
 
 import yaml
 from pydantic import BaseModel, Field
@@ -345,6 +346,278 @@ def _substitute_template(template: str, substitutions: Dict[str, str]) -> str:
     return result
 
 
+def get_file_type(file_path: Path) -> str:
+    """Determine the file type category based on file extension.
+
+    Args:
+        file_path: Path to the file
+
+    Returns:
+        String representing the file type category
+    """
+    extension = file_path.suffix.lower()
+
+    # Programming languages
+    if extension in {".py", ".pyx", ".pyi"}:
+        return "python"
+    elif extension in {".js", ".jsx", ".ts", ".tsx"}:
+        return "javascript"
+    elif extension in {".java", ".class"}:
+        return "java"
+    elif extension in {".c", ".h"}:
+        return "c"
+    elif extension in {".cpp", ".cc", ".cxx", ".hpp", ".hh", ".hxx"}:
+        return "cpp"
+    elif extension in {".rs"}:
+        return "rust"
+    elif extension in {".go"}:
+        return "go"
+    elif extension in {".rb"}:
+        return "ruby"
+    elif extension in {".php"}:
+        return "php"
+    elif extension in {".swift"}:
+        return "swift"
+    elif extension in {".kt", ".kts"}:
+        return "kotlin"
+    elif extension in {".scala"}:
+        return "scala"
+    elif extension in {".cs"}:
+        return "csharp"
+    elif extension in {".vb"}:
+        return "visualbasic"
+
+    # Web technologies
+    elif extension in {".html", ".htm"}:
+        return "html"
+    elif extension in {".css", ".scss", ".sass", ".less"}:
+        return "css"
+    elif extension in {".xml", ".xsl", ".xsd"}:
+        return "xml"
+
+    # Data formats
+    elif extension in {".json"}:
+        return "json"
+    elif extension in {".yaml", ".yml"}:
+        return "yaml"
+    elif extension in {".toml"}:
+        return "toml"
+    elif extension in {".csv"}:
+        return "csv"
+    elif extension in {".sql"}:
+        return "sql"
+
+    # Documentation
+    elif extension in {".md", ".markdown"}:
+        return "markdown"
+    elif extension in {".rst"}:
+        return "restructuredtext"
+    elif extension in {".txt"}:
+        return "text"
+
+    # Configuration
+    elif extension in {".conf", ".config", ".cfg", ".ini"}:
+        return "config"
+    elif extension in {".env"} or file_path.name.lower() == ".env":
+        return "environment"
+
+    # Build/Package files
+    elif file_path.name.lower() in {
+        "makefile",
+        "dockerfile",
+        "vagrantfile",
+        "rakefile",
+    }:
+        return "build"
+    elif extension in {".mk", ".make"}:
+        return "build"
+
+    # No extension or unknown
+    elif not extension:
+        return "no_extension"
+    else:
+        return "unknown"
+
+
+def load_specignore_patterns() -> Set[str]:
+    """Load ignore patterns from .specignore file.
+
+    Returns:
+        Set of ignore patterns
+    """
+    patterns = set()
+
+    if IGNORE_FILE.exists():
+        try:
+            content = IGNORE_FILE.read_text(encoding="utf-8")
+            for line in content.splitlines():
+                line = line.strip()
+                # Skip empty lines and comments
+                if line and not line.startswith("#"):
+                    patterns.add(line)
+        except OSError as e:
+            if DEBUG:
+                print(f"🔍 Debug: Failed to read .specignore: {e}")
+
+    # Add default patterns
+    default_patterns = {
+        "*.pyc",
+        "*.pyo",
+        "*.pyd",
+        "__pycache__/*",
+        ".git/*",
+        ".svn/*",
+        ".hg/*",
+        "node_modules/*",
+        ".venv/*",
+        ".env/*",
+        "venv/*",
+        "env/*",
+        "*.egg-info/*",
+        "build/*",
+        "dist/*",
+        ".pytest_cache/*",
+        ".coverage",
+        "htmlcov/*",
+        ".tox/*",
+        ".mypy_cache/*",
+        ".ruff_cache/*",
+        "*.log",
+        "*.tmp",
+        "*.temp",
+        "*.bak",
+        "*.swp",
+        "*.swo",
+        "*~",
+        ".DS_Store",
+        "Thumbs.db",
+    }
+    patterns.update(default_patterns)
+
+    if DEBUG:
+        print(f"🔍 Debug: Loaded {len(patterns)} ignore patterns")
+
+    return patterns
+
+
+def should_generate_spec(
+    file_path: Path, ignore_patterns: Optional[Set[str]] = None
+) -> bool:
+    """Determine if a spec should be generated for the given file.
+
+    Args:
+        file_path: Path to the file (relative to project root)
+        ignore_patterns: Optional set of ignore patterns (loaded automatically if None)
+
+    Returns:
+        True if spec should be generated, False otherwise
+    """
+    if ignore_patterns is None:
+        ignore_patterns = load_specignore_patterns()
+
+    # Convert to string for pattern matching
+    file_str = str(file_path)
+    file_name = file_path.name
+
+    # Check against ignore patterns
+    for pattern in ignore_patterns:
+        # Match against full path
+        if fnmatch.fnmatch(file_str, pattern):
+            if DEBUG:
+                print(f"🔍 Debug: File {file_path} matches ignore pattern: {pattern}")
+            return False
+
+        # Match against filename only
+        if fnmatch.fnmatch(file_name, pattern):
+            if DEBUG:
+                print(f"🔍 Debug: File {file_path} matches ignore pattern: {pattern}")
+            return False
+
+        # Handle directory patterns (ending with /*)
+        if pattern.endswith("/*"):
+            dir_pattern = pattern[:-2]  # Remove /*
+            # Check if file is in the ignored directory
+            for parent in file_path.parents:
+                if fnmatch.fnmatch(str(parent), dir_pattern) or fnmatch.fnmatch(
+                    parent.name, dir_pattern
+                ):
+                    if DEBUG:
+                        print(
+                            f"🔍 Debug: File {file_path} in ignored directory: {pattern}"
+                        )
+                    return False
+
+    # Check file type - only generate for known file types
+    file_type = get_file_type(file_path)
+    if file_type in {"unknown"}:
+        if DEBUG:
+            print(f"🔍 Debug: Skipping unknown file type: {file_path}")
+        return False
+
+    # Skip binary files and images
+    binary_extensions = {
+        ".exe",
+        ".dll",
+        ".so",
+        ".dylib",
+        ".a",
+        ".lib",
+        ".jpg",
+        ".jpeg",
+        ".png",
+        ".gif",
+        ".bmp",
+        ".svg",
+        ".ico",
+        ".pdf",
+        ".doc",
+        ".docx",
+        ".xls",
+        ".xlsx",
+        ".ppt",
+        ".pptx",
+        ".zip",
+        ".tar",
+        ".gz",
+        ".bz2",
+        ".xz",
+        ".7z",
+        ".rar",
+        ".mp3",
+        ".mp4",
+        ".avi",
+        ".mkv",
+        ".mov",
+        ".wav",
+        ".flac",
+    }
+
+    if file_path.suffix.lower() in binary_extensions:
+        if DEBUG:
+            print(f"🔍 Debug: Skipping binary file: {file_path}")
+        return False
+
+    # Skip very large files (>1MB)
+    try:
+        full_path = ROOT / file_path
+        if full_path.exists() and full_path.stat().st_size > 1_048_576:  # 1MB
+            if DEBUG:
+                print(
+                    f"🔍 Debug: Skipping large file: {file_path} ({full_path.stat().st_size} bytes)"
+                )
+            return False
+    except OSError:
+        # If we can't check size, assume it's okay
+        pass
+
+    if DEBUG:
+        print(
+            f"🔍 Debug: File {file_path} approved for spec generation (type: {file_type})"
+        )
+
+    return True
+
+
 def cmd_gen(args: List[str]) -> None:
     """Generate spec documentation for file(s) or directory."""
     if not args:
@@ -367,10 +640,18 @@ def cmd_gen(args: List[str]) -> None:
     if path.is_file():
         try:
             resolved_path = resolve_file_path(path_str)
+
+            # Check if file should be processed
+            if not should_generate_spec(resolved_path):
+                file_type = get_file_type(resolved_path)
+                print(f"⏭️  Skipping {resolved_path} (type: {file_type})")
+                return
+
             spec_dir = create_spec_directory(resolved_path)
             template = load_template()
 
-            print(f"📝 Generating spec for file: {resolved_path}")
+            file_type = get_file_type(resolved_path)
+            print(f"📝 Generating spec for file: {resolved_path} (type: {file_type})")
             print(f"📁 Spec directory: {spec_dir}")
             print(
                 f"📋 Template loaded: {len(template.index)} chars index, {len(template.history)} chars history"
