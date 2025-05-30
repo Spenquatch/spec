@@ -5,14 +5,62 @@ import sys
 from pathlib import Path
 from typing import List, Optional
 
+import yaml
+from pydantic import BaseModel, Field
+
 ROOT = Path.cwd()
 SPEC_DIR = ROOT / ".spec"
 INDEX_FILE = ROOT / ".spec-index"
 SPECS_DIR = ROOT / ".specs"
 IGNORE_FILE = ROOT / ".specignore"
 GITIGNORE = ROOT / ".gitignore"
+TEMPLATE_FILE = ROOT / ".spectemplate"
 
 DEBUG = os.environ.get("SPEC_DEBUG", "").lower() in ["1", "true", "yes"]
+
+
+class TemplateConfig(BaseModel):
+    """Configuration for spec template generation."""
+
+    index: str = Field(
+        default="""# {{filename}}
+
+**Location**: {{filepath}}
+
+**Purpose**: {{purpose}}
+
+**Responsibilities**:
+{{responsibilities}}
+
+**Requirements**:
+{{requirements}}
+
+**Example Usage**:
+```{{file_extension}}
+{{example_usage}}
+```
+
+**Notes**:
+{{notes}}
+""",
+        description="Template for index.md file",
+    )
+
+    history: str = Field(
+        default="""# History for {{filename}}
+
+## {{date}} - Initial Creation
+
+**Purpose**: Created initial specification for {{filename}}
+
+**Context**: {{context}}
+
+**Decisions**: {{decisions}}
+
+**Lessons Learned**: {{lessons}}
+""",
+        description="Template for history.md file",
+    )
 
 
 def run_git(args: List[str]) -> None:
@@ -191,6 +239,44 @@ def create_spec_directory(file_path: Path) -> Path:
         raise OSError(f"Failed to create spec directory {spec_dir_path}: {e}") from e
 
 
+def load_template() -> TemplateConfig:
+    """Load template configuration from .spectemplate file or use defaults.
+
+    Returns:
+        TemplateConfig object with loaded or default templates
+
+    Raises:
+        yaml.YAMLError: If template file exists but contains invalid YAML
+        ValueError: If template file contains invalid configuration
+    """
+    if not TEMPLATE_FILE.exists():
+        if DEBUG:
+            print("🔍 Debug: No .spectemplate file found, using default template")
+        return TemplateConfig()
+
+    try:
+        with TEMPLATE_FILE.open("r", encoding="utf-8") as f:
+            template_data = yaml.safe_load(f)
+
+        if DEBUG:
+            print(f"🔍 Debug: Loaded template from {TEMPLATE_FILE}")
+
+        # Handle case where YAML file is empty or None
+        if template_data is None:
+            template_data = {}
+
+        return TemplateConfig(**template_data)
+
+    except yaml.YAMLError as e:
+        raise yaml.YAMLError(
+            f"Invalid YAML in template file {TEMPLATE_FILE}: {e}"
+        ) from e
+    except Exception as e:
+        raise ValueError(
+            f"Invalid template configuration in {TEMPLATE_FILE}: {e}"
+        ) from e
+
+
 def cmd_gen(args: List[str]) -> None:
     """Generate spec documentation for file(s) or directory."""
     if not args:
@@ -214,11 +300,22 @@ def cmd_gen(args: List[str]) -> None:
         try:
             resolved_path = resolve_file_path(path_str)
             spec_dir = create_spec_directory(resolved_path)
+            template = load_template()
+
             print(f"📝 Generating spec for file: {resolved_path}")
             print(f"📁 Spec directory: {spec_dir}")
-            # TODO: Implement file spec generation (template + content)
+            print(
+                f"📋 Template loaded: {len(template.index)} chars index, {len(template.history)} chars history"
+            )
+            # TODO: Implement content generation with template substitution
             return
-        except (FileNotFoundError, IsADirectoryError, ValueError, OSError) as e:
+        except (
+            FileNotFoundError,
+            IsADirectoryError,
+            ValueError,
+            OSError,
+            yaml.YAMLError,
+        ) as e:
             print(f"❌ {e}")
             return
 
