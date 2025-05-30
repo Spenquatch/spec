@@ -30,17 +30,20 @@ class TestCmdGen:
 
     def test_cmd_gen_with_file_path_calls_handler(self, capsys):
         """Test that cmd_gen with valid file path calls the file handler."""
-        with tempfile.NamedTemporaryFile(suffix=".py", delete=False) as tmp_file:
-            tmp_path = tmp_file.name
+        # Import ROOT to create file in project directory
+        from spec_cli.__main__ import ROOT
+        
+        test_file = ROOT / "test_cmd_gen.py"
+        test_file.write_text("# test")
 
         try:
-            cmd_gen([tmp_path])
+            cmd_gen(["test_cmd_gen.py"])
 
             captured = capsys.readouterr()
             assert "📝 Generating spec for file:" in captured.out
-            assert tmp_path in captured.out
+            assert "test_cmd_gen.py" in captured.out
         finally:
-            os.unlink(tmp_path)
+            test_file.unlink()
 
     def test_cmd_gen_with_directory_path_calls_handler(self, capsys):
         """Test that cmd_gen with valid directory path calls the directory handler."""

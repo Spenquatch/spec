@@ -118,6 +118,50 @@ def cmd_status(_: List[str]) -> None:
     run_git(["status"])
 
 
+def resolve_file_path(path: str) -> Path:
+    """Resolve and validate a file path for spec generation.
+
+    Args:
+        path: Input path string (can be absolute or relative)
+
+    Returns:
+        Path object relative to project root
+
+    Raises:
+        FileNotFoundError: If the file doesn't exist
+        IsADirectoryError: If the path is a directory
+        ValueError: If the path is not a regular file
+    """
+    # Convert string to Path object
+    input_path = Path(path)
+
+    # Handle absolute paths - convert to relative to ROOT
+    if input_path.is_absolute():
+        try:
+            resolved_path = input_path.relative_to(ROOT)
+        except ValueError as e:
+            # Path is outside the project root
+            raise ValueError(f"Path is outside project root: {input_path}") from e
+    else:
+        # Relative path - resolve relative to current working directory
+        resolved_path = input_path.resolve().relative_to(ROOT)
+
+    # Check if file exists
+    full_path = ROOT / resolved_path
+    if not full_path.exists():
+        raise FileNotFoundError(f"File not found: {full_path}")
+
+    # Check if it's a directory
+    if full_path.is_dir():
+        raise IsADirectoryError(f"Path is a directory, not a file: {full_path}")
+
+    # Check if it's a regular file
+    if not full_path.is_file():
+        raise ValueError(f"Path is not a regular file: {full_path}")
+
+    return resolved_path
+
+
 def cmd_gen(args: List[str]) -> None:
     """Generate spec documentation for file(s) or directory."""
     if not args:
@@ -138,9 +182,14 @@ def cmd_gen(args: List[str]) -> None:
 
     # Handle single file
     if path.is_file():
-        print(f"📝 Generating spec for file: {path}")
-        # TODO: Implement file spec generation
-        return
+        try:
+            resolved_path = resolve_file_path(path_str)
+            print(f"📝 Generating spec for file: {resolved_path}")
+            # TODO: Implement file spec generation
+            return
+        except (FileNotFoundError, IsADirectoryError, ValueError) as e:
+            print(f"❌ {e}")
+            return
 
     # Handle directory
     if path.is_dir():
