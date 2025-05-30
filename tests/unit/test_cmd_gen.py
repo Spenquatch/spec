@@ -1,6 +1,5 @@
 """Unit tests for cmd_gen function."""
 
-import os
 import tempfile
 from unittest.mock import MagicMock, patch
 
@@ -32,7 +31,7 @@ class TestCmdGen:
         """Test that cmd_gen with valid file path calls the file handler."""
         # Import ROOT to create file in project directory
         from spec_cli.__main__ import ROOT
-        
+
         test_file = ROOT / "test_cmd_gen.py"
         test_file.write_text("# test")
 

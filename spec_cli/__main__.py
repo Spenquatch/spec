@@ -162,6 +162,35 @@ def resolve_file_path(path: str) -> Path:
     return resolved_path
 
 
+def create_spec_directory(file_path: Path) -> Path:
+    """Create the spec directory structure for a given file path.
+
+    Args:
+        file_path: Path to the source file (relative to project root)
+
+    Returns:
+        Path to the created spec directory
+
+    Raises:
+        OSError: If directory creation fails due to permissions or other issues
+    """
+    # Convert file path to spec directory path
+    # e.g., src/models.py -> .specs/src/models/
+    spec_dir_path = SPECS_DIR / file_path.parent / file_path.stem
+
+    try:
+        # Create directory structure with parents=True
+        spec_dir_path.mkdir(parents=True, exist_ok=True)
+
+        if DEBUG:
+            print(f"🔍 Debug: Created spec directory: {spec_dir_path}")
+
+        return spec_dir_path
+
+    except OSError as e:
+        raise OSError(f"Failed to create spec directory {spec_dir_path}: {e}") from e
+
+
 def cmd_gen(args: List[str]) -> None:
     """Generate spec documentation for file(s) or directory."""
     if not args:
@@ -184,10 +213,12 @@ def cmd_gen(args: List[str]) -> None:
     if path.is_file():
         try:
             resolved_path = resolve_file_path(path_str)
+            spec_dir = create_spec_directory(resolved_path)
             print(f"📝 Generating spec for file: {resolved_path}")
-            # TODO: Implement file spec generation
+            print(f"📁 Spec directory: {spec_dir}")
+            # TODO: Implement file spec generation (template + content)
             return
-        except (FileNotFoundError, IsADirectoryError, ValueError) as e:
+        except (FileNotFoundError, IsADirectoryError, ValueError, OSError) as e:
             print(f"❌ {e}")
             return
 
