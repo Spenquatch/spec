@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import fnmatch
 import os
+import shutil
 import subprocess
 import sys
 from datetime import datetime
@@ -618,6 +619,172 @@ def should_generate_spec(
     return True
 
 
+def check_existing_specs(spec_dir: Path) -> Dict[str, bool]:
+    """Check if spec files already exist in the spec directory.
+
+    Args:
+        spec_dir: Path to the spec directory
+
+    Returns:
+        Dict with 'index' and 'history' keys indicating which files exist
+    """
+    index_file = spec_dir / "index.md"
+    history_file = spec_dir / "history.md"
+
+    result = {"index": index_file.exists(), "history": history_file.exists()}
+
+    if DEBUG:
+        print(f"🔍 Debug: Checking existing specs in {spec_dir}:")
+        print(f"   index.md: {'exists' if result['index'] else 'not found'}")
+        print(f"   history.md: {'exists' if result['history'] else 'not found'}")
+
+    return result
+
+
+def create_backup(file_path: Path) -> Optional[Path]:
+    """Create a backup of an existing file.
+
+    Args:
+        file_path: Path to the file to backup
+
+    Returns:
+        Path to the backup file, or None if backup failed
+
+    Raises:
+        OSError: If backup creation fails
+    """
+    if not file_path.exists():
+        return None
+
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    backup_path = file_path.with_suffix(f".{timestamp}.backup")
+
+    try:
+        shutil.copy2(file_path, backup_path)
+
+        if DEBUG:
+            print(f"🔍 Debug: Created backup: {backup_path}")
+
+        return backup_path
+
+    except OSError as e:
+        raise OSError(f"Failed to create backup of {file_path}: {e}") from e
+
+
+def handle_spec_conflict(
+    spec_dir: Path, existing_specs: Dict[str, bool], force: bool = False
+) -> str:
+    """Handle conflicts when spec files already exist.
+
+    Args:
+        spec_dir: Path to the spec directory
+        existing_specs: Dict indicating which spec files exist
+        force: If True, overwrite without prompting
+
+    Returns:
+        Action to take: 'overwrite', 'backup', 'skip', or 'abort'
+
+    Raises:
+        KeyboardInterrupt: If user cancels operation
+    """
+    if not any(existing_specs.values()):
+        return "proceed"  # No conflicts
+
+    existing_files = [name for name, exists in existing_specs.items() if exists]
+
+    if force:
+        if DEBUG:
+            print(
+                f"🔍 Debug: Force mode - overwriting existing files: {existing_files}"
+            )
+        return "overwrite"
+
+    print(f"⚠️  Existing spec files found in {spec_dir}:")
+    for file_name in existing_files:
+        file_path = spec_dir / f"{file_name}.md"
+        # Show file info
+        try:
+            stat = file_path.stat()
+            size = stat.st_size
+            mtime = datetime.fromtimestamp(stat.st_mtime).strftime("%Y-%m-%d %H:%M:%S")
+            print(f"   📄 {file_name}.md ({size} bytes, modified {mtime})")
+        except OSError:
+            print(f"   📄 {file_name}.md")
+
+    print("\nChoose an action:")
+    print("  [o] Overwrite existing files")
+    print("  [b] Backup existing files and create new ones")
+    print("  [s] Skip generation for this file")
+    print("  [q] Quit/abort operation")
+
+    while True:
+        try:
+            choice = input("\nYour choice [o/b/s/q]: ").lower().strip()
+
+            if choice in ["o", "overwrite"]:
+                return "overwrite"
+            elif choice in ["b", "backup"]:
+                return "backup"
+            elif choice in ["s", "skip"]:
+                return "skip"
+            elif choice in ["q", "quit", "abort"]:
+                return "abort"
+            else:
+                print("Invalid choice. Please enter 'o', 'b', 's', or 'q'.")
+
+        except (EOFError, KeyboardInterrupt) as e:
+            print("\n\nOperation cancelled by user.")
+            raise KeyboardInterrupt("User cancelled operation") from e
+
+
+def process_spec_conflicts(spec_dir: Path, action: str) -> bool:
+    """Process spec conflicts based on chosen action.
+
+    Args:
+        spec_dir: Path to the spec directory
+        action: Action to take ('overwrite', 'backup', 'skip', 'abort')
+
+    Returns:
+        True if generation should proceed, False if it should be skipped
+
+    Raises:
+        KeyboardInterrupt: If user chose to abort
+        OSError: If backup creation fails
+    """
+    if action == "abort":
+        print("\n❌ Operation aborted by user.")
+        raise KeyboardInterrupt("User aborted operation")
+
+    if action == "skip":
+        print(f"⏭️  Skipping spec generation for {spec_dir.parent.name}")
+        return False
+
+    if action == "overwrite":
+        print("🔄 Overwriting existing spec files...")
+        return True
+
+    if action == "backup":
+        print("💾 Creating backups of existing files...")
+
+        backup_paths = []
+        for file_name in ["index", "history"]:
+            file_path = spec_dir / f"{file_name}.md"
+            if file_path.exists():
+                backup_path = create_backup(file_path)
+                if backup_path:
+                    backup_paths.append(backup_path)
+
+        if backup_paths:
+            print("✅ Backups created:")
+            for backup_path in backup_paths:
+                print(f"   📦 {backup_path}")
+
+        return True
+
+    # Default case
+    return True
+
+
 def cmd_gen(args: List[str]) -> None:
     """Generate spec documentation for file(s) or directory."""
     if not args:
@@ -656,6 +823,24 @@ def cmd_gen(args: List[str]) -> None:
             print(
                 f"📋 Template loaded: {len(template.index)} chars index, {len(template.history)} chars history"
             )
+
+            # Check for existing spec files and handle conflicts
+            existing_specs = check_existing_specs(spec_dir)
+
+            # Handle conflicts if any exist
+            try:
+                # For now, we'll add a --force flag support later
+                # Currently using interactive mode
+                action = handle_spec_conflict(spec_dir, existing_specs, force=False)
+
+                # Process the chosen action
+                should_proceed = process_spec_conflicts(spec_dir, action)
+
+                if not should_proceed:
+                    return
+
+            except KeyboardInterrupt:
+                return
 
             # Generate content files
             generate_spec_content(resolved_path, spec_dir, template)
