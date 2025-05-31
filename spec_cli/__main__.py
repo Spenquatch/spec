@@ -212,9 +212,50 @@ def cmd_init(_: List[str]) -> None:
     else:
         print("ℹ️ .spec/ already exists, skipping init")
 
-    # 2. Create .specignore
+    # 2. Create .specignore with proper patterns for source files
     if not IGNORE_FILE.exists():
-        IGNORE_FILE.write_text("*\n!/.specs/**\n!/.specs/**/*.md\n")
+        # Create a reasonable default .specignore that doesn't block all files
+        ignore_content = """# Default ignore patterns for spec generation
+# Build artifacts
+*.pyc
+*.pyo
+*.pyd
+__pycache__/*
+*.egg-info/*
+build/*
+dist/*
+
+# Version control
+.git/*
+.svn/*
+.hg/*
+
+# IDE files
+.vscode/*
+.idea/*
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs and temporary files
+*.log
+*.tmp
+*.temp
+
+# Dependencies
+node_modules/*
+.venv/*
+venv/*
+
+# Spec directory itself
+.spec/*
+.spec-index
+"""
+        IGNORE_FILE.write_text(ignore_content)
         print("✅ .specignore created")
     else:
         print("ℹ️ .specignore already exists")
@@ -908,6 +949,49 @@ def process_spec_conflicts(spec_dir: Path, action: str) -> bool:
     return True
 
 
+def find_source_files(directory: Path) -> List[Path]:
+    """Find all source files in a directory recursively.
+
+    Args:
+        directory: Directory to search for source files
+
+    Returns:
+        List of Path objects for source files found
+
+    Raises:
+        OSError: If directory traversal fails
+    """
+    source_files = []
+    ignore_patterns = load_specignore_patterns()
+
+    try:
+        # Walk through directory recursively
+        for file_path in directory.rglob("*"):
+            if file_path.is_file():
+                # Convert to relative path from ROOT for consistent checking
+                try:
+                    relative_path = file_path.relative_to(ROOT) if file_path.is_absolute() else file_path
+                except ValueError:
+                    # File is outside project root, skip it
+                    continue
+
+                # Check if file should be included
+                if should_generate_spec(relative_path, ignore_patterns):
+                    source_files.append(file_path)
+
+        # Sort files for consistent ordering
+        source_files.sort()
+
+        debug_log("INFO", "Completed source file discovery",
+                 directory=str(directory),
+                 total_files_found=len(source_files))
+
+        return source_files
+
+    except OSError as e:
+        raise OSError(f"Failed to traverse directory {directory}: {e}") from e
+
+
 def cmd_gen(args: List[str]) -> None:
     """Generate spec documentation for file(s) or directory."""
     with debug_timer("cmd_gen_total"):
@@ -1038,11 +1122,110 @@ def cmd_gen(args: List[str]) -> None:
         elif path.is_dir():
             debug_log("INFO", "Processing directory", directory=str(path))
             print(f"📁 Generating specs for directory: {path}")
-            # TODO: Implement directory spec generation
-            debug_operation_summary("directory_spec_generation",
-                                   directory=str(path),
-                                   status="not_implemented")
-            return
+
+            try:
+                with debug_timer("directory_processing"):
+                    with debug_timer("find_source_files"):
+                        source_files = find_source_files(path)
+
+                    debug_log("INFO", "Found source files in directory",
+                             directory=str(path), file_count=len(source_files))
+
+                    if not source_files:
+                        print("ℹ️  No source files found in directory")
+                        debug_operation_summary("directory_spec_generation",
+                                               directory=str(path),
+                                               file_count=0,
+                                               status="no_files_found")
+                        return
+
+                    print(f"📋 Found {len(source_files)} source files to process")
+
+                    # Load template once for all files
+                    with debug_timer("load_template_for_directory"):
+                        template = load_template()
+
+                    debug_log("INFO", "Template loaded for directory processing",
+                             template_index_chars=len(template.index),
+                             template_history_chars=len(template.history))
+
+                    # Track progress
+                    processed_count = 0
+                    skipped_count = 0
+                    error_count = 0
+
+                    print(f"🚀 Starting spec generation for {len(source_files)} files...")
+
+                    for i, file_path in enumerate(source_files, 1):
+                        try:
+                            print(f"\n[{i}/{len(source_files)}] Processing: {file_path}")
+
+                            with debug_timer(f"process_file_{i}"):
+                                # Convert to relative path from project root
+                                relative_path = file_path.relative_to(ROOT) if file_path.is_absolute() else file_path
+
+                                # Check if file should be processed
+                                with debug_timer("should_generate_check"):
+                                    should_process = should_generate_spec(relative_path)
+
+                                if not should_process:
+                                    file_type = get_file_type(relative_path)
+                                    print(f"   ⏭️  Skipped (type: {file_type})")
+                                    skipped_count += 1
+                                    continue
+
+                                # Create spec directory
+                                with debug_timer("create_spec_dir"):
+                                    spec_dir = create_spec_directory(relative_path)
+
+                                # Check for existing specs and handle conflicts
+                                with debug_timer("check_conflicts"):
+                                    existing_specs = check_existing_specs(spec_dir)
+
+                                if any(existing_specs.values()):
+                                    print("   ⚠️  Existing specs found, using overwrite mode for batch processing")
+                                    action = "overwrite"
+                                    should_proceed = process_spec_conflicts(spec_dir, action)
+                                    if not should_proceed:
+                                        skipped_count += 1
+                                        continue
+
+                                # Generate content
+                                with debug_timer("generate_content"):
+                                    generate_spec_content(relative_path, spec_dir, template)
+
+                                file_type = get_file_type(relative_path)
+                                print(f"   ✅ Generated specs (type: {file_type})")
+                                processed_count += 1
+
+                        except Exception as e:
+                            error_count += 1
+                            debug_log("ERROR", "Error processing file in directory",
+                                     file_path=str(file_path), error=str(e))
+                            print(f"   ❌ Error: {e}")
+                            continue
+
+                    # Final summary
+                    print("\n🎉 Directory processing complete!")
+                    print(f"   ✅ Processed: {processed_count} files")
+                    print(f"   ⏭️  Skipped: {skipped_count} files")
+                    if error_count > 0:
+                        print(f"   ❌ Errors: {error_count} files")
+
+                    debug_operation_summary("directory_spec_generation",
+                                           directory=str(path),
+                                           total_files=len(source_files),
+                                           processed_count=processed_count,
+                                           skipped_count=skipped_count,
+                                           error_count=error_count,
+                                           status="completed")
+                    return
+
+            except Exception as e:
+                debug_log("ERROR", "Error during directory processing",
+                         directory=str(path), error_type=type(e).__name__, error_message=str(e))
+                print(f"❌ Error processing directory: {e}")
+                return
         else:
             debug_log("ERROR", "Path is neither file nor directory",
                      path=str(path), path_type=type(path).__name__)

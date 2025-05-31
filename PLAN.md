@@ -300,21 +300,109 @@ poetry run pytest tests/unit/ -v
 poetry run mypy spec_cli/ --strict
 poetry run ruff check --fix .
 poetry run pre-commit run --all-files
-git add . && git commit -m "feat: implement slice 8 - complete gen command integration"
+git add . && git commit -m "feat: implement slice 9 - complete gen command integration"
+```
+
+---
+
+### Slice 10: Debug Logging Cleanup (Technical Debt)
+**Goal**: Remove legacy debug print statements and standardize on stderr logging
+
+#### Background:
+During Slice 8 implementation, legacy `print()` debug statements were maintained for backwards compatibility with existing tests. This slice cleans up the dual logging system and standardizes on proper stderr logging.
+
+#### Implementation:
+1. **Remove Legacy Functions**:
+   - Delete `legacy_debug_print()` function from `spec_cli/__main__.py`
+   - Remove all calls to `legacy_debug_print()` throughout the codebase
+
+2. **Update Debug Logging Calls**:
+   - Remove duplicate legacy calls in all functions:
+     - `create_spec_directory()` - line ~335
+     - `load_template()` - lines ~366, ~363  
+     - `generate_spec_content()` - lines ~424-425
+     - `load_specignore_patterns()` - line ~608
+     - `should_generate_spec()` - lines ~639, ~647, ~731
+     - `check_existing_specs()` - lines ~753-755
+     - `create_backup()` - line ~786
+     - `handle_spec_conflict()` - line ~820
+   - Keep only the structured `debug_log()` calls
+
+3. **Update All Test Files**:
+   - Change `capsys.readouterr().out` to `capsys.readouterr().err` in debug output tests
+   - Update assertion strings to match new structured format
+   - Files to update:
+     - `tests/unit/test_content_generation.py` - lines ~242-244
+     - `tests/unit/test_directory_creation.py` - debug output tests
+     - `tests/unit/test_duplicate_handling.py` - debug output tests  
+     - `tests/unit/test_file_filtering.py` - debug output tests
+     - `tests/unit/test_template_system.py` - debug output tests
+
+4. **Update Test Assertions**:
+   - Change from: `assert "🔍 Debug: Generated index.md" in captured.out`
+   - Change to: `assert "Generated spec content files" in captured.err`
+   - Update all debug assertions to match structured logging format
+
+#### Files to Modify:
+- `spec_cli/__main__.py` - Remove legacy function and calls (~12 locations)
+- `tests/unit/test_content_generation.py` - Update debug test assertions
+- `tests/unit/test_directory_creation.py` - Update debug test assertions  
+- `tests/unit/test_duplicate_handling.py` - Update debug test assertions
+- `tests/unit/test_file_filtering.py` - Update debug test assertions
+- `tests/unit/test_template_system.py` - Update debug test assertions
+
+#### Expected Changes:
+- **Lines removed**: ~15-20 lines of legacy debug calls
+- **Lines modified**: ~25-30 test assertion lines
+- **Net effect**: Cleaner, more maintainable debug system
+
+#### Quality Assurance:
+```bash
+# Ensure all tests still pass with stderr logging
+poetry run pytest tests/unit/ -v --cov=spec_cli --cov-report=term-missing --cov-fail-under=80
+
+# Verify type checking still passes
+poetry run mypy spec_cli/
+
+# Check code quality
+poetry run ruff check --fix .
+poetry run pre-commit run --all-files
+
+# Commit the cleanup
+git add . && git commit -m "refactor: remove legacy debug logging, standardize on stderr"
+```
+
+#### Benefits:
+- **Single responsibility**: One debug logging system instead of two
+- **Standards compliance**: Debug output goes to stderr as expected
+- **Cleaner codebase**: Removes ~20 lines of redundant code
+- **Future-proof**: New debug statements will use proper logging
+- **Better UX**: Users can redirect debug output separately from main output
+
+#### Testing Strategy:
+```bash
+# Manual verification that debug output works correctly:
+cd test_area
+SPEC_DEBUG=1 spec gen test.py 2> debug.log 1> output.log
+
+# debug.log should contain structured debug messages
+# output.log should contain user-facing messages
 ```
 
 ---
 
 ## Implementation Order
 
-1. **Slice 1** � Basic command structure
-2. **Slice 2** � Path handling  
-3. **Slice 3** � Directory creation
-4. **Slice 4** � Template system
-5. **Slice 5** � Content generation
-6. **Slice 6** � File filtering
-7. **Slice 7** � Duplicate handling
-8. **Slice 8** � Integration
+1. **Slice 1** → Basic command structure
+2. **Slice 2** → Path handling  
+3. **Slice 3** → Directory creation
+4. **Slice 4** → Template system
+5. **Slice 5** → Content generation
+6. **Slice 6** → File filtering
+7. **Slice 7** → Duplicate handling
+8. **Slice 8** → Debug mode and logging
+9. **Slice 9** → Integration and testing
+10. **Slice 10** → Debug logging cleanup (technical debt)
 
 ## Success Criteria per Slice
 
