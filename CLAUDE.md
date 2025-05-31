@@ -170,6 +170,143 @@ git add . && git commit -m "feat: implement slice X - description"
 - Use descriptive test names: `test_function_name_when_condition_then_expected_result`
 - Cover edge cases, error conditions, and boundary values
 
+## Feature Plan Documentation Structure
+
+When implementing complex features that require multiple development phases and vertical slices, use the following standardized documentation structure:
+
+### Directory Structure
+```
+FEATURE-PLAN/
+├── index.md                    # Feature overview and phase index
+├── PHASE-1-foundation/         # Core fundamentals phase
+│   ├── slice-1-exceptions.md   # Individual slice plan
+│   ├── slice-2-logging.md      # Individual slice plan
+│   └── slice-3-config.md       # Individual slice plan
+├── PHASE-2-filesystem/         # File system layer phase
+│   ├── slice-4-path-resolver.md
+│   ├── slice-5-file-analyzer.md
+│   └── slice-6-directory-mgmt.md
+├── PHASE-3-templates/          # Template system phase
+│   ├── slice-7-config.md
+│   └── slice-8-generation.md
+└── PHASE-N-integration/        # Final integration phase
+    ├── slice-N-testing.md
+    └── slice-N+1-finalization.md
+```
+
+### File Content Standards
+
+**index.md Format:**
+- Feature overview with goals and scope
+- Technology stack and dependencies
+- Complete phase breakdown with:
+  - Phase name and purpose
+  - List of slices in phase with links
+  - Phase dependencies and prerequisites
+- Quality standards and success criteria
+- Links to related documentation
+
+**Phase-level README.md Format:**
+Each phase directory should contain a `README.md` with:
+- Phase overview and goals (2-3 sentences)
+- Prerequisites from previous phases
+- Slice execution order and dependencies
+- Shared concepts and patterns for the phase
+- Phase completion criteria
+- Links to individual slice files
+
+**Slice Plan Format (Self-Contained):**
+Each slice plan file should be completely self-contained with:
+- **Goal**: Single sentence describing the slice objective
+- **Context**: Brief background (2-3 sentences) - what was built before, why this slice is needed
+- **Scope**: Explicit boundaries - what IS and ISN'T included in this slice
+- **Prerequisites**: Specific files/functions that must exist from previous slices
+- **Files to Create/Modify**: Complete list with purpose for each file
+- **Implementation Steps**: Numbered step-by-step instructions
+- **Code Templates**: Full code examples for key components (not snippets)
+- **Test Requirements**: Specific test cases with expected behavior
+- **Validation Steps**: Exact commands to run for verification
+- **Definition of Done**: Checklist of completion criteria
+- **Next Slice Preparation**: What this slice enables for the next slice
+
+### Naming Conventions
+- **Feature directories**: `FEATURE-PLAN/` (all caps, hyphenated)
+- **Phase directories**: `PHASE-N-description/` (numbered with descriptive name)
+- **Phase overview**: `README.md` in each phase directory
+- **Slice files**: `slice-N-description.md` (numbered with kebab-case description)
+- **Index file**: Always `index.md` at feature root
+
+### Token Efficiency Guidelines
+
+**For AI Agents Working on Slices:**
+1. **Minimal Context Loading**: Agent should only read:
+   - The specific slice file being worked on
+   - The phase README.md for context
+   - Feature index.md for high-level understanding (only if needed)
+
+2. **Self-Contained Slices**: Each slice should contain ALL information needed:
+   - No external references requiring additional file reads
+   - Complete code examples, not just interfaces
+   - All necessary imports and dependencies listed
+   - Full test cases with expected outputs
+
+3. **Progressive Disclosure**: Information should be layered:
+   - Goal and scope first (for quick understanding)
+   - Implementation details after (for execution)
+   - Validation last (for completion verification)
+
+4. **Dependency Management**: 
+   - Prerequisites clearly state what files/functions must exist
+   - Each slice validates prerequisites before starting
+   - Clear handoff points between slices
+
+5. **Atomic Completion**: Each slice should:
+   - Be implementable in a single session
+   - Have clear pass/fail validation criteria
+   - Leave the codebase in a working state
+   - Enable the next slice to begin immediately
+
+### Phase Organization Principles
+- **Phase 1**: Always foundational infrastructure (exceptions, logging, config)
+- **Phase 2-N**: Feature-specific layers in dependency order
+- **Final Phase**: Integration, testing, and finalization
+- Each phase should be independently completable
+- Phases should have clear dependency relationships
+
+### Cross-References
+- Link between related slices using relative paths
+- Reference shared systems (templates, config) across features
+- Maintain backward compatibility notes in slice plans
+- Document integration points with existing systems
+
+### Example Usage
+For a refactoring project:
+```
+REFACTORING-PLAN/
+├── index.md                    # Overview of entire refactoring
+├── PHASE-1-foundation/         # Core infrastructure
+│   ├── README.md              # Phase overview and slice dependencies
+│   ├── slice-1-exceptions.md  # Self-contained implementation plan
+│   ├── slice-2-logging.md     # Self-contained implementation plan
+│   └── slice-3-config.md      # Self-contained implementation plan
+├── PHASE-2-filesystem/         # File operations layer
+│   ├── README.md              # Phase overview and slice dependencies
+│   ├── slice-4-path-resolver.md
+│   └── slice-5-file-analyzer.md
+└── PHASE-3-integration/        # Final integration
+    ├── README.md              # Phase overview and slice dependencies
+    └── slice-6-testing.md     # Self-contained implementation plan
+```
+
+### Slice Execution Workflow
+1. **Start Phase**: Read phase README.md for context and execution order
+2. **Execute Slice**: Read only the specific slice file - it contains everything needed
+3. **Validate**: Run the validation steps in the slice file
+4. **Complete**: Check off the definition of done criteria
+5. **Next Slice**: Move to next slice in phase, or next phase if phase complete
+
+This structure ensures complex features are broken down systematically while maintaining clear documentation of dependencies, progress tracking, and implementation details. Each slice is designed to be executed with minimal context loading, maximizing token efficiency while maintaining comprehensive instruction detail.
+
 ## Best Practices for AI/ML Engineering
 
 ### Error Handling & Logging

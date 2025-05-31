@@ -242,6 +242,7 @@ venv/*
 # Spec directory itself
 .spec/*
 .spec-index
+.specignore
 """
         IGNORE_FILE.write_text(ignore_content)
         print("✅ .specignore created")
