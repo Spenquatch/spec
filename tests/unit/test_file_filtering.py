@@ -202,24 +202,27 @@ class TestLoadSpecignorePatterns:
         assert "# Custom patterns" not in patterns
 
     @patch("spec_cli.__main__.DEBUG", True)
-    def test_load_specignore_patterns_debug_output(self, capsys):
+    @patch("spec_cli.__main__.debug_log")
+    def test_load_specignore_patterns_debug_output(self, mock_debug_log):
         """Test that debug output is produced when DEBUG is True."""
         if IGNORE_FILE.exists():
             IGNORE_FILE.unlink()
 
-        load_specignore_patterns()
+        patterns = load_specignore_patterns()
 
-        captured = capsys.readouterr()
-        assert "🔍 Debug: Loaded" in captured.out
-        assert "ignore patterns" in captured.out
+        # Verify debug_log was called with pattern loading info
+        mock_debug_log.assert_called_with(
+            "INFO", "Loaded ignore patterns", pattern_count=len(patterns)
+        )
 
     @patch("spec_cli.__main__.DEBUG", False)
-    def test_load_specignore_patterns_no_debug_output(self, capsys):
+    @patch("spec_cli.__main__.debug_log")
+    def test_load_specignore_patterns_no_debug_output(self, mock_debug_log):
         """Test that no debug output is produced when DEBUG is False."""
         load_specignore_patterns()
 
-        captured = capsys.readouterr()
-        assert "🔍 Debug:" not in captured.out
+        # When DEBUG is False, debug_log should not be called
+        mock_debug_log.assert_not_called()
 
     def test_load_specignore_patterns_handles_unicode(self):
         """Test that Unicode content in .specignore is handled correctly."""
@@ -343,34 +346,44 @@ class TestShouldGenerateSpec:
             assert should_generate_spec(Path("normal_file.py"), patterns) is True
 
     @patch("spec_cli.__main__.DEBUG", True)
-    def test_should_generate_spec_debug_output_approved(self, capsys):
+    @patch("spec_cli.__main__.debug_log")
+    def test_should_generate_spec_debug_output_approved(self, mock_debug_log):
         """Test debug output for approved files."""
         patterns = set()
 
         should_generate_spec(Path("main.py"), patterns)
 
-        captured = capsys.readouterr()
-        assert "🔍 Debug: File main.py approved for spec generation" in captured.out
+        # Verify debug_log was called with file approval info
+        mock_debug_log.assert_called_with(
+            "INFO",
+            "File approved for spec generation",
+            file_path="main.py",
+            file_type="python",
+        )
 
     @patch("spec_cli.__main__.DEBUG", True)
-    def test_should_generate_spec_debug_output_rejected(self, capsys):
+    @patch("spec_cli.__main__.debug_log")
+    def test_should_generate_spec_debug_output_rejected(self, mock_debug_log):
         """Test debug output for rejected files."""
         patterns = {"*.py"}
 
         should_generate_spec(Path("test.py"), patterns)
 
-        captured = capsys.readouterr()
-        assert "🔍 Debug: File test.py matches ignore pattern" in captured.out
+        # Verify debug_log was called with file rejection info
+        mock_debug_log.assert_called_with(
+            "DEBUG", "File matches ignore pattern", file_path="test.py", pattern="*.py"
+        )
 
     @patch("spec_cli.__main__.DEBUG", False)
-    def test_should_generate_spec_no_debug_output(self, capsys):
+    @patch("spec_cli.__main__.debug_log")
+    def test_should_generate_spec_no_debug_output(self, mock_debug_log):
         """Test that no debug output when DEBUG is False."""
         patterns = set()
 
         should_generate_spec(Path("main.py"), patterns)
 
-        captured = capsys.readouterr()
-        assert "🔍 Debug:" not in captured.out
+        # When DEBUG is False, debug_log should not be called
+        mock_debug_log.assert_not_called()
 
     def test_should_generate_spec_loads_patterns_when_none_provided(self):
         """Test that patterns are loaded automatically when not provided."""

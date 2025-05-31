@@ -77,12 +77,17 @@ class TestDebugLog:
     @patch("spec_cli.__main__.logger")
     def test_debug_log_with_complex_kwargs(self, mock_logger):
         """Test debug_log with complex kwargs values."""
-        debug_log("INFO", "Test message",
-                 path=Path("/test"),
-                 items=["a", "b", "c"],
-                 nested={"key": "value"})
+        debug_log(
+            "INFO",
+            "Test message",
+            path=Path("/test"),
+            items=["a", "b", "c"],
+            nested={"key": "value"},
+        )
 
-        expected_msg = "Test message (path=/test, items=['a', 'b', 'c'], nested={'key': 'value'})"
+        expected_msg = (
+            "Test message (path=/test, items=['a', 'b', 'c'], nested={'key': 'value'})"
+        )
         mock_logger.info.assert_called_once_with(expected_msg)
 
 
@@ -100,8 +105,9 @@ class TestDebugTimer:
         # Check that start and end messages were logged
         assert mock_debug_log.call_count == 2
         mock_debug_log.assert_any_call("INFO", "Starting test_operation")
-        mock_debug_log.assert_any_call("INFO", "Completed test_operation",
-                                      duration_ms="500.00ms")
+        mock_debug_log.assert_any_call(
+            "INFO", "Completed test_operation", duration_ms="500.00ms"
+        )
 
     @patch("spec_cli.__main__.DEBUG_TIMING", False)
     @patch("spec_cli.__main__.debug_log")
@@ -120,8 +126,9 @@ class TestDebugTimer:
         with debug_timer("fast_operation"):
             pass
 
-        mock_debug_log.assert_any_call("INFO", "Completed fast_operation",
-                                      duration_ms="1.00ms")
+        mock_debug_log.assert_any_call(
+            "INFO", "Completed fast_operation", duration_ms="1.00ms"
+        )
 
     @patch("spec_cli.__main__.DEBUG_TIMING", True)
     @patch("spec_cli.__main__.debug_log")
@@ -131,8 +138,9 @@ class TestDebugTimer:
         with debug_timer("slow_operation"):
             time.sleep(0.001)  # Small sleep to simulate work
 
-        mock_debug_log.assert_any_call("INFO", "Completed slow_operation",
-                                      duration_ms="2500.00ms")
+        mock_debug_log.assert_any_call(
+            "INFO", "Completed slow_operation", duration_ms="2500.00ms"
+        )
 
     @patch("spec_cli.__main__.DEBUG_TIMING", True)
     @patch("spec_cli.__main__.debug_log")
@@ -179,14 +187,19 @@ class TestDebugTimer:
     @patch("spec_cli.__main__.DEBUG_TIMING", True)
     @patch("spec_cli.__main__.debug_log")
     @patch("time.perf_counter", side_effect=[1.0, 1.0])
-    def test_debug_timer_with_special_characters_in_name(self, mock_perf_counter, mock_debug_log):
+    def test_debug_timer_with_special_characters_in_name(
+        self, mock_perf_counter, mock_debug_log
+    ):
         """Test debug_timer with special characters in operation name."""
         with debug_timer("operation with spaces & symbols!"):
             pass
 
-        mock_debug_log.assert_any_call("INFO", "Starting operation with spaces & symbols!")
-        mock_debug_log.assert_any_call("INFO", "Completed operation with spaces & symbols!",
-                                      duration_ms="0.00ms")
+        mock_debug_log.assert_any_call(
+            "INFO", "Starting operation with spaces & symbols!"
+        )
+        mock_debug_log.assert_any_call(
+            "INFO", "Completed operation with spaces & symbols!", duration_ms="0.00ms"
+        )
 
 
 class TestDebugOperationSummary:
@@ -196,13 +209,10 @@ class TestDebugOperationSummary:
     @patch("spec_cli.__main__.debug_log")
     def test_debug_operation_summary_with_debug_enabled(self, mock_debug_log):
         """Test debug_operation_summary when DEBUG is True."""
-        debug_operation_summary("test_operation",
-                               file_count=5,
-                               total_size=1024)
+        debug_operation_summary("test_operation", file_count=5, total_size=1024)
 
         mock_debug_log.assert_called_once_with(
-            "INFO", "Operation summary: test_operation",
-            file_count=5, total_size=1024
+            "INFO", "Operation summary: test_operation", file_count=5, total_size=1024
         )
 
     @patch("spec_cli.__main__.DEBUG", False)
@@ -227,16 +237,19 @@ class TestDebugOperationSummary:
     @patch("spec_cli.__main__.debug_log")
     def test_debug_operation_summary_with_complex_metrics(self, mock_debug_log):
         """Test debug_operation_summary with complex metrics."""
-        debug_operation_summary("complex_operation",
-                               paths=["/a", "/b"],
-                               config={"debug": True},
-                               timestamp="2023-12-01")
-
-        mock_debug_log.assert_called_once_with(
-            "INFO", "Operation summary: complex_operation",
+        debug_operation_summary(
+            "complex_operation",
             paths=["/a", "/b"],
             config={"debug": True},
-            timestamp="2023-12-01"
+            timestamp="2023-12-01",
+        )
+
+        mock_debug_log.assert_called_once_with(
+            "INFO",
+            "Operation summary: complex_operation",
+            paths=["/a", "/b"],
+            config={"debug": True},
+            timestamp="2023-12-01",
         )
 
 
@@ -310,6 +323,7 @@ class TestDebugLoggingConfiguration:
         """Test that logger is properly configured when DEBUG is True."""
         # Just test that our logger exists and functions
         from spec_cli.__main__ import logger
+
         assert logger is not None
         assert logger.name == "spec_cli"
 
@@ -317,6 +331,7 @@ class TestDebugLoggingConfiguration:
         """Test that logger has null handler when DEBUG is False."""
         # This is more of an integration test - just verify the logger exists
         from spec_cli.__main__ import logger
+
         assert logger is not None
 
     def test_logger_level_configuration(self):
@@ -337,8 +352,13 @@ class TestDebugLoggingConfiguration:
         # Test the format string directly
         formatter = logging.Formatter("🔍 Debug [%(levelname)s]: %(message)s")
         record = logging.LogRecord(
-            name="test", level=logging.INFO, pathname="", lineno=0,
-            msg="test message", args=(), exc_info=None
+            name="test",
+            level=logging.INFO,
+            pathname="",
+            lineno=0,
+            msg="test message",
+            args=(),
+            exc_info=None,
         )
         formatted = formatter.format(record)
         assert "🔍 Debug [INFO]: test message" == formatted

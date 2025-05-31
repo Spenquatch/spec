@@ -180,44 +180,48 @@ class TestLoadTemplate:
                 TEMPLATE_FILE.unlink()
 
     @patch("spec_cli.__main__.DEBUG", True)
-    def test_load_template_debug_output_no_file(self, capsys):
+    @patch("spec_cli.__main__.debug_log")
+    def test_load_template_debug_output_no_file(self, mock_debug_log):
         """Test that load_template produces debug output when no file exists."""
         if TEMPLATE_FILE.exists():
             TEMPLATE_FILE.unlink()
 
         load_template()
 
-        captured = capsys.readouterr()
-        assert (
-            "🔍 Debug: No .spectemplate file found, using default template"
-            in captured.out
+        # Verify debug_log was called with no template file info
+        mock_debug_log.assert_called_with(
+            "INFO", "No .spectemplate file found, using default template"
         )
 
     @patch("spec_cli.__main__.DEBUG", True)
-    def test_load_template_debug_output_with_file(self, capsys):
+    @patch("spec_cli.__main__.debug_log")
+    def test_load_template_debug_output_with_file(self, mock_debug_log):
         """Test that load_template produces debug output when file exists."""
         TEMPLATE_FILE.write_text("index: 'test'")
 
         try:
             load_template()
 
-            captured = capsys.readouterr()
-            assert f"🔍 Debug: Loaded template from {TEMPLATE_FILE}" in captured.out
+            # Verify debug_log was called with template file loading info
+            mock_debug_log.assert_called_with(
+                "INFO", "Loaded template from file", template_file=str(TEMPLATE_FILE)
+            )
 
         finally:
             if TEMPLATE_FILE.exists():
                 TEMPLATE_FILE.unlink()
 
     @patch("spec_cli.__main__.DEBUG", False)
-    def test_load_template_no_debug_output(self, capsys):
+    @patch("spec_cli.__main__.debug_log")
+    def test_load_template_no_debug_output(self, mock_debug_log):
         """Test that load_template produces no debug output when DEBUG is False."""
         if TEMPLATE_FILE.exists():
             TEMPLATE_FILE.unlink()
 
         load_template()
 
-        captured = capsys.readouterr()
-        assert "🔍 Debug:" not in captured.out
+        # When DEBUG is False, debug_log should not be called
+        mock_debug_log.assert_not_called()
 
     def test_load_template_handles_unicode_content(self):
         """Test that load_template handles Unicode content in templates."""

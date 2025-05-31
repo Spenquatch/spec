@@ -29,9 +29,7 @@ DEBUG_TIMING = os.environ.get("SPEC_DEBUG_TIMING", "").lower() in ["1", "true", 
 logger = logging.getLogger("spec_cli")
 if DEBUG:
     handler = logging.StreamHandler()
-    formatter = logging.Formatter(
-        "🔍 Debug [%(levelname)s]: %(message)s"
-    )
+    formatter = logging.Formatter("🔍 Debug [%(levelname)s]: %(message)s")
     handler.setFormatter(formatter)
     logger.addHandler(handler)
     logger.setLevel(getattr(logging, DEBUG_LEVEL, logging.INFO))
@@ -80,8 +78,9 @@ class DebugTimer:
     def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
         if DEBUG_TIMING and self.start_time is not None:
             elapsed = time.perf_counter() - self.start_time
-            debug_log("INFO", f"Completed {self.name}",
-                     duration_ms=f"{elapsed*1000:.2f}ms")
+            debug_log(
+                "INFO", f"Completed {self.name}", duration_ms=f"{elapsed * 1000:.2f}ms"
+            )
         # Return None to let any exception propagate
 
 
@@ -109,16 +108,6 @@ def debug_operation_summary(operation: str, **metrics: Any) -> None:
         return
 
     debug_log("INFO", f"Operation summary: {operation}", **metrics)
-
-
-def legacy_debug_print(message: str) -> None:
-    """Legacy debug print for backwards compatibility with existing tests.
-
-    Args:
-        message: Debug message to print
-    """
-    if DEBUG:
-        print(f"🔍 Debug: {message}")
 
 
 class TemplateConfig(BaseModel):
@@ -195,8 +184,7 @@ def run_git(args: List[str]) -> None:
     cmd = ["git", "-c", "core.excludesFile=", "-c", "core.ignoresCase=false", *args]
 
     if DEBUG:
-        debug_log("INFO", "Running git command",
-                 command=" ".join(cmd))
+        debug_log("INFO", "Running git command", command=" ".join(cmd))
         git_env = {k: v for k, v in env.items() if k.startswith("GIT_")}
         debug_log("DEBUG", "Git environment variables", **git_env)
 
@@ -373,9 +361,7 @@ def create_spec_directory(file_path: Path) -> Path:
         spec_dir_path.mkdir(parents=True, exist_ok=True)
 
         if DEBUG:
-            legacy_debug_print(f"Created spec directory: {spec_dir_path}")
-            debug_log("INFO", "Created spec directory",
-                     path=str(spec_dir_path))
+            debug_log("INFO", "Created spec directory", path=str(spec_dir_path))
 
         return spec_dir_path
 
@@ -395,7 +381,6 @@ def load_template() -> TemplateConfig:
     """
     if not TEMPLATE_FILE.exists():
         if DEBUG:
-            legacy_debug_print("No .spectemplate file found, using default template")
             debug_log("INFO", "No .spectemplate file found, using default template")
         return TemplateConfig()
 
@@ -404,9 +389,9 @@ def load_template() -> TemplateConfig:
             template_data = yaml.safe_load(f)
 
         if DEBUG:
-            legacy_debug_print(f"Loaded template from {TEMPLATE_FILE}")
-            debug_log("INFO", "Loaded template from file",
-                     template_file=str(TEMPLATE_FILE))
+            debug_log(
+                "INFO", "Loaded template from file", template_file=str(TEMPLATE_FILE)
+            )
 
         # Handle case where YAML file is empty or None
         if template_data is None:
@@ -467,13 +452,12 @@ def generate_spec_content(
         history_file.write_text(history_content, encoding="utf-8")
 
         if DEBUG:
-            # Legacy debug output for backwards compatibility
-            legacy_debug_print(f"Generated index.md ({len(index_content)} chars)")
-            legacy_debug_print(f"Generated history.md ({len(history_content)} chars)")
-            # New structured debug logging
-            debug_log("INFO", "Generated spec content files",
-                     index_chars=len(index_content),
-                     history_chars=len(history_content))
+            debug_log(
+                "INFO",
+                "Generated spec content files",
+                index_chars=len(index_content),
+                history_chars=len(history_content),
+            )
 
     except OSError as e:
         raise OSError(f"Failed to write spec files to {spec_dir}: {e}") from e
@@ -607,8 +591,7 @@ def load_specignore_patterns() -> Set[str]:
                     patterns.add(line)
         except OSError as e:
             if DEBUG:
-                debug_log("WARNING", "Failed to read .specignore file",
-                         error=str(e))
+                debug_log("WARNING", "Failed to read .specignore file", error=str(e))
 
     # Add default patterns
     default_patterns = {
@@ -646,9 +629,7 @@ def load_specignore_patterns() -> Set[str]:
     patterns.update(default_patterns)
 
     if DEBUG:
-        legacy_debug_print(f"Loaded {len(patterns)} ignore patterns")
-        debug_log("INFO", "Loaded ignore patterns",
-                 pattern_count=len(patterns))
+        debug_log("INFO", "Loaded ignore patterns", pattern_count=len(patterns))
 
     return patterns
 
@@ -677,17 +658,23 @@ def should_generate_spec(
         # Match against full path
         if fnmatch.fnmatch(file_str, pattern):
             if DEBUG:
-                legacy_debug_print(f"File {file_path} matches ignore pattern: {pattern}")
-                debug_log("DEBUG", "File matches ignore pattern",
-                         file_path=str(file_path), pattern=pattern)
+                debug_log(
+                    "DEBUG",
+                    "File matches ignore pattern",
+                    file_path=str(file_path),
+                    pattern=pattern,
+                )
             return False
 
         # Match against filename only
         if fnmatch.fnmatch(file_name, pattern):
             if DEBUG:
-                legacy_debug_print(f"File {file_path} matches ignore pattern: {pattern}")
-                debug_log("DEBUG", "File matches ignore pattern",
-                         file_path=str(file_path), pattern=pattern)
+                debug_log(
+                    "DEBUG",
+                    "File matches ignore pattern",
+                    file_path=str(file_path),
+                    pattern=pattern,
+                )
             return False
 
         # Handle directory patterns (ending with /*)
@@ -699,16 +686,24 @@ def should_generate_spec(
                     parent.name, dir_pattern
                 ):
                     if DEBUG:
-                        debug_log("DEBUG", "File in ignored directory",
-                                 file_path=str(file_path), pattern=pattern)
+                        debug_log(
+                            "DEBUG",
+                            "File in ignored directory",
+                            file_path=str(file_path),
+                            pattern=pattern,
+                        )
                     return False
 
     # Check file type - only generate for known file types
     file_type = get_file_type(file_path)
     if file_type in {"unknown"}:
         if DEBUG:
-            debug_log("DEBUG", "Skipping unknown file type",
-                     file_path=str(file_path), file_type=file_type)
+            debug_log(
+                "DEBUG",
+                "Skipping unknown file type",
+                file_path=str(file_path),
+                file_type=file_type,
+            )
         return False
 
     # Skip binary files and images
@@ -751,8 +746,12 @@ def should_generate_spec(
 
     if file_path.suffix.lower() in binary_extensions:
         if DEBUG:
-            debug_log("DEBUG", "Skipping binary file",
-                     file_path=str(file_path), extension=file_path.suffix.lower())
+            debug_log(
+                "DEBUG",
+                "Skipping binary file",
+                file_path=str(file_path),
+                extension=file_path.suffix.lower(),
+            )
         return False
 
     # Skip very large files (>1MB)
@@ -760,18 +759,24 @@ def should_generate_spec(
         full_path = ROOT / file_path
         if full_path.exists() and full_path.stat().st_size > 1_048_576:  # 1MB
             if DEBUG:
-                debug_log("DEBUG", "Skipping large file",
-                         file_path=str(file_path),
-                         size_bytes=full_path.stat().st_size)
+                debug_log(
+                    "DEBUG",
+                    "Skipping large file",
+                    file_path=str(file_path),
+                    size_bytes=full_path.stat().st_size,
+                )
             return False
     except OSError:
         # If we can't check size, assume it's okay
         pass
 
     if DEBUG:
-        legacy_debug_print(f"File {file_path} approved for spec generation (type: {file_type})")
-        debug_log("INFO", "File approved for spec generation",
-                 file_path=str(file_path), file_type=file_type)
+        debug_log(
+            "INFO",
+            "File approved for spec generation",
+            file_path=str(file_path),
+            file_type=file_type,
+        )
 
     return True
 
@@ -791,13 +796,13 @@ def check_existing_specs(spec_dir: Path) -> Dict[str, bool]:
     result = {"index": index_file.exists(), "history": history_file.exists()}
 
     if DEBUG:
-        legacy_debug_print(f"Checking existing specs in {spec_dir}:")
-        legacy_debug_print(f"   index.md: {'exists' if result['index'] else 'not found'}")
-        legacy_debug_print(f"   history.md: {'exists' if result['history'] else 'not found'}")
-        debug_log("INFO", "Checking existing specs",
-                 spec_dir=str(spec_dir),
-                 index_exists=result["index"],
-                 history_exists=result["history"])
+        debug_log(
+            "INFO",
+            "Checking existing specs",
+            spec_dir=str(spec_dir),
+            index_exists=result["index"],
+            history_exists=result["history"],
+        )
 
     return result
 
@@ -824,10 +829,12 @@ def create_backup(file_path: Path) -> Optional[Path]:
         shutil.copy2(file_path, backup_path)
 
         if DEBUG:
-            legacy_debug_print(f"Created backup: {backup_path}")
-            debug_log("INFO", "Created backup file",
-                     original=str(file_path),
-                     backup=str(backup_path))
+            debug_log(
+                "INFO",
+                "Created backup file",
+                original=str(file_path),
+                backup=str(backup_path),
+            )
 
         return backup_path
 
@@ -858,9 +865,11 @@ def handle_spec_conflict(
 
     if force:
         if DEBUG:
-            legacy_debug_print(f"Force mode - overwriting existing files: {existing_files}")
-            debug_log("INFO", "Force mode - overwriting existing files",
-                     existing_files=existing_files)
+            debug_log(
+                "INFO",
+                "Force mode - overwriting existing files",
+                existing_files=existing_files,
+            )
         return "overwrite"
 
     print(f"⚠️  Existing spec files found in {spec_dir}:")
@@ -970,7 +979,11 @@ def find_source_files(directory: Path) -> List[Path]:
             if file_path.is_file():
                 # Convert to relative path from ROOT for consistent checking
                 try:
-                    relative_path = file_path.relative_to(ROOT) if file_path.is_absolute() else file_path
+                    relative_path = (
+                        file_path.relative_to(ROOT)
+                        if file_path.is_absolute()
+                        else file_path
+                    )
                 except ValueError:
                     # File is outside project root, skip it
                     continue
@@ -982,9 +995,12 @@ def find_source_files(directory: Path) -> List[Path]:
         # Sort files for consistent ordering
         source_files.sort()
 
-        debug_log("INFO", "Completed source file discovery",
-                 directory=str(directory),
-                 total_files_found=len(source_files))
+        debug_log(
+            "INFO",
+            "Completed source file discovery",
+            directory=str(directory),
+            total_files_found=len(source_files),
+        )
 
         return source_files
 
@@ -995,8 +1011,7 @@ def find_source_files(directory: Path) -> List[Path]:
 def cmd_gen(args: List[str]) -> None:
     """Generate spec documentation for file(s) or directory."""
     with debug_timer("cmd_gen_total"):
-        debug_log("INFO", "Starting spec generation command",
-                 args=args)
+        debug_log("INFO", "Starting spec generation command", args=args)
 
         if not args:
             debug_log("WARNING", "No arguments provided to cmd_gen")
@@ -1006,14 +1021,17 @@ def cmd_gen(args: List[str]) -> None:
         path_str = args[0]
         path = Path(path_str)
 
-        debug_log("INFO", "Processing path argument",
-                 input_path=path_str, resolved_path=str(path))
+        debug_log(
+            "INFO",
+            "Processing path argument",
+            input_path=path_str,
+            resolved_path=str(path),
+        )
 
         # Handle "." for current directory
         if path_str == ".":
             path = Path.cwd()
-            debug_log("DEBUG", "Resolved current directory",
-                     path=str(path))
+            debug_log("DEBUG", "Resolved current directory", path=str(path))
 
         # Check if path exists
         if not path.exists():
@@ -1030,8 +1048,12 @@ def cmd_gen(args: List[str]) -> None:
                     with debug_timer("resolve_file_path"):
                         resolved_path = resolve_file_path(path_str)
 
-                    debug_log("INFO", "File path resolved",
-                             original=path_str, resolved=str(resolved_path))
+                    debug_log(
+                        "INFO",
+                        "File path resolved",
+                        original=path_str,
+                        resolved=str(resolved_path),
+                    )
 
                     # Check if file should be processed
                     with debug_timer("should_generate_spec"):
@@ -1039,8 +1061,12 @@ def cmd_gen(args: List[str]) -> None:
 
                     if not should_process:
                         file_type = get_file_type(resolved_path)
-                        debug_log("INFO", "File skipped by filtering",
-                                 file_path=str(resolved_path), file_type=file_type)
+                        debug_log(
+                            "INFO",
+                            "File skipped by filtering",
+                            file_path=str(resolved_path),
+                            file_type=file_type,
+                        )
                         print(f"⏭️  Skipping {resolved_path} (type: {file_type})")
                         return
 
@@ -1051,14 +1077,19 @@ def cmd_gen(args: List[str]) -> None:
                         template = load_template()
 
                     file_type = get_file_type(resolved_path)
-                    debug_log("INFO", "File processing setup complete",
-                             file_path=str(resolved_path),
-                             file_type=file_type,
-                             spec_dir=str(spec_dir),
-                             template_index_chars=len(template.index),
-                             template_history_chars=len(template.history))
+                    debug_log(
+                        "INFO",
+                        "File processing setup complete",
+                        file_path=str(resolved_path),
+                        file_type=file_type,
+                        spec_dir=str(spec_dir),
+                        template_index_chars=len(template.index),
+                        template_history_chars=len(template.history),
+                    )
 
-                    print(f"📝 Generating spec for file: {resolved_path} (type: {file_type})")
+                    print(
+                        f"📝 Generating spec for file: {resolved_path} (type: {file_type})"
+                    )
                     print(f"📁 Spec directory: {spec_dir}")
                     print(
                         f"📋 Template loaded: {len(template.index)} chars index, {len(template.history)} chars history"
@@ -1068,22 +1099,31 @@ def cmd_gen(args: List[str]) -> None:
                     with debug_timer("check_existing_specs"):
                         existing_specs = check_existing_specs(spec_dir)
 
-                    debug_log("INFO", "Conflict check complete",
-                             existing_specs=existing_specs)
+                    debug_log(
+                        "INFO", "Conflict check complete", existing_specs=existing_specs
+                    )
 
                     # Handle conflicts if any exist
                     try:
                         with debug_timer("handle_conflicts"):
                             # For now, we'll add a --force flag support later
                             # Currently using interactive mode
-                            action = handle_spec_conflict(spec_dir, existing_specs, force=False)
-                            debug_log("INFO", "Conflict resolution action chosen",
-                                     action=action)
+                            action = handle_spec_conflict(
+                                spec_dir, existing_specs, force=False
+                            )
+                            debug_log(
+                                "INFO",
+                                "Conflict resolution action chosen",
+                                action=action,
+                            )
 
                             # Process the chosen action
                             should_proceed = process_spec_conflicts(spec_dir, action)
-                            debug_log("INFO", "Conflict processing result",
-                                     should_proceed=should_proceed)
+                            debug_log(
+                                "INFO",
+                                "Conflict processing result",
+                                should_proceed=should_proceed,
+                            )
 
                             if not should_proceed:
                                 return
@@ -1096,11 +1136,13 @@ def cmd_gen(args: List[str]) -> None:
                     with debug_timer("generate_spec_content"):
                         generate_spec_content(resolved_path, spec_dir, template)
 
-                    debug_operation_summary("file_spec_generation",
-                                          file_path=str(resolved_path),
-                                          file_type=file_type,
-                                          spec_dir=str(spec_dir),
-                                          action_taken=action if 'action' in locals() else 'proceed')
+                    debug_operation_summary(
+                        "file_spec_generation",
+                        file_path=str(resolved_path),
+                        file_type=file_type,
+                        spec_dir=str(spec_dir),
+                        action_taken=action if "action" in locals() else "proceed",
+                    )
 
                     print("✅ Generated spec files:")
                     print(f"   📄 {spec_dir / 'index.md'}")
@@ -1113,8 +1155,12 @@ def cmd_gen(args: List[str]) -> None:
                 OSError,
                 yaml.YAMLError,
             ) as e:
-                debug_log("ERROR", "Error during file processing",
-                         error_type=type(e).__name__, error_message=str(e))
+                debug_log(
+                    "ERROR",
+                    "Error during file processing",
+                    error_type=type(e).__name__,
+                    error_message=str(e),
+                )
                 print(f"❌ {e}")
                 return
 
@@ -1128,15 +1174,21 @@ def cmd_gen(args: List[str]) -> None:
                     with debug_timer("find_source_files"):
                         source_files = find_source_files(path)
 
-                    debug_log("INFO", "Found source files in directory",
-                             directory=str(path), file_count=len(source_files))
+                    debug_log(
+                        "INFO",
+                        "Found source files in directory",
+                        directory=str(path),
+                        file_count=len(source_files),
+                    )
 
                     if not source_files:
                         print("ℹ️  No source files found in directory")
-                        debug_operation_summary("directory_spec_generation",
-                                               directory=str(path),
-                                               file_count=0,
-                                               status="no_files_found")
+                        debug_operation_summary(
+                            "directory_spec_generation",
+                            directory=str(path),
+                            file_count=0,
+                            status="no_files_found",
+                        )
                         return
 
                     print(f"📋 Found {len(source_files)} source files to process")
@@ -1145,24 +1197,35 @@ def cmd_gen(args: List[str]) -> None:
                     with debug_timer("load_template_for_directory"):
                         template = load_template()
 
-                    debug_log("INFO", "Template loaded for directory processing",
-                             template_index_chars=len(template.index),
-                             template_history_chars=len(template.history))
+                    debug_log(
+                        "INFO",
+                        "Template loaded for directory processing",
+                        template_index_chars=len(template.index),
+                        template_history_chars=len(template.history),
+                    )
 
                     # Track progress
                     processed_count = 0
                     skipped_count = 0
                     error_count = 0
 
-                    print(f"🚀 Starting spec generation for {len(source_files)} files...")
+                    print(
+                        f"🚀 Starting spec generation for {len(source_files)} files..."
+                    )
 
                     for i, file_path in enumerate(source_files, 1):
                         try:
-                            print(f"\n[{i}/{len(source_files)}] Processing: {file_path}")
+                            print(
+                                f"\n[{i}/{len(source_files)}] Processing: {file_path}"
+                            )
 
                             with debug_timer(f"process_file_{i}"):
                                 # Convert to relative path from project root
-                                relative_path = file_path.relative_to(ROOT) if file_path.is_absolute() else file_path
+                                relative_path = (
+                                    file_path.relative_to(ROOT)
+                                    if file_path.is_absolute()
+                                    else file_path
+                                )
 
                                 # Check if file should be processed
                                 with debug_timer("should_generate_check"):
@@ -1183,16 +1246,22 @@ def cmd_gen(args: List[str]) -> None:
                                     existing_specs = check_existing_specs(spec_dir)
 
                                 if any(existing_specs.values()):
-                                    print("   ⚠️  Existing specs found, using overwrite mode for batch processing")
+                                    print(
+                                        "   ⚠️  Existing specs found, using overwrite mode for batch processing"
+                                    )
                                     action = "overwrite"
-                                    should_proceed = process_spec_conflicts(spec_dir, action)
+                                    should_proceed = process_spec_conflicts(
+                                        spec_dir, action
+                                    )
                                     if not should_proceed:
                                         skipped_count += 1
                                         continue
 
                                 # Generate content
                                 with debug_timer("generate_content"):
-                                    generate_spec_content(relative_path, spec_dir, template)
+                                    generate_spec_content(
+                                        relative_path, spec_dir, template
+                                    )
 
                                 file_type = get_file_type(relative_path)
                                 print(f"   ✅ Generated specs (type: {file_type})")
@@ -1200,8 +1269,12 @@ def cmd_gen(args: List[str]) -> None:
 
                         except Exception as e:
                             error_count += 1
-                            debug_log("ERROR", "Error processing file in directory",
-                                     file_path=str(file_path), error=str(e))
+                            debug_log(
+                                "ERROR",
+                                "Error processing file in directory",
+                                file_path=str(file_path),
+                                error=str(e),
+                            )
                             print(f"   ❌ Error: {e}")
                             continue
 
@@ -1212,23 +1285,34 @@ def cmd_gen(args: List[str]) -> None:
                     if error_count > 0:
                         print(f"   ❌ Errors: {error_count} files")
 
-                    debug_operation_summary("directory_spec_generation",
-                                           directory=str(path),
-                                           total_files=len(source_files),
-                                           processed_count=processed_count,
-                                           skipped_count=skipped_count,
-                                           error_count=error_count,
-                                           status="completed")
+                    debug_operation_summary(
+                        "directory_spec_generation",
+                        directory=str(path),
+                        total_files=len(source_files),
+                        processed_count=processed_count,
+                        skipped_count=skipped_count,
+                        error_count=error_count,
+                        status="completed",
+                    )
                     return
 
             except Exception as e:
-                debug_log("ERROR", "Error during directory processing",
-                         directory=str(path), error_type=type(e).__name__, error_message=str(e))
+                debug_log(
+                    "ERROR",
+                    "Error during directory processing",
+                    directory=str(path),
+                    error_type=type(e).__name__,
+                    error_message=str(e),
+                )
                 print(f"❌ Error processing directory: {e}")
                 return
         else:
-            debug_log("ERROR", "Path is neither file nor directory",
-                     path=str(path), path_type=type(path).__name__)
+            debug_log(
+                "ERROR",
+                "Path is neither file nor directory",
+                path=str(path),
+                path_type=type(path).__name__,
+            )
             print(f"❌ Path is neither a file nor directory: {path}")
 
 

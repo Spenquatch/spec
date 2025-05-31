@@ -103,16 +103,18 @@ class TestCreateSpecDirectory:
                 (SPECS_DIR / "root_file").rmdir()
 
     @patch("spec_cli.__main__.DEBUG", True)
-    def test_create_spec_directory_debug_output(self, capsys):
+    @patch("spec_cli.__main__.debug_log")
+    def test_create_spec_directory_debug_output(self, mock_debug_log):
         """Test that create_spec_directory produces debug output when DEBUG is True."""
         file_path = Path("debug_test.py")
 
         try:
             create_spec_directory(file_path)
 
-            captured = capsys.readouterr()
-            assert "🔍 Debug: Created spec directory:" in captured.out
-            assert "debug_test" in captured.out
+            # Verify debug_log was called with directory creation info
+            mock_debug_log.assert_called_with(
+                "INFO", "Created spec directory", path=str(SPECS_DIR / "debug_test")
+            )
 
         finally:
             # Clean up
@@ -120,15 +122,16 @@ class TestCreateSpecDirectory:
                 (SPECS_DIR / "debug_test").rmdir()
 
     @patch("spec_cli.__main__.DEBUG", False)
-    def test_create_spec_directory_no_debug_output(self, capsys):
+    @patch("spec_cli.__main__.debug_log")
+    def test_create_spec_directory_no_debug_output(self, mock_debug_log):
         """Test that create_spec_directory produces no debug output when DEBUG is False."""
         file_path = Path("no_debug_test.py")
 
         try:
             create_spec_directory(file_path)
 
-            captured = capsys.readouterr()
-            assert "🔍 Debug:" not in captured.out
+            # When DEBUG is False, debug_log should not be called at all
+            mock_debug_log.assert_not_called()
 
         finally:
             # Clean up

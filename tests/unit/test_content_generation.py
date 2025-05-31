@@ -230,7 +230,8 @@ class TestGenerateSpecContent:
         assert "Ext: js" in index_content
 
     @patch("spec_cli.__main__.DEBUG", True)
-    def test_generate_spec_content_debug_output(self, capsys):
+    @patch("spec_cli.__main__.debug_log")
+    def test_generate_spec_content_debug_output(self, mock_debug_log):
         """Test that generate_spec_content produces debug output when DEBUG is True."""
         template = TemplateConfig(
             index="Short content", history="Another short content"
@@ -238,20 +239,24 @@ class TestGenerateSpecContent:
 
         generate_spec_content(self.file_path, self.spec_dir, template)
 
-        captured = capsys.readouterr()
-        assert "🔍 Debug: Generated index.md" in captured.out
-        assert "🔍 Debug: Generated history.md" in captured.out
-        assert "chars)" in captured.out
+        # Verify debug_log was called for generated files
+        mock_debug_log.assert_called_with(
+            "INFO",
+            "Generated spec content files",
+            index_chars=13,  # len("Short content")
+            history_chars=21,  # len("Another short content")
+        )
 
     @patch("spec_cli.__main__.DEBUG", False)
-    def test_generate_spec_content_no_debug_output(self, capsys):
+    @patch("spec_cli.__main__.debug_log")
+    def test_generate_spec_content_no_debug_output(self, mock_debug_log):
         """Test that generate_spec_content produces no debug output when DEBUG is False."""
         template = TemplateConfig(index="Content", history="History")
 
         generate_spec_content(self.file_path, self.spec_dir, template)
 
-        captured = capsys.readouterr()
-        assert "🔍 Debug:" not in captured.out
+        # When DEBUG is False, debug_log should not be called at all
+        mock_debug_log.assert_not_called()
 
     def test_generate_spec_content_unicode_content(self):
         """Test generate_spec_content with Unicode content."""

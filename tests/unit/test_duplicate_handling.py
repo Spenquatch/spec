@@ -63,24 +63,30 @@ class TestCheckExistingSpecs:
         assert result == {"index": True, "history": True}
 
     @patch("spec_cli.__main__.DEBUG", True)
-    def test_check_existing_specs_debug_output(self, capsys):
+    @patch("spec_cli.__main__.debug_log")
+    def test_check_existing_specs_debug_output(self, mock_debug_log):
         """Test that debug output is produced when DEBUG is True."""
         (self.spec_dir / "index.md").write_text("content")
 
         check_existing_specs(self.spec_dir)
 
-        captured = capsys.readouterr()
-        assert "🔍 Debug: Checking existing specs" in captured.out
-        assert "index.md: exists" in captured.out
-        assert "history.md: not found" in captured.out
+        # Verify debug_log was called with spec checking info
+        mock_debug_log.assert_called_with(
+            "INFO",
+            "Checking existing specs",
+            spec_dir=str(self.spec_dir),
+            index_exists=True,
+            history_exists=False,
+        )
 
     @patch("spec_cli.__main__.DEBUG", False)
-    def test_check_existing_specs_no_debug_output(self, capsys):
+    @patch("spec_cli.__main__.debug_log")
+    def test_check_existing_specs_no_debug_output(self, mock_debug_log):
         """Test that no debug output when DEBUG is False."""
         check_existing_specs(self.spec_dir)
 
-        captured = capsys.readouterr()
-        assert "🔍 Debug:" not in captured.out
+        # When DEBUG is False, debug_log should not be called
+        mock_debug_log.assert_not_called()
 
 
 class TestCreateBackup:
@@ -144,26 +150,33 @@ class TestCreateBackup:
         assert backup_stat.st_mtime == original_stat.st_mtime
 
     @patch("spec_cli.__main__.DEBUG", True)
-    def test_create_backup_debug_output(self, capsys):
+    @patch("spec_cli.__main__.debug_log")
+    def test_create_backup_debug_output(self, mock_debug_log):
         """Test that debug output is produced when DEBUG is True."""
         test_file = self.temp_dir / "test.md"
         test_file.write_text("content")
 
-        create_backup(test_file)
+        backup_path = create_backup(test_file)
 
-        captured = capsys.readouterr()
-        assert "🔍 Debug: Created backup:" in captured.out
+        # Verify debug_log was called with backup creation info
+        mock_debug_log.assert_called_with(
+            "INFO",
+            "Created backup file",
+            original=str(test_file),
+            backup=str(backup_path),
+        )
 
     @patch("spec_cli.__main__.DEBUG", False)
-    def test_create_backup_no_debug_output(self, capsys):
+    @patch("spec_cli.__main__.debug_log")
+    def test_create_backup_no_debug_output(self, mock_debug_log):
         """Test that no debug output when DEBUG is False."""
         test_file = self.temp_dir / "test.md"
         test_file.write_text("content")
 
         create_backup(test_file)
 
-        captured = capsys.readouterr()
-        assert "🔍 Debug:" not in captured.out
+        # When DEBUG is False, debug_log should not be called
+        mock_debug_log.assert_not_called()
 
     def test_create_backup_permission_error(self):
         """Test create_backup raises OSError when backup fails."""
@@ -211,16 +224,16 @@ class TestHandleSpecConflict:
         assert result == "overwrite"
 
     @patch("spec_cli.__main__.DEBUG", True)
-    def test_handle_spec_conflict_force_mode_debug(self, capsys):
+    @patch("spec_cli.__main__.debug_log")
+    def test_handle_spec_conflict_force_mode_debug(self, mock_debug_log):
         """Test force mode produces debug output."""
         existing_specs = {"index": True, "history": False}
 
         handle_spec_conflict(self.spec_dir, existing_specs, force=True)
 
-        captured = capsys.readouterr()
-        assert (
-            "🔍 Debug: Force mode - overwriting existing files: ['index']"
-            in captured.out
+        # Verify debug_log was called with force mode info
+        mock_debug_log.assert_called_with(
+            "INFO", "Force mode - overwriting existing files", existing_files=["index"]
         )
 
     @patch("builtins.input", return_value="o")
