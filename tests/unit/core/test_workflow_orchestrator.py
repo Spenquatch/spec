@@ -264,6 +264,69 @@ class TestSpecWorkflowOrchestrator:
         assert result["failed_files"][0]["file_path"] == str(test_files[1])
     
     @patch('spec_cli.core.workflow_orchestrator.workflow_state_manager')
+    @patch('spec_cli.core.workflow_orchestrator.debug_logger')
+    def test_batch_workflow_progress_tracking(self, mock_logger, mock_wf_manager):
+        """Test batch spec generation with progress callback tracking."""
+        test_files = [Path("/test/src/file1.py"), Path("/test/src/file2.py"), Path("/test/src/file3.py")]
+        mock_workflow = Mock()
+        mock_workflow.workflow_id = "progress-workflow-123"
+        mock_workflow.metadata = {}
+        
+        mock_wf_manager.create_workflow.return_value = mock_workflow
+        
+        # Setup validation to pass
+        self.mock_state_checker.is_safe_for_spec_operations.return_value = True
+        self.mock_state_checker.validate_pre_operation_state.return_value = []
+        
+        # Mock progress callback
+        progress_callback = Mock()
+        
+        # Mock file existence check
+        with patch.object(Path, 'exists', return_value=True):
+            # Mock the single file generation method
+            with patch.object(self.orchestrator, 'generate_spec_for_file') as mock_single_gen:
+                mock_single_gen.return_value = {
+                    "success": True,
+                    "generated_files": {"index": "/test/.specs/src/file.py/index.md"}
+                }
+                
+                # Mock backup creation
+                with patch.object(self.orchestrator, '_execute_backup_stage') as mock_backup:
+                    mock_backup.return_value = {"backup_tag": "backup-tag"}
+                    
+                    # Mock batch commit
+                    with patch.object(self.orchestrator, '_execute_batch_commit_stage') as mock_commit:
+                        mock_commit.return_value = {"commit_hash": "progress123"}
+                        
+                        result = self.orchestrator.generate_specs_for_files(
+                            test_files, progress_callback=progress_callback
+                        )
+        
+        # Verify progress callback was called correctly
+        expected_calls = [
+            # Called for each file during processing
+            ((0, 3, "Processing file1.py"), {}),
+            ((1, 3, "Processing file2.py"), {}),
+            ((2, 3, "Processing file3.py"), {}),
+            # Called at completion
+            ((3, 3, "Completed"), {}),
+        ]
+        
+        assert progress_callback.call_count == 4
+        actual_calls = progress_callback.call_args_list
+        
+        for i, (expected_call, actual_call) in enumerate(zip(expected_calls, actual_calls)):
+            expected_args, expected_kwargs = expected_call
+            actual_args, actual_kwargs = actual_call
+            
+            # Verify arguments match
+            assert actual_args == expected_args, f"Progress call {i}: expected {expected_args}, got {actual_args}"
+        
+        # Verify result is successful
+        assert result["success"] is True
+        assert len(result["successful_files"]) == 3
+    
+    @patch('spec_cli.core.workflow_orchestrator.workflow_state_manager')
     def test_create_pull_request_stub(self, mock_wf_manager):
         """Test PR creation stub functionality."""
         mock_workflow = Mock()
