@@ -98,6 +98,34 @@ class SpecValidationError(SpecError):
         return f"Validation failed: {self.message}"
 
 
+class SpecConflictError(SpecError):
+    """Raised when file conflicts occur during processing."""
+
+    def get_user_message(self) -> str:
+        return f"Conflict resolution failed: {self.message}"
+
+
+class SpecProcessingError(SpecError):
+    """Raised when file processing operations fail."""
+
+    def get_user_message(self) -> str:
+        return f"Processing failed: {self.message}"
+
+
+class SpecBatchProcessingError(SpecError):
+    """Raised when batch processing operations fail."""
+
+    def get_user_message(self) -> str:
+        return f"Batch processing failed: {self.message}"
+
+
+class SpecGenerationError(SpecError):
+    """Raised when documentation generation fails."""
+
+    def get_user_message(self) -> str:
+        return f"Generation failed: {self.message}"
+
+
 # Convenience function for creating errors with context
 def create_spec_error(
     error_type: type, message: str, **context_kwargs: Any
