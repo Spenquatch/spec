@@ -77,6 +77,20 @@ class SpecFileError(SpecError):
         return f"File operation failed: {self.message}"
 
 
+class SpecRepositoryError(SpecError):
+    """Raised when repository operations fail."""
+
+    def get_user_message(self) -> str:
+        return f"Repository operation failed: {self.message}"
+
+
+class SpecWorkflowError(SpecError):
+    """Raised when workflow operations fail."""
+
+    def get_user_message(self) -> str:
+        return f"Workflow operation failed: {self.message}"
+
+
 class SpecValidationError(SpecError):
     """Raised when validation fails."""
 
