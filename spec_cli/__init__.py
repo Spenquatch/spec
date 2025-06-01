@@ -23,3 +23,6 @@ from .config import (
     ConfigurationLoader,
     ConfigurationValidator,
 )
+from .file_system import (
+    PathResolver,
+)
