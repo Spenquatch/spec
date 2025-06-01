@@ -15,7 +15,8 @@ Execute slices in the following order due to dependencies:
 
 1. **slice-1-exceptions.md** - Must be first (other slices depend on exception types)
 2. **slice-2-logging.md** - Second (depends on exceptions for error handling)  
-3. **slice-3-configuration.md** - Third (depends on exceptions and logging, integrates terminal styling)
+3. **slice-3a-settings-console.md** - Third (depends on exceptions and logging, sets up Rich console)
+4. **slice-3b-config-loader.md** - Fourth (depends on settings from slice-3a for file loading)
 
 ## Shared Concepts
 
@@ -29,6 +30,7 @@ Execute slices in the following order due to dependencies:
 - [ ] Custom exception hierarchy implemented with context support
 - [ ] Debug logging system with timing and structured output
 - [ ] Configuration management with environment variable support  
+- [ ] Configuration file loading with YAML/TOML support
 - [ ] Rich terminal styling integrated (no emoji characters remain)
 - [ ] All foundation modules have 80%+ test coverage
 - [ ] Type hints throughout with mypy compliance
@@ -36,8 +38,9 @@ Execute slices in the following order due to dependencies:
 ## Slice Files
 
 - [slice-1-exceptions.md](./slice-1-exceptions.md) - Custom exception hierarchy
-- [slice-2-logging.md](./slice-2-logging.md) - Debug logging and timing infrastructure
-- [slice-3-configuration.md](./slice-3-configuration.md) - Settings management with terminal styling
+- [slice-2-logging.md](./slice-2-logging.md) - Debug logging and timing infrastructure (formatters moved to slice-12)
+- [slice-3a-settings-console.md](./slice-3a-settings-console.md) - Settings management with Rich console
+- [slice-3b-config-loader.md](./slice-3b-config-loader.md) - Configuration file loading and validation
 
 ## Next Phase
 

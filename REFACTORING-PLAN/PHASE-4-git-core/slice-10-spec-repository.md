@@ -1,4 +1,11 @@
-# Slice 10: Spec Repository Orchestration and Main Operations
+# Slice 10: Spec Repository Orchestration and Main Operations [DEPRECATED - SPLIT INTO 10A/10B/10C]
+
+**NOTE: This slice has been split into focused components for better implementation:**
+- **[slice-10a-repo-init.md](./slice-10a-repo-init.md)**: Repository initialization and state management
+- **[slice-10b-commit-wrappers.md](./slice-10b-commit-wrappers.md)**: Git commit wrappers and operations
+- **[slice-10c-spec-workflow.md](./slice-10c-spec-workflow.md)**: High-level spec workflow orchestration
+
+Please implement the individual slices instead of this combined version.
 
 ## Goal
 

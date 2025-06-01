@@ -16,8 +16,12 @@ Extracts Git operations and core business logic into organized, testable service
 Execute slices in the following order due to dependencies:
 
 1. **slice-9-git-operations.md** - Must be first (provides Git interface for other services)
-2. **slice-10-spec-repository.md** - Second (orchestrates operations, depends on Git interface)
-3. **slice-11-file-processing.md** - Third (depends on spec repository and all previous systems)
+2. **slice-10a-repo-init.md** - Second (repository initialization and state management)
+3. **slice-10b-commit-wrappers.md** - Third (Git commit operations using repo state)
+4. **slice-10c-spec-workflow.md** - Fourth (workflow orchestration using Git operations)
+5. **slice-11a-change-detection.md** - Fifth (file change detection and caching)
+6. **slice-11b-conflict-resolver.md** - Sixth (conflict resolution using change detection)
+7. **slice-11c-batch-processor.md** - Seventh (batch processing using conflict resolution)
 
 ## Shared Concepts
 
@@ -39,8 +43,14 @@ Execute slices in the following order due to dependencies:
 ## Slice Files
 
 - [slice-9-git-operations.md](./slice-9-git-operations.md) - Git repository interface and operations
-- [slice-10-spec-repository.md](./slice-10-spec-repository.md) - Main spec operations orchestration
-- [slice-11-file-processing.md](./slice-11-file-processing.md) - File processing with conflict resolution
+- [slice-10a-repo-init.md](./slice-10a-repo-init.md) - Repository initialization and state management
+- [slice-10b-commit-wrappers.md](./slice-10b-commit-wrappers.md) - Git commit wrappers and operations
+- [slice-10c-spec-workflow.md](./slice-10c-spec-workflow.md) - High-level spec workflow orchestration
+- [slice-11a-change-detection.md](./slice-11a-change-detection.md) - File change detection and caching
+- [slice-11b-conflict-resolver.md](./slice-11b-conflict-resolver.md) - Conflict resolution strategies and merge helpers
+- [slice-11c-batch-processor.md](./slice-11c-batch-processor.md) - Batch processing and progress events
+- [slice-10-spec-repository.md](./slice-10-spec-repository.md) - **[DEPRECATED]** Combined slice split into 10A/10B/10C
+- [slice-11-file-processing.md](./slice-11-file-processing.md) - **[DEPRECATED]** Combined slice split into 11A/11B/11C
 
 ## Next Phase
 

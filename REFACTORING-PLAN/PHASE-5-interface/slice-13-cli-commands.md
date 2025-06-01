@@ -1,4 +1,11 @@
-# Slice 13: CLI Commands and User Interface Integration
+# Slice 13: CLI Commands and User Interface Integration [DEPRECATED - SPLIT INTO 13A/13B/13C]
+
+**NOTE: This slice has been split into focused components for better implementation:**
+- **[slice-13a-core-cli-scaffold.md](./slice-13a-core-cli-scaffold.md)**: Core CLI Scaffold with Click/Typer parser, shared options, and `init | status | help` commands
+- **[slice-13b-generate-suite.md](./slice-13b-generate-suite.md)**: Generate Suite with `gen | regen | add` commands that delegate to the template engine
+- **[slice-13c-diff-history-suite.md](./slice-13c-diff-history-suite.md)**: Diff & History Suite with `diff | log | show | commit` commands on top of the Git adapter
+
+Please implement the individual slices instead of this combined version.
 
 ## Goal
 

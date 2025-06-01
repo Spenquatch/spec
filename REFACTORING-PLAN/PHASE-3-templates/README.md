@@ -15,7 +15,9 @@ Extracts the template system into a shared module that can be used by both cmd_g
 Execute slices in the following order due to dependencies:
 
 1. **slice-7-template-config.md** - Must be first (defines template structure and validation)
-2. **slice-8-template-generation.md** - Second (depends on template configuration)
+2. **slice-8a-template-substitution.md** - Second (core substitution engine)
+3. **slice-8b-spec-generator.md** - Third (spec file generation using substitution engine)
+4. **slice-8c-ai-hooks.md** - Fourth (AI integration infrastructure)
 
 ## Shared Concepts
 
@@ -37,7 +39,10 @@ Execute slices in the following order due to dependencies:
 ## Slice Files
 
 - [slice-7-template-config.md](./slice-7-template-config.md) - Template configuration models and validation
-- [slice-8-template-generation.md](./slice-8-template-generation.md) - Content generation and substitution engine
+- [slice-8a-template-substitution.md](./slice-8a-template-substitution.md) - Core substitution engine with configurable delimiters
+- [slice-8b-spec-generator.md](./slice-8b-spec-generator.md) - Spec file generation workflow and file operations
+- [slice-8c-ai-hooks.md](./slice-8c-ai-hooks.md) - AI integration infrastructure with retry logic
+- [slice-8-template-generation.md](./slice-8-template-generation.md) - **[DEPRECATED]** Combined slice split into 8A/8B/8C
 
 ## Next Phase
 

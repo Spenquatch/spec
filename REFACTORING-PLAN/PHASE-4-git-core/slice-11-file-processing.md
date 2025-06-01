@@ -1,4 +1,11 @@
-# Slice 11: File Processing Workflows and Batch Operations
+# Slice 11: File Processing Workflows and Batch Operations [DEPRECATED - SPLIT INTO 11A/11B/11C]
+
+**NOTE: This slice has been split into focused components for better implementation:**
+- **[slice-11a-change-detection.md](./slice-11a-change-detection.md)**: File change detection and caching
+- **[slice-11b-conflict-resolver.md](./slice-11b-conflict-resolver.md)**: Conflict resolution strategies and merge helpers
+- **[slice-11c-batch-processor.md](./slice-11c-batch-processor.md)**: Batch processing and progress events
+
+Please implement the individual slices instead of this combined version.
 
 ## Goal
 

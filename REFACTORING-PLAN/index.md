@@ -2,7 +2,7 @@
 
 ## Overview
 
-This plan refactors the current monolithic `__main__.py` (1340+ lines) into a modular, maintainable, and extensible architecture following industry best practices for AI/ML/CLI pipelines. The refactoring breaks down into 13 focused slices across 5 phases, with no backward compatibility requirements.
+This plan refactors the current monolithic `__main__.py` (1340+ lines) into a modular, maintainable, and extensible architecture following industry best practices for AI/ML/CLI pipelines. The refactoring breaks down into 26 focused slices across 5 phases, with no backward compatibility requirements.
 
 ## Goals
 
@@ -39,7 +39,8 @@ This plan refactors the current monolithic `__main__.py` (1340+ lines) into a mo
 **Slices:**
 - [slice-1-exceptions.md](./PHASE-1-foundation/slice-1-exceptions.md) - Custom exception hierarchy
 - [slice-2-logging.md](./PHASE-1-foundation/slice-2-logging.md) - Debug logging and timing infrastructure  
-- [slice-3-configuration.md](./PHASE-1-foundation/slice-3-configuration.md) - Settings management with terminal styling
+- [slice-3a-settings-console.md](./PHASE-1-foundation/slice-3a-settings-console.md) - Settings management with Rich console
+- [slice-3b-config-loader.md](./PHASE-1-foundation/slice-3b-config-loader.md) - Configuration file loading and validation
 
 **Prerequisites**: None (foundation layer)
 
@@ -48,8 +49,10 @@ This plan refactors the current monolithic `__main__.py` (1340+ lines) into a mo
 
 **Slices:**
 - [slice-4-path-resolution.md](./PHASE-2-filesystem/slice-4-path-resolution.md) - Path validation and resolution
-- [slice-5-file-analysis.md](./PHASE-2-filesystem/slice-5-file-analysis.md) - File type detection and analysis
-- [slice-6-directory-management.md](./PHASE-2-filesystem/slice-6-directory-management.md) - Directory operations and ignore patterns
+- [slice-5a-file-type-detection.md](./PHASE-2-filesystem/slice-5a-file-type-detection.md) - File type classification with mapping tables
+- [slice-5b-file-metadata.md](./PHASE-2-filesystem/slice-5b-file-metadata.md) - File metadata extraction and utilities
+- [slice-6a-ignore-patterns.md](./PHASE-2-filesystem/slice-6a-ignore-patterns.md) - Ignore pattern matching and filtering
+- [slice-6b-directory-operations.md](./PHASE-2-filesystem/slice-6b-directory-operations.md) - Directory management and traversal
 
 **Prerequisites**: PHASE-1 complete (exceptions, logging, configuration)
 
@@ -58,7 +61,9 @@ This plan refactors the current monolithic `__main__.py` (1340+ lines) into a mo
 
 **Slices:**
 - [slice-7-template-config.md](./PHASE-3-templates/slice-7-template-config.md) - Template configuration and validation
-- [slice-8-template-generation.md](./PHASE-3-templates/slice-8-template-generation.md) - Content generation and substitution
+- [slice-8a-template-substitution.md](./PHASE-3-templates/slice-8a-template-substitution.md) - Core substitution engine with configurable delimiters
+- [slice-8b-spec-generator.md](./PHASE-3-templates/slice-8b-spec-generator.md) - Spec file generation workflow and file operations  
+- [slice-8c-ai-hooks.md](./PHASE-3-templates/slice-8c-ai-hooks.md) - AI integration infrastructure with retry logic
 
 **Prerequisites**: PHASE-1 complete, PHASE-2 file operations available
 
@@ -67,8 +72,12 @@ This plan refactors the current monolithic `__main__.py` (1340+ lines) into a mo
 
 **Slices:**
 - [slice-9-git-operations.md](./PHASE-4-git-core/slice-9-git-operations.md) - Git repository interface and operations
-- [slice-10-spec-repository.md](./PHASE-4-git-core/slice-10-spec-repository.md) - Main spec operations orchestration  
-- [slice-11-file-processing.md](./PHASE-4-git-core/slice-11-file-processing.md) - File processing and conflict resolution
+- [slice-10a-repo-init.md](./PHASE-4-git-core/slice-10a-repo-init.md) - Repository initialization and state management
+- [slice-10b-commit-wrappers.md](./PHASE-4-git-core/slice-10b-commit-wrappers.md) - Git commit wrappers and operations
+- [slice-10c-spec-workflow.md](./PHASE-4-git-core/slice-10c-spec-workflow.md) - High-level spec workflow orchestration
+- [slice-11a-change-detection.md](./PHASE-4-git-core/slice-11a-change-detection.md) - File change detection and caching
+- [slice-11b-conflict-resolver.md](./PHASE-4-git-core/slice-11b-conflict-resolver.md) - Conflict resolution strategies and merge helpers
+- [slice-11c-batch-processor.md](./PHASE-4-git-core/slice-11c-batch-processor.md) - Batch processing and progress events
 
 **Prerequisites**: PHASE-1,2,3 complete (all foundational systems available)
 
@@ -76,8 +85,12 @@ This plan refactors the current monolithic `__main__.py` (1340+ lines) into a mo
 **Goal**: Create clean CLI layer with Rich terminal UI and comprehensive error handling.
 
 **Slices:**
-- [slice-12-rich-ui.md](./PHASE-5-interface/slice-12-rich-ui.md) - Rich terminal UI system with error handling  
-- [slice-13-cli-commands.md](./PHASE-5-interface/slice-13-cli-commands.md) - CLI commands with enhanced error messages
+- [slice-12a-console-theme.md](./PHASE-5-interface/slice-12a-console-theme.md) - Console & Theme bootstrap with Rich Console and custom theming
+- [slice-12b-progress-components.md](./PHASE-5-interface/slice-12b-progress-components.md) - Progress Components with spinner/progress-bar wrappers and progress manager  
+- [slice-12c-formatter-error-views.md](./PHASE-5-interface/slice-12c-formatter-error-views.md) - Formatter & Error Views with table/tree render utils and error panels
+- [slice-13a-core-cli-scaffold.md](./PHASE-5-interface/slice-13a-core-cli-scaffold.md) - Core CLI Scaffold with Click/Typer parser and core commands
+- [slice-13b-generate-suite.md](./PHASE-5-interface/slice-13b-generate-suite.md) - Generate Suite with gen/regen/add commands
+- [slice-13c-diff-history-suite.md](./PHASE-5-interface/slice-13c-diff-history-suite.md) - Diff & History Suite with diff/log/show/commit commands
 
 **Prerequisites**: All previous phases complete
 
@@ -102,7 +115,7 @@ spec_cli/
 ## Quality Standards
 
 ### Test Coverage Requirements
-- **Total Tests Planned**: 180+ comprehensive tests across all slices
+- **Total Tests Planned**: 362+ comprehensive tests across all slices
 - **Coverage Requirement**: Minimum 80% per slice, 85% overall
 - **Test Types**: Unit tests with comprehensive edge case coverage
 
@@ -121,7 +134,7 @@ spec_cli/
 
 ## Success Criteria
 
-- [ ] All 13 slices implemented with 80%+ test coverage
+- [ ] All 26 slices implemented with 80%+ test coverage
 - [ ] Performance meets or exceeds current implementation  
 - [ ] Clean architecture enables easy AI and Git hook integration
 - [ ] Code maintainability significantly improved
