@@ -14,13 +14,13 @@ The current monolithic code has basic debug logging scattered throughout with in
 - DebugLogger class with structured logging capabilities
 - Performance timing context manager for operations
 - Environment variable configuration for debug levels
-- Logging formatters with contextual information
 - Integration with exception hierarchy for error logging
 
 **NOT included in this slice:**
 - File-based logging (console output only for now)
 - Log rotation or persistence
 - User-facing progress indicators (comes in PHASE-5)
+- Message formatters (moved to slice-12-rich-ui for presentation logic)
 
 ## Prerequisites
 
@@ -36,8 +36,7 @@ The current monolithic code has basic debug logging scattered throughout with in
 spec_cli/logging/
 ├── __init__.py             # Module exports
 ├── debug.py                # DebugLogger class and global instance
-├── timing.py               # Performance timing utilities
-└── formatters.py           # Log message formatters
+└── timing.py               # Performance timing utilities
 ```
 
 ## Implementation Steps
@@ -53,14 +52,12 @@ logging capabilities for development and troubleshooting.
 
 from .debug import DebugLogger, debug_logger
 from .timing import timer, TimingContext
-from .formatters import StructuredFormatter
 
 __all__ = [
     "DebugLogger",
     "debug_logger",
     "timer", 
     "TimingContext",
-    "StructuredFormatter",
 ]
 ```
 
@@ -331,70 +328,12 @@ def timer(operation_name: str, logger=None):
             logger.log("INFO", f"Completed: {operation_name}", duration_ms=f"{duration_ms:.2f}ms")
 ```
 
-### Step 4: Create spec_cli/logging/formatters.py
-
-```python
-import logging
-from typing import Any, Dict
-from datetime import datetime
-
-class StructuredFormatter(logging.Formatter):
-    """Custom formatter for structured logging output."""
-    
-    def __init__(self, include_timestamp: bool = True):
-        self.include_timestamp = include_timestamp
-        super().__init__()
-    
-    def format(self, record: logging.LogRecord) -> str:
-        """Format log record with structured information."""
-        # Base message
-        message_parts = []
-        
-        if self.include_timestamp:
-            timestamp = datetime.fromtimestamp(record.created).strftime("%H:%M:%S.%f")[:-3]
-            message_parts.append(f"[{timestamp}]")
-        
-        message_parts.append(f"[{record.levelname}]")
-        message_parts.append(record.getMessage())
-        
-        return " ".join(message_parts)
-
-def format_operation_summary(operations: Dict[str, float]) -> str:
-    """Format operation timing summary for display."""
-    if not operations:
-        return "No operations timed"
-    
-    lines = ["Operation Timing Summary:"]
-    for operation, duration_ms in sorted(operations.items(), key=lambda x: x[1], reverse=True):
-        lines.append(f"  {operation}: {duration_ms:.2f}ms")
-    
-    return "\n".join(lines)
-
-def format_debug_context(context: Dict[str, Any], indent: int = 2) -> str:
-    """Format debug context information for readable output."""
-    if not context:
-        return ""
-    
-    indent_str = " " * indent
-    lines = []
-    
-    for key, value in context.items():
-        if isinstance(value, dict):
-            lines.append(f"{indent_str}{key}:")
-            lines.append(format_debug_context(value, indent + 2))
-        elif isinstance(value, (list, tuple)):
-            lines.append(f"{indent_str}{key}: [{len(value)} items]")
-        else:
-            lines.append(f"{indent_str}{key}: {value}")
-    
-    return "\n".join(lines)
-```
 
 ## Test Requirements
 
-Create `tests/unit/logging/test_debug.py`, `test_timing.py`, and `test_formatters.py` with these specific test cases:
+Create `tests/unit/logging/test_debug.py` and `test_timing.py` with these specific test cases:
 
-### Test Cases (20 tests total)
+### Test Cases (14 tests total)
 
 **Debug Logger Tests:**
 1. **test_debug_logger_respects_environment_variables**
@@ -414,13 +353,6 @@ Create `tests/unit/logging/test_debug.py`, `test_timing.py`, and `test_formatter
 13. **test_timer_function_works_with_logger**
 14. **test_timer_function_works_without_logger**
 
-**Formatter Tests:**
-15. **test_structured_formatter_formats_with_timestamp**
-16. **test_structured_formatter_formats_without_timestamp**
-17. **test_format_operation_summary_displays_sorted_results**
-18. **test_format_debug_context_handles_nested_data**
-19. **test_format_debug_context_handles_lists_and_dicts**
-20. **test_formatter_handles_empty_context**
 
 ## Validation Steps
 

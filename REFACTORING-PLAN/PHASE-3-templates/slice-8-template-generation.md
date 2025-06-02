@@ -1,4 +1,11 @@
-# Slice 8: Template Generation and Content Substitution
+# Slice 8: Template Generation and Content Substitution [DEPRECATED - SPLIT INTO 8A/8B/8C]
+
+**NOTE: This slice has been split into focused components for better implementation:**
+- **[slice-8a-template-substitution.md](./slice-8a-template-substitution.md)**: Core substitution engine
+- **[slice-8b-spec-generator.md](./slice-8b-spec-generator.md)**: Spec file generation workflow  
+- **[slice-8c-ai-hooks.md](./slice-8c-ai-hooks.md)**: AI integration infrastructure
+
+Please implement the individual slices instead of this combined version.
 
 ## Goal
 

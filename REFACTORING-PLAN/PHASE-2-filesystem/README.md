@@ -14,8 +14,10 @@ Extracts and organizes all file system operations into clean, testable abstracti
 Execute slices in the following order due to dependencies:
 
 1. **slice-4-path-resolution.md** - Must be first (other slices depend on path utilities)
-2. **slice-5-file-analysis.md** - Second (independent, but used by directory management)
-3. **slice-6-directory-management.md** - Third (depends on path resolution and file analysis)
+2. **slice-5a-file-type-detection.md** - Second (core file classification)
+3. **slice-5b-file-metadata.md** - Third (depends on file type detection from 5a)
+4. **slice-6a-ignore-patterns.md** - Fourth (pattern matching for filtering)
+5. **slice-6b-directory-operations.md** - Fifth (depends on all previous file system slices)
 
 ## Shared Concepts
 
@@ -36,8 +38,10 @@ Execute slices in the following order due to dependencies:
 ## Slice Files
 
 - [slice-4-path-resolution.md](./slice-4-path-resolution.md) - Path validation and resolution utilities
-- [slice-5-file-analysis.md](./slice-5-file-analysis.md) - File type detection and metadata analysis
-- [slice-6-directory-management.md](./slice-6-directory-management.md) - Directory operations and ignore patterns
+- [slice-5a-file-type-detection.md](./slice-5a-file-type-detection.md) - File type classification with mapping tables
+- [slice-5b-file-metadata.md](./slice-5b-file-metadata.md) - File metadata extraction and utilities
+- [slice-6a-ignore-patterns.md](./slice-6a-ignore-patterns.md) - Ignore pattern matching and filtering
+- [slice-6b-directory-operations.md](./slice-6b-directory-operations.md) - Directory management and traversal
 
 ## Next Phase
 

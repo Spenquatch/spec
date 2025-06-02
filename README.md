@@ -8,8 +8,8 @@ A versioned documentation layer for AI-assisted development. `spec` maintains a 
 - **Version-Controlled Memory**: AI agents can learn from past attempts and decisions
 - **Isolated Git History**: Documentation changes don't clutter your main repository
 - **Scoped Context Windows**: Load only relevant documentation to fit within token limits
-- **Pluggable AI Integration**: Support for multiple AI providers (OpenAI, Anthropic, local models)
-- **Concurrent Generation**: Fast documentation generation with configurable concurrency
+- **Rich Terminal UI**: Beautiful, colorful interface with progress indicators
+- **Modular Architecture**: Clean, testable codebase built for extensibility
 
 ## Installation
 
@@ -38,24 +38,25 @@ spec log
 spec diff
 ```
 
-## Current Status
+## Features
 
-### ✅ Implemented Features
+### ✅ Core Features
 - **Project Initialization**: `spec init` creates isolated Git repository structure
 - **Documentation Generation**: `spec gen` creates structured documentation with templates
 - **Version Control**: Full Git workflow (`add`, `commit`, `status`, `log`, `diff`)
 - **Template System**: Customizable documentation templates via `.spectemplate`
 - **File Filtering**: Smart filtering with `.specignore` patterns
-- **Conflict Resolution**: Interactive handling of existing documentation
-- **Debug Mode**: Comprehensive debugging with `SPEC_DEBUG=1`
+- **Rich Terminal UI**: Beautiful interface with colors, progress bars, and styling
 - **Batch Processing**: Generate documentation for entire directories
 - **File Type Detection**: Support for 20+ programming languages and file types
+- **Conflict Resolution**: Interactive handling of existing documentation
+- **Debug Mode**: Comprehensive debugging with `SPEC_DEBUG=1`
+- **Modular Architecture**: Clean, maintainable codebase with 80%+ test coverage
 
-### 🚧 In Development
+### 🔮 Future Features
 - **AI Documentation Generation**: Replace placeholder content with AI-generated documentation
 - **Git Hook Integration**: Auto-generate documentation on code changes
-- **Terminal Styling**: Enhanced user experience with colors and formatting
-- **Error Handling**: User-friendly error messages and validation
+- **Enhanced CLI**: Advanced options and configuration management
 
 ## How It Works
 
@@ -89,28 +90,30 @@ Each source file gets a documentation directory with:
 - `index.md`: Current understanding and specifications
 - `history.md`: Evolution, decisions, and lessons learned
 
-## Core Commands
 
-### Documentation Management
+## Commands
+
+### Core Commands
 - `spec init` - Initialize spec in current directory
-- `spec gen <path>` - Generate documentation for file(s)
+- `spec gen <path>` - Generate documentation for file(s) or directory
 - `spec add <path>` - Stage documentation changes
-- `spec commit -m "..."` - Commit documentation changes
+- `spec commit -m "message"` - Commit documentation changes
 
-### Version Control
+### View Documentation
 - `spec status` - Show documentation status
-- `spec log [path]` - Show documentation history
+- `spec log [path]` - Show documentation history  
 - `spec diff [path]` - Show uncommitted changes
+- `spec show <path>` - Display documentation for a file (coming soon)
 
 ### Future Commands
 - `spec regen <path>` - Regenerate documentation (preserves history)
-- `spec show <path>` - Display documentation for a file
 - `spec agent-scope [options]` - Export scoped context for AI agents
-- `spec hook install` - Install Git hooks for auto-generation
 
-## Templates
+## Advanced Usage
 
-Customize documentation format with `.spectemplate`:
+### Custom Templates
+
+Create a `.spectemplate` file to customize documentation format:
 
 ```yaml
 index:
@@ -134,108 +137,51 @@ history:
     **Lessons Learned**: {{lessons}}
 ```
 
-## Environment Variables
+### Environment Variables
+
+Control spec behavior with environment variables:
 
 - `SPEC_DEBUG=1` - Enable debug output for troubleshooting
 - `SPEC_DEBUG_LEVEL=INFO|DEBUG|WARNING|ERROR` - Set debug level
 - `SPEC_DEBUG_TIMING=1` - Enable operation timing
 
-## Future Enhancements
+### File Filtering
 
-### AI Documentation Generation
-**Status**: In Development
+Use `.specignore` to exclude files from documentation generation:
 
-Automatic generation of documentation content using AI providers:
-
-**Features**:
-- **Pluggable Provider System**: Support for OpenAI, Anthropic, Hugging Face, local models
-- **Concurrent Generation**: Process multiple files simultaneously (configurable 3-5 max)
-- **Progress Display**: Real-time progress like pytest/pre-commit
-- **Smart Content**: AI analyzes source code to generate meaningful documentation
-- **Template Integration**: AI fills template variables based on code analysis
-
-**Configuration**:
-```yaml
-# pyproject.toml [tool.spec] or .specconfig.yaml
-ai:
-  provider: "openai"      # openai, anthropic, huggingface, local
-  model: "gpt-4"
-  max_concurrency: 5
-  temperature: 0.3
-  max_tokens: 4000
+```
+# Ignore patterns
+*.log
+node_modules/
+build/
+*.min.js
 ```
 
-**Usage**:
-```bash
-spec gen src/ --ai              # Generate with AI
-spec regen src/models.py --ai   # Regenerate with AI
+## Architecture
+
+`spec` follows a clean, modular architecture built through a comprehensive refactoring:
+
+### Directory Structure
+```
+spec_cli/
+├── cli/                     # Command-line interface layer
+├── core/                    # Core business logic and workflow orchestration
+├── git/                     # Git operations abstraction
+├── templates/               # Template system for documentation generation
+├── file_system/             # File system operations and path handling
+├── config/                  # Configuration management
+├── ui/                      # Rich terminal UI components
+├── file_processing/         # Batch processing and conflict resolution
+├── exceptions.py            # Custom exception hierarchy
+└── logging/                 # Debug logging and timing
 ```
 
-### Git Hook Integration
-**Status**: Planned
-
-Automatic documentation generation triggered by Git commits:
-
-**Features**:
-- **Hook Installation**: `spec hook install` sets up Git hooks
-- **Change Detection**: Automatically detect modified files in commits
-- **Selective Processing**: Only process changed files
-- **Configurable Behavior**: Auto-commit or manual commit options
-- **Error Handling**: Non-blocking failures with warnings
-
-**Configuration**:
-```yaml
-hooks:
-  auto_commit: false          # Manual commit by default
-  on_error: "warn"           # warn, ignore, or block
-  file_patterns: ["*.py", "*.js", "*.ts"]
-  concurrent: true
-```
-
-**Usage**:
-```bash
-spec hook install              # Install hooks
-spec hook uninstall            # Remove hooks
-spec config hooks.auto_commit true
-```
-
-## Known Issues & Maintenance Items
-
-### Bug Fixes Needed
-
-1. **Git Command Messages**: 
-   - **Issue**: `spec status` shows "git add ." in output instead of "spec add ."
-   - **Fix**: Replace Git command suggestions with spec equivalents
-   - **Priority**: Medium
-
-2. **Uninitialized Directory Error**:
-   - **Issue**: Running spec commands in non-initialized directories shows cryptic Git errors
-   - **Error**: `fatal: not a git repository: '/path/.spec'`
-   - **Fix**: Add validation to check for `.spec/` directory and show friendly error
-   - **Priority**: High
-
-3. **Emoji Usage**:
-   - **Issue**: Emojis throughout codebase may not render properly on all terminals
-   - **Fix**: Remove all emojis and replace with text indicators
-   - **Priority**: Medium
-
-### User Experience Improvements
-
-1. **Terminal Styling**:
-   - **Need**: Add colors and formatting for better readability
-   - **Options**: Rich, Colorama, Click styling, or ANSI codes
-   - **Features**: Colors for success/error/warning, progress bars, formatted output
-   - **Priority**: Medium
-
-2. **Error Messages**:
-   - **Need**: User-friendly error messages with helpful suggestions
-   - **Examples**: File not found, invalid templates, Git errors
-   - **Priority**: High
-
-3. **Progress Indicators**:
-   - **Need**: Better progress display for long operations
-   - **Features**: Progress bars, file counters, estimated time remaining
-   - **Priority**: Low
+### Key Design Principles
+- **Single Responsibility**: Each module has a clear, focused purpose
+- **Dependency Injection**: Services are easily testable and mockable
+- **Clean Interfaces**: Well-defined boundaries between layers
+- **Rich Terminal UI**: Beautiful, colorful interface throughout
+- **Comprehensive Testing**: 80%+ test coverage across all modules
 
 ## Development Setup
 
@@ -271,7 +217,7 @@ poetry run pre-commit run --all-files
 
 ### For AI Development
 - Provide rich context to AI coding assistants
-- Track why certain approaches failed
+- Track why certain approaches failed  
 - Maintain institutional knowledge across AI sessions
 - Export scoped documentation for specific tasks
 
@@ -289,7 +235,7 @@ poetry run pre-commit run --all-files
 
 ## IDE Integration
 
-The `.spec/` and `.specs/` directories are designed to be hidden in IDEs like VSCode. Add to your workspace settings:
+Hide `.spec/` and `.specs/` directories in your IDE. For VSCode, add to workspace settings:
 
 ```json
 {

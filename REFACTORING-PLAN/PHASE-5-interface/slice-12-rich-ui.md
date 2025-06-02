@@ -1,4 +1,11 @@
-# Slice 12: Rich Terminal UI System
+# Slice 12: Rich Terminal UI System [DEPRECATED - SPLIT INTO 12A/12B/12C]
+
+**NOTE: This slice has been split into focused components for better implementation:**
+- **[slice-12a-console-theme.md](./slice-12a-console-theme.md)**: Console & Theme bootstrap with Rich Console and custom theming
+- **[slice-12b-progress-components.md](./slice-12b-progress-components.md)**: Progress Components with spinner/progress-bar wrappers and progress manager
+- **[slice-12c-formatter-error-views.md](./slice-12c-formatter-error-views.md)**: Formatter & Error Views with table/tree render utils and error panels
+
+Please implement the individual slices instead of this combined version.
 
 ## Goal
 
@@ -16,6 +23,7 @@ The current monolithic code uses emojis throughout for status indication and has
 - Error formatting and presentation system
 - Emoji replacement with styled text equivalents
 - User message formatting utilities
+- Logging formatters for structured debug output (moved from slice-2)
 
 **NOT included in this slice:**
 - CLI command implementations (comes in slice-13-cli-commands)
@@ -328,7 +336,7 @@ Create the other required files (`formatters.py` and `error_display.py`) followi
 
 Create `tests/unit/ui/test_console.py`, `test_progress.py`, and other UI test files with these focus areas:
 
-### Test Categories (25+ tests total)
+### Test Categories (31+ tests total)
 
 **Console Tests:**
 1. **test_spec_console_replaces_all_emoji_characters**
@@ -350,11 +358,19 @@ Create `tests/unit/ui/test_console.py`, `test_progress.py`, and other UI test fi
 15. **test_file_processing_progress_handles_failures**
 16. **test_file_processing_progress_shows_summary**
 
+**Formatter Tests (moved from slice-2):**
+17. **test_structured_formatter_formats_with_timestamp**
+18. **test_structured_formatter_formats_without_timestamp**
+19. **test_format_operation_summary_displays_sorted_results**
+20. **test_format_debug_context_handles_nested_data**
+21. **test_format_debug_context_handles_lists_and_dicts**
+22. **test_formatter_handles_empty_context**
+
 **Integration Tests:**
-17. **test_ui_system_works_without_color_support**
-18. **test_ui_system_respects_no_color_environment**
-19. **test_ui_system_handles_narrow_terminals**
-20. **test_ui_components_integrate_with_rich_properly**
+23. **test_ui_system_works_without_color_support**
+24. **test_ui_system_respects_no_color_environment**
+25. **test_ui_system_handles_narrow_terminals**
+26. **test_ui_components_integrate_with_rich_properly**
 
 ## Validation Steps
 
