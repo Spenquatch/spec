@@ -91,11 +91,34 @@ jobs:
     permissions:
       id-token: write
     steps:
-    - name: Download build artifacts
-      uses: actions/download-artifact@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
       with:
-        name: dist
-        path: dist/
+        python-version: "3.11"
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v3
+
+    - name: Install dependencies
+      run: |
+        uv venv
+        source .venv/bin/activate
+        uv pip install poetry
+        poetry install
+
+    - name: Update package name for test-pypi
+      run: |
+        source .venv/bin/activate
+        # Change package name to spec-ai for test-pypi
+        sed -i 's/name = "spec"/name = "spec-ai"/' pyproject.toml
+
+    - name: Build package for test-pypi
+      run: |
+        source .venv/bin/activate
+        poetry build
 
     - name: Publish to Test PyPI
       uses: pypa/gh-action-pypi-publish@release/v1
