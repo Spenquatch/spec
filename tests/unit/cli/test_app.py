@@ -73,25 +73,22 @@ class TestMainFunction:
         # This is indirectly tested through the app tests above
         assert True  # Placeholder test that passes
 
-    @patch("spec_cli.cli.app.get_console")
     @patch("sys.exit")
-    def test_main_handles_keyboard_interrupt(
-        self, mock_exit: Any, mock_console: Any
-    ) -> None:
+    def test_main_handles_keyboard_interrupt(self, mock_exit: Any) -> None:
         """Test that main function handles KeyboardInterrupt gracefully."""
-        mock_console_instance = Mock()
-        mock_console.return_value = mock_console_instance
+        # Directly patch the app function to raise KeyboardInterrupt
+        with patch("spec_cli.cli.app.app", side_effect=KeyboardInterrupt()):
+            # Also patch get_console to verify it was called
+            with patch("spec_cli.cli.app.get_console") as mock_console:
+                mock_console_instance = Mock()
+                mock_console.return_value = mock_console_instance
 
-        # Patch Click's invoke to raise KeyboardInterrupt
-        with patch.object(
-            click.core.Context, "invoke", side_effect=KeyboardInterrupt()
-        ):
-            main([])
+                main([])
 
-            mock_console_instance.print_status.assert_called_once_with(
-                "Operation cancelled by user.", "warning"
-            )
-            mock_exit.assert_called_once_with(130)
+                mock_console_instance.print_status.assert_called_once_with(
+                    "Operation cancelled by user.", "warning"
+                )
+                mock_exit.assert_called_once_with(130)
 
     @patch("sys.exit")
     def test_main_handles_click_exception(self, mock_exit: Any) -> None:
@@ -100,7 +97,7 @@ class TestMainFunction:
         mock_exception = click.ClickException("Test click error")
         mock_exception.exit_code = 2
 
-        with patch.object(app, "__call__", side_effect=mock_exception), patch.object(
+        with patch("spec_cli.cli.app.app", side_effect=mock_exception), patch.object(
             mock_exception, "show"
         ) as mock_show:
             main([])
@@ -113,7 +110,7 @@ class TestMainFunction:
         """Test that main function handles general exceptions."""
         test_exception = RuntimeError("Test error")
 
-        with patch.object(app, "__call__", side_effect=test_exception):
+        with patch("spec_cli.cli.app.app", side_effect=test_exception):
             main([])
 
             mock_handle_error.assert_called_once_with(
