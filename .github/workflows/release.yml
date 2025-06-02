@@ -109,11 +109,19 @@ jobs:
         uv pip install poetry
         poetry install
 
-    - name: Update package name for test-pypi
+    - name: Update package name and version for test-pypi
       run: |
         source .venv/bin/activate
         # Change package name to spec-ai for test-pypi
         sed -i 's/name = "spec"/name = "spec-ai"/' pyproject.toml
+
+        # Append timestamp to version for uniqueness
+        TIMESTAMP=$(date +%Y%m%d%H%M%S)
+        CURRENT_VERSION=$(grep -oP 'version = "\K[^"]+' pyproject.toml)
+        NEW_VERSION="${CURRENT_VERSION}.dev${TIMESTAMP}"
+        sed -i "s/version = \"$CURRENT_VERSION\"/version = \"$NEW_VERSION\"/" pyproject.toml
+
+        echo "Updated version to: $NEW_VERSION"
 
     - name: Build package for test-pypi
       run: |
