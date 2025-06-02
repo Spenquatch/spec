@@ -2,11 +2,11 @@
 name = "spec-cli"
 version = "0.1.0"
 description = "A versioned documentation layer for AI-assisted development"
-authors = ["Your Name <your.email@example.com>"]
+authors = ["Spenser McConnell <spensermcconnell@gmail.com>"]
 readme = "README.md"
 license = "MIT"
-homepage = "https://github.com/yourusername/spec-cli"
-repository = "https://github.com/yourusername/spec-cli"
+homepage = "https://github.com/Spenquatch/spec"
+repository = "https://github.com/Spenquatch/spec"
 keywords = ["documentation", "ai", "development", "git"]
 classifiers = [
     "Development Status :: 3 - Alpha",

@@ -1,0 +1,98 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, testing ]
+  pull_request:
+    branches: [ main, testing ]
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v3
+
+    - name: Install dependencies
+      run: |
+        uv venv
+        uv pip install poetry
+        poetry install
+
+    - name: Run pre-commit hooks
+      run: |
+        poetry run pre-commit run --all-files
+      env:
+        SKIP: no-commit-to-branch
+
+    - name: Run type checking
+      run: |
+        poetry run mypy spec_cli/
+
+    - name: Run tests with coverage
+      run: |
+        poetry run pytest tests/unit/ -v --cov=spec_cli --cov-report=xml --cov-report=term-missing --cov-fail-under=80
+
+    - name: Upload coverage to Codecov
+      if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.11'
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.11"
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v3
+
+    - name: Install dependencies
+      run: |
+        uv venv
+        uv pip install poetry
+        poetry install
+
+    - name: Run ruff check
+      run: |
+        poetry run ruff check .
+
+    - name: Run ruff format check
+      run: |
+        poetry run ruff format --check .
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Run Bandit Security Linter
+      uses: securecodewarrior/github-action-bandit@v1.0.1
+      with:
+        path: "spec_cli/"
+        confidence_level: medium
+        severity_level: medium
