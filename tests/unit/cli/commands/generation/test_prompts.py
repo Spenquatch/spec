@@ -17,7 +17,7 @@ from spec_cli.file_processing.conflict_resolver import ConflictResolutionStrateg
 class TestTemplateSelector:
     """Test the TemplateSelector class."""
 
-    def test_template_selector_initialization_then_creates_console(self):
+    def test_template_selector_initialization_then_creates_console(self) -> None:
         """Test that TemplateSelector initializes with console."""
         selector = TemplateSelector()
 
@@ -26,7 +26,7 @@ class TestTemplateSelector:
 
     def test_get_template_description_when_known_template_then_returns_description(
         self
-    ):
+    ) -> None:
         """Test that known templates return proper descriptions."""
         selector = TemplateSelector()
 
@@ -34,7 +34,9 @@ class TestTemplateSelector:
 
         assert result == "Standard documentation template with index and history"
 
-    def test_get_template_description_when_unknown_template_then_returns_custom(self):
+    def test_get_template_description_when_unknown_template_then_returns_custom(
+        self
+    ) -> None:
         """Test that unknown templates return custom description."""
         selector = TemplateSelector()
 
@@ -46,14 +48,16 @@ class TestTemplateSelector:
 class TestConflictResolver:
     """Test the ConflictResolver class."""
 
-    def test_conflict_resolver_initialization_then_creates_console(self):
+    def test_conflict_resolver_initialization_then_creates_console(self) -> None:
         """Test that ConflictResolver initializes with console."""
         resolver = ConflictResolver()
 
         assert hasattr(resolver, "console")
         assert resolver.console is not None
 
-    def test_name_to_strategy_when_valid_name_then_returns_correct_strategy(self):
+    def test_name_to_strategy_when_valid_name_then_returns_correct_strategy(
+        self
+    ) -> None:
         """Test that strategy names map to correct enum values."""
         resolver = ConflictResolver()
 
@@ -61,7 +65,9 @@ class TestConflictResolver:
 
         assert result == ConflictResolutionStrategy.BACKUP_AND_REPLACE
 
-    def test_name_to_strategy_when_invalid_name_then_returns_default_strategy(self):
+    def test_name_to_strategy_when_invalid_name_then_returns_default_strategy(
+        self
+    ) -> None:
         """Test that invalid names return default backup strategy."""
         resolver = ConflictResolver()
 
@@ -76,8 +82,8 @@ class TestGenerationPrompts:
     @patch("spec_cli.cli.commands.generation.prompts.click.confirm")
     @patch("spec_cli.cli.commands.generation.prompts.get_console")
     def test_confirm_generation_when_few_files_then_shows_all_files(
-        self, mock_console, mock_confirm
-    ):
+        self, mock_console: Mock, mock_confirm: Mock
+    ) -> None:
         """Test that confirmation with few files shows all files."""
         mock_console_instance = Mock()
         mock_console.return_value = mock_console_instance
@@ -100,8 +106,8 @@ class TestGenerationPrompts:
     @patch("spec_cli.cli.commands.generation.prompts.click.confirm")
     @patch("spec_cli.cli.commands.generation.prompts.get_console")
     def test_confirm_generation_when_many_files_then_shows_truncated_list(
-        self, mock_console, mock_confirm
-    ):
+        self, mock_console: Mock, mock_confirm: Mock
+    ) -> None:
         """Test that confirmation with many files shows truncated list."""
         mock_console_instance = Mock()
         mock_console.return_value = mock_console_instance
@@ -122,7 +128,7 @@ class TestGenerationPrompts:
         truncated_call = [call for call in calls if "and 7 more" in str(call)]
         assert len(truncated_call) >= 1
 
-    def test_generation_prompts_initialization_then_creates_components(self):
+    def test_generation_prompts_initialization_then_creates_components(self) -> None:
         """Test that GenerationPrompts initializes its components."""
         prompts = GenerationPrompts()
 
@@ -138,8 +144,8 @@ class TestConvenienceFunctions:
 
     @patch("spec_cli.cli.commands.generation.prompts.TemplateSelector.select_template")
     def test_select_template_function_when_called_then_creates_selector_and_calls_method(
-        self, mock_select
-    ):
+        self, mock_select: Mock
+    ) -> None:
         """Test the select_template convenience function."""
         mock_select.return_value = "default"
 
@@ -152,8 +158,8 @@ class TestConvenienceFunctions:
         "spec_cli.cli.commands.generation.prompts.ConflictResolver.resolve_conflicts"
     )
     def test_resolve_conflicts_function_when_called_then_creates_resolver_and_calls_method(
-        self, mock_resolve
-    ):
+        self, mock_resolve: Mock
+    ) -> None:
         """Test the resolve_conflicts convenience function."""
         mock_resolve.return_value = ConflictResolutionStrategy.SKIP
         source_file = Path("test.py")
@@ -172,8 +178,8 @@ class TestConvenienceFunctions:
         "spec_cli.cli.commands.generation.prompts.GenerationPrompts.confirm_generation"
     )
     def test_confirm_generation_function_when_called_then_creates_prompts_and_calls_method(
-        self, mock_confirm
-    ):
+        self, mock_confirm: Mock
+    ) -> None:
         """Test the confirm_generation convenience function."""
         mock_confirm.return_value = True
         source_files = [Path("test.py")]

@@ -1,6 +1,7 @@
 """Tests for regen command module."""
 
 from pathlib import Path
+from typing import Any, List
 from unittest.mock import Mock, patch
 
 from spec_cli.cli.commands.regen import (
@@ -15,8 +16,8 @@ class TestFindAllSpecSources:
 
     @patch("spec_cli.cli.commands.regen.Path")
     def test_find_all_spec_sources_when_no_specs_dir_then_returns_empty(
-        self, mock_path_class
-    ):
+        self, mock_path_class: Any
+    ) -> None:
         """Test that missing .specs directory returns empty list."""
         mock_specs_dir = Mock()
         mock_specs_dir.exists.return_value = False
@@ -28,8 +29,8 @@ class TestFindAllSpecSources:
 
     @patch("spec_cli.cli.commands.regen.Path")
     def test_find_all_spec_sources_when_specs_exist_then_returns_source_files(
-        self, mock_path_class
-    ):
+        self, mock_path_class: Any
+    ) -> None:
         """Test that existing specs return corresponding source files."""
         # Mock .specs directory
         mock_specs_dir = Mock()
@@ -44,7 +45,7 @@ class TestFindAllSpecSources:
         mock_specs_dir.rglob.return_value = [mock_index1, mock_index2]
 
         # Mock the Path constructor calls
-        def path_side_effect(arg):
+        def path_side_effect(arg: Any) -> Any:
             if arg == ".specs":
                 return mock_specs_dir
             elif arg == Path("src/module1.py"):
@@ -67,8 +68,8 @@ class TestFindAllSpecSources:
 
     @patch("spec_cli.cli.commands.regen.Path")
     def test_find_all_spec_sources_when_source_files_missing_then_skips_them(
-        self, mock_path_class
-    ):
+        self, mock_path_class: Any
+    ) -> None:
         """Test that missing source files are skipped."""
         # Mock .specs directory
         mock_specs_dir = Mock()
@@ -80,7 +81,7 @@ class TestFindAllSpecSources:
         mock_specs_dir.rglob.return_value = [mock_index]
 
         # Mock path creation
-        def path_side_effect(arg):
+        def path_side_effect(arg: Any) -> Any:
             if arg == ".specs":
                 return mock_specs_dir
             elif arg == Path("missing/file.py"):
@@ -101,8 +102,8 @@ class TestFilterFilesWithSpecs:
     """Test the _filter_files_with_specs function."""
 
     def test_filter_files_with_specs_when_file_has_existing_spec_then_included(
-        self, tmp_path
-    ):
+        self, tmp_path: Any
+    ) -> None:
         """Test that files with existing specs are included."""
         # Create test source file
         source_file = tmp_path / "test.py"
@@ -125,8 +126,8 @@ class TestFilterFilesWithSpecs:
             os.chdir(original_cwd)
 
     def test_filter_files_with_specs_when_file_has_no_spec_then_excluded(
-        self, tmp_path
-    ):
+        self, tmp_path: Any
+    ) -> None:
         """Test that files without specs are excluded."""
         # Create test source file but no spec
         source_file = tmp_path / "test.py"
@@ -143,7 +144,7 @@ class TestFilterFilesWithSpecs:
         finally:
             os.chdir(original_cwd)
 
-    def test_filter_files_with_specs_when_empty_list_then_returns_empty(self):
+    def test_filter_files_with_specs_when_empty_list_then_returns_empty(self) -> None:
         """Test that empty file list returns empty result."""
         result = _filter_files_with_specs([])
 
@@ -155,8 +156,8 @@ class TestShowRegenDryRunPreview:
 
     @patch("spec_cli.cli.commands.regen.get_console")
     def test_show_regen_dry_run_preview_when_called_then_displays_preview_info(
-        self, mock_console
-    ):
+        self, mock_console: Any
+    ) -> None:
         """Test that dry run preview displays correct information."""
         mock_console_instance = Mock()
         mock_console.return_value = mock_console_instance
@@ -174,13 +175,13 @@ class TestShowRegenDryRunPreview:
 
     @patch("spec_cli.cli.commands.regen.get_console")
     def test_show_regen_dry_run_preview_when_empty_files_then_shows_zero_count(
-        self, mock_console
-    ):
+        self, mock_console: Any
+    ) -> None:
         """Test that dry run preview handles empty file list."""
         mock_console_instance = Mock()
         mock_console.return_value = mock_console_instance
 
-        source_files = []
+        source_files: List[Path] = []
         template = "default"
         preserve_history = False
 
@@ -194,8 +195,8 @@ class TestShowRegenDryRunPreview:
 
     @patch("spec_cli.cli.commands.regen.get_console")
     def test_show_regen_dry_run_preview_when_preserve_history_false_then_shows_correct_setting(
-        self, mock_console
-    ):
+        self, mock_console: Any
+    ) -> None:
         """Test that preserve history setting is displayed correctly."""
         mock_console_instance = Mock()
         mock_console.return_value = mock_console_instance

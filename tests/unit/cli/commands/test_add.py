@@ -1,6 +1,7 @@
 """Tests for add command module."""
 
 from pathlib import Path
+from typing import Any
 from unittest.mock import Mock, patch
 
 from spec_cli.cli.commands.add import (
@@ -13,7 +14,9 @@ from spec_cli.cli.commands.add import (
 class TestExpandSpecFiles:
     """Test the _expand_spec_files function."""
 
-    def test_expand_spec_files_when_single_file_then_returns_file(self, tmp_path):
+    def test_expand_spec_files_when_single_file_then_returns_file(
+        self, tmp_path: Any
+    ) -> None:
         """Test that single file is returned as-is."""
         test_file = tmp_path / "test.md"
         test_file.write_text("content")
@@ -22,7 +25,9 @@ class TestExpandSpecFiles:
 
         assert result == [test_file]
 
-    def test_expand_spec_files_when_directory_then_returns_all_files(self, tmp_path):
+    def test_expand_spec_files_when_directory_then_returns_all_files(
+        self, tmp_path: Any
+    ) -> None:
         """Test that directory is expanded to all contained files."""
         test_dir = tmp_path / "test_dir"
         test_dir.mkdir()
@@ -41,7 +46,7 @@ class TestExpandSpecFiles:
 class TestFilterSpecFiles:
     """Test the _filter_spec_files function."""
 
-    def test_filter_spec_files_when_file_in_specs_directory_then_included(self):
+    def test_filter_spec_files_when_file_in_specs_directory_then_included(self) -> None:
         """Test that files in .specs directory are included."""
         spec_file = Path(".specs/test.md")
 
@@ -49,7 +54,9 @@ class TestFilterSpecFiles:
 
         assert result == [spec_file]
 
-    def test_filter_spec_files_when_file_outside_specs_directory_then_excluded(self):
+    def test_filter_spec_files_when_file_outside_specs_directory_then_excluded(
+        self
+    ) -> None:
         """Test that files outside .specs directory are excluded."""
         non_spec_file = Path("src/test.py")
 
@@ -63,8 +70,8 @@ class TestAnalyzeGitStatus:
 
     @patch("spec_cli.cli.commands.add.debug_logger")
     def test_analyze_git_status_when_repo_status_succeeds_then_returns_status_dict(
-        self, mock_logger
-    ):
+        self, mock_logger: Any
+    ) -> None:
         """Test that git status analysis returns proper structure."""
         mock_repo = Mock()
         mock_repo.status.return_value = None
@@ -80,8 +87,8 @@ class TestAnalyzeGitStatus:
 
     @patch("spec_cli.cli.commands.add.debug_logger")
     def test_analyze_git_status_when_repo_status_fails_then_assumes_untracked(
-        self, mock_logger
-    ):
+        self, mock_logger: Any
+    ) -> None:
         """Test that git status failure defaults to untracked files."""
         mock_repo = Mock()
         mock_repo.status.side_effect = Exception("Git error")

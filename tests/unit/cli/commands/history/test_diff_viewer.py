@@ -1,5 +1,6 @@
 """Tests for diff viewer module."""
 
+from typing import Any
 from unittest.mock import Mock, patch
 
 from spec_cli.cli.commands.history.diff_viewer import (
@@ -13,7 +14,9 @@ from spec_cli.cli.commands.history.diff_viewer import (
 class TestDiffViewer:
     """Test the DiffViewer class."""
 
-    def test_display_no_diff_message_when_no_context_then_shows_basic_message(self):
+    def test_display_no_diff_message_when_no_context_then_shows_basic_message(
+        self
+    ) -> None:
         """Test that no diff message displays basic message when no context provided."""
         with patch(
             "spec_cli.cli.commands.history.diff_viewer.get_console"
@@ -28,7 +31,9 @@ class TestDiffViewer:
                 "[muted]No differences found[/muted]"
             )
 
-    def test_display_no_diff_message_when_context_provided_then_includes_context(self):
+    def test_display_no_diff_message_when_context_provided_then_includes_context(
+        self
+    ) -> None:
         """Test that no diff message includes context when provided."""
         with patch(
             "spec_cli.cli.commands.history.diff_viewer.get_console"
@@ -43,7 +48,9 @@ class TestDiffViewer:
                 "[muted]No differences found for specified files[/muted]"
             )
 
-    def test_display_diff_summary_when_summary_provided_then_displays_table(self):
+    def test_display_diff_summary_when_summary_provided_then_displays_table(
+        self
+    ) -> None:
         """Test that diff summary displays table with statistics."""
         with patch("spec_cli.cli.commands.history.diff_viewer.get_console"), patch(
             "spec_cli.ui.tables.StatusTable"
@@ -62,8 +69,8 @@ class TestDiffViewer:
 
     @patch("spec_cli.cli.commands.history.diff_viewer.get_console")
     def test_display_unified_diff_when_diff_lines_provided_then_formats_correctly(
-        self, mock_console
-    ):
+        self, mock_console: Any
+    ) -> None:
         """Test that unified diff displays lines with correct formatting."""
         mock_console_instance = Mock()
         mock_console.return_value = mock_console_instance
@@ -94,8 +101,8 @@ class TestDiffViewer:
 
     @patch("spec_cli.cli.commands.history.diff_viewer.get_console")
     def test_display_side_by_side_diff_when_content_provided_then_creates_panels(
-        self, mock_console
-    ):
+        self, mock_console: Any
+    ) -> None:
         """Test that side-by-side diff creates proper panels."""
         mock_console_instance = Mock()
         mock_console.return_value = mock_console_instance
@@ -129,7 +136,9 @@ class TestDiffViewer:
 class TestConvenienceFunctions:
     """Test the standalone convenience functions."""
 
-    def test_create_diff_view_when_called_then_returns_diff_viewer_instance(self):
+    def test_create_diff_view_when_called_then_returns_diff_viewer_instance(
+        self
+    ) -> None:
         """Test that create_diff_view returns a DiffViewer instance."""
         result = create_diff_view()
 
@@ -137,8 +146,8 @@ class TestConvenienceFunctions:
 
     @patch("spec_cli.cli.commands.history.diff_viewer.DiffViewer.display_file_diff")
     def test_display_file_diff_function_when_called_then_creates_viewer_and_calls_method(
-        self, mock_display
-    ):
+        self, mock_display: Any
+    ) -> None:
         """Test the display_file_diff convenience function."""
         display_file_diff("test.py", "old", "new", None, "python")
 
@@ -146,8 +155,8 @@ class TestConvenienceFunctions:
 
     @patch("spec_cli.cli.commands.history.diff_viewer.DiffViewer._display_unified_diff")
     def test_display_unified_diff_function_when_called_then_creates_viewer_and_calls_method(
-        self, mock_display
-    ):
+        self, mock_display: Any
+    ) -> None:
         """Test the display_unified_diff convenience function."""
         diff_lines = ["+ added line", "- removed line"]
 

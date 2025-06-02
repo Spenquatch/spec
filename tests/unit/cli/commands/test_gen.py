@@ -1,6 +1,7 @@
 """Tests for gen command module."""
 
 from pathlib import Path
+from typing import Any, List
 from unittest.mock import Mock, patch
 
 from spec_cli.cli.commands.gen import (
@@ -17,8 +18,8 @@ class TestExpandSourceFiles:
 
     @patch("spec_cli.cli.commands.generation.validation.GenerationValidator")
     def test_expand_source_files_when_single_file_then_validates_and_returns_if_processable(
-        self, mock_validator_class
-    ):
+        self, mock_validator_class: Any
+    ) -> None:
         """Test that single file is validated and returned if processable."""
         mock_validator = Mock()
         mock_validator._is_processable_file.return_value = True
@@ -35,8 +36,8 @@ class TestExpandSourceFiles:
 
     @patch("spec_cli.cli.commands.generation.validation.GenerationValidator")
     def test_expand_source_files_when_single_file_not_processable_then_returns_empty(
-        self, mock_validator_class
-    ):
+        self, mock_validator_class: Any
+    ) -> None:
         """Test that non-processable file returns empty list."""
         mock_validator = Mock()
         mock_validator._is_processable_file.return_value = False
@@ -52,8 +53,8 @@ class TestExpandSourceFiles:
 
     @patch("spec_cli.cli.commands.generation.validation.GenerationValidator")
     def test_expand_source_files_when_directory_then_expands_to_processable_files(
-        self, mock_validator_class
-    ):
+        self, mock_validator_class: Any
+    ) -> None:
         """Test that directory is expanded to processable files."""
         mock_validator = Mock()
         file1 = Mock(spec=Path)
@@ -79,8 +80,8 @@ class TestShowDryRunPreview:
     @patch("spec_cli.cli.commands.gen.show_message")
     @patch("spec_cli.cli.commands.gen.get_console")
     def test_show_dry_run_preview_when_called_then_displays_preview_info(
-        self, mock_console, mock_show_message
-    ):
+        self, mock_console: Any, mock_show_message: Any
+    ) -> None:
         """Test that dry run preview displays correct information."""
         mock_console_instance = Mock()
         mock_console.return_value = mock_console_instance
@@ -102,13 +103,13 @@ class TestShowDryRunPreview:
     @patch("spec_cli.cli.commands.gen.show_message")
     @patch("spec_cli.cli.commands.gen.get_console")
     def test_show_dry_run_preview_when_empty_files_then_shows_zero_count(
-        self, mock_console, mock_show_message
-    ):
+        self, mock_console: Any, mock_show_message: Any
+    ) -> None:
         """Test that dry run preview handles empty file list."""
         mock_console_instance = Mock()
         mock_console.return_value = mock_console_instance
 
-        source_files = []
+        source_files: List[Path] = []
         template = "default"
         conflict_strategy = ConflictResolutionStrategy.BACKUP_AND_REPLACE
 
@@ -126,8 +127,8 @@ class TestDisplayGenerationResults:
 
     @patch("spec_cli.cli.commands.gen.get_console")
     def test_display_generation_results_when_successful_result_then_displays_success_message(
-        self, mock_console
-    ):
+        self, mock_console: Any
+    ) -> None:
         """Test that successful generation results display success message."""
         mock_console_instance = Mock()
         mock_console.return_value = mock_console_instance
@@ -148,8 +149,8 @@ class TestDisplayGenerationResults:
 
     @patch("spec_cli.cli.commands.gen.get_console")
     def test_display_generation_results_when_failed_result_then_displays_failure_info(
-        self, mock_console
-    ):
+        self, mock_console: Any
+    ) -> None:
         """Test that failed generation results display failure information."""
         mock_console_instance = Mock()
         mock_console.return_value = mock_console_instance
