@@ -71,6 +71,17 @@ app.add_command(show_command, name="show")
 app.add_command(commit_command, name="commit")
 
 
+def _invoke_app(args: Optional[list] = None) -> None:
+    """Invoke the CLI app with given arguments.
+
+    This function is separated to make testing easier.
+
+    Args:
+        args: Command line arguments (uses sys.argv if None)
+    """
+    app(args=args, standalone_mode=False)
+
+
 def main(args: Optional[list] = None) -> None:
     """Main CLI entry point.
 
@@ -79,7 +90,7 @@ def main(args: Optional[list] = None) -> None:
     """
     try:
         # Handle keyboard interrupt gracefully
-        app(args=args, standalone_mode=False)
+        _invoke_app(args)
     except KeyboardInterrupt:
         console = get_console()
         console.print_status("Operation cancelled by user.", "warning")

@@ -6,7 +6,7 @@ from unittest.mock import Mock, patch
 import click
 from click.testing import CliRunner
 
-from spec_cli.cli.app import app, main
+from spec_cli.cli.app import _invoke_app, app, main
 
 
 class TestCLIApp:
@@ -76,8 +76,8 @@ class TestMainFunction:
     @patch("sys.exit")
     def test_main_handles_keyboard_interrupt(self, mock_exit: Any) -> None:
         """Test that main function handles KeyboardInterrupt gracefully."""
-        # Directly patch the app function to raise KeyboardInterrupt
-        with patch("spec_cli.cli.app.app", side_effect=KeyboardInterrupt()):
+        # Patch the _invoke_app function to raise KeyboardInterrupt
+        with patch("spec_cli.cli.app._invoke_app", side_effect=KeyboardInterrupt()):
             # Also patch get_console to verify it was called
             with patch("spec_cli.cli.app.get_console") as mock_console:
                 mock_console_instance = Mock()
@@ -97,9 +97,9 @@ class TestMainFunction:
         mock_exception = click.ClickException("Test click error")
         mock_exception.exit_code = 2
 
-        with patch("spec_cli.cli.app.app", side_effect=mock_exception), patch.object(
-            mock_exception, "show"
-        ) as mock_show:
+        with patch(
+            "spec_cli.cli.app._invoke_app", side_effect=mock_exception
+        ), patch.object(mock_exception, "show") as mock_show:
             main([])
 
             mock_show.assert_called_once()
@@ -110,7 +110,7 @@ class TestMainFunction:
         """Test that main function handles general exceptions."""
         test_exception = RuntimeError("Test error")
 
-        with patch("spec_cli.cli.app.app", side_effect=test_exception):
+        with patch("spec_cli.cli.app._invoke_app", side_effect=test_exception):
             main([])
 
             mock_handle_error.assert_called_once_with(
@@ -127,3 +127,38 @@ class TestMainFunction:
 
         # Should call the display main help function
         mock_display_help.assert_called_once()
+
+    def test_invoke_app_function_exists(self) -> None:
+        """Test that _invoke_app function exists and is callable."""
+        assert callable(_invoke_app)
+
+    @patch("spec_cli.cli.app.app")
+    def test_invoke_app_calls_app_correctly(self, mock_app: Any) -> None:
+        """Test that _invoke_app calls the app with correct parameters."""
+        test_args = ["--help"]
+        _invoke_app(test_args)
+
+        mock_app.assert_called_once_with(args=test_args, standalone_mode=False)
+
+    def test_exception_handling_robustness_across_python_versions(self) -> None:
+        """Test that exception handling works consistently across Python versions."""
+        # This tests the robustness of our patching approach
+        from unittest.mock import Mock, patch
+
+        # Test that we can patch _invoke_app successfully
+        with patch("spec_cli.cli.app._invoke_app") as mock_invoke:
+            mock_invoke.side_effect = KeyboardInterrupt()
+
+            # This should not raise an exception - the main function should handle it
+            try:
+                with patch("spec_cli.cli.app.get_console") as mock_console:
+                    mock_console.return_value = Mock()
+                    with patch("sys.exit"):
+                        main([])
+                # If we get here, the exception was handled properly
+                assert True
+            except KeyboardInterrupt:
+                # This would indicate our exception handling failed
+                raise AssertionError(
+                    "KeyboardInterrupt was not handled by main()"
+                ) from None
