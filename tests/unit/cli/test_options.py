@@ -172,7 +172,7 @@ class TestArgumentDecorators:
     """Test cases for argument decorators."""
 
     def test_files_argument_decorator_when_applied_then_adds_files_argument(
-        self
+        self,
     ) -> None:
         """Test that files_argument decorator adds required files argument."""
 
@@ -191,7 +191,7 @@ class TestArgumentDecorators:
         assert "files: ['file1.py', 'file2.py']" in result.output
 
     def test_optional_files_argument_decorator_when_applied_then_adds_optional_files_argument(
-        self
+        self,
     ) -> None:
         """Test that optional_files_argument decorator adds optional files argument."""
 
@@ -213,7 +213,7 @@ class TestArgumentDecorators:
         assert "files: ['test.py']" in result.output
 
     def test_common_options_decorator_when_applied_then_adds_debug_and_verbose(
-        self
+        self,
     ) -> None:
         """Test that common_options decorator applies both debug and verbose options."""
 

@@ -104,7 +104,7 @@ class SpecTable:
             if isinstance(value, (str, Text)):
                 formatted_values.append(value)
             else:
-                formatted_values.append(str(value))  # type: ignore[unreachable]
+                formatted_values.append(str(value))
 
         self.table.add_row(*formatted_values, style=style)
 

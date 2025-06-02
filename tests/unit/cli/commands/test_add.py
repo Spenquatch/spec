@@ -55,7 +55,7 @@ class TestFilterSpecFiles:
         assert result == [spec_file]
 
     def test_filter_spec_files_when_file_outside_specs_directory_then_excluded(
-        self
+        self,
     ) -> None:
         """Test that files outside .specs directory are excluded."""
         non_spec_file = Path("src/test.py")

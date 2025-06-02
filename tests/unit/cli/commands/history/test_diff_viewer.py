@@ -15,7 +15,7 @@ class TestDiffViewer:
     """Test the DiffViewer class."""
 
     def test_display_no_diff_message_when_no_context_then_shows_basic_message(
-        self
+        self,
     ) -> None:
         """Test that no diff message displays basic message when no context provided."""
         with patch(
@@ -32,7 +32,7 @@ class TestDiffViewer:
             )
 
     def test_display_no_diff_message_when_context_provided_then_includes_context(
-        self
+        self,
     ) -> None:
         """Test that no diff message includes context when provided."""
         with patch(
@@ -49,7 +49,7 @@ class TestDiffViewer:
             )
 
     def test_display_diff_summary_when_summary_provided_then_displays_table(
-        self
+        self,
     ) -> None:
         """Test that diff summary displays table with statistics."""
         with patch("spec_cli.cli.commands.history.diff_viewer.get_console"), patch(
@@ -137,7 +137,7 @@ class TestConvenienceFunctions:
     """Test the standalone convenience functions."""
 
     def test_create_diff_view_when_called_then_returns_diff_viewer_instance(
-        self
+        self,
     ) -> None:
         """Test that create_diff_view returns a DiffViewer instance."""
         result = create_diff_view()

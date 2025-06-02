@@ -1,6 +1,7 @@
 """Main CLI application with Click framework."""
 
 import sys
+import types
 
 # Configure rich-click for beautiful help
 from typing import Optional
@@ -19,8 +20,9 @@ from .commands.show import show_command
 from .utils import handle_cli_error
 
 try:
-    import rich_click as click_impl
+    import rich_click
 
+    click_impl: types.ModuleType = rich_click
     click_impl.rich_click.USE_MARKDOWN = True
     click_impl.rich_click.SHOW_ARGUMENTS = True
     click_impl.rich_click.GROUP_ARGUMENTS_OPTIONS = True

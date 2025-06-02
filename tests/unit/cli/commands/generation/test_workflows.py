@@ -60,7 +60,7 @@ class TestGenerationWorkflow:
     """Test the GenerationWorkflow class utility methods."""
 
     def test_get_spec_files_for_source_when_relative_path_then_creates_correct_spec_paths(
-        self
+        self,
     ) -> None:
         """Test that relative source file creates correct spec file paths."""
         workflow = GenerationWorkflow()
@@ -72,7 +72,7 @@ class TestGenerationWorkflow:
         assert result["history"] == Path(".specs/src/module.py/history.md")
 
     def test_get_spec_files_for_source_when_absolute_path_then_creates_relative_spec_paths(
-        self
+        self,
     ) -> None:
         """Test that absolute source file creates relative spec file paths."""
         workflow = GenerationWorkflow()
@@ -99,7 +99,7 @@ class TestAddWorkflow:
         assert result is True
 
     def test_is_spec_file_when_file_outside_specs_directory_then_returns_false(
-        self
+        self,
     ) -> None:
         """Test that files outside .specs directory are not detected as spec files."""
         workflow = AddWorkflow()
@@ -114,7 +114,7 @@ class TestFactoryFunctions:
     """Test the workflow factory functions."""
 
     def test_create_generation_workflow_when_no_args_then_returns_generation_workflow(
-        self
+        self,
     ) -> None:
         """Test that create_generation_workflow returns GenerationWorkflow instance."""
         result = create_generation_workflow()
@@ -122,7 +122,7 @@ class TestFactoryFunctions:
         assert isinstance(result, GenerationWorkflow)
 
     def test_create_generation_workflow_when_kwargs_provided_then_passes_to_constructor(
-        self
+        self,
     ) -> None:
         """Test that create_generation_workflow passes kwargs to constructor."""
         result = create_generation_workflow(template_name="custom", auto_commit=True)
@@ -132,7 +132,7 @@ class TestFactoryFunctions:
         assert result.auto_commit is True
 
     def test_create_regeneration_workflow_when_called_then_returns_regeneration_workflow(
-        self
+        self,
     ) -> None:
         """Test that create_regeneration_workflow returns RegenerationWorkflow instance."""
         from spec_cli.cli.commands.generation.workflows import RegenerationWorkflow
@@ -148,7 +148,7 @@ class TestFactoryFunctions:
         assert isinstance(result, AddWorkflow)
 
     def test_create_add_workflow_when_force_provided_then_passes_to_constructor(
-        self
+        self,
     ) -> None:
         """Test that create_add_workflow passes force parameter to constructor."""
         result = create_add_workflow(force=True)

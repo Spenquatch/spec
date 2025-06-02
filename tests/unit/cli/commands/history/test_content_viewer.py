@@ -16,7 +16,7 @@ class TestContentViewer:
     """Test the ContentViewer class."""
 
     def test_get_syntax_language_when_python_extension_then_returns_python(
-        self
+        self,
     ) -> None:
         """Test that Python file extension returns python language."""
         viewer = ContentViewer()
@@ -99,7 +99,7 @@ class TestConvenienceFunctions:
         mock_display.assert_called_once_with(file_path, "content", True, False)
 
     def test_create_content_display_when_called_then_returns_content_viewer_instance(
-        self
+        self,
     ) -> None:
         """Test that create_content_display returns a ContentViewer instance."""
         result = create_content_display()

@@ -1,3 +1,4 @@
+import sys
 from pathlib import Path
 from typing import Any, Dict, List
 
@@ -5,6 +6,15 @@ import yaml
 
 from ..exceptions import SpecConfigurationError
 from ..logging.debug import debug_logger
+
+# Handle tomllib import for multiple Python versions
+if sys.version_info >= (3, 11):
+    import tomllib
+else:
+    try:
+        import tomli as tomllib
+    except ImportError:
+        tomllib = None  # type: ignore[assignment]
 
 
 class ConfigurationLoader:
@@ -89,32 +99,23 @@ class ConfigurationLoader:
 
     def _load_from_pyproject_toml(self, file_path: Path) -> Dict[str, Any]:
         """Load configuration from pyproject.toml [tool.spec] section."""
-        try:
-            # Try Python 3.11+ tomllib first
-            try:
-                import tomllib as tomli
-
-                mode = "rb"
-            except ImportError:
-                # Fallback to tomli for older Python versions
-                import tomli
-
-                mode = "rb"
-        except ImportError:
-            debug_logger.log(
+        if tomllib is None:
+            debug_logger.log(  # type: ignore[unreachable]
                 "WARNING", "No TOML parser available, skipping pyproject.toml"
             )
             return {}
 
+        assert tomllib is not None  # For mypy
+
         try:
-            with file_path.open(mode) as f:
-                data = tomli.load(f)
+            with file_path.open("rb") as f:
+                data = tomllib.load(f)
 
             # Extract [tool.spec] section
             tool_spec = data.get("tool", {}).get("spec", {})
             return tool_spec if isinstance(tool_spec, dict) else {}
 
-        except tomli.TOMLDecodeError as e:
+        except tomllib.TOMLDecodeError as e:
             raise SpecConfigurationError(
                 f"Invalid TOML syntax in {file_path}: {e}",
                 {"file_path": str(file_path), "toml_error": str(e)},

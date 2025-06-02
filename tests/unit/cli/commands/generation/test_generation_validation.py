@@ -11,7 +11,7 @@ class TestGenerationValidator:
     """Test the GenerationValidator class."""
 
     def test_validate_file_paths_when_no_files_provided_then_returns_invalid_with_error(
-        self
+        self,
     ) -> None:
         """Test that validation fails when no source files are provided."""
         validator = GenerationValidator()
@@ -24,7 +24,7 @@ class TestGenerationValidator:
         assert result["analysis"] == []
 
     def test_validate_template_selection_when_valid_template_then_returns_valid(
-        self
+        self,
     ) -> None:
         """Test that validation succeeds for valid template names."""
         validator = GenerationValidator()
@@ -42,7 +42,7 @@ class TestConvenienceFunctions:
     """Test the standalone convenience functions."""
 
     def test_validate_file_paths_function_when_empty_list_then_returns_invalid(
-        self
+        self,
     ) -> None:
         """Test the validate_file_paths convenience function with empty input."""
         result = validate_file_paths([])
@@ -51,7 +51,7 @@ class TestConvenienceFunctions:
         assert "No source files provided" in result["errors"]
 
     def test_validate_template_selection_function_when_invalid_template_then_returns_invalid(
-        self
+        self,
     ) -> None:
         """Test the validate_template_selection convenience function with invalid template."""
         result = validate_template_selection("nonexistent")

@@ -45,7 +45,7 @@ class TemplateConfig(BaseModel):
         extra="forbid",  # Reject unknown fields
     )
 
-    @field_validator("index", "history")  # type: ignore[misc]
+    @field_validator("index", "history")
     @classmethod
     def validate_template_syntax(cls, v: str, info: Any) -> str:
         """Validate template syntax and required placeholders."""
@@ -77,7 +77,7 @@ class TemplateConfig(BaseModel):
 
         return v
 
-    @field_validator("ai_model")  # type: ignore[misc]
+    @field_validator("ai_model")
     @classmethod
     def validate_ai_model(cls, v: Optional[str], info: Any) -> Optional[str]:
         """Validate AI model specification."""

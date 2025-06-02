@@ -25,7 +25,7 @@ class TestTemplateSelector:
         assert selector.console is not None
 
     def test_get_template_description_when_known_template_then_returns_description(
-        self
+        self,
     ) -> None:
         """Test that known templates return proper descriptions."""
         selector = TemplateSelector()
@@ -35,7 +35,7 @@ class TestTemplateSelector:
         assert result == "Standard documentation template with index and history"
 
     def test_get_template_description_when_unknown_template_then_returns_custom(
-        self
+        self,
     ) -> None:
         """Test that unknown templates return custom description."""
         selector = TemplateSelector()
@@ -56,7 +56,7 @@ class TestConflictResolver:
         assert resolver.console is not None
 
     def test_name_to_strategy_when_valid_name_then_returns_correct_strategy(
-        self
+        self,
     ) -> None:
         """Test that strategy names map to correct enum values."""
         resolver = ConflictResolver()
@@ -66,7 +66,7 @@ class TestConflictResolver:
         assert result == ConflictResolutionStrategy.BACKUP_AND_REPLACE
 
     def test_name_to_strategy_when_invalid_name_then_returns_default_strategy(
-        self
+        self,
     ) -> None:
         """Test that invalid names return default backup strategy."""
         resolver = ConflictResolver()

@@ -98,7 +98,7 @@ def common_options(f: Callable) -> Callable:
 def spec_command(name: Optional[str] = None, **kwargs: Any) -> Callable[..., Any]:
     """Decorator for spec commands with common setup."""
 
-    def decorator(f: Callable) -> Callable:
+    def decorator(f: Callable) -> Any:
         # Apply common options
         f_with_options = common_options(f)
 
