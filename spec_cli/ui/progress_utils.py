@@ -1,7 +1,7 @@
 import time
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, Iterator, List, Optional
 
 from ..logging.debug import debug_logger
 from .progress_bar import simple_progress
@@ -64,7 +64,7 @@ def progress_context(
     total_items: Optional[int] = None,
     description: str = "Processing",
     show_spinner: bool = False,
-):
+) -> Iterator[Any]:
     """Context manager for simple progress tracking.
 
     Args:
@@ -79,7 +79,7 @@ def progress_context(
         # Determinate progress with progress bar
         with simple_progress(total_items, description) as progress_bar:
 
-            def update_progress(count: int = 1, message: Optional[str] = None):
+            def update_progress(count: int = 1, message: Optional[str] = None) -> None:
                 progress_bar.advance(count)
                 if message:
                     # Update description if needed (limited support)
@@ -91,7 +91,7 @@ def progress_context(
         # Indeterminate progress with spinner
         with spinner_context(description) as spinner:
 
-            def update_progress(count: int = 1, message: Optional[str] = None):
+            def update_progress(count: int = 1, message: Optional[str] = None) -> None:
                 if message:
                     spinner.update_text(message)
 
@@ -99,14 +99,16 @@ def progress_context(
 
     else:
         # No visual progress
-        def update_progress(count: int = 1, message: Optional[str] = None):
+        def update_progress(count: int = 1, message: Optional[str] = None) -> None:
             pass
 
         yield update_progress
 
 
 @contextmanager
-def timed_operation(operation_name: str, log_result: bool = True):
+def timed_operation(
+    operation_name: str, log_result: bool = True
+) -> Iterator[Callable[[], float]]:
     """Context manager for timing operations.
 
     Args:
@@ -282,12 +284,12 @@ class ProgressTracker:
 
         return stats
 
-    def __enter__(self):
+    def __enter__(self) -> "ProgressTracker":
         """Enter context manager."""
         self.start()
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
         """Exit context manager."""
         self.finish()
 

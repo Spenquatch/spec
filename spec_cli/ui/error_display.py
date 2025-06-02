@@ -431,9 +431,7 @@ def show_info(
 
 
 def show_message(
-    message: str, 
-    message_type: str = "info", 
-    context: Optional[str] = None
+    message: str, message_type: str = "info", context: Optional[str] = None
 ) -> None:
     """Show a message with appropriate styling.
 
@@ -442,24 +440,26 @@ def show_message(
         message_type: Type of message (success, warning, error, info)
         context: Optional context information
     """
-    console = get_console()
-    
+    _console = get_console()
+
     if context:
         full_message = f"{context}: {message}"
     else:
         full_message = message
-    
+
     if message_type == "success":
         show_success(full_message)
     elif message_type == "warning":
         show_warning(full_message)
     elif message_type == "error":
-        show_error(full_message)
+        show_error(Exception(full_message))
     else:  # info or default
         show_info(full_message)
 
 
-def format_data(data: Any, title: Optional[str] = None, format_type: str = "auto") -> None:
+def format_data(
+    data: Any, title: Optional[str] = None, format_type: str = "auto"
+) -> None:
     """Format and display data using Rich formatting.
 
     Args:
@@ -468,14 +468,15 @@ def format_data(data: Any, title: Optional[str] = None, format_type: str = "auto
         format_type: Format type (auto, table, json)
     """
     console = get_console()
-    
+
     if title:
         console.print(f"\n[bold cyan]{title}[/bold cyan]")
-    
+
     if format_type == "auto":
         # Auto-detect format based on data type
         if isinstance(data, dict):
             from .tables import create_key_value_table
+
             table = create_key_value_table(data, title)
             table.print()
         elif isinstance(data, list):
@@ -512,6 +513,6 @@ def format_code_snippet(
         language,
         theme=theme,
         line_numbers=line_numbers,
-        highlight_lines=highlight_lines or [],
+        highlight_lines=set(highlight_lines) if highlight_lines else None,
         word_wrap=True,
     )

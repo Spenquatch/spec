@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Literal, Optional
 
 from rich.console import Console
 from rich.table import Table
@@ -56,13 +56,13 @@ class SpecTable:
         self,
         header: str,
         style: Optional[str] = None,
-        justify: str = "left",
+        justify: Literal["default", "left", "center", "right", "full"] = "left",
         width: Optional[int] = None,
         min_width: Optional[int] = None,
         max_width: Optional[int] = None,
         ratio: Optional[int] = None,
         no_wrap: bool = False,
-        overflow: str = "ellipsis",
+        overflow: Literal["fold", "crop", "ellipsis", "ignore"] = "ellipsis",
     ) -> None:
         """Add a column to the table.
 
@@ -104,7 +104,7 @@ class SpecTable:
             if isinstance(value, (str, Text)):
                 formatted_values.append(value)
             else:
-                formatted_values.append(str(value))
+                formatted_values.append(str(value))  # type: ignore[unreachable]
 
         self.table.add_row(*formatted_values, style=style)
 
@@ -127,7 +127,7 @@ class SpecTable:
 class FileListTable(SpecTable):
     """Specialized table for displaying file lists."""
 
-    def __init__(self, title: str = "Files", **kwargs) -> None:
+    def __init__(self, title: str = "Files", **kwargs: Any) -> None:
         """Initialize file list table.
 
         Args:
@@ -202,7 +202,7 @@ class FileListTable(SpecTable):
 class StatusTable(SpecTable):
     """Specialized table for displaying status information."""
 
-    def __init__(self, title: str = "Status", **kwargs) -> None:
+    def __init__(self, title: str = "Status", **kwargs: Any) -> None:
         """Initialize status table.
 
         Args:
@@ -241,7 +241,7 @@ class StatusTable(SpecTable):
 class ComparisonTable(SpecTable):
     """Specialized table for comparing data."""
 
-    def __init__(self, title: str = "Comparison", **kwargs) -> None:
+    def __init__(self, title: str = "Comparison", **kwargs: Any) -> None:
         """Initialize comparison table.
 
         Args:
@@ -279,7 +279,7 @@ class ComparisonTable(SpecTable):
 
 # Utility functions
 def create_file_table(
-    files: List[Path], title: str = "Files", **kwargs
+    files: List[Path], title: str = "Files", **kwargs: Any
 ) -> FileListTable:
     """Create a table for displaying file information.
 
@@ -307,7 +307,7 @@ def create_file_table(
 
 
 def create_status_table(
-    data: Dict[str, Any], title: str = "Status", **kwargs
+    data: Dict[str, Any], title: str = "Status", **kwargs: Any
 ) -> StatusTable:
     """Create a table for displaying status information.
 
@@ -368,7 +368,9 @@ def print_simple_table(
     table.print()
 
 
-def create_key_value_table(data: Dict[str, Any], title: Optional[str] = None) -> SpecTable:
+def create_key_value_table(
+    data: Dict[str, Any], title: Optional[str] = None
+) -> SpecTable:
     """Create a key-value table from a dictionary.
 
     Args:

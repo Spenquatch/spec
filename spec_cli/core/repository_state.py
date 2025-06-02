@@ -8,19 +8,23 @@ from ..logging.debug import debug_logger
 
 class RepositoryHealth(Enum):
     """Repository health status levels."""
+
     HEALTHY = "healthy"
     WARNING = "warning"
     ERROR = "error"
     CRITICAL = "critical"
 
+
 class BranchStatus(Enum):
     """Branch status for cleanliness checking."""
+
     CLEAN = "clean"
     UNCOMMITTED_CHANGES = "uncommitted_changes"
     UNTRACKED_FILES = "untracked_files"
     STAGED_CHANGES = "staged_changes"
     DIVERGED = "diverged"
     UNKNOWN = "unknown"
+
 
 class RepositoryStateChecker:
     """Checks and validates spec repository state and health."""
@@ -39,7 +43,7 @@ class RepositoryStateChecker:
         """
         debug_logger.log("INFO", "Performing repository health check")
 
-        health_report = {
+        health_report: Dict[str, Any] = {
             "overall_health": RepositoryHealth.HEALTHY,
             "issues": [],
             "warnings": [],
@@ -77,10 +81,13 @@ class RepositoryStateChecker:
                 # Determine overall health
                 self._determine_overall_health(health_report)
 
-            debug_logger.log("INFO", "Repository health check complete",
-                           overall_health=health_report["overall_health"].value,
-                           issues=len(health_report["issues"]),
-                           warnings=len(health_report["warnings"]))
+            debug_logger.log(
+                "INFO",
+                "Repository health check complete",
+                overall_health=health_report["overall_health"].value,
+                issues=len(health_report["issues"]),
+                warnings=len(health_report["warnings"]),
+            )
 
             return health_report
 
@@ -102,7 +109,9 @@ class RepositoryStateChecker:
             if (spec_dir / "HEAD").exists():
                 report["details"]["spec_repo_path"] = str(spec_dir)
             else:
-                report["issues"].append(f"Directory {spec_dir} exists but is not a valid Git repository")
+                report["issues"].append(
+                    f"Directory {spec_dir} exists but is not a valid Git repository"
+                )
         else:
             report["checks"]["spec_repo_exists"] = False
             report["details"]["spec_repo_missing"] = str(spec_dir)
@@ -136,7 +145,9 @@ class RepositoryStateChecker:
                     current_branch = self.git_repo.get_current_branch()
                     report["details"]["current_branch"] = current_branch
                 except Exception as e:
-                    report["warnings"].append(f"Could not determine current branch: {e}")
+                    report["warnings"].append(
+                        f"Could not determine current branch: {e}"
+                    )
 
                 try:
                     commit_count = len(self.git_repo.get_recent_commits(5))
@@ -145,7 +156,9 @@ class RepositoryStateChecker:
                     report["warnings"].append(f"Could not access recent commits: {e}")
             else:
                 report["checks"]["git_repo_valid"] = False
-                report["issues"].append("Spec Git repository is not properly initialized")
+                report["issues"].append(
+                    "Spec Git repository is not properly initialized"
+                )
 
         except Exception as e:
             report["checks"]["git_repo_valid"] = False
@@ -160,7 +173,9 @@ class RepositoryStateChecker:
                 report["details"]["branch_clean"] = branch_status == BranchStatus.CLEAN
 
                 if branch_status != BranchStatus.CLEAN:
-                    report["warnings"].append(f"Branch is not clean: {branch_status.value}")
+                    report["warnings"].append(
+                        f"Branch is not clean: {branch_status.value}"
+                    )
             else:
                 report["checks"]["branch_status"] = BranchStatus.UNKNOWN
 
@@ -179,7 +194,9 @@ class RepositoryStateChecker:
                     report["details"]["work_tree_path"] = str(work_tree)
                 else:
                     report["checks"]["work_tree_valid"] = False
-                    report["issues"].append(f"Work tree directory does not exist: {work_tree}")
+                    report["issues"].append(
+                        f"Work tree directory does not exist: {work_tree}"
+                    )
             else:
                 report["checks"]["work_tree_valid"] = False
 
@@ -212,7 +229,9 @@ class RepositoryStateChecker:
         parent_dir = spec_dir.parent
         if not os.access(parent_dir, os.W_OK):
             permissions_ok = False
-            permission_issues.append(f"No write access to parent directory {parent_dir}")
+            permission_issues.append(
+                f"No write access to parent directory {parent_dir}"
+            )
 
         report["checks"]["permissions_ok"] = permissions_ok
         if permission_issues:
@@ -264,7 +283,9 @@ class RepositoryStateChecker:
             return BranchStatus.CLEAN
 
         except Exception as e:
-            debug_logger.log("ERROR", "Failed to check branch cleanliness", error=str(e))
+            debug_logger.log(
+                "ERROR", "Failed to check branch cleanliness", error=str(e)
+            )
             return BranchStatus.UNKNOWN
 
     def is_safe_for_spec_operations(self) -> bool:
@@ -277,7 +298,10 @@ class RepositoryStateChecker:
             health = self.check_repository_health()
 
             # Repository must be healthy or have only warnings
-            if health["overall_health"] in [RepositoryHealth.ERROR, RepositoryHealth.CRITICAL]:
+            if health["overall_health"] in [
+                RepositoryHealth.ERROR,
+                RepositoryHealth.CRITICAL,
+            ]:
                 return False
 
             # Must have basic repository structure
@@ -306,7 +330,8 @@ class RepositoryStateChecker:
 
             summary = {
                 "initialized": health["checks"]["spec_repo_exists"],
-                "healthy": health["overall_health"] in [RepositoryHealth.HEALTHY, RepositoryHealth.WARNING],
+                "healthy": health["overall_health"]
+                in [RepositoryHealth.HEALTHY, RepositoryHealth.WARNING],
                 "safe_for_operations": self.is_safe_for_spec_operations(),
                 "branch_clean": health["checks"]["branch_status"] == BranchStatus.CLEAN,
                 "specs_dir_exists": health["checks"]["spec_dir_exists"],
@@ -335,7 +360,9 @@ class RepositoryStateChecker:
         Returns:
             List of validation issues (empty if valid)
         """
-        debug_logger.log("INFO", "Validating pre-operation state", operation=operation_name)
+        debug_logger.log(
+            "INFO", "Validating pre-operation state", operation=operation_name
+        )
 
         issues = []
 
@@ -344,7 +371,9 @@ class RepositoryStateChecker:
 
             # Check overall health
             if health["overall_health"] == RepositoryHealth.CRITICAL:
-                issues.append(f"Repository is in critical state, cannot perform {operation_name}")
+                issues.append(
+                    f"Repository is in critical state, cannot perform {operation_name}"
+                )
                 return issues  # Don't continue if critical
 
             # Check basic requirements
@@ -359,7 +388,10 @@ class RepositoryStateChecker:
 
             # Operation-specific validations
             if operation_name in ["commit", "add", "generate"]:
-                if health["checks"]["branch_status"] not in [BranchStatus.CLEAN, BranchStatus.UNTRACKED_FILES]:
+                if health["checks"]["branch_status"] not in [
+                    BranchStatus.CLEAN,
+                    BranchStatus.UNTRACKED_FILES,
+                ]:
                     issues.append(f"Branch is not clean for {operation_name} operation")
 
             # Add any health issues as validation failures
@@ -368,8 +400,11 @@ class RepositoryStateChecker:
         except Exception as e:
             issues.append(f"Pre-operation validation failed: {e}")
 
-        debug_logger.log("INFO", "Pre-operation validation complete",
-                        operation=operation_name,
-                        issues=len(issues))
+        debug_logger.log(
+            "INFO",
+            "Pre-operation validation complete",
+            operation=operation_name,
+            issues=len(issues),
+        )
 
         return issues

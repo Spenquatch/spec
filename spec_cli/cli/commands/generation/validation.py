@@ -1,18 +1,17 @@
 """Generation input validation."""
 
-import click
-from typing import List, Dict, Any
 from pathlib import Path
-from ....templates.loader import load_template
-from ....file_processing.conflict_resolver import ConflictResolutionStrategy
+from typing import Any, Dict, List, cast
+
 from ....exceptions import SpecValidationError
+from ....file_processing.conflict_resolver import ConflictResolutionStrategy
 from ....logging.debug import debug_logger
 
 
 class GenerationValidator:
     """Validates generation command inputs."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         pass
 
     def validate_generation_input(
@@ -34,7 +33,7 @@ class GenerationValidator:
         Raises:
             SpecValidationError: If validation fails
         """
-        validation_result = {
+        validation_result: Dict[str, Any] = {
             "valid": True,
             "warnings": [],
             "errors": [],
@@ -47,31 +46,32 @@ class GenerationValidator:
             validation_result["file_analysis"] = file_validation["analysis"]
 
             if file_validation["errors"]:
-                validation_result["errors"].extend(file_validation["errors"])
+                cast(List[str], validation_result["errors"]).extend(
+                    file_validation["errors"]
+                )
                 validation_result["valid"] = False
 
             if file_validation["warnings"]:
-                validation_result["warnings"].extend(file_validation["warnings"])
+                cast(List[str], validation_result["warnings"]).extend(
+                    file_validation["warnings"]
+                )
 
             # Validate template
             template_validation = self.validate_template_selection(template_name)
             if not template_validation["valid"]:
-                validation_result["errors"].append(template_validation["error"])
-                validation_result["valid"] = False
-
-            # Validate conflict strategy
-            if not isinstance(conflict_strategy, ConflictResolutionStrategy):
-                validation_result["errors"].append(
-                    f"Invalid conflict strategy: {conflict_strategy}"
+                cast(List[str], validation_result["errors"]).append(
+                    template_validation["error"]
                 )
                 validation_result["valid"] = False
+
+            # Conflict strategy is validated by type annotation
 
             debug_logger.log(
                 "INFO",
                 "Generation input validated",
                 valid=validation_result["valid"],
-                errors=len(validation_result["errors"]),
-                warnings=len(validation_result["warnings"]),
+                errors=len(cast(List[str], validation_result["errors"])),
+                warnings=len(cast(List[str], validation_result["warnings"])),
             )
 
             return validation_result

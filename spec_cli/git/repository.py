@@ -1,4 +1,3 @@
-import subprocess
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional
 
@@ -24,11 +23,14 @@ class GitRepository(ABC):
         pass
 
     @abstractmethod
-    def commit(self, message: str) -> None:
+    def commit(self, message: str) -> str:
         """Create a commit with the given message.
 
         Args:
             message: Commit message
+
+        Returns:
+            Commit hash of the created commit
 
         Raises:
             SpecGitError: If commit operation fails
@@ -121,7 +123,7 @@ class SpecGitRepository(GitRepository):
 
         # Add files with force flag to bypass ignore rules
         git_args = ["add", "-f"] + converted_paths
-        self.operations.run_git_command(git_args)
+        self.operations.run_git_command(git_args, capture_output=False)
 
         debug_logger.log(
             "INFO",
@@ -129,11 +131,14 @@ class SpecGitRepository(GitRepository):
             files_added=len(converted_paths),
         )
 
-    def commit(self, message: str) -> None:
+    def commit(self, message: str) -> str:
         """Create commit in spec repository.
 
         Args:
             message: Commit message
+
+        Returns:
+            Commit hash of the created commit
         """
         debug_logger.log(
             "INFO",
@@ -142,16 +147,24 @@ class SpecGitRepository(GitRepository):
         )
 
         git_args = ["commit", "-m", message]
-        self.operations.run_git_command(git_args)
+        self.operations.run_git_command(git_args, capture_output=False)
+
+        # Get the commit hash of the just-created commit
+        try:
+            result = self.operations.run_git_command(["rev-parse", "HEAD"])
+            commit_hash = result.stdout.strip() if result.stdout else "unknown"
+        except Exception:
+            commit_hash = "unknown"
 
         debug_logger.log("INFO", "Commit created successfully")
+        return commit_hash
 
     def status(self) -> None:
         """Show spec repository status."""
         debug_logger.log("INFO", "Showing spec repository status")
 
         git_args = ["status"]
-        self.operations.run_git_command(git_args)
+        self.operations.run_git_command(git_args, capture_output=False)
 
     def log(self, paths: Optional[List[str]] = None) -> None:
         """Show spec repository log.
@@ -176,7 +189,7 @@ class SpecGitRepository(GitRepository):
                 converted_paths=converted_paths,
             )
 
-        self.operations.run_git_command(git_args)
+        self.operations.run_git_command(git_args, capture_output=False)
 
     def diff(self, paths: Optional[List[str]] = None) -> None:
         """Show spec repository diff.
@@ -203,7 +216,7 @@ class SpecGitRepository(GitRepository):
                 converted_paths=converted_paths,
             )
 
-        self.operations.run_git_command(git_args)
+        self.operations.run_git_command(git_args, capture_output=False)
 
     def is_initialized(self) -> bool:
         """Check if spec repository is initialized.
@@ -284,154 +297,144 @@ class SpecGitRepository(GitRepository):
 
     def get_current_branch(self) -> str:
         """Get the current branch name.
-        
+
         Returns:
             Current branch name
-            
+
         Raises:
             SpecGitError: If unable to determine current branch
         """
         debug_logger.log("DEBUG", "Getting current branch")
-        
+
         try:
             # Use symbolic-ref to get current branch
-            result = self.operations.run_git_command(["symbolic-ref", "--short", "HEAD"])
+            result = self.operations.run_git_command(
+                ["symbolic-ref", "--short", "HEAD"]
+            )
             branch = result.stdout.strip() if result.stdout else "HEAD"
-            
+
             debug_logger.log("DEBUG", "Current branch determined", branch=branch)
             return branch
-            
+
         except Exception as e:
-            debug_logger.log("WARNING", "Could not determine current branch", error=str(e))
+            debug_logger.log(
+                "WARNING", "Could not determine current branch", error=str(e)
+            )
             return "HEAD"  # Fallback for detached HEAD state
 
     def has_uncommitted_changes(self) -> bool:
         """Check if repository has uncommitted changes.
-        
+
         Returns:
             True if there are uncommitted changes
         """
         try:
             # Use diff-index to check for changes
-            result = self.operations.run_git_command(["diff-index", "--quiet", "HEAD", "--"])
+            _result = self.operations.run_git_command(
+                ["diff-index", "--quiet", "HEAD", "--"]
+            )
             return False  # No changes if command succeeds
         except Exception:
             return True  # Assume changes if command fails
 
     def has_untracked_files(self) -> bool:
         """Check if repository has untracked files.
-        
+
         Returns:
             True if there are untracked files
         """
         try:
             # Use ls-files to check for untracked files
-            result = self.operations.run_git_command(["ls-files", "--others", "--exclude-standard"])
+            result = self.operations.run_git_command(
+                ["ls-files", "--others", "--exclude-standard"]
+            )
             return bool(result.stdout and result.stdout.strip())
         except Exception:
             return False  # Assume no untracked files if command fails
 
     def has_staged_changes(self) -> bool:
         """Check if repository has staged changes.
-        
+
         Returns:
             True if there are staged changes
         """
         try:
             # Use diff-index to check for staged changes
-            result = self.operations.run_git_command(["diff-index", "--quiet", "--cached", "HEAD", "--"])
+            _result = self.operations.run_git_command(
+                ["diff-index", "--quiet", "--cached", "HEAD", "--"]
+            )
             return False  # No staged changes if command succeeds
         except Exception:
             return True  # Assume staged changes if command fails
 
     def get_recent_commits(self, count: int = 10) -> List[Dict[str, str]]:
         """Get recent commits from the repository.
-        
+
         Args:
             count: Number of recent commits to retrieve
-            
+
         Returns:
             List of commit information dictionaries
         """
         debug_logger.log("DEBUG", "Getting recent commits", count=count)
-        
+
         try:
             # Use log with format to get structured commit data
-            result = self.operations.run_git_command([
-                "log", 
-                f"--max-count={count}",
-                "--pretty=format:%H|%s|%an|%ad",
-                "--date=iso"
-            ])
-            
+            result = self.operations.run_git_command(
+                [
+                    "log",
+                    f"--max-count={count}",
+                    "--pretty=format:%H|%s|%an|%ad",
+                    "--date=iso",
+                ]
+            )
+
             commits = []
             if result.stdout:
-                for line in result.stdout.strip().split('\n'):
-                    parts = line.split('|', 3)
+                for line in result.stdout.strip().split("\n"):
+                    parts = line.split("|", 3)
                     if len(parts) == 4:
-                        commits.append({
-                            "hash": parts[0],
-                            "subject": parts[1],
-                            "author": parts[2],
-                            "date": parts[3],
-                        })
-            
+                        commits.append(
+                            {
+                                "hash": parts[0],
+                                "subject": parts[1],
+                                "author": parts[2],
+                                "date": parts[3],
+                            }
+                        )
+
             debug_logger.log("DEBUG", "Retrieved recent commits", count=len(commits))
             return commits
-            
+
         except Exception as e:
             debug_logger.log("WARNING", "Could not get recent commits", error=str(e))
             return []
 
     def add_files(self, files: List[str]) -> None:
         """Add specific files to the Git index.
-        
+
         Args:
             files: List of file paths to add (relative to .specs/)
         """
         debug_logger.log("INFO", "Adding specific files", files=files)
-        
+
         # Convert to Git work tree context and add
         converted_paths = [self.path_converter.convert_to_git_path(f) for f in files]
         git_args = ["add", "-f"] + converted_paths
-        self.operations.run_git_command(git_args)
-        
-        debug_logger.log("INFO", "Files added successfully", count=len(files))
+        self.operations.run_git_command(git_args, capture_output=False)
 
-    def commit(self, message: str) -> None:
-        """Create a commit and return the commit hash.
-        
-        Args:
-            message: Commit message
-            
-        Returns:
-            Commit hash of the created commit
-        """
-        debug_logger.log("INFO", "Creating commit",
-                        commit_message=message[:50] + "..." if len(message) > 50 else message)
-        
-        git_args = ["commit", "-m", message]
-        self.operations.run_git_command(git_args)
-        
-        # Get the commit hash of the just-created commit
-        try:
-            result = self.operations.run_git_command(["rev-parse", "HEAD"])
-            commit_hash = result.stdout.strip() if result.stdout else "unknown"
-        except Exception:
-            commit_hash = "unknown"
-        
-        debug_logger.log("INFO", "Commit created successfully")
+        debug_logger.log("INFO", "Files added successfully", count=len(files))
 
     def initialize(self) -> None:
         """Initialize the spec repository (wrapper for initialize_repository)."""
         self.initialize_repository()
 
-    def run_git_command(self, args: List[str]):
+    def run_git_command(self, args: List[str]) -> Any:
         """Run a Git command (exposed for configuration purposes).
-        
+
         Args:
             args: Git command arguments
-            
+
         Returns:
             CompletedProcess result
         """
@@ -439,49 +442,65 @@ class SpecGitRepository(GitRepository):
 
     def get_staged_files(self) -> List[str]:
         """Get list of staged files.
-        
+
         Returns:
             List of staged file paths
         """
         try:
-            result = self.operations.run_git_command(["diff", "--cached", "--name-only"])
+            result = self.operations.run_git_command(
+                ["diff", "--cached", "--name-only"]
+            )
             if result.stdout:
-                return [line.strip() for line in result.stdout.strip().split('\n') if line.strip()]
+                return [
+                    line.strip()
+                    for line in result.stdout.strip().split("\n")
+                    if line.strip()
+                ]
             return []
         except Exception:
             return []
 
     def get_unstaged_files(self) -> List[str]:
         """Get list of unstaged files.
-        
+
         Returns:
             List of unstaged file paths
         """
         try:
             result = self.operations.run_git_command(["diff", "--name-only"])
             if result.stdout:
-                return [line.strip() for line in result.stdout.strip().split('\n') if line.strip()]
+                return [
+                    line.strip()
+                    for line in result.stdout.strip().split("\n")
+                    if line.strip()
+                ]
             return []
         except Exception:
             return []
 
     def get_untracked_files(self) -> List[str]:
         """Get list of untracked files.
-        
+
         Returns:
             List of untracked file paths
         """
         try:
-            result = self.operations.run_git_command(["ls-files", "--others", "--exclude-standard"])
+            result = self.operations.run_git_command(
+                ["ls-files", "--others", "--exclude-standard"]
+            )
             if result.stdout:
-                return [line.strip() for line in result.stdout.strip().split('\n') if line.strip()]
+                return [
+                    line.strip()
+                    for line in result.stdout.strip().split("\n")
+                    if line.strip()
+                ]
             return []
         except Exception:
             return []
 
     def get_current_commit_hash(self) -> Optional[str]:
         """Get current commit hash.
-        
+
         Returns:
             Current commit hash or None if no commits
         """
@@ -493,10 +512,10 @@ class SpecGitRepository(GitRepository):
 
     def get_parent_commit_hash(self, commit_hash: str) -> Optional[str]:
         """Get parent commit hash.
-        
+
         Args:
             commit_hash: Hash of commit to get parent for
-            
+
         Returns:
             Parent commit hash or None if no parent
         """

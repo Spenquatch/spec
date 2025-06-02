@@ -1,13 +1,12 @@
-import pytest
 from datetime import datetime
+
 from spec_cli.templates.substitution import TemplateSubstitution
-from spec_cli.exceptions import SpecTemplateError
 
 
 class TestTemplateSubstitution:
     """Test TemplateSubstitution class."""
 
-    def test_substitution_replaces_simple_variables(self):
+    def test_substitution_replaces_simple_variables(self) -> None:
         """Test that simple variable substitution works."""
         substitution = TemplateSubstitution()
         template = "Hello {{name}}, welcome to {{project}}!"
@@ -16,7 +15,7 @@ class TestTemplateSubstitution:
         result = substitution.substitute(template, variables)
         assert result == "Hello Developer, welcome to spec-cli!"
 
-    def test_substitution_handles_missing_variables(self):
+    def test_substitution_handles_missing_variables(self) -> None:
         """Test that missing variables are left as placeholders."""
         substitution = TemplateSubstitution()
         template = "Hello {{name}}, your score is {{score}} out of {{total}}."
@@ -25,7 +24,7 @@ class TestTemplateSubstitution:
         result = substitution.substitute(template, variables)
         assert result == "Hello Alice, your score is 95 out of {{total}}."
 
-    def test_substitution_preserves_unresolved_placeholders(self):
+    def test_substitution_preserves_unresolved_placeholders(self) -> None:
         """Test that unresolved placeholders are preserved."""
         substitution = TemplateSubstitution()
         template = "File: {{filename}}, Author: {{author}}, Status: {{status}}"
@@ -36,13 +35,13 @@ class TestTemplateSubstitution:
         assert "{{author}}" in result
         assert "{{status}}" in result
 
-    def test_substitution_handles_empty_template(self):
+    def test_substitution_handles_empty_template(self) -> None:
         """Test substitution with empty template."""
         substitution = TemplateSubstitution()
         result = substitution.substitute("", {"name": "test"})
         assert result == ""
 
-    def test_substitution_handles_no_variables(self):
+    def test_substitution_handles_no_variables(self) -> None:
         """Test substitution with no variables in template."""
         substitution = TemplateSubstitution()
         template = "This is a plain text template with no variables."
@@ -53,7 +52,7 @@ class TestTemplateSubstitution:
 class TestBuiltinVariables:
     """Test built-in variable generation."""
 
-    def test_builtin_variables_generation(self):
+    def test_builtin_variables_generation(self) -> None:
         """Test that built-in variables are generated correctly."""
         substitution = TemplateSubstitution()
         template = "Date: {{date}}, Year: {{year}}, Month: {{month}}"
@@ -70,7 +69,7 @@ class TestBuiltinVariables:
         assert str(datetime.now().year) in result
         assert datetime.now().strftime("%B") in result
 
-    def test_builtin_variables_user_override(self):
+    def test_builtin_variables_user_override(self) -> None:
         """Test that user variables override built-in variables."""
         substitution = TemplateSubstitution()
         template = "Date: {{date}}, Custom: {{custom}}"
@@ -80,7 +79,7 @@ class TestBuiltinVariables:
         assert "Date: 2023-01-01" in result
         assert "Custom: value" in result
 
-    def test_custom_builtin_generator_addition(self):
+    def test_custom_builtin_generator_addition(self) -> None:
         """Test adding custom built-in generators."""
         substitution = TemplateSubstitution()
 
@@ -105,7 +104,7 @@ class TestBuiltinVariables:
 class TestVariableFormatting:
     """Test variable value formatting."""
 
-    def test_variable_value_formatting_types(self):
+    def test_variable_value_formatting_types(self) -> None:
         """Test formatting of different variable value types."""
         substitution = TemplateSubstitution()
 
@@ -123,16 +122,20 @@ class TestVariableFormatting:
         assert substitution.test_variable_substitution("test", 42) == "42"
 
         # Test list
-        list_result = substitution.test_variable_substitution("test", ["item1", "item2"])
+        list_result = substitution.test_variable_substitution(
+            "test", ["item1", "item2"]
+        )
         assert "- item1" in list_result
         assert "- item2" in list_result
 
         # Test dict
-        dict_result = substitution.test_variable_substitution("test", {"key1": "val1", "key2": "val2"})
+        dict_result = substitution.test_variable_substitution(
+            "test", {"key1": "val1", "key2": "val2"}
+        )
         assert "**key1**: val1" in dict_result
         assert "**key2**: val2" in dict_result
 
-    def test_variable_value_formatting_edge_cases(self):
+    def test_variable_value_formatting_edge_cases(self) -> None:
         """Test edge cases in variable formatting."""
         substitution = TemplateSubstitution()
 
@@ -149,7 +152,7 @@ class TestVariableFormatting:
 class TestTemplateAnalysis:
     """Test template analysis functionality."""
 
-    def test_template_syntax_validation(self):
+    def test_template_syntax_validation(self) -> None:
         """Test template syntax validation."""
         substitution = TemplateSubstitution()
 
@@ -170,11 +173,13 @@ class TestTemplateAnalysis:
         assert len(issues2) > 0
         assert "empty variable" in " ".join(issues2).lower()
 
-    def test_variable_extraction_from_template(self):
+    def test_variable_extraction_from_template(self) -> None:
         """Test extraction of variables from templates."""
         substitution = TemplateSubstitution()
 
-        template = "File: {{filename}}, Author: {{author}}, Date: {{date}}, Status: {{status}}"
+        template = (
+            "File: {{filename}}, Author: {{author}}, Date: {{date}}, Status: {{status}}"
+        )
         variables = substitution.get_variables_in_template(template)
 
         expected = {"filename", "author", "date", "status"}
@@ -185,7 +190,7 @@ class TestTemplateAnalysis:
         empty_vars = substitution.get_variables_in_template(empty_template)
         assert empty_vars == set()
 
-    def test_substitution_preview_functionality(self):
+    def test_substitution_preview_functionality(self) -> None:
         """Test substitution preview functionality."""
         substitution = TemplateSubstitution()
 
@@ -203,11 +208,13 @@ class TestTemplateAnalysis:
         assert "date" in preview["builtin_variables_used"]
         assert preview["syntax_issues"] == []
 
-    def test_substitution_statistics_calculation(self):
+    def test_substitution_statistics_calculation(self) -> None:
         """Test substitution statistics calculation."""
         substitution = TemplateSubstitution()
 
-        template = "Name: {{name}}, Date: {{date}}, Score: {{score}}, Max: {{max_score}}"
+        template = (
+            "Name: {{name}}, Date: {{date}}, Score: {{score}}, Max: {{max_score}}"
+        )
         variables = {"name": "Alice", "score": 95}
 
         stats = substitution.get_substitution_stats(template, variables)
@@ -225,7 +232,7 @@ class TestTemplateAnalysis:
 class TestCustomDelimiters:
     """Test custom delimiter functionality."""
 
-    def test_custom_delimiters_initialization(self):
+    def test_custom_delimiters_initialization(self) -> None:
         """Test initialization with custom delimiters."""
         substitution = TemplateSubstitution("[[", "]]")
 
@@ -235,7 +242,7 @@ class TestCustomDelimiters:
         result = substitution.substitute(template, variables)
         assert result == "Hello Developer, welcome to spec-cli!"
 
-    def test_delimiter_change_at_runtime(self):
+    def test_delimiter_change_at_runtime(self) -> None:
         """Test changing delimiters at runtime."""
         substitution = TemplateSubstitution()
 
@@ -258,7 +265,7 @@ class TestCustomDelimiters:
 class TestIntegrationScenarios:
     """Test integration scenarios and edge cases."""
 
-    def test_real_template_substitution(self):
+    def test_real_template_substitution(self) -> None:
         """Test substitution with realistic template content."""
         substitution = TemplateSubstitution()
 
@@ -303,7 +310,7 @@ class TestIntegrationScenarios:
         assert "user = User(" in result
         assert "{{" not in result  # No placeholders should remain
 
-    def test_builtin_variables_list(self):
+    def test_builtin_variables_list(self) -> None:
         """Test getting list of built-in variables."""
         substitution = TemplateSubstitution()
         builtin_vars = substitution.get_builtin_variables()
@@ -312,12 +319,12 @@ class TestIntegrationScenarios:
         for var in expected_vars:
             assert var in builtin_vars
 
-    def test_substitution_error_handling(self):
+    def test_substitution_error_handling(self) -> None:
         """Test error handling in substitution."""
         substitution = TemplateSubstitution()
 
         # Mock an error in built-in generator
-        def error_generator():
+        def error_generator() -> str:
             raise ValueError("Test error")
 
         substitution.add_builtin_generator("error_var", error_generator)
@@ -327,7 +334,7 @@ class TestIntegrationScenarios:
         result = substitution.substitute(template, {})
         assert "{{error_var}}" in result  # Should remain unresolved
 
-    def test_multiple_same_variable(self):
+    def test_multiple_same_variable(self) -> None:
         """Test template with multiple instances of same variable."""
         substitution = TemplateSubstitution()
 

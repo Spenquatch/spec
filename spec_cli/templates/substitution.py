@@ -1,10 +1,10 @@
 import re
 from datetime import datetime
-from pathlib import Path
-from typing import Dict, Any, Optional, Set, List, Callable, Tuple
+from typing import Any, Callable, Dict, List, Optional, Set
+
+from ..config.settings import SpecSettings, get_settings
 from ..exceptions import SpecTemplateError
 from ..logging.debug import debug_logger
-from ..config.settings import get_settings, SpecSettings
 
 
 class TemplateSubstitution:

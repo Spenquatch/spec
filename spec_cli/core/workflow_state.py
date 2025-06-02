@@ -8,6 +8,7 @@ from ..logging.debug import debug_logger
 
 class WorkflowStatus(Enum):
     """Workflow execution status."""
+
     PENDING = "pending"
     RUNNING = "running"
     COMPLETED = "completed"
@@ -15,8 +16,10 @@ class WorkflowStatus(Enum):
     CANCELLED = "cancelled"
     ROLLED_BACK = "rolled_back"
 
+
 class WorkflowStage(Enum):
     """Workflow execution stages."""
+
     INITIALIZATION = "initialization"
     VALIDATION = "validation"
     BACKUP = "backup"
@@ -26,9 +29,11 @@ class WorkflowStage(Enum):
     CLEANUP = "cleanup"
     ROLLBACK = "rollback"
 
+
 @dataclass
 class WorkflowStep:
     """Individual workflow step with timing and results."""
+
     name: str
     stage: WorkflowStage
     status: WorkflowStatus = WorkflowStatus.PENDING
@@ -59,9 +64,11 @@ class WorkflowStep:
             self.duration = (self.end_time - self.start_time).total_seconds()
         self.error = error
 
+
 @dataclass
 class WorkflowState:
     """Complete workflow state tracking."""
+
     workflow_id: str
     workflow_type: str
     status: WorkflowStatus = WorkflowStatus.PENDING
@@ -75,9 +82,12 @@ class WorkflowState:
         """Start the workflow."""
         self.status = WorkflowStatus.RUNNING
         self.start_time = datetime.now()
-        debug_logger.log("INFO", "Workflow started",
-                        workflow_id=self.workflow_id,
-                        workflow_type=self.workflow_type)
+        debug_logger.log(
+            "INFO",
+            "Workflow started",
+            workflow_id=self.workflow_id,
+            workflow_type=self.workflow_type,
+        )
 
     def complete(self) -> None:
         """Complete the workflow."""
@@ -85,9 +95,12 @@ class WorkflowState:
         self.end_time = datetime.now()
         if self.start_time:
             self.duration = (self.end_time - self.start_time).total_seconds()
-        debug_logger.log("INFO", "Workflow completed",
-                        workflow_id=self.workflow_id,
-                        duration=self.duration)
+        debug_logger.log(
+            "INFO",
+            "Workflow completed",
+            workflow_id=self.workflow_id,
+            duration=self.duration,
+        )
 
     def fail(self, error: str) -> None:
         """Fail the workflow."""
@@ -95,9 +108,9 @@ class WorkflowState:
         self.end_time = datetime.now()
         if self.start_time:
             self.duration = (self.end_time - self.start_time).total_seconds()
-        debug_logger.log("ERROR", "Workflow failed",
-                        workflow_id=self.workflow_id,
-                        error=error)
+        debug_logger.log(
+            "ERROR", "Workflow failed", workflow_id=self.workflow_id, error=error
+        )
 
     def add_step(self, name: str, stage: WorkflowStage) -> WorkflowStep:
         """Add a new step to the workflow."""
@@ -134,6 +147,7 @@ class WorkflowState:
             "current_stage": current_step.stage.value if current_step else None,
         }
 
+
 class WorkflowStateManager:
     """Manages workflow state tracking and persistence."""
 
@@ -142,19 +156,24 @@ class WorkflowStateManager:
         self.workflow_history: List[WorkflowState] = []
         debug_logger.log("INFO", "WorkflowStateManager initialized")
 
-    def create_workflow(self, workflow_type: str, metadata: Optional[Dict[str, Any]] = None) -> WorkflowState:
+    def create_workflow(
+        self, workflow_type: str, metadata: Optional[Dict[str, Any]] = None
+    ) -> WorkflowState:
         """Create a new workflow."""
         workflow_id = f"{workflow_type}-{datetime.now().strftime('%Y%m%d-%H%M%S')}"
         workflow = WorkflowState(
             workflow_id=workflow_id,
             workflow_type=workflow_type,
-            metadata=metadata or {}
+            metadata=metadata or {},
         )
 
         self.active_workflows[workflow_id] = workflow
-        debug_logger.log("INFO", "Workflow created",
-                        workflow_id=workflow_id,
-                        workflow_type=workflow_type)
+        debug_logger.log(
+            "INFO",
+            "Workflow created",
+            workflow_id=workflow_id,
+            workflow_type=workflow_type,
+        )
 
         return workflow
 
@@ -220,13 +239,16 @@ class WorkflowStateManager:
                 stale_workflows.append(workflow_id)
 
         for workflow_id in stale_workflows:
-            self.fail_workflow(workflow_id, f"Workflow stale (running > {max_age_hours} hours)")
+            self.fail_workflow(
+                workflow_id, f"Workflow stale (running > {max_age_hours} hours)"
+            )
             stale_count += 1
 
         if stale_count > 0:
             debug_logger.log("INFO", "Cleaned up stale workflows", count=stale_count)
 
         return stale_count
+
 
 # Global workflow state manager
 workflow_state_manager = WorkflowStateManager()

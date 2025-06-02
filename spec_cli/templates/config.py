@@ -1,7 +1,8 @@
-from typing import Dict, Any, List, Set, Optional
-from pydantic import BaseModel, Field, field_validator, ConfigDict
-from pathlib import Path
 import re
+from typing import Any, Dict, List, Optional, Set
+
+from pydantic import BaseModel, ConfigDict, Field, field_validator
+
 from ..exceptions import SpecTemplateError
 from ..logging.debug import debug_logger
 
@@ -44,7 +45,7 @@ class TemplateConfig(BaseModel):
         extra="forbid",  # Reject unknown fields
     )
 
-    @field_validator("index", "history")
+    @field_validator("index", "history")  # type: ignore[misc]
     @classmethod
     def validate_template_syntax(cls, v: str, info: Any) -> str:
         """Validate template syntax and required placeholders."""
@@ -76,7 +77,7 @@ class TemplateConfig(BaseModel):
 
         return v
 
-    @field_validator("ai_model")
+    @field_validator("ai_model")  # type: ignore[misc]
     @classmethod
     def validate_ai_model(cls, v: Optional[str], info: Any) -> Optional[str]:
         """Validate AI model specification."""

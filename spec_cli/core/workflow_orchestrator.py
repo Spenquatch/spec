@@ -29,11 +29,13 @@ class SpecWorkflowOrchestrator:
 
         debug_logger.log("INFO", "SpecWorkflowOrchestrator initialized")
 
-    def generate_spec_for_file(self,
-                              file_path: Path,
-                              custom_variables: Optional[Dict[str, Any]] = None,
-                              auto_commit: bool = True,
-                              create_backup: bool = True) -> Dict[str, Any]:
+    def generate_spec_for_file(
+        self,
+        file_path: Path,
+        custom_variables: Optional[Dict[str, Any]] = None,
+        auto_commit: bool = True,
+        create_backup: bool = True,
+    ) -> Dict[str, Any]:
         """Generate spec documentation for a single file.
 
         Args:
@@ -48,10 +50,13 @@ class SpecWorkflowOrchestrator:
         Raises:
             SpecWorkflowError: If workflow fails
         """
-        debug_logger.log("INFO", "Starting spec generation workflow",
-                        file_path=str(file_path),
-                        auto_commit=auto_commit,
-                        create_backup=create_backup)
+        debug_logger.log(
+            "INFO",
+            "Starting spec generation workflow",
+            file_path=str(file_path),
+            auto_commit=auto_commit,
+            create_backup=create_backup,
+        )
 
         # Create workflow
         workflow = workflow_state_manager.create_workflow(
@@ -61,7 +66,7 @@ class SpecWorkflowOrchestrator:
                 "auto_commit": auto_commit,
                 "create_backup": create_backup,
                 "custom_variables": custom_variables or {},
-            }
+            },
         )
 
         try:
@@ -104,9 +109,12 @@ class SpecWorkflowOrchestrator:
                 "duration": workflow.duration,
             }
 
-            debug_logger.log("INFO", "Spec generation workflow completed",
-                           workflow_id=workflow.workflow_id,
-                           duration=workflow.duration)
+            debug_logger.log(
+                "INFO",
+                "Spec generation workflow completed",
+                workflow_id=workflow.workflow_id,
+                duration=workflow.duration,
+            )
 
             return result
 
@@ -119,14 +127,18 @@ class SpecWorkflowOrchestrator:
                 try:
                     self._execute_rollback_stage(workflow, str(e))
                 except Exception as rollback_error:
-                    debug_logger.log("ERROR", "Rollback failed", error=str(rollback_error))
+                    debug_logger.log(
+                        "ERROR", "Rollback failed", error=str(rollback_error)
+                    )
 
             workflow.fail(error_msg)
             workflow_state_manager.fail_workflow(workflow.workflow_id, error_msg)
 
             raise SpecWorkflowError(error_msg) from e
 
-    def _execute_validation_stage(self, workflow: WorkflowState, file_path: Path) -> None:
+    def _execute_validation_stage(
+        self, workflow: WorkflowState, file_path: Path
+    ) -> None:
         """Execute validation stage."""
         step = workflow.add_step("Pre-flight validation", WorkflowStage.VALIDATION)
         step.start()
@@ -141,9 +153,13 @@ class SpecWorkflowOrchestrator:
                 raise SpecWorkflowError(f"Source file does not exist: {file_path}")
 
             # Check pre-operation state
-            validation_issues = self.state_checker.validate_pre_operation_state("generate")
+            validation_issues = self.state_checker.validate_pre_operation_state(
+                "generate"
+            )
             if validation_issues:
-                raise SpecWorkflowError(f"Validation failed: {'; '.join(validation_issues)}")
+                raise SpecWorkflowError(
+                    f"Validation failed: {'; '.join(validation_issues)}"
+                )
 
             step.complete({"validated": True})
 
@@ -161,11 +177,13 @@ class SpecWorkflowOrchestrator:
             backup_tag = f"backup-{workflow.workflow_id}"
             tag_result = self.commit_manager.create_tag(
                 backup_tag,
-                f"Backup before spec generation workflow {workflow.workflow_id}"
+                f"Backup before spec generation workflow {workflow.workflow_id}",
             )
 
             if not tag_result["success"]:
-                raise SpecWorkflowError(f"Backup creation failed: {'; '.join(tag_result['errors'])}")
+                raise SpecWorkflowError(
+                    f"Backup creation failed: {'; '.join(tag_result['errors'])}"
+                )
 
             backup_info = {
                 "backup_tag": backup_tag,
@@ -183,10 +201,12 @@ class SpecWorkflowOrchestrator:
             step.fail(str(e))
             raise
 
-    def _execute_generation_stage(self,
-                                 workflow: WorkflowState,
-                                 file_path: Path,
-                                 custom_variables: Optional[Dict[str, Any]]) -> Dict[str, Path]:
+    def _execute_generation_stage(
+        self,
+        workflow: WorkflowState,
+        file_path: Path,
+        custom_variables: Optional[Dict[str, Any]],
+    ) -> Dict[str, Path]:
         """Execute content generation stage."""
         step = workflow.add_step("Generate spec content", WorkflowStage.GENERATION)
         step.start()
@@ -200,13 +220,16 @@ class SpecWorkflowOrchestrator:
                 file_path=file_path,
                 template=template,
                 custom_variables=custom_variables,
-                backup_existing=True
+                backup_existing=True,
             )
 
-            step.complete({
-                "generated_files": {k: str(v) for k, v in generated_files.items()},
-                "template_used": getattr(template, 'description', None) or "default",
-            })
+            step.complete(
+                {
+                    "generated_files": {k: str(v) for k, v in generated_files.items()},
+                    "template_used": getattr(template, "description", None)
+                    or "default",
+                }
+            )
 
             return generated_files
 
@@ -214,10 +237,9 @@ class SpecWorkflowOrchestrator:
             step.fail(str(e))
             raise
 
-    def _execute_commit_stage(self,
-                             workflow: WorkflowState,
-                             file_path: Path,
-                             generated_files: Dict[str, Path]) -> Dict[str, Any]:
+    def _execute_commit_stage(
+        self, workflow: WorkflowState, file_path: Path, generated_files: Dict[str, Path]
+    ) -> Dict[str, Any]:
         """Execute commit stage."""
         step = workflow.add_step("Commit generated content", WorkflowStage.COMMIT)
         step.start()
@@ -231,8 +253,11 @@ class SpecWorkflowOrchestrator:
                     relative_path = full_path.relative_to(self.settings.specs_dir)
                     file_paths.append(str(relative_path))
                 except ValueError:
-                    debug_logger.log("WARNING", "Generated file outside .specs directory",
-                                   file_path=str(full_path))
+                    debug_logger.log(
+                        "WARNING",
+                        "Generated file outside .specs directory",
+                        file_path=str(full_path),
+                    )
 
             if not file_paths:
                 raise SpecWorkflowError("No files to commit")
@@ -240,15 +265,21 @@ class SpecWorkflowOrchestrator:
             # Add files
             add_result = self.commit_manager.add_files(file_paths)
             if not add_result["success"]:
-                raise SpecWorkflowError(f"Failed to add files: {'; '.join(add_result['errors'])}")
+                raise SpecWorkflowError(
+                    f"Failed to add files: {'; '.join(add_result['errors'])}"
+                )
 
             # Commit changes
-            commit_message = f"Generate spec documentation for {file_path.name}\n\nFiles generated:\n" + \
-                           "\n".join(f"- {fp}" for fp in file_paths)
+            commit_message = (
+                f"Generate spec documentation for {file_path.name}\n\nFiles generated:\n"
+                + "\n".join(f"- {fp}" for fp in file_paths)
+            )
 
             commit_result = self.commit_manager.commit_changes(commit_message)
             if not commit_result["success"]:
-                raise SpecWorkflowError(f"Failed to commit: {'; '.join(commit_result['errors'])}")
+                raise SpecWorkflowError(
+                    f"Failed to commit: {'; '.join(commit_result['errors'])}"
+                )
 
             commit_info = {
                 "commit_hash": commit_result["commit_hash"],
@@ -292,12 +323,16 @@ class SpecWorkflowOrchestrator:
                 )
 
                 if rollback_result["success"]:
-                    step.complete({
-                        "rolled_back_to": backup_commit,
-                        "reason": error,
-                    })
+                    step.complete(
+                        {
+                            "rolled_back_to": backup_commit,
+                            "reason": error,
+                        }
+                    )
                 else:
-                    step.fail(f"Rollback failed: {'; '.join(rollback_result['errors'])}")
+                    step.fail(
+                        f"Rollback failed: {'; '.join(rollback_result['errors'])}"
+                    )
             else:
                 step.fail("No backup commit available for rollback")
 
@@ -305,12 +340,14 @@ class SpecWorkflowOrchestrator:
             step.fail(str(e))
             raise
 
-    def generate_specs_for_files(self,
-                                file_paths: List[Path],
-                                custom_variables: Optional[Dict[str, Any]] = None,
-                                auto_commit: bool = True,
-                                create_backup: bool = True,
-                                progress_callback: Optional[Callable[[int, int, str], None]] = None) -> Dict[str, Any]:
+    def generate_specs_for_files(
+        self,
+        file_paths: List[Path],
+        custom_variables: Optional[Dict[str, Any]] = None,
+        auto_commit: bool = True,
+        create_backup: bool = True,
+        progress_callback: Optional[Callable[[int, int, str], None]] = None,
+    ) -> Dict[str, Any]:
         """Generate spec documentation for multiple files.
 
         Args:
@@ -323,9 +360,12 @@ class SpecWorkflowOrchestrator:
         Returns:
             Dictionary with batch workflow results
         """
-        debug_logger.log("INFO", "Starting batch spec generation workflow",
-                        file_count=len(file_paths),
-                        auto_commit=auto_commit)
+        debug_logger.log(
+            "INFO",
+            "Starting batch spec generation workflow",
+            file_count=len(file_paths),
+            auto_commit=auto_commit,
+        )
 
         # Create batch workflow
         workflow = workflow_state_manager.create_workflow(
@@ -335,7 +375,7 @@ class SpecWorkflowOrchestrator:
                 "auto_commit": auto_commit,
                 "create_backup": create_backup,
                 "custom_variables": custom_variables or {},
-            }
+            },
         )
 
         try:
@@ -354,7 +394,9 @@ class SpecWorkflowOrchestrator:
                 }
 
                 # Global validation
-                self._execute_validation_stage(workflow, file_paths[0] if file_paths else Path("."))
+                self._execute_validation_stage(
+                    workflow, file_paths[0] if file_paths else Path(".")
+                )
 
                 # Global backup
                 if create_backup:
@@ -363,26 +405,36 @@ class SpecWorkflowOrchestrator:
                 # Process each file
                 for i, file_path in enumerate(file_paths):
                     if progress_callback:
-                        progress_callback(i, len(file_paths), f"Processing {file_path.name}")
+                        progress_callback(
+                            i, len(file_paths), f"Processing {file_path.name}"
+                        )
 
                     try:
                         file_result = self.generate_spec_for_file(
                             file_path,
                             custom_variables=custom_variables,
                             auto_commit=False,  # Batch commit at the end
-                            create_backup=False  # Already created global backup
+                            create_backup=False,  # Already created global backup
                         )
 
                         results["successful_files"].append(str(file_path))
-                        results["generated_files"][str(file_path)] = file_result["generated_files"]
+                        results["generated_files"][str(file_path)] = file_result[
+                            "generated_files"
+                        ]
 
                     except Exception as e:
-                        debug_logger.log("ERROR", "File processing failed",
-                                       file_path=str(file_path), error=str(e))
-                        results["failed_files"].append({
-                            "file_path": str(file_path),
-                            "error": str(e),
-                        })
+                        debug_logger.log(
+                            "ERROR",
+                            "File processing failed",
+                            file_path=str(file_path),
+                            error=str(e),
+                        )
+                        results["failed_files"].append(
+                            {
+                                "file_path": str(file_path),
+                                "error": str(e),
+                            }
+                        )
 
                 # Batch commit if requested and we have successful files
                 if auto_commit and results["successful_files"]:
@@ -400,10 +452,13 @@ class SpecWorkflowOrchestrator:
                 workflow.complete()
                 workflow_state_manager.complete_workflow(workflow.workflow_id)
 
-            debug_logger.log("INFO", "Batch spec generation workflow completed",
-                           workflow_id=workflow.workflow_id,
-                           successful=len(results["successful_files"]),
-                           failed=len(results["failed_files"]))
+            debug_logger.log(
+                "INFO",
+                "Batch spec generation workflow completed",
+                workflow_id=workflow.workflow_id,
+                successful=len(results["successful_files"]),
+                failed=len(results["failed_files"]),
+            )
 
             return results
 
@@ -416,7 +471,9 @@ class SpecWorkflowOrchestrator:
 
             raise SpecWorkflowError(error_msg) from e
 
-    def _execute_batch_commit_stage(self, workflow: WorkflowState, batch_results: Dict[str, Any]) -> Dict[str, Any]:
+    def _execute_batch_commit_stage(
+        self, workflow: WorkflowState, batch_results: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Execute batch commit stage."""
         step = workflow.add_step("Batch commit generated content", WorkflowStage.COMMIT)
         step.start()
@@ -427,11 +484,16 @@ class SpecWorkflowOrchestrator:
             for _file_path, generated_files in batch_results["generated_files"].items():
                 for _file_type, full_path in generated_files.items():
                     try:
-                        relative_path = Path(full_path).relative_to(self.settings.specs_dir)
+                        relative_path = Path(full_path).relative_to(
+                            self.settings.specs_dir
+                        )
                         all_file_paths.append(str(relative_path))
                     except ValueError:
-                        debug_logger.log("WARNING", "Generated file outside .specs directory",
-                                       file_path=str(full_path))
+                        debug_logger.log(
+                            "WARNING",
+                            "Generated file outside .specs directory",
+                            file_path=str(full_path),
+                        )
 
             if not all_file_paths:
                 raise SpecWorkflowError("No files to commit")
@@ -439,13 +501,17 @@ class SpecWorkflowOrchestrator:
             # Add all files
             add_result = self.commit_manager.add_files(all_file_paths)
             if not add_result["success"]:
-                raise SpecWorkflowError(f"Failed to add files: {'; '.join(add_result['errors'])}")
+                raise SpecWorkflowError(
+                    f"Failed to add files: {'; '.join(add_result['errors'])}"
+                )
 
             # Create batch commit message
             successful_files = batch_results["successful_files"]
-            commit_message = f"Generate spec documentation for {len(successful_files)} files\n\n" + \
-                           "Files processed:\n" + \
-                           "\n".join(f"- {fp}" for fp in successful_files[:10])  # Limit for readability
+            commit_message = (
+                f"Generate spec documentation for {len(successful_files)} files\n\n"
+                + "Files processed:\n"
+                + "\n".join(f"- {fp}" for fp in successful_files[:10])
+            )  # Limit for readability
 
             if len(successful_files) > 10:
                 commit_message += f"\n... and {len(successful_files) - 10} more files"
@@ -453,7 +519,9 @@ class SpecWorkflowOrchestrator:
             # Commit changes
             commit_result = self.commit_manager.commit_changes(commit_message)
             if not commit_result["success"]:
-                raise SpecWorkflowError(f"Failed to commit: {'; '.join(commit_result['errors'])}")
+                raise SpecWorkflowError(
+                    f"Failed to commit: {'; '.join(commit_result['errors'])}"
+                )
 
             commit_info = {
                 "commit_hash": commit_result["commit_hash"],
@@ -469,10 +537,12 @@ class SpecWorkflowOrchestrator:
             step.fail(str(e))
             raise
 
-    def create_pull_request_stub(self,
-                                workflow_id: str,
-                                title: Optional[str] = None,
-                                description: Optional[str] = None) -> Dict[str, Any]:
+    def create_pull_request_stub(
+        self,
+        workflow_id: str,
+        title: Optional[str] = None,
+        description: Optional[str] = None,
+    ) -> Dict[str, Any]:
         """Stub for PR creation integration (future implementation).
 
         Args:
@@ -483,8 +553,9 @@ class SpecWorkflowOrchestrator:
         Returns:
             Dictionary with PR creation results (stub)
         """
-        debug_logger.log("INFO", "PR creation requested (stub)",
-                        workflow_id=workflow_id)
+        debug_logger.log(
+            "INFO", "PR creation requested (stub)", workflow_id=workflow_id
+        )
 
         # Get workflow info
         workflow = workflow_state_manager.get_workflow(workflow_id)
@@ -503,9 +574,12 @@ class SpecWorkflowOrchestrator:
             "implementation_status": "stub",
         }
 
-        debug_logger.log("INFO", "PR creation completed (stub)",
-                        workflow_id=workflow_id,
-                        pr_number=pr_info["pr_number"])
+        debug_logger.log(
+            "INFO",
+            "PR creation completed (stub)",
+            workflow_id=workflow_id,
+            pr_number=pr_info["pr_number"],
+        )
 
         return pr_info
 

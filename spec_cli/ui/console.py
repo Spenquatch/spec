@@ -129,11 +129,11 @@ class SpecConsole:
 
     def get_width(self) -> int:
         """Get the console width."""
-        return self._console.width
+        return int(self._console.width)
 
     def is_terminal(self) -> bool:
         """Check if output is going to a terminal."""
-        return self._console.is_terminal
+        return bool(self._console.is_terminal)
 
     def export_text(self, clear: bool = True) -> str:
         """Export console output as plain text.
@@ -144,7 +144,7 @@ class SpecConsole:
         Returns:
             Plain text representation of console output
         """
-        text = self._console.export_text(clear=clear)
+        text = str(self._console.export_text(clear=clear))
         debug_logger.log(
             "DEBUG", "Console output exported", length=len(text), cleared=clear
         )
@@ -159,7 +159,7 @@ class SpecConsole:
         Returns:
             HTML representation of console output
         """
-        html = self._console.export_html(clear=clear)
+        html = str(self._console.export_html(clear=clear))
         debug_logger.log(
             "DEBUG", "Console HTML exported", length=len(html), cleared=clear
         )

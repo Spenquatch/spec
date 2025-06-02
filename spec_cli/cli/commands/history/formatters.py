@@ -4,6 +4,7 @@ from datetime import datetime
 from typing import Any, Dict, List
 
 from ....ui.console import get_console
+
 # DataFormatter not used in this module
 from ....ui.tables import SpecTable
 
@@ -11,9 +12,10 @@ from ....ui.tables import SpecTable
 class GitLogFormatter:
     """Formats Git log output with Rich styling."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.console = get_console()
-# No need for data formatter in this class
+
+    # No need for data formatter in this class
 
     def format_commit_log(
         self, commits: List[Dict[str, Any]], compact: bool = False
@@ -120,7 +122,7 @@ class GitLogFormatter:
 class GitDiffFormatter:
     """Formats Git diff output with Rich styling."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.console = get_console()
 
     def format_diff_output(self, diff_data: Dict[str, Any]) -> None:
@@ -188,7 +190,7 @@ class GitDiffFormatter:
 class CommitFormatter:
     """Formats commit information and statistics."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.console = get_console()
 
     def format_commit_info(self, commit_data: Dict[str, Any]) -> None:

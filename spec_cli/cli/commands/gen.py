@@ -1,20 +1,23 @@
 """Spec gen command implementation."""
 
-import click
 from pathlib import Path
-from typing import List
-from ...ui.console import get_console
-from ...ui.error_display import show_message, format_data
-from ...logging.debug import debug_logger
-from ..options import spec_command, files_argument, force_option, dry_run_option
-from ..utils import validate_file_paths, get_user_confirmation
-from .generation import (
-    create_generation_workflow,
-    validate_generation_input,
-    select_template,
-    confirm_generation,
-)
+from typing import Dict, List
+
+import click
+
 from ...file_processing.conflict_resolver import ConflictResolutionStrategy
+from ...logging.debug import debug_logger
+from ...ui.console import get_console
+from ...ui.error_display import show_message
+from ..options import dry_run_option, files_argument, force_option, spec_command
+from ..utils import get_user_confirmation, validate_file_paths
+from .generation import (
+    confirm_generation,
+    create_generation_workflow,
+    select_template,
+    validate_generation_input,
+)
+from .generation.workflows import GenerationResult
 
 
 @spec_command()
@@ -152,11 +155,11 @@ def gen_command(
             success=result.success,
         )
 
-    except click.BadParameter as e:
+    except click.BadParameter:
         raise  # Re-raise click parameter errors
     except Exception as e:
         debug_logger.log("ERROR", "Generation command failed", error=str(e))
-        raise click.ClickException(f"Generation failed: {e}")
+        raise click.ClickException(f"Generation failed: {e}") from e
 
 
 def _expand_source_files(source_files: List[Path]) -> List[Path]:
@@ -191,7 +194,7 @@ def _show_dry_run_preview(
     console.print(f"Files to process: [yellow]{len(source_files)}[/yellow]\n")
 
     # Helper to get spec files
-    def get_spec_files_for_source(source_file: Path):
+    def get_spec_files_for_source(source_file: Path) -> Dict[str, Path]:
         relative_path = (
             source_file.relative_to(Path.cwd())
             if source_file.is_absolute()
@@ -216,7 +219,7 @@ def _show_dry_run_preview(
     show_message("This is a dry run. No files would be modified.", "info")
 
 
-def _display_generation_results(result) -> None:
+def _display_generation_results(result: "GenerationResult") -> None:
     """Display generation results."""
     console = get_console()
 
@@ -233,7 +236,7 @@ def _display_generation_results(result) -> None:
         )
 
     # Show statistics using simple formatting
-    console.print(f"\n[bold cyan]Generation Statistics:[/bold cyan]")
+    console.print("\n[bold cyan]Generation Statistics:[/bold cyan]")
     console.print(f"  Generated files: [green]{len(result.generated_files)}[/green]")
     console.print(f"  Skipped files: [yellow]{len(result.skipped_files)}[/yellow]")
     console.print(f"  Failed files: [red]{len(result.failed_files)}[/red]")

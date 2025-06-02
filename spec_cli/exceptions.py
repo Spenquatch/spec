@@ -11,6 +11,7 @@ class SpecError(Exception):
     def __init__(self, message: str, context: Optional[Dict[str, Any]] = None):
         self.message = message
         self.context = context or {}
+        self.details: Optional[str] = None
         super().__init__(self.message)
 
     def get_user_message(self) -> str:

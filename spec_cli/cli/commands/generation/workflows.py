@@ -1,16 +1,17 @@
 """Generation workflow coordination."""
 
 import time
-from typing import List, Dict, Any, Optional
-from pathlib import Path
 from dataclasses import dataclass
-from ....templates.generator import SpecContentGenerator
+from pathlib import Path
+from typing import Any, Dict, List, Optional
+
+from ....exceptions import SpecGenerationError, SpecValidationError
 from ....file_processing.conflict_resolver import ConflictResolutionStrategy
 from ....git.repository import SpecGitRepository
-from ....ui.progress_manager import get_progress_manager
-from ....ui.console import get_console
 from ....logging.debug import debug_logger
-from ....exceptions import SpecGenerationError, SpecValidationError
+from ....templates.generator import SpecContentGenerator
+from ....ui.console import get_console
+from ....ui.progress_manager import get_progress_manager
 
 
 @dataclass
@@ -143,7 +144,7 @@ class GenerationWorkflow:
             processing_time = time.time() - start_time
             success = len(failed_files) == 0
 
-            result = GenerationResult(
+            generation_result = GenerationResult(
                 generated_files=generated_files,
                 skipped_files=skipped_files,
                 failed_files=failed_files,
@@ -152,9 +153,11 @@ class GenerationWorkflow:
                 success=success,
             )
 
-            debug_logger.log("INFO", "Generation completed", **result.summary)
+            debug_logger.log(
+                "INFO", "Generation completed", **generation_result.summary
+            )
 
-            return result
+            return generation_result
 
         except Exception as e:
             processing_time = time.time() - start_time
@@ -259,7 +262,7 @@ class GenerationWorkflow:
             )
 
         elif self.conflict_strategy == ConflictResolutionStrategy.BACKUP_AND_REPLACE:
-            for file_type, spec_file in spec_files.items():
+            for _file_type, spec_file in spec_files.items():
                 if spec_file.exists():
                     backup_file = self._create_backup(spec_file)
                     resolutions.append(
@@ -271,7 +274,7 @@ class GenerationWorkflow:
                     )
 
         elif self.conflict_strategy == ConflictResolutionStrategy.OVERWRITE:
-            for file_type, spec_file in spec_files.items():
+            for _file_type, spec_file in spec_files.items():
                 if spec_file.exists():
                     resolutions.append({"type": "overwrite", "file": str(spec_file)})
 
@@ -339,7 +342,7 @@ class GenerationWorkflow:
 class RegenerationWorkflow(GenerationWorkflow):
     """Workflow for regenerating existing documentation."""
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any) -> None:
         """Initialize regeneration workflow."""
         # Default to overwrite for regeneration
         if "conflict_strategy" not in kwargs:
@@ -475,16 +478,16 @@ class AddWorkflow:
 
 
 # Factory functions
-def create_generation_workflow(**kwargs) -> GenerationWorkflow:
+def create_generation_workflow(**kwargs: Any) -> GenerationWorkflow:
     """Create a generation workflow with configuration."""
     return GenerationWorkflow(**kwargs)
 
 
-def create_regeneration_workflow(**kwargs) -> RegenerationWorkflow:
+def create_regeneration_workflow(**kwargs: Any) -> RegenerationWorkflow:
     """Create a regeneration workflow with configuration."""
     return RegenerationWorkflow(**kwargs)
 
 
-def create_add_workflow(**kwargs) -> AddWorkflow:
+def create_add_workflow(**kwargs: Any) -> AddWorkflow:
     """Create an add workflow with configuration."""
     return AddWorkflow(**kwargs)

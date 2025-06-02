@@ -3,7 +3,6 @@ from pathlib import Path
 from typing import List, Optional, Pattern
 
 from ..config.settings import SpecSettings, get_settings
-from ..exceptions import SpecFileError
 from ..logging.debug import debug_logger
 
 

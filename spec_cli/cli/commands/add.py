@@ -1,13 +1,16 @@
 """Spec add command implementation."""
 
-import click
 from pathlib import Path
-from typing import List
+from typing import Dict, List
+
+import click
+
+from ...git.repository import SpecGitRepository
+from ...logging.debug import debug_logger
 from ...ui.console import get_console
 from ...ui.error_display import show_message
-from ...logging.debug import debug_logger
-from ..options import spec_command, files_argument, force_option, dry_run_option
-from ..utils import validate_file_paths, get_spec_repository
+from ..options import dry_run_option, files_argument, force_option, spec_command
+from ..utils import get_spec_repository, validate_file_paths
 from .generation import create_add_workflow
 
 
@@ -29,8 +32,6 @@ def add_command(
         spec add .specs/ --force              # Force add ignored files
         spec add .specs/ --dry-run            # Preview what would be added
     """
-    console = get_console()
-
     try:
         # Validate we're in a spec repository
         repo = get_spec_repository()
@@ -72,7 +73,9 @@ def add_command(
             return
 
         # Filter to only files that need to be added
-        files_to_add = git_status["untracked"] + git_status["modified"]
+        files_to_add = [
+            Path(f) for f in git_status["untracked"] + git_status["modified"]
+        ]
 
         if not files_to_add:
             show_message(
@@ -97,11 +100,11 @@ def add_command(
             success=result["success"],
         )
 
-    except click.BadParameter as e:
+    except click.BadParameter:
         raise  # Re-raise click parameter errors
     except Exception as e:
         debug_logger.log("ERROR", "Add command failed", error=str(e))
-        raise click.ClickException(f"Add failed: {e}")
+        raise click.ClickException(f"Add failed: {e}") from e
 
 
 def _expand_spec_files(file_paths: List[Path]) -> List[Path]:
@@ -137,25 +140,32 @@ def _filter_spec_files(file_paths: List[Path]) -> List[Path]:
     return spec_files
 
 
-def _analyze_git_status(spec_files: List[Path], repo) -> dict:
+def _analyze_git_status(
+    spec_files: List[Path], repo: SpecGitRepository
+) -> Dict[str, List[str]]:
     """Analyze Git status for spec files."""
-    git_status = {"untracked": [], "modified": [], "staged": [], "up_to_date": []}
+    git_status: Dict[str, List[str]] = {
+        "untracked": [],
+        "modified": [],
+        "staged": [],
+        "up_to_date": [],
+    }
 
     try:
         # Get overall Git status
-        status = repo.get_status()
+        repo.status()
 
         # Categorize our files based on simple existence checks
         # This is a simplified version since we may not have full git status integration yet
         for file_path in spec_files:
             # For now, assume all files are untracked unless they're already in git
             # This is a simplification for the implementation
-            git_status["untracked"].append(file_path)
+            git_status["untracked"].append(str(file_path))
 
     except Exception as e:
         debug_logger.log("WARNING", "Failed to get Git status", error=str(e))
         # If we can't get status, assume all files are untracked
-        git_status["untracked"] = spec_files
+        git_status["untracked"] = [str(f) for f in spec_files]
 
     return git_status
 
@@ -208,7 +218,7 @@ def _display_add_results(result: dict) -> None:
         show_message(f"Add completed with {len(result['failed'])} failures", "warning")
 
     # Show statistics
-    console.print(f"\n[bold cyan]Add Results:[/bold cyan]")
+    console.print("\n[bold cyan]Add Results:[/bold cyan]")
     console.print(f"  Added files: [green]{len(result['added'])}[/green]")
     console.print(f"  Skipped files: [yellow]{len(result['skipped'])}[/yellow]")
     console.print(f"  Failed files: [red]{len(result['failed'])}[/red]")

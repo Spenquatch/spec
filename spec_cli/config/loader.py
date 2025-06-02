@@ -92,7 +92,7 @@ class ConfigurationLoader:
         try:
             # Try Python 3.11+ tomllib first
             try:
-                import tomllib as tomli  # type: ignore
+                import tomllib as tomli
 
                 mode = "rb"
             except ImportError:

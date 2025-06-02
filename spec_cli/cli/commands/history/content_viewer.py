@@ -9,15 +9,17 @@ from rich.syntax import Syntax
 
 from ....logging.debug import debug_logger
 from ....ui.console import get_console
+
 # DataFormatter not used in this module
 
 
 class ContentViewer:
     """Rich-based content viewer with syntax highlighting."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.console = get_console()
-# No need for data formatter in this class
+
+    # No need for data formatter in this class
 
     def display_file_content(
         self,
@@ -55,7 +57,7 @@ class ContentViewer:
 
             # Display file header
             self.console.print(f"\n[bold cyan]Content of {file_path}[/bold cyan]")
-            self.console.print("─" * min(80, self.console.width))
+            self.console.print("─" * min(80, self.console.console.width))
 
             # Display content based on type
             if file_extension == ".md" and syntax_highlight:

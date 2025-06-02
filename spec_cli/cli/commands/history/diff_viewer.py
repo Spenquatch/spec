@@ -12,7 +12,7 @@ from ....ui.console import get_console
 class DiffViewer:
     """Rich-based diff viewer with syntax highlighting."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.console = get_console()
 
     def display_file_diff(
@@ -34,7 +34,7 @@ class DiffViewer:
         """
         # File header
         self.console.print(f"\n[bold cyan]Diff for {filename}[/bold cyan]")
-        self.console.print("─" * min(80, self.console.width))
+        self.console.print("─" * min(80, self.console.console.width))
 
         if diff_lines:
             # Use pre-formatted diff lines
@@ -140,20 +140,20 @@ class DiffViewer:
         insertions = diff_summary.get("insertions", 0)
         deletions = diff_summary.get("deletions", 0)
 
-        table.add_status(
+        table.add_status_item(
             "Files changed",
             str(files_changed),
-            status_type="info" if files_changed > 0 else "muted",
+            status="info" if files_changed > 0 else "muted",
         )
-        table.add_status(
+        table.add_status_item(
             "Insertions",
             f"+{insertions}",
-            status_type="success" if insertions > 0 else "muted",
+            status="success" if insertions > 0 else "muted",
         )
-        table.add_status(
+        table.add_status_item(
             "Deletions",
             f"-{deletions}",
-            status_type="warning" if deletions > 0 else "muted",
+            status="warning" if deletions > 0 else "muted",
         )
 
         table.print()

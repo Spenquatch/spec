@@ -14,40 +14,26 @@ from .history import format_commit_log
 @spec_command()
 @optional_files_argument
 @click.option(
-    '--limit', '-n',
-    type=int,
-    default=10,
-    help='Limit number of commits to show'
+    "--limit", "-n", type=int, default=10, help="Limit number of commits to show"
 )
-@click.option(
-    '--oneline',
-    is_flag=True,
-    help='Show compact one-line format'
-)
-@click.option(
-    '--since',
-    help='Show commits since date (YYYY-MM-DD)'
-)
-@click.option(
-    '--until',
-    help='Show commits until date (YYYY-MM-DD)'
-)
-@click.option(
-    '--author',
-    help='Filter commits by author'
-)
-@click.option(
-    '--grep',
-    help='Filter commits by message content'
-)
-@click.option(
-    '--stat',
-    is_flag=True,
-    help='Show file change statistics'
-)
-def log_command(debug: bool, verbose: bool, files: tuple,
-               limit: int, oneline: bool, since: str, until: str,
-               author: str, grep: str, stat: bool) -> None:
+@click.option("--oneline", is_flag=True, help="Show compact one-line format")
+@click.option("--since", help="Show commits since date (YYYY-MM-DD)")
+@click.option("--until", help="Show commits until date (YYYY-MM-DD)")
+@click.option("--author", help="Filter commits by author")
+@click.option("--grep", help="Filter commits by message content")
+@click.option("--stat", is_flag=True, help="Show file change statistics")
+def log_command(
+    debug: bool,
+    verbose: bool,
+    files: tuple,
+    limit: int,
+    oneline: bool,
+    since: str,
+    until: str,
+    author: str,
+    grep: str,
+    stat: bool,
+) -> None:
     """Show commit history.
 
     Displays the commit history for the spec repository with various
@@ -61,7 +47,7 @@ def log_command(debug: bool, verbose: bool, files: tuple,
         spec log --author "John Doe"     # By specific author
         spec log src/main.py            # History for specific file
     """
-    console = get_console()
+    _console = get_console()
 
     try:
         # Get repository
@@ -72,13 +58,13 @@ def log_command(debug: bool, verbose: bool, files: tuple,
 
         # Build filter options
         filter_options = {
-            'limit': limit,
-            'since': since,
-            'until': until,
-            'author': author,
-            'grep': grep,
-            'files': target_files,
-            'include_stats': stat
+            "limit": limit,
+            "since": since,
+            "until": until,
+            "author": author,
+            "grep": grep,
+            "files": target_files,
+            "include_stats": stat,
         }
 
         # Remove None values
@@ -89,7 +75,9 @@ def log_command(debug: bool, verbose: bool, files: tuple,
 
         if not commits:
             if target_files:
-                show_message(f"No commits found for files: {', '.join(target_files)}", "info")
+                show_message(
+                    f"No commits found for files: {', '.join(target_files)}", "info"
+                )
             else:
                 show_message("No commits found in repository", "info")
             return
@@ -118,9 +106,10 @@ def log_command(debug: bool, verbose: bool, files: tuple,
         # Format and display commits
         format_commit_log(commits, compact=oneline)
 
-        debug_logger.log("INFO", "Log command completed",
-                        commits=len(commits), files=target_files)
+        debug_logger.log(
+            "INFO", "Log command completed", commits=len(commits), files=target_files
+        )
 
     except Exception as e:
         debug_logger.log("ERROR", "Log command failed", error=str(e))
-        raise click.ClickException(f"Log failed: {e}")
+        raise click.ClickException(f"Log failed: {e}") from e

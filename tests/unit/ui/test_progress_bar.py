@@ -1,12 +1,10 @@
 """Tests for progress bar functionality."""
 
-import pytest
-from unittest.mock import Mock, patch, MagicMock
-from rich.console import Console
+from unittest.mock import Mock, patch
 
 from spec_cli.ui.progress_bar import (
-    SpecProgressBar,
     SimpleProgressBar,
+    SpecProgressBar,
     create_progress_bar,
     simple_progress,
 )
@@ -15,7 +13,7 @@ from spec_cli.ui.progress_bar import (
 class TestSpecProgressBar:
     """Test the SpecProgressBar class."""
 
-    def test_spec_progress_bar_creation_and_configuration(self):
+    def test_spec_progress_bar_creation_and_configuration(self) -> None:
         """Test SpecProgressBar can be created with various configurations."""
         # Test default initialization
         progress_bar = SpecProgressBar()
@@ -46,7 +44,7 @@ class TestSpecProgressBar:
         # Verify basic column structure
         assert len(columns) >= 3  # Description, bar, and speed at minimum
 
-    def test_progress_bar_task_management(self):
+    def test_progress_bar_task_management(self) -> None:
         """Test task addition, updating, and removal."""
         # Mock the Rich Progress class to avoid Live display conflicts
         with patch("spec_cli.ui.progress_bar.Progress") as mock_progress_class:
@@ -56,7 +54,7 @@ class TestSpecProgressBar:
             mock_progress.add_task.return_value = "rich_task_id"
             mock_progress.update.return_value = None
             mock_progress.remove_task.return_value = None
-            
+
             # Mock the tasks property
             mock_task = Mock()
             mock_task.total = 100
@@ -68,9 +66,9 @@ class TestSpecProgressBar:
             mock_task.speed = 5.0
             mock_task.finished = False
             mock_progress.tasks = {"rich_task_id": mock_task}
-            
+
             mock_progress_class.return_value = mock_progress
-            
+
             progress_bar = SpecProgressBar()
 
             # Test task addition
@@ -116,7 +114,7 @@ class TestSpecProgressBar:
             progress_bar.remove_task("nonexistent")  # Should not raise
             assert progress_bar.get_task_info("nonexistent") is None
 
-    def test_progress_bar_context_manager(self):
+    def test_progress_bar_context_manager(self) -> None:
         """Test progress bar context manager functionality."""
         # Mock the Rich Progress class to avoid Live display conflicts
         with patch("spec_cli.ui.progress_bar.Progress") as mock_progress_class:
@@ -127,7 +125,7 @@ class TestSpecProgressBar:
             mock_progress.update.return_value = None
             mock_progress.remove_task.return_value = None
             mock_progress_class.return_value = mock_progress
-            
+
             progress_bar = SpecProgressBar()
 
             # Test main context manager
@@ -144,7 +142,7 @@ class TestSpecProgressBar:
             # After context, task should be removed
             assert task_id not in progress_bar.tasks
 
-    def test_simple_progress_bar_workflow(self):
+    def test_simple_progress_bar_workflow(self) -> None:
         """Test SimpleProgressBar complete workflow."""
         # Mock the Rich Progress class to avoid Live display conflicts
         with patch("spec_cli.ui.progress_bar.Progress") as mock_progress_class:
@@ -155,7 +153,7 @@ class TestSpecProgressBar:
             mock_progress.update.return_value = None
             mock_progress.remove_task.return_value = None
             mock_progress_class.return_value = mock_progress
-            
+
             simple_bar = SimpleProgressBar(total=10, description="Simple test")
             assert simple_bar.total == 10
             assert simple_bar.description == "Simple test"
@@ -177,7 +175,9 @@ class TestSpecProgressBar:
             # Test completion - need to mock task access
             mock_task = Mock()
             mock_task.total = 10
-            mock_progress.tasks = {simple_bar.progress_bar.tasks[simple_bar.task_id]: mock_task}
+            mock_progress.tasks = {
+                simple_bar.progress_bar.tasks[simple_bar.task_id]: mock_task
+            }
             simple_bar.finish()
             assert simple_bar.progress_bar._is_started is False
 
@@ -192,19 +192,21 @@ class TestSpecProgressBar:
                 mock_task2 = Mock()
                 mock_task2.total = 5
                 mock_progress_class2.return_value = mock_progress2
-                
+
                 with SimpleProgressBar(5, "Context test") as progress:
                     assert progress.task_id is not None
                     progress.advance(2)
                     assert progress.completed == 2
                     # Mock tasks for finish() call
-                    mock_progress2.tasks = {progress.progress_bar.tasks[progress.task_id]: mock_task2}
+                    mock_progress2.tasks = {
+                        progress.progress_bar.tasks[progress.task_id]: mock_task2
+                    }
 
 
 class TestProgressBarUtilities:
     """Test progress bar utility functions."""
 
-    def test_create_progress_bar_function(self):
+    def test_create_progress_bar_function(self) -> None:
         """Test create_progress_bar convenience function."""
         # Test default creation
         progress_bar = create_progress_bar()
@@ -217,7 +219,7 @@ class TestProgressBarUtilities:
         assert custom_bar.show_percentage is False
         assert custom_bar.show_speed is True
 
-    def test_simple_progress_function(self):
+    def test_simple_progress_function(self) -> None:
         """Test simple_progress convenience function."""
         # Test creation
         progress = simple_progress(20, "Test progress")
@@ -233,14 +235,14 @@ class TestProgressBarUtilities:
 class TestProgressBarIntegration:
     """Test progress bar integration with console system."""
 
-    def test_console_integration(self):
+    def test_console_integration(self) -> None:
         """Test progress bar integration with console."""
         # Create a proper mock console with all required attributes
         mock_console = Mock()
         mock_console.get_time = Mock(return_value=0.0)
         mock_console.width = 80
         mock_console.height = 24
-        
+
         # Mock the Rich Progress class to avoid Live display conflicts
         with patch("spec_cli.ui.progress_bar.Progress") as mock_progress_class:
             mock_progress = Mock()
@@ -259,7 +261,7 @@ class TestProgressBarIntegration:
                 default_bar = SpecProgressBar()
                 assert default_bar.console is mock_console
 
-    def test_progress_bar_error_handling(self):
+    def test_progress_bar_error_handling(self) -> None:
         """Test progress bar handles errors gracefully."""
         progress_bar = SpecProgressBar()
 
@@ -276,18 +278,22 @@ class TestProgressBarIntegration:
         info = progress_bar.get_task_info("fake_task")
         assert info is None
 
-    def test_progress_bar_advanced_features(self):
+    def test_progress_bar_advanced_features(self) -> None:
         """Test advanced progress bar features."""
         # Mock the Rich Progress class to avoid Live display conflicts
         with patch("spec_cli.ui.progress_bar.Progress") as mock_progress_class:
             mock_progress = Mock()
             mock_progress.start.return_value = None
             mock_progress.stop.return_value = None
-            mock_progress.add_task.side_effect = ["rich_task_1", "rich_task_2", "rich_task_3"]
+            mock_progress.add_task.side_effect = [
+                "rich_task_1",
+                "rich_task_2",
+                "rich_task_3",
+            ]
             mock_progress.update.return_value = None
             mock_progress.remove_task.return_value = None
             mock_progress_class.return_value = mock_progress
-            
+
             progress_bar = SpecProgressBar()
 
             # Test multiple tasks
@@ -310,7 +316,7 @@ class TestProgressBarIntegration:
             assert progress_bar._is_started is True
 
             # Test multiple starts/stops (should be safe)
-            progress_bar.start()  # Already started
+            progress_bar.start()
             assert progress_bar._is_started is True
 
             progress_bar.stop()

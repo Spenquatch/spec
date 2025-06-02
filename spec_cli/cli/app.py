@@ -3,23 +3,21 @@
 import sys
 
 # Configure rich-click for beautiful help
-from types import ModuleType
 from typing import Optional
 
 import click
 
 from ..ui.console import get_console
 from .commands import help_command, init_command, status_command
-from .commands.gen import gen_command
-from .commands.regen import regen_command
 from .commands.add import add_command
-from .commands.diff import diff_command
-from .commands.log import log_command
-from .commands.show import show_command
 from .commands.commit import commit_command
+from .commands.diff import diff_command
+from .commands.gen import gen_command
+from .commands.log import log_command
+from .commands.regen import regen_command
+from .commands.show import show_command
 from .utils import handle_cli_error
 
-click_impl: ModuleType
 try:
     import rich_click as click_impl
 
@@ -54,6 +52,7 @@ def app(ctx: click.Context, version: bool) -> None:
     if ctx.invoked_subcommand is None:
         # No subcommand provided, show help
         from .commands.help import _display_main_help
+
         _display_main_help()
 
 

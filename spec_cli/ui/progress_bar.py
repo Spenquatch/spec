@@ -1,5 +1,5 @@
 from contextlib import contextmanager
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Generator, List, Optional
 
 from rich.console import Console
 from rich.progress import (
@@ -165,24 +165,21 @@ class SpecProgressBar:
 
         rich_task_id = self.tasks[task_id]
 
-        update_kwargs = {}
+        # Use proper Progress.update API
         if advance is not None:
-            update_kwargs["advance"] = advance
+            self.progress.advance(rich_task_id, advance)
         if completed is not None:
-            update_kwargs["completed"] = completed
+            self.progress.update(rich_task_id, completed=completed)
         if total is not None:
-            update_kwargs["total"] = total
+            self.progress.update(rich_task_id, total=total)
         if description is not None:
-            update_kwargs["description"] = description
+            self.progress.update(rich_task_id, description=description)
 
-        # Add custom data
-        update_kwargs.update(kwargs)
+        # Add any other custom data
+        if kwargs:
+            self.progress.update(rich_task_id, **kwargs)
 
-        self.progress.update(rich_task_id, **update_kwargs)
-
-        debug_logger.log(
-            "DEBUG", "Progress task updated", task_id=task_id, **update_kwargs
-        )
+        debug_logger.log("DEBUG", "Progress task updated", task_id=task_id)
 
     def complete_task(self, task_id: str) -> None:
         """Mark a task as completed.
@@ -252,7 +249,7 @@ class SpecProgressBar:
         description: str,
         total: Optional[int] = None,
         task_id: Optional[str] = None,
-    ) -> Any:
+    ) -> Generator[str, None, None]:
         """Context manager for progress tasks.
 
         Args:

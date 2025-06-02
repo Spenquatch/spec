@@ -110,7 +110,7 @@ Each source file gets a documentation directory with:
 
 ### View Documentation
 - `spec status` - Show documentation status
-- `spec log [path]` - Show documentation history  
+- `spec log [path]` - Show documentation history
 - `spec diff [path]` - Show uncommitted changes
 - `spec show <path>` - Display documentation for a file (coming soon)
 
@@ -128,7 +128,7 @@ Create a `.spectemplate` file to customize documentation format:
 index:
   template: |
     # {{filename}}
-    
+
     **Location**: {{filepath}}
     **Purpose**: {{purpose}}
     **Responsibilities**: {{responsibilities}}
@@ -139,7 +139,7 @@ index:
 history:
   template: |
     ## {{date}} - Initial Creation
-    
+
     **Purpose**: Created initial specification for {{filename}}
     **Context**: {{context}}
     **Decisions**: {{decisions}}
@@ -226,7 +226,7 @@ poetry run pre-commit run --all-files
 
 ### For AI Development
 - Provide rich context to AI coding assistants
-- Track why certain approaches failed  
+- Track why certain approaches failed
 - Maintain institutional knowledge across AI sessions
 - Export scoped documentation for specific tasks
 

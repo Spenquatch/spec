@@ -23,11 +23,14 @@ class GitOperations:
             index_file=str(index_file),
         )
 
-    def run_git_command(self, args: List[str]) -> subprocess.CompletedProcess:
+    def run_git_command(
+        self, args: List[str], capture_output: bool = True
+    ) -> subprocess.CompletedProcess[str]:
         """Execute Git command with spec environment configuration.
 
         Args:
             args: Git command arguments (without 'git' prefix)
+            capture_output: Whether to capture stdout/stderr
 
         Returns:
             CompletedProcess instance
@@ -52,7 +55,7 @@ class GitOperations:
                     cmd,
                     env=env,
                     check=True,
-                    capture_output=False,  # Allow output to go to stdout/stderr
+                    capture_output=capture_output,
                     text=True,
                     cwd=str(self.specs_dir.parent),  # Run from project root
                 )

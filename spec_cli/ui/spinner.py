@@ -1,6 +1,6 @@
 import threading
 from contextlib import contextmanager
-from typing import Dict, Optional
+from typing import Any, Dict, Generator, Optional
 
 from rich.console import Console
 from rich.live import Live
@@ -48,7 +48,7 @@ class SpecSpinner:
             return
 
         spinner_text = Text.from_markup(f"{self.text}")
-        display = Text.assemble((self.spinner, "spinner"), " ", spinner_text)
+        display = Text.assemble(str(self.spinner), " ", spinner_text)
 
         self.live = Live(
             display, console=self.console, refresh_per_second=10, transient=True
@@ -80,17 +80,17 @@ class SpecSpinner:
 
         if self._is_running and self.live:
             spinner_text = Text.from_markup(text)
-            display = Text.assemble((self.spinner, "spinner"), " ", spinner_text)
+            display = Text.assemble(str(self.spinner), " ", spinner_text)
             self.live.update(display)
 
         debug_logger.log("DEBUG", "Spinner text updated", text=text)
 
-    def __enter__(self):
+    def __enter__(self) -> "SpecSpinner":
         """Enter context manager."""
         self.start()
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
         """Exit context manager."""
         self.stop()
 
@@ -98,7 +98,7 @@ class SpecSpinner:
 class TimedSpinner(SpecSpinner):
     """Spinner with automatic timeout."""
 
-    def __init__(self, timeout: float = 30.0, **kwargs) -> None:
+    def __init__(self, timeout: float = 30.0, **kwargs: Any) -> None:
         """Initialize timed spinner.
 
         Args:
@@ -150,7 +150,7 @@ class SpinnerManager:
         debug_logger.log("INFO", "SpinnerManager initialized")
 
     def create_spinner(
-        self, spinner_id: str, text: str = "Loading...", **kwargs
+        self, spinner_id: str, text: str = "Loading...", **kwargs: Any
     ) -> SpecSpinner:
         """Create a new spinner.
 
@@ -261,7 +261,9 @@ class SpinnerManager:
         debug_logger.log("DEBUG", "All spinners stopped")
 
     @contextmanager
-    def spinner_context(self, spinner_id: str, text: str, **kwargs):
+    def spinner_context(
+        self, spinner_id: str, text: str, **kwargs: Any
+    ) -> Generator[SpecSpinner, None, None]:
         """Context manager for temporary spinners.
 
         Args:
@@ -278,7 +280,7 @@ class SpinnerManager:
 
 
 # Convenience functions
-def create_spinner(text: str = "Loading...", **kwargs) -> SpecSpinner:
+def create_spinner(text: str = "Loading...", **kwargs: Any) -> SpecSpinner:
     """Create a new spinner with default settings.
 
     Args:
@@ -292,7 +294,7 @@ def create_spinner(text: str = "Loading...", **kwargs) -> SpecSpinner:
 
 
 def timed_spinner(
-    text: str = "Loading...", timeout: float = 30.0, **kwargs
+    text: str = "Loading...", timeout: float = 30.0, **kwargs: Any
 ) -> TimedSpinner:
     """Create a timed spinner.
 
@@ -308,7 +310,9 @@ def timed_spinner(
 
 
 @contextmanager
-def spinner_context(text: str = "Loading...", **kwargs):
+def spinner_context(
+    text: str = "Loading...", **kwargs: Any
+) -> Generator[SpecSpinner, None, None]:
     """Context manager for simple spinner usage.
 
     Args:

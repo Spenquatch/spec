@@ -1,13 +1,12 @@
 """Default template definitions for spec documentation."""
 
-from typing import Dict, Any
 from .config import TemplateConfig
 
 # Default template content with comprehensive structure
 DEFAULT_INDEX_TEMPLATE = """# {{filename}}
 
-**Location**: `{{filepath}}`  
-**Type**: {{file_type}}  
+**Location**: `{{filepath}}`
+**Type**: {{file_type}}
 **Last Updated**: {{date}}
 
 ## Purpose
@@ -160,7 +159,7 @@ def get_minimal_template_config() -> TemplateConfig:
     """
     minimal_index = """# {{filename}}
 
-**Location**: {{filepath}}  
+**Location**: {{filepath}}
 **Purpose**: {{purpose}}
 
 ## Overview

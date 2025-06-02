@@ -1,10 +1,10 @@
 """Interactive prompts for generation commands."""
 
-import click
-from typing import List, Dict, Any, Optional
 from pathlib import Path
-from ....templates.config import TemplateConfig
-from ....templates.loader import load_template
+from typing import Dict, List, Optional, Union
+
+import click
+
 from ....file_processing.conflict_resolver import ConflictResolutionStrategy
 from ....ui.console import get_console
 
@@ -12,7 +12,7 @@ from ....ui.console import get_console
 class TemplateSelector:
     """Interactive template selection."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.console = get_console()
 
     def select_template(self, current_template: Optional[str] = None) -> str:
@@ -47,13 +47,15 @@ class TemplateSelector:
                 choice = click.prompt(
                     "\nSelect template number",
                     type=int,
-                    default=1
-                    if current_template is None
-                    else available_templates.index(current_template) + 1,
+                    default=str(
+                        1
+                        if current_template is None
+                        else available_templates.index(current_template) + 1
+                    ),
                 )
 
                 if 1 <= choice <= len(available_templates):
-                    selected = available_templates[choice - 1]
+                    selected: str = available_templates[choice - 1]
                     self.console.print(f"[green]Selected template: {selected}[/green]")
                     return selected
                 else:
@@ -82,7 +84,7 @@ class TemplateSelector:
 class ConflictResolver:
     """Interactive conflict resolution."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.console = get_console()
 
     def resolve_conflicts(
@@ -118,12 +120,14 @@ class ConflictResolver:
         ]
 
         self.console.print("\n[bold cyan]Resolution options:[/bold cyan]")
-        for i, (strategy, description) in enumerate(options, 1):
+        for i, (strategy_name, description) in enumerate(options, 1):
             marker = (
-                " (suggested)" if strategy == suggested_strategy.value.lower() else ""
+                " (suggested)"
+                if strategy_name == suggested_strategy.value.lower()
+                else ""
             )
             self.console.print(
-                f"  {i}. [yellow]{strategy}[/yellow]{marker} - {description}"
+                f"  {i}. [yellow]{strategy_name}[/yellow]{marker} - {description}"
             )
 
         # Get user selection
@@ -132,17 +136,17 @@ class ConflictResolver:
                 choice = click.prompt(
                     "\nSelect resolution strategy",
                     type=int,
-                    default=1,  # Default to backup
+                    default="1",  # Default to backup
                 )
 
                 if 1 <= choice <= len(options):
-                    strategy_name = options[choice - 1][0]
-                    strategy = self._name_to_strategy(strategy_name)
+                    selected_strategy_name = options[choice - 1][0]
+                    selected_strategy = self._name_to_strategy(selected_strategy_name)
 
                     self.console.print(
-                        f"[green]Selected strategy: {strategy_name}[/green]"
+                        f"[green]Selected strategy: {selected_strategy_name}[/green]"
                     )
-                    return strategy
+                    return selected_strategy
                 else:
                     self.console.print(
                         "[yellow]Invalid selection. Please try again.[/yellow]"
@@ -170,7 +174,7 @@ class ConflictResolver:
 class GenerationPrompts:
     """Comprehensive generation prompts."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.template_selector = TemplateSelector()
         self.conflict_resolver = ConflictResolver()
         self.console = get_console()
@@ -212,7 +216,7 @@ class GenerationPrompts:
 
     def get_generation_config(
         self, current_template: Optional[str] = None, interactive: bool = True
-    ) -> Dict[str, Any]:
+    ) -> Dict[str, Union[str, ConflictResolutionStrategy, bool, None]]:
         """Get complete generation configuration from user.
 
         Args:
@@ -222,7 +226,7 @@ class GenerationPrompts:
         Returns:
             Dictionary with generation configuration
         """
-        config = {}
+        config: Dict[str, Union[str, ConflictResolutionStrategy, bool, None]] = {}
 
         if interactive:
             # Template selection
@@ -238,19 +242,19 @@ class GenerationPrompts:
             ]
 
             self.console.print("\n[bold cyan]Conflict Resolution:[/bold cyan]")
-            for i, (strategy, description) in enumerate(conflict_options, 1):
+            for i, (strategy_name, description) in enumerate(conflict_options, 1):
                 self.console.print(
-                    f"  {i}. [yellow]{strategy}[/yellow] - {description}"
+                    f"  {i}. [yellow]{strategy_name}[/yellow] - {description}"
                 )
 
             choice = click.prompt(
-                "\nSelect conflict resolution strategy", type=int, default=1
+                "\nSelect conflict resolution strategy", type=int, default="1"
             )
 
             if 1 <= choice <= len(conflict_options):
-                strategy_name = conflict_options[choice - 1][0]
+                selected_strategy_name = conflict_options[choice - 1][0]
                 config["conflict_strategy"] = self.conflict_resolver._name_to_strategy(
-                    strategy_name
+                    selected_strategy_name
                 )
             else:
                 config[

@@ -1,20 +1,22 @@
 """Spec regen command implementation."""
 
-import click
 from pathlib import Path
-from typing import List
+from typing import Dict, List
+
+import click
+
+from ...file_processing.conflict_resolver import ConflictResolutionStrategy
+from ...logging.debug import debug_logger
 from ...ui.console import get_console
 from ...ui.error_display import show_message
-from ...logging.debug import debug_logger
 from ..options import (
-    spec_command,
-    optional_files_argument,
-    force_option,
     dry_run_option,
+    force_option,
+    optional_files_argument,
+    spec_command,
 )
-from ..utils import validate_file_paths, get_user_confirmation
+from ..utils import get_user_confirmation, validate_file_paths
 from .generation import create_regeneration_workflow, validate_generation_input
-from ...file_processing.conflict_resolver import ConflictResolutionStrategy
 
 
 @spec_command()
@@ -106,7 +108,7 @@ def regen_command(
             return
 
         # Show what will be regenerated
-        console.print(f"\n[bold cyan]Regeneration Preview:[/bold cyan]")
+        console.print("\n[bold cyan]Regeneration Preview:[/bold cyan]")
         console.print(f"Template: [yellow]{template}[/yellow]")
         console.print(f"Preserve history: [yellow]{preserve_history}[/yellow]")
         console.print(f"Files to regenerate: [yellow]{len(files_with_specs)}[/yellow]")
@@ -167,11 +169,11 @@ def regen_command(
             success=result.success,
         )
 
-    except click.BadParameter as e:
+    except click.BadParameter:
         raise  # Re-raise click parameter errors
     except Exception as e:
         debug_logger.log("ERROR", "Regeneration command failed", error=str(e))
-        raise click.ClickException(f"Regeneration failed: {e}")
+        raise click.ClickException(f"Regeneration failed: {e}") from e
 
 
 def _find_all_spec_sources() -> List[Path]:
@@ -202,7 +204,7 @@ def _filter_files_with_specs(source_files: List[Path]) -> List[Path]:
     """Filter files to only those with existing specs."""
     files_with_specs = []
 
-    def get_spec_files_for_source(source_file: Path):
+    def get_spec_files_for_source(source_file: Path) -> Dict[str, Path]:
         relative_path = (
             source_file.relative_to(Path.cwd())
             if source_file.is_absolute()
@@ -225,7 +227,7 @@ def _show_regen_dry_run_preview(
     """Show dry run preview of regeneration."""
     console = get_console()
 
-    def get_spec_files_for_source(source_file: Path):
+    def get_spec_files_for_source(source_file: Path) -> Dict[str, Path]:
         relative_path = (
             source_file.relative_to(Path.cwd())
             if source_file.is_absolute()

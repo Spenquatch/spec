@@ -4,29 +4,29 @@ This package provides change detection, conflict resolution, and batch processin
 capabilities for efficient spec generation workflows.
 """
 
-from .change_detector import FileChangeDetector
-from .file_cache import FileCacheManager
-from .conflict_resolver import (
-    ConflictResolver,
-    ConflictResolutionStrategy,
-    ConflictType,
-    ConflictInfo,
-    ConflictResolutionResult,
-)
-from .merge_helpers import ContentMerger
 from .batch_processor import (
     BatchFileProcessor,
     BatchProcessingOptions,
     BatchProcessingResult,
-    process_files_batch,
     estimate_processing_time,
+    process_files_batch,
 )
+from .change_detector import FileChangeDetector
+from .conflict_resolver import (
+    ConflictInfo,
+    ConflictResolutionResult,
+    ConflictResolutionStrategy,
+    ConflictResolver,
+    ConflictType,
+)
+from .file_cache import FileCacheManager
+from .merge_helpers import ContentMerger
 from .processing_pipeline import FileProcessingPipeline, FileProcessingResult
 from .progress_events import (
-    ProgressReporter,
+    ProcessingStage,
     ProgressEvent,
     ProgressEventType,
-    ProcessingStage,
+    ProgressReporter,
     progress_reporter,
 )
 

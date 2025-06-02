@@ -1,12 +1,14 @@
-import yaml
 import os
 from pathlib import Path
-from typing import Optional, Dict, Any
-from .config import TemplateConfig, TemplateValidator
-from .defaults import get_default_template_config
-from ..config.settings import get_settings, SpecSettings
+from typing import Any, Dict, Optional
+
+import yaml
+
+from ..config.settings import SpecSettings, get_settings
 from ..exceptions import SpecTemplateError
 from ..logging.debug import debug_logger
+from .config import TemplateConfig, TemplateValidator
+from .defaults import get_default_template_config
 
 
 class TemplateLoader:

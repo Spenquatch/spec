@@ -108,6 +108,9 @@ def spec_command(name: Optional[str] = None, **kwargs: Any) -> Callable:
 
             try:
                 return f_with_options(*args, **kwargs)
+            except click.ClickException:
+                # Re-raise Click exceptions to preserve exit codes
+                raise
             except Exception as e:
                 handle_cli_error(e, f"Command '{name or f.__name__}' failed")
 
@@ -117,7 +120,7 @@ def spec_command(name: Optional[str] = None, **kwargs: Any) -> Callable:
         # Create click command with the wrapper
         cmd = click.command(name, **kwargs)(wrapper)
 
-        return cmd  # type: ignore
+        return cmd
 
     return decorator
 
