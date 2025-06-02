@@ -30,21 +30,25 @@ jobs:
     - name: Install dependencies
       run: |
         uv venv
+        source .venv/bin/activate
         uv pip install poetry
         poetry install
 
     - name: Run pre-commit hooks
       run: |
+        source .venv/bin/activate
         poetry run pre-commit run --all-files
       env:
         SKIP: no-commit-to-branch
 
     - name: Run type checking
       run: |
+        source .venv/bin/activate
         poetry run mypy spec_cli/
 
     - name: Run tests with coverage
       run: |
+        source .venv/bin/activate
         poetry run pytest tests/unit/ -v --cov=spec_cli --cov-report=xml --cov-report=term-missing --cov-fail-under=80
 
     - name: Upload coverage to Codecov
@@ -73,15 +77,18 @@ jobs:
     - name: Install dependencies
       run: |
         uv venv
+        source .venv/bin/activate
         uv pip install poetry
         poetry install
 
     - name: Run ruff check
       run: |
+        source .venv/bin/activate
         poetry run ruff check .
 
     - name: Run ruff format check
       run: |
+        source .venv/bin/activate
         poetry run ruff format --check .
 
   security:

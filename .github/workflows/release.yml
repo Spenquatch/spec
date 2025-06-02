@@ -28,19 +28,23 @@ jobs:
     - name: Install dependencies
       run: |
         uv venv
+        source .venv/bin/activate
         uv pip install poetry
         poetry install
 
     - name: Run tests
       run: |
+        source .venv/bin/activate
         poetry run pytest tests/unit/ -v --cov=spec_cli --cov-fail-under=80
 
     - name: Run type checking
       run: |
+        source .venv/bin/activate
         poetry run mypy spec_cli/
 
     - name: Run linting
       run: |
+        source .venv/bin/activate
         poetry run ruff check .
         poetry run ruff format --check .
 
@@ -62,11 +66,13 @@ jobs:
     - name: Install dependencies
       run: |
         uv venv
+        source .venv/bin/activate
         uv pip install poetry
         poetry install
 
     - name: Build package
       run: |
+        source .venv/bin/activate
         poetry build
 
     - name: Upload build artifacts
