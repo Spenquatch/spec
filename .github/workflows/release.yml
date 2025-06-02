@@ -109,43 +109,11 @@ jobs:
         uv pip install poetry
         poetry install
 
-    - name: Update package name and version for test-pypi
+    - name: Update package name for test-pypi
       run: |
         source .venv/bin/activate
-
-        # Install tomlkit for safe TOML manipulation
-        pip install tomlkit
-
-        # Update package name and version using Python script for safety
-        cat > update_package.py << 'SCRIPT'
-        import tomlkit
-        from datetime import datetime
-
-        # Read the pyproject.toml file
-        with open('pyproject.toml', 'r') as f:
-            doc = tomlkit.load(f)
-
-        # Get current version
-        current_version = doc['tool']['poetry']['version']
-
-        # Create new version with timestamp
-        timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
-        new_version = f"{current_version}.dev{timestamp}"
-
-        # Update the document
-        doc['tool']['poetry']['name'] = 'spec-ai'
-        doc['tool']['poetry']['version'] = new_version
-
-        # Write back to file preserving formatting
-        with open('pyproject.toml', 'w') as f:
-            tomlkit.dump(doc, f)
-
-        print(f"Updated package name to: spec-ai")
-        print(f"Updated version to: {new_version}")
-        SCRIPT
-
-        python update_package.py
-        rm update_package.py
+        # Change package name to spec-ai for test-pypi
+        sed -i 's/name = "spec"/name = "spec-ai"/' pyproject.toml
 
     - name: Build package for test-pypi
       run: |
@@ -157,20 +125,6 @@ jobs:
       with:
         repository-url: https://test.pypi.org/legacy/
         verbose: true
-        skip-existing: true
-
-    - name: Output Installation Instructions
-      if: success()
-      run: |
-        VERSION=$(poetry version --short)
-        echo "📦 Package published to Test PyPI!"
-        echo ""
-        echo "To install this pre-release version, use:"
-        echo ""
-        echo "pip install -i https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ --pre spec-ai==$VERSION"
-        echo ""
-        echo "Or to get the latest pre-release:"
-        echo "pip install -i https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ --pre spec-ai"
 
   publish-prod:
     needs: build
