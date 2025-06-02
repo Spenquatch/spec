@@ -159,6 +159,19 @@ jobs:
         verbose: true
         skip-existing: true
 
+    - name: Output Installation Instructions
+      if: success()
+      run: |
+        VERSION=$(poetry version --short)
+        echo "📦 Package published to Test PyPI!"
+        echo ""
+        echo "To install this pre-release version, use:"
+        echo ""
+        echo "pip install -i https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ --pre spec-ai==$VERSION"
+        echo ""
+        echo "Or to get the latest pre-release:"
+        echo "pip install -i https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ --pre spec-ai"
+
   publish-prod:
     needs: build
     runs-on: ubuntu-latest
