@@ -218,10 +218,9 @@ only_in_toml = "value"
             with toml_file.open("w") as f:
                 f.write("[tool.spec]\ndebug = {enabled = true}")
 
-            loader = ConfigurationLoader(root_path)
-
-            # Mock import error for both tomllib and tomli
-            with patch("builtins.__import__", side_effect=ImportError):
+            # Mock tomllib as None to simulate import failure
+            with patch("spec_cli.config.loader.tomllib", None):
+                loader = ConfigurationLoader(root_path)
                 result = loader.load_configuration()
 
                 # Should skip TOML file and return empty dict

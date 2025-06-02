@@ -82,9 +82,10 @@ class TestMainFunction:
         mock_console_instance = Mock()
         mock_console.return_value = mock_console_instance
 
-        with patch("spec_cli.cli.app.app") as mock_app:
-            mock_app.side_effect = KeyboardInterrupt()
-
+        # Patch Click's invoke to raise KeyboardInterrupt
+        with patch.object(
+            click.core.Context, "invoke", side_effect=KeyboardInterrupt()
+        ):
             main([])
 
             mock_console_instance.print_status.assert_called_once_with(
@@ -99,11 +100,9 @@ class TestMainFunction:
         mock_exception = click.ClickException("Test click error")
         mock_exception.exit_code = 2
 
-        with patch("spec_cli.cli.app.app") as mock_app, patch.object(
+        with patch.object(app, "__call__", side_effect=mock_exception), patch.object(
             mock_exception, "show"
         ) as mock_show:
-            mock_app.side_effect = mock_exception
-
             main([])
 
             mock_show.assert_called_once()
@@ -114,9 +113,7 @@ class TestMainFunction:
         """Test that main function handles general exceptions."""
         test_exception = RuntimeError("Test error")
 
-        with patch("spec_cli.cli.app.app") as mock_app:
-            mock_app.side_effect = test_exception
-
+        with patch.object(app, "__call__", side_effect=test_exception):
             main([])
 
             mock_handle_error.assert_called_once_with(

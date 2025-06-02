@@ -1,6 +1,6 @@
 import tempfile
 from pathlib import Path
-from typing import Generator
+from typing import Any, Generator
 from unittest.mock import Mock, patch
 
 import pytest
@@ -189,10 +189,10 @@ class TestDirectoryTraversal:
         # Mock os.stat to raise error for some files
         original_stat = Path.stat
 
-        def mock_stat(self: Path) -> object:
+        def mock_stat(self: Path, *args: Any, **kwargs: Any) -> object:
             if "error_file" in str(self):
                 raise OSError("Permission denied")
-            return original_stat(self)
+            return original_stat(self, *args, **kwargs)
 
         with patch.object(Path, "stat", mock_stat):
             # Should handle errors gracefully
