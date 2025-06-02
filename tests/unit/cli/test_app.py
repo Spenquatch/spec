@@ -76,10 +76,15 @@ class TestMainFunction:
     @patch("sys.exit")
     def test_main_handles_keyboard_interrupt(self, mock_exit: Any) -> None:
         """Test that main function handles KeyboardInterrupt gracefully."""
+        # Import the module properly using sys.modules
+        import sys
+
+        app_module = sys.modules["spec_cli.cli.app"]
+
         # Patch the _invoke_app function to raise KeyboardInterrupt
-        with patch("spec_cli.cli.app._invoke_app", side_effect=KeyboardInterrupt()):
+        with patch.object(app_module, "_invoke_app", side_effect=KeyboardInterrupt()):
             # Also patch get_console to verify it was called
-            with patch("spec_cli.cli.app.get_console") as mock_console:
+            with patch.object(app_module, "get_console") as mock_console:
                 mock_console_instance = Mock()
                 mock_console.return_value = mock_console_instance
 
@@ -93,24 +98,35 @@ class TestMainFunction:
     @patch("sys.exit")
     def test_main_handles_click_exception(self, mock_exit: Any) -> None:
         """Test that main function handles ClickException properly."""
+        # Import the module properly using sys.modules
+        import sys
+
+        app_module = sys.modules["spec_cli.cli.app"]
+
         # Create a real ClickException instance
         mock_exception = click.ClickException("Test click error")
         mock_exception.exit_code = 2
 
-        with patch(
-            "spec_cli.cli.app._invoke_app", side_effect=mock_exception
+        with patch.object(
+            app_module, "_invoke_app", side_effect=mock_exception
         ), patch.object(mock_exception, "show") as mock_show:
             main([])
 
             mock_show.assert_called_once()
             mock_exit.assert_called_once_with(2)
 
-    @patch("spec_cli.cli.app.handle_cli_error")
-    def test_main_handles_general_exception(self, mock_handle_error: Any) -> None:
+    def test_main_handles_general_exception(self) -> None:
         """Test that main function handles general exceptions."""
+        # Import the module properly using sys.modules
+        import sys
+
+        app_module = sys.modules["spec_cli.cli.app"]
+
         test_exception = RuntimeError("Test error")
 
-        with patch("spec_cli.cli.app._invoke_app", side_effect=test_exception):
+        with patch.object(
+            app_module, "_invoke_app", side_effect=test_exception
+        ), patch.object(app_module, "handle_cli_error") as mock_handle_error:
             main([])
 
             mock_handle_error.assert_called_once_with(
@@ -132,26 +148,34 @@ class TestMainFunction:
         """Test that _invoke_app function exists and is callable."""
         assert callable(_invoke_app)
 
-    @patch("spec_cli.cli.app.app")
-    def test_invoke_app_calls_app_correctly(self, mock_app: Any) -> None:
+    def test_invoke_app_calls_app_correctly(self) -> None:
         """Test that _invoke_app calls the app with correct parameters."""
-        test_args = ["--help"]
-        _invoke_app(test_args)
+        # Import the module properly using sys.modules
+        import sys
 
-        mock_app.assert_called_once_with(args=test_args, standalone_mode=False)
+        app_module = sys.modules["spec_cli.cli.app"]
+
+        test_args = ["--help"]
+
+        with patch.object(app_module, "app") as mock_app:
+            _invoke_app(test_args)
+            mock_app.assert_called_once_with(args=test_args, standalone_mode=False)
 
     def test_exception_handling_robustness_across_python_versions(self) -> None:
         """Test that exception handling works consistently across Python versions."""
         # This tests the robustness of our patching approach
+        import sys
         from unittest.mock import Mock, patch
 
+        app_module = sys.modules["spec_cli.cli.app"]
+
         # Test that we can patch _invoke_app successfully
-        with patch("spec_cli.cli.app._invoke_app") as mock_invoke:
+        with patch.object(app_module, "_invoke_app") as mock_invoke:
             mock_invoke.side_effect = KeyboardInterrupt()
 
             # This should not raise an exception - the main function should handle it
             try:
-                with patch("spec_cli.cli.app.get_console") as mock_console:
+                with patch.object(app_module, "get_console") as mock_console:
                     mock_console.return_value = Mock()
                     with patch("sys.exit"):
                         main([])
