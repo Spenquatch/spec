@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import Union
 
+from ..file_system.path_utils import normalize_path_separators, remove_specs_prefix
 from ..logging.debug import debug_logger
 
 
@@ -32,7 +33,7 @@ class GitPathConverter:
             try:
                 # Try to make it relative to .specs/ directory
                 relative_path = path_obj.relative_to(self.specs_dir)
-                result = str(relative_path)
+                result = normalize_path_separators(relative_path)
                 debug_logger.log(
                     "DEBUG",
                     "Converted absolute path",
@@ -49,27 +50,19 @@ class GitPathConverter:
                 )
                 return path_str
 
-        # Handle .specs/ prefixed paths
-        if path_str.startswith(".specs/"):
-            result = path_str.replace(".specs/", "", 1)
-            debug_logger.log(
-                "DEBUG", "Removed .specs/ prefix", original=path_str, result=result
-            )
-            return result
-
-        # Handle .specs\ prefixed paths (Windows)
-        if path_str.startswith(".specs\\"):
-            result = path_str.replace(".specs\\", "", 1).replace("\\", "/")
+        # Handle .specs/ or .specs\ prefixed paths using cross-platform utility
+        if path_str.startswith((".specs/", ".specs\\")):
+            result = remove_specs_prefix(path_str)
             debug_logger.log(
                 "DEBUG",
-                "Removed .specs\\ prefix and normalized",
+                "Removed .specs prefix (cross-platform)",
                 original=path_str,
                 result=result,
             )
             return result
 
         # Path is already relative, return as-is (but normalize separators)
-        result = str(path_obj).replace("\\", "/")
+        result = normalize_path_separators(path_obj)
         debug_logger.log(
             "DEBUG",
             "Path already relative, normalized separators",
@@ -91,8 +84,8 @@ class GitPathConverter:
 
         debug_logger.log("DEBUG", "Converting from Git context", git_path=git_path_str)
 
-        # Normalize path separators
-        normalized_path = git_path_str.replace("\\", "/")
+        # Normalize path separators using utility
+        normalized_path = normalize_path_separators(git_path_str)
 
         # Add .specs/ prefix if not already present
         if not normalized_path.startswith(".specs/"):
@@ -177,7 +170,7 @@ class GitPathConverter:
         Returns:
             Path with normalized separators
         """
-        normalized = str(path).replace("\\", "/")
+        normalized = normalize_path_separators(path)
         debug_logger.log(
             "DEBUG",
             "Normalized path separators",

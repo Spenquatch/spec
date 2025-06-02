@@ -9,6 +9,11 @@ from spec_cli.exceptions import SpecFileError, SpecValidationError
 from spec_cli.file_system.path_resolver import PathResolver
 
 
+def normalize_path_for_comparison(path: Path) -> str:
+    """Normalize path for cross-platform comparison."""
+    return str(path).replace("\\", "/")
+
+
 class TestPathResolver:
     """Test the PathResolver class functionality."""
 
@@ -170,7 +175,9 @@ class TestPathResolver:
             result = resolver.convert_from_specs_path(specs_path)
 
             expected = Path("src") / "models" / "index.md"
-            assert result == expected
+            assert normalize_path_for_comparison(
+                result
+            ) == normalize_path_for_comparison(expected)
 
     def test_convert_from_specs_path_removes_specs_prefix(self) -> None:
         """Test that .specs/ prefix is properly removed."""
@@ -182,7 +189,7 @@ class TestPathResolver:
             specs_path = ".specs/file.md"
             result = resolver.convert_from_specs_path(specs_path)
 
-            assert result == Path("file.md")
+            assert normalize_path_for_comparison(result) == "file.md"
 
     def test_convert_from_specs_path_handles_non_specs_paths(self) -> None:
         """Test handling of paths not in .specs/ context."""

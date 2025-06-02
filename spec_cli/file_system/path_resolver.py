@@ -4,6 +4,7 @@ from typing import Optional, Union
 from ..config.settings import SpecSettings, get_settings
 from ..exceptions import SpecFileError, SpecValidationError
 from ..logging.debug import debug_logger
+from .path_utils import remove_specs_prefix
 
 
 class PathResolver:
@@ -150,15 +151,17 @@ class PathResolver:
                 )
                 return path_obj
 
-        # If path starts with .specs/, remove the prefix
+        # If path starts with .specs/ or .specs\, remove the prefix using cross-platform utility
         path_str = str(path_obj)
-        if path_str.startswith(".specs/"):
-            relative_path = Path(path_str.replace(".specs/", "", 1))
+        if path_str.startswith((".specs/", ".specs\\")):
+            relative_path_str = remove_specs_prefix(path_str)
+            relative_path = Path(relative_path_str)
             debug_logger.log(
                 "INFO",
-                "Removed .specs/ prefix",
+                "Removed .specs prefix (cross-platform)",
                 original=path_str,
                 relative=str(relative_path),
+                normalized=relative_path_str,
             )
             return relative_path
 

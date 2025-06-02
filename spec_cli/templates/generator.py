@@ -6,6 +6,7 @@ from ..config.settings import SpecSettings, get_settings
 from ..exceptions import SpecFileError, SpecTemplateError
 from ..file_system.directory_manager import DirectoryManager
 from ..file_system.file_metadata import FileMetadataExtractor
+from ..file_system.path_utils import normalize_path_separators
 from ..logging.debug import debug_logger
 from .config import TemplateConfig
 from .substitution import TemplateSubstitution
@@ -188,14 +189,14 @@ class SpecContentGenerator:
             # Get file metadata
             file_metadata = self.metadata_extractor.get_file_metadata(file_path)
 
-            # Basic file information
+            # Basic file information with normalized separators
             variables = {
                 "filename": file_path.name,
-                "filepath": str(file_path),
+                "filepath": normalize_path_separators(file_path),
                 "file_extension": file_path.suffix.lstrip(".") or "txt",
                 "file_stem": file_path.stem,
                 "parent_directory": file_path.parent.name,
-                "relative_path": str(file_path),
+                "relative_path": normalize_path_separators(file_path),
             }
 
             # Add file metadata if available
@@ -235,14 +236,14 @@ class SpecContentGenerator:
                 file_path=str(file_path),
                 error=str(e),
             )
-            # Return minimal variables
+            # Return minimal variables with normalized separators
             return {
                 "filename": file_path.name,
-                "filepath": str(file_path),
+                "filepath": normalize_path_separators(file_path),
                 "file_extension": file_path.suffix.lstrip(".") or "txt",
                 "file_stem": file_path.stem,
                 "parent_directory": file_path.parent.name,
-                "relative_path": str(file_path),
+                "relative_path": normalize_path_separators(file_path),
                 "file_type": "unknown",
                 "file_category": "other",
                 "is_binary": False,
