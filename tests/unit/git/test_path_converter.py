@@ -129,9 +129,12 @@ class TestGitPathConverter:
             # Should be under .specs/ directory
             assert str(result).startswith(str(tmp_path / ".specs"))
 
-            # Should end with correct relative path
+            # Should end with correct relative path (normalize for cross-platform comparison)
             expected_suffix = converter.convert_to_git_path(input_path)
-            assert str(result).endswith(expected_suffix)
+            result_str = str(result).replace(
+                "\\", "/"
+            )  # Normalize separators for comparison
+            assert result_str.endswith(expected_suffix)
 
     def test_path_converter_detects_paths_under_specs_dir(
         self, converter: GitPathConverter, tmp_path: Path
