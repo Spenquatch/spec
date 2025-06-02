@@ -112,17 +112,40 @@ jobs:
     - name: Update package name and version for test-pypi
       run: |
         source .venv/bin/activate
-        # Change package name to spec-ai for test-pypi
-        sed -i 's/name = "spec"/name = "spec-ai"/' pyproject.toml
 
-        # Append timestamp to version for uniqueness
-        TIMESTAMP=$(date +%Y%m%d%H%M%S)
-        CURRENT_VERSION=$(grep -oP 'version = "\K[^"]+' pyproject.toml)
-        NEW_VERSION="${CURRENT_VERSION}.dev${TIMESTAMP}"
-        # Use awk to update version more reliably
-        awk -v new_ver="$NEW_VERSION" '/^version = / {$0 = "version = \"" new_ver "\""} 1' pyproject.toml > pyproject.toml.tmp && mv pyproject.toml.tmp pyproject.toml
+        # Install tomlkit for safe TOML manipulation
+        pip install tomlkit
 
-        echo "Updated version to: $NEW_VERSION"
+        # Update package name and version using Python script for safety
+        cat > update_package.py << 'SCRIPT'
+        import tomlkit
+        from datetime import datetime
+
+        # Read the pyproject.toml file
+        with open('pyproject.toml', 'r') as f:
+            doc = tomlkit.load(f)
+
+        # Get current version
+        current_version = doc['tool']['poetry']['version']
+
+        # Create new version with timestamp
+        timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
+        new_version = f"{current_version}.dev{timestamp}"
+
+        # Update the document
+        doc['tool']['poetry']['name'] = 'spec-ai'
+        doc['tool']['poetry']['version'] = new_version
+
+        # Write back to file preserving formatting
+        with open('pyproject.toml', 'w') as f:
+            tomlkit.dump(doc, f)
+
+        print(f"Updated package name to: spec-ai")
+        print(f"Updated version to: {new_version}")
+        SCRIPT
+
+        python update_package.py
+        rm update_package.py
 
     - name: Build package for test-pypi
       run: |
@@ -134,6 +157,7 @@ jobs:
       with:
         repository-url: https://test.pypi.org/legacy/
         verbose: true
+        skip-existing: true
 
   publish-prod:
     needs: build
