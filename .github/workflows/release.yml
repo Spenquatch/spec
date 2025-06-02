@@ -119,7 +119,9 @@ jobs:
         TIMESTAMP=$(date +%Y%m%d%H%M%S)
         CURRENT_VERSION=$(grep -oP 'version = "\K[^"]+' pyproject.toml)
         NEW_VERSION="${CURRENT_VERSION}.dev${TIMESTAMP}"
-        sed -i "s/version = \"$CURRENT_VERSION\"/version = \"$NEW_VERSION\"/" pyproject.toml
+        # Escape dots in version for sed
+        ESCAPED_CURRENT=$(echo "$CURRENT_VERSION" | sed 's/\./\\./g')
+        sed -i "s/version = \"$ESCAPED_CURRENT\"/version = \"$NEW_VERSION\"/" pyproject.toml
 
         echo "Updated version to: $NEW_VERSION"
 
