@@ -43,7 +43,7 @@ class FileChangeDetector:
             if sys.version_info >= (3, 9):
                 md5_hash = hashlib.md5(usedforsecurity=False)  # type: ignore[call-arg]
             else:
-                md5_hash = hashlib.md5()
+                md5_hash = hashlib.md5()  # nosec B324
             sha256_hash = hashlib.sha256()
 
             with file_path.open("rb") as f:
