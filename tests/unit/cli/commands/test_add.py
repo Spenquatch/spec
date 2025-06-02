@@ -83,7 +83,7 @@ class TestAnalyzeGitStatus:
         assert "modified" in result
         assert "staged" in result
         assert "up_to_date" in result
-        assert ".specs/test.md" in result["untracked"]
+        assert str(spec_files[0]) in result["untracked"]
 
     @patch("spec_cli.cli.commands.add.debug_logger")
     def test_analyze_git_status_when_repo_status_fails_then_assumes_untracked(
@@ -96,7 +96,7 @@ class TestAnalyzeGitStatus:
 
         result = _analyze_git_status(spec_files, mock_repo)
 
-        assert ".specs/test.md" in result["untracked"]
+        assert str(spec_files[0]) in result["untracked"]
         mock_logger.log.assert_called_with(
             "WARNING", "Failed to get Git status", error="Git error"
         )

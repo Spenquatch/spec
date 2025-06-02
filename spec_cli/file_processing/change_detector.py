@@ -1,4 +1,5 @@
 import hashlib
+import sys
 import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
@@ -37,7 +38,12 @@ class FileChangeDetector:
         debug_logger.log("DEBUG", "Calculating file hashes", file_path=str(file_path))
 
         try:
-            md5_hash = hashlib.md5()
+            # Use usedforsecurity=False for Python 3.9+ to fix security warning
+            # We're using MD5 for file integrity checking, not security
+            if sys.version_info >= (3, 9):
+                md5_hash = hashlib.md5(usedforsecurity=False)  # type: ignore[call-arg]
+            else:
+                md5_hash = hashlib.md5()
             sha256_hash = hashlib.sha256()
 
             with file_path.open("rb") as f:
