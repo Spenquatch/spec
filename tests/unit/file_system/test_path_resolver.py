@@ -9,6 +9,7 @@ from spec_cli.exceptions import SpecFileError, SpecValidationError
 from spec_cli.file_system.path_resolver import PathResolver
 
 
+# Helper function for cross-platform path comparison in tests
 def normalize_path_for_comparison(path: Path) -> str:
     """Normalize path for cross-platform comparison."""
     return str(path).replace("\\", "/")

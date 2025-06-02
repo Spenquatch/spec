@@ -443,6 +443,12 @@ class TestGeneratorFileOperations:
 
     def test_write_content_file_handles_permission_errors(self, temp_dir: Path) -> None:
         """Test that _write_content_file handles permission errors."""
+        import platform
+
+        # Skip on Windows as directory permissions work differently
+        if platform.system() == "Windows":
+            pytest.skip("Directory permission tests not reliable on Windows")
+
         generator = SpecContentGenerator()
 
         # Create a read-only directory

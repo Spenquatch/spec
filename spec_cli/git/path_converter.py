@@ -78,7 +78,7 @@ class GitPathConverter:
             git_path: Path relative to Git work tree
 
         Returns:
-            Path with .specs/ prefix
+            Path with .specs/ prefix (always uses forward slashes)
         """
         git_path_str = str(git_path)
 
@@ -87,17 +87,20 @@ class GitPathConverter:
         # Normalize path separators using utility
         normalized_path = normalize_path_separators(git_path_str)
 
-        # Add .specs/ prefix if not already present
+        # Add .specs/ prefix if not already present and ensure forward slashes
         if not normalized_path.startswith(".specs/"):
-            result = Path(".specs") / normalized_path
+            result_str = f".specs/{normalized_path}"
         else:
-            result = Path(normalized_path)
+            result_str = normalized_path
+
+        # Create Path object from normalized string
+        result = Path(result_str)
 
         debug_logger.log(
             "DEBUG",
             "Converted from Git context",
             git_path=git_path_str,
-            result=str(result),
+            result=result_str,
         )
 
         return result
@@ -197,7 +200,7 @@ class GitPathConverter:
             "has_specs_prefix": path_str.startswith((".specs/", ".specs\\")),
             "is_under_specs_dir": self.is_under_specs_dir(path),
             "git_path": self.convert_to_git_path(path),
-            "specs_prefixed_path": str(
+            "specs_prefixed_path": normalize_path_separators(
                 self.convert_from_git_path(self.convert_to_git_path(path))
             ),
             "absolute_specs_path": str(self.convert_to_absolute_specs_path(path)),
