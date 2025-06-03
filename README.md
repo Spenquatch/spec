@@ -1,13 +1,8 @@
 # spec
 
-[![CI](https://github.com/Spenquatch/spec/actions/workflows/ci.yml/badge.svg)](https://github.com/Spenquatch/spec/actions/workflows/ci.yml)
-[![Release](https://github.com/Spenquatch/spec/actions/workflows/release.yml/badge.svg)](https://github.com/Spenquatch/spec/actions/workflows/release.yml)
-[![codecov](https://codecov.io/gh/Spenquatch/spec/graph/badge.svg)](https://codecov.io/gh/Spenquatch/spec)
-[![PyPI version](https://badge.fury.io/py/spec-cli.svg)](https://badge.fury.io/py/spec-cli)
-[![Python Support](https://img.shields.io/pypi/pyversions/spec-cli.svg)](https://pypi.org/project/spec-cli/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Code style: ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
-[![Type checked: mypy](https://img.shields.io/badge/type%20checked-mypy-blue.svg)](https://mypy-lang.org/)
+[![CI](https://github.com/Spenquatch/spec/actions/workflows/ci.yml/badge.svg)](https://github.com/Spenquatch/spec/actions/workflows/ci.yml)[![Release](https://github.com/Spenquatch/spec/actions/workflows/release.yml/badge.svg)](https://github.com/Spenquatch/spec/actions/workflows/release.yml)[![codecov](https://codecov.io/gh/Spenquatch/spec/graph/badge.svg)](https://codecov.io/gh/Spenquatch/spec)
+[![PyPI version](https://badge.fury.io/py/spec-ai.svg)](https://badge.fury.io/py/spec-ai)[![Python Support](https://img.shields.io/pypi/pyversions/spec-ai.svg)](https://pypi.org/project/spec-ai/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)[![Code style: ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)[![Type checked: mypy](https://img.shields.io/badge/type%20checked-mypy-blue.svg)](https://mypy-lang.org/)
 
 A versioned documentation layer for AI-assisted development. `spec` maintains a separate Git repository of contextual documentation that helps AI agents understand your codebase without polluting your main Git history.
 
@@ -253,6 +248,12 @@ Hide `.spec/` and `.specs/` directories in your IDE. For VSCode, add to workspac
     ".specs": true
   }
 }
+```
+
+## Install Testing Branch From Test PyPI
+
+```bash
+pip install -i https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ --pre spec-ai
 ```
 
 ## Contributing
