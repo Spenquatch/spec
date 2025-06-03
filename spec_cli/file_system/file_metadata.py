@@ -104,12 +104,9 @@ class FileMetadataExtractor:
 
     def _format_file_size(self, size_bytes: int) -> str:
         """Format file size in human-readable format."""
-        size_float = float(size_bytes)
-        for unit in ["B", "KB", "MB", "GB"]:
-            if size_float < 1024.0:
-                return f"{size_float:.1f} {unit}"
-            size_float /= 1024.0
-        return f"{size_float:.1f} TB"
+        from .file_utils import format_file_size
+
+        return format_file_size(size_bytes)
 
     def _count_lines(self, file_path: Path) -> int:
         """Count lines in a text file."""

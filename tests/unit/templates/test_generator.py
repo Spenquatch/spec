@@ -522,9 +522,9 @@ class TestGeneratorMetadataHandling:
 
         # Test different file sizes
         test_cases = [
-            (500, "500 bytes"),
+            (500, "500.0 B"),
             (1536, "1.5 KB"),
-            (2097152, "2.00 MB"),
+            (2097152, "2.0 MB"),
             (1024, "1.0 KB"),
         ]
 

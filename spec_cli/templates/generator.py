@@ -211,14 +211,10 @@ class SpecContentGenerator:
 
                 # Add file size information if available
                 if "size" in file_metadata:
+                    from ..file_system.file_utils import format_file_size
+
                     size_bytes = file_metadata["size"]
-                    if size_bytes >= 1024 * 1024:
-                        size_str = f"{size_bytes / (1024 * 1024):.2f} MB"
-                    elif size_bytes >= 1024:
-                        size_str = f"{size_bytes / 1024:.1f} KB"
-                    else:
-                        size_str = f"{size_bytes} bytes"
-                    variables["file_size"] = size_str
+                    variables["file_size"] = format_file_size(size_bytes)
 
             debug_logger.log(
                 "DEBUG",
