@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Optional, Union
+from typing import Dict, Optional, Union
 
 from ..config.settings import SpecSettings, get_settings
 from ..exceptions import SpecFileError, SpecValidationError
@@ -108,6 +108,19 @@ class PathResolver:
             "INFO", "Converting to spec directory path", source_file=str(file_path)
         )
 
+        # Convert absolute paths to relative to project root
+        if file_path.is_absolute():
+            try:
+                file_path = file_path.relative_to(self.settings.root_path)
+            except ValueError:
+                # File is outside project root, use as-is but log warning
+                debug_logger.log(
+                    "WARNING",
+                    "File path is outside project root",
+                    file_path=str(file_path),
+                    root_path=str(self.settings.root_path),
+                )
+
         # Remove file extension and create directory path
         spec_dir = self.settings.specs_dir / file_path.parent / file_path.stem
 
@@ -119,6 +132,30 @@ class PathResolver:
         )
 
         return spec_dir
+
+    def get_spec_files_for_source(self, source_file: Path) -> Dict[str, Path]:
+        """Get spec file paths for a source file.
+
+        Args:
+            source_file: Path to the source file
+
+        Returns:
+            Dictionary mapping file types to their spec file paths
+        """
+        # Convert source file to relative path if needed
+        if source_file.is_absolute():
+            try:
+                relative_path = source_file.relative_to(self.settings.root_path)
+            except ValueError:
+                # File is outside project root, use as-is
+                relative_path = source_file
+        else:
+            relative_path = source_file
+
+        # Get spec directory using our path resolution logic
+        spec_dir = self.convert_to_spec_directory_path(relative_path)
+
+        return {"index": spec_dir / "index.md", "history": spec_dir / "history.md"}
 
     def convert_from_specs_path(self, specs_path: Union[str, Path]) -> Path:
         """Convert path from .specs/ context to relative project path.

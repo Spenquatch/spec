@@ -193,15 +193,15 @@ def _show_dry_run_preview(
     console.print(f"Conflict strategy: [yellow]{conflict_strategy.value}[/yellow]")
     console.print(f"Files to process: [yellow]{len(source_files)}[/yellow]\n")
 
-    # Helper to get spec files
+    # Helper to get spec files using centralized method
     def get_spec_files_for_source(source_file: Path) -> Dict[str, Path]:
-        relative_path = (
-            source_file.relative_to(Path.cwd())
-            if source_file.is_absolute()
-            else source_file
-        )
-        spec_dir = Path(".specs") / relative_path
-        return {"index": spec_dir / "index.md", "history": spec_dir / "history.md"}
+        from ...config.settings import get_settings
+        from ...file_system.path_resolver import PathResolver
+
+        settings = get_settings()
+        path_resolver = PathResolver(settings)
+
+        return path_resolver.get_spec_files_for_source(source_file)
 
     for source_file in source_files:
         spec_files = get_spec_files_for_source(source_file)

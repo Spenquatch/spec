@@ -68,8 +68,9 @@ class TestGenerationWorkflow:
 
         result = workflow._get_spec_files_for_source(source_file)
 
-        assert result["index"] == Path(".specs/src/module.py/index.md")
-        assert result["history"] == Path(".specs/src/module.py/history.md")
+        # Path resolver returns absolute paths
+        assert result["index"].parts[-4:] == (".specs", "src", "module", "index.md")
+        assert result["history"].parts[-4:] == (".specs", "src", "module", "history.md")
 
     def test_get_spec_files_for_source_when_absolute_path_then_creates_relative_spec_paths(
         self,
@@ -82,8 +83,9 @@ class TestGenerationWorkflow:
 
         result = workflow._get_spec_files_for_source(source_file)
 
-        assert result["index"] == Path(".specs/src/module.py/index.md")
-        assert result["history"] == Path(".specs/src/module.py/history.md")
+        # Path resolver returns absolute paths
+        assert result["index"].parts[-4:] == (".specs", "src", "module", "index.md")
+        assert result["history"].parts[-4:] == (".specs", "src", "module", "history.md")
 
 
 class TestAddWorkflow:
@@ -92,7 +94,7 @@ class TestAddWorkflow:
     def test_is_spec_file_when_file_in_specs_directory_then_returns_true(self) -> None:
         """Test that files in .specs directory are detected as spec files."""
         workflow = AddWorkflow()
-        spec_file = Path(".specs/src/module.py/index.md")
+        spec_file = Path(".specs/src/module/index.md")
 
         result = workflow._is_spec_file(spec_file)
 

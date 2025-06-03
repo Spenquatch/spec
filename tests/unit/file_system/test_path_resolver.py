@@ -297,3 +297,80 @@ class TestPathResolver:
                 resolver._ensure_within_project(external_path)
 
             assert "outside project root" in str(exc_info.value)
+
+    def test_get_spec_files_for_source_with_relative_path(self) -> None:
+        """Test getting spec files for a relative source file path."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root_path = Path(temp_dir)
+            settings = SpecSettings(root_path=root_path)
+            resolver = PathResolver(settings=settings)
+
+            source_file = Path("src/models.py")
+            result = resolver.get_spec_files_for_source(source_file)
+
+            expected_spec_dir = settings.specs_dir / "src" / "models"
+            expected = {
+                "index": expected_spec_dir / "index.md",
+                "history": expected_spec_dir / "history.md",
+            }
+
+            assert result == expected
+
+    def test_get_spec_files_for_source_with_absolute_path(self) -> None:
+        """Test getting spec files for an absolute source file path."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root_path = Path(temp_dir)
+            settings = SpecSettings(root_path=root_path)
+            resolver = PathResolver(settings=settings)
+
+            source_file = root_path / "src" / "models.py"
+            result = resolver.get_spec_files_for_source(source_file)
+
+            expected_spec_dir = settings.specs_dir / "src" / "models"
+            expected = {
+                "index": expected_spec_dir / "index.md",
+                "history": expected_spec_dir / "history.md",
+            }
+
+            assert result == expected
+
+    def test_get_spec_files_for_source_with_nested_structure(self) -> None:
+        """Test getting spec files for nested directory structure."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root_path = Path(temp_dir)
+            settings = SpecSettings(root_path=root_path)
+            resolver = PathResolver(settings=settings)
+
+            source_file = Path("src/components/auth/login.tsx")
+            result = resolver.get_spec_files_for_source(source_file)
+
+            expected_spec_dir = (
+                settings.specs_dir / "src" / "components" / "auth" / "login"
+            )
+            expected = {
+                "index": expected_spec_dir / "index.md",
+                "history": expected_spec_dir / "history.md",
+            }
+
+            assert result == expected
+
+    def test_get_spec_files_for_source_with_file_outside_project(self) -> None:
+        """Test getting spec files for a file outside project boundaries."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root_path = Path(temp_dir) / "project"
+            root_path.mkdir()
+            settings = SpecSettings(root_path=root_path)
+            resolver = PathResolver(settings=settings)
+
+            # File outside project
+            external_file = Path(temp_dir) / "external.py"
+            result = resolver.get_spec_files_for_source(external_file)
+
+            # Should still work but use the file as-is for spec directory creation
+            expected_spec_dir = settings.specs_dir / temp_dir / "external"
+            expected = {
+                "index": expected_spec_dir / "index.md",
+                "history": expected_spec_dir / "history.md",
+            }
+
+            assert result == expected

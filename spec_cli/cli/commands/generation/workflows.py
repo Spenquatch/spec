@@ -297,15 +297,14 @@ class GenerationWorkflow:
 
     def _get_spec_files_for_source(self, source_file: Path) -> Dict[str, Path]:
         """Get spec file paths for a source file."""
-        # Create spec directory path based on source file
-        relative_path = (
-            source_file.relative_to(Path.cwd())
-            if source_file.is_absolute()
-            else source_file
-        )
-        spec_dir = Path(".specs") / relative_path
+        # Use centralized path resolver method
+        from ....config.settings import get_settings
+        from ....file_system.path_resolver import PathResolver
 
-        return {"index": spec_dir / "index.md", "history": spec_dir / "history.md"}
+        settings = get_settings()
+        path_resolver = PathResolver(settings)
+
+        return path_resolver.get_spec_files_for_source(source_file)
 
     def _commit_generated_files(self, generated_files: List[Path]) -> None:
         """Commit generated files to Git."""
