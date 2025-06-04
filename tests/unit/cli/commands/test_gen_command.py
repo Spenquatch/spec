@@ -21,6 +21,7 @@ class TestGenCommand:
         settings.root_path = tmp_path
         settings.spec_dir = tmp_path / ".spec"
         settings.specs_dir = tmp_path / ".specs"
+        settings.index_file = tmp_path / ".spec-index"
         settings.is_initialized.return_value = True
         settings.validate_permissions.return_value = None
         return settings

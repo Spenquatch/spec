@@ -20,6 +20,7 @@ class TestAddCommand:
         settings.root_path = tmp_path
         settings.spec_dir = tmp_path / ".spec"
         settings.specs_dir = tmp_path / ".specs"
+        settings.index_file = tmp_path / ".spec-index"
         settings.is_initialized.return_value = True
         settings.validate_permissions.return_value = None
         return settings
@@ -114,9 +115,7 @@ class TestAddCommand:
         self, command: AddCommand, tmp_path: Path
     ):
         """Test git status analysis when repository status succeeds."""
-        with patch(
-            "spec_cli.cli.commands.add_command.SpecGitRepository"
-        ) as mock_repo_class:
+        with patch("spec_cli.git.repository.SpecGitRepository") as mock_repo_class:
             mock_repo = Mock()
             mock_repo.status.return_value = None
             mock_repo_class.return_value = mock_repo
@@ -136,9 +135,7 @@ class TestAddCommand:
         self, command: AddCommand, tmp_path: Path
     ):
         """Test git status analysis when repository status fails."""
-        with patch(
-            "spec_cli.cli.commands.add_command.SpecGitRepository"
-        ) as mock_repo_class:
+        with patch("spec_cli.git.repository.SpecGitRepository") as mock_repo_class:
             mock_repo = Mock()
             mock_repo.status.side_effect = Exception("Git error")
             mock_repo_class.return_value = mock_repo
@@ -164,9 +161,7 @@ class TestAddCommand:
         test_file.touch()
 
         with patch("spec_cli.cli.commands.add_command.show_message"):
-            with patch(
-                "spec_cli.cli.commands.add_command.SpecGitRepository"
-            ) as mock_repo_class:
+            with patch("spec_cli.git.repository.SpecGitRepository") as mock_repo_class:
                 with patch(
                     "spec_cli.cli.commands.add_command.create_add_workflow"
                 ) as mock_create_workflow:
@@ -196,9 +191,7 @@ class TestAddCommand:
         test_file.touch()
 
         with patch("spec_cli.cli.commands.add_command.show_message"):
-            with patch(
-                "spec_cli.cli.commands.add_command.SpecGitRepository"
-            ) as mock_repo_class:
+            with patch("spec_cli.git.repository.SpecGitRepository") as mock_repo_class:
                 with patch(
                     "spec_cli.cli.commands.add_command.create_add_workflow"
                 ) as mock_create_workflow:
@@ -234,7 +227,7 @@ class TestAddCommand:
         other_file.touch()
 
         with patch("spec_cli.cli.commands.add_command.show_message"):
-            with patch("spec_cli.cli.commands.add_command.SpecGitRepository"):
+            with patch("spec_cli.git.repository.SpecGitRepository"):
                 with patch(
                     "spec_cli.cli.commands.add_command.create_add_workflow"
                 ) as mock_create_workflow:
@@ -259,7 +252,7 @@ class TestAddCommand:
         with patch(
             "spec_cli.cli.commands.add_command.create_add_workflow"
         ) as mock_create:
-            with patch("spec_cli.cli.commands.add_command.SpecGitRepository"):
+            with patch("spec_cli.git.repository.SpecGitRepository"):
                 mock_workflow = Mock()
                 mock_workflow.add_files.return_value = {
                     "success": True,
