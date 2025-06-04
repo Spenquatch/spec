@@ -110,50 +110,48 @@ class TestAddCommand:
 
         assert result == []
 
-    @patch("spec_cli.cli.commands.add_command.SpecGitRepository")
     def test_analyze_git_status_when_repo_status_succeeds_then_returns_status_dict(
-        self, mock_repo_class: Mock, command: AddCommand, tmp_path: Path
+        self, command: AddCommand, tmp_path: Path
     ):
         """Test git status analysis when repository status succeeds."""
-        mock_repo = Mock()
-        mock_repo.status.return_value = None
-        mock_repo_class.return_value = mock_repo
+        with patch(
+            "spec_cli.cli.commands.add_command.SpecGitRepository"
+        ) as mock_repo_class:
+            mock_repo = Mock()
+            mock_repo.status.return_value = None
+            mock_repo_class.return_value = mock_repo
 
-        test_files = [tmp_path / "file1.md", tmp_path / "file2.md"]
+            test_files = [tmp_path / "file1.md", tmp_path / "file2.md"]
 
-        result = command._analyze_git_status(test_files, mock_repo)
+            result = command._analyze_git_status(test_files, mock_repo)
 
-        assert "untracked" in result
-        assert "modified" in result
-        assert "staged" in result
-        assert "up_to_date" in result
-        # In the simplified implementation, all files are assumed untracked
-        assert len(result["untracked"]) == 2
+            assert "untracked" in result
+            assert "modified" in result
+            assert "staged" in result
+            assert "up_to_date" in result
+            # In the simplified implementation, all files are assumed untracked
+            assert len(result["untracked"]) == 2
 
-    @patch("spec_cli.cli.commands.add_command.SpecGitRepository")
     def test_analyze_git_status_when_repo_status_fails_then_assumes_untracked(
-        self, mock_repo_class: Mock, command: AddCommand, tmp_path: Path
+        self, command: AddCommand, tmp_path: Path
     ):
         """Test git status analysis when repository status fails."""
-        mock_repo = Mock()
-        mock_repo.status.side_effect = Exception("Git error")
-        mock_repo_class.return_value = mock_repo
+        with patch(
+            "spec_cli.cli.commands.add_command.SpecGitRepository"
+        ) as mock_repo_class:
+            mock_repo = Mock()
+            mock_repo.status.side_effect = Exception("Git error")
+            mock_repo_class.return_value = mock_repo
 
-        test_files = [tmp_path / "file1.md"]
+            test_files = [tmp_path / "file1.md"]
 
-        result = command._analyze_git_status(test_files, mock_repo)
+            result = command._analyze_git_status(test_files, mock_repo)
 
-        # Should still return all files as untracked
-        assert len(result["untracked"]) == 1
+            # Should still return all files as untracked
+            assert len(result["untracked"]) == 1
 
-    @patch("spec_cli.cli.commands.add_command.create_add_workflow")
-    @patch("spec_cli.cli.commands.add_command.SpecGitRepository")
-    @patch("spec_cli.cli.commands.add_command.show_message")
     def test_execute_when_dry_run_then_does_not_add_files(
         self,
-        mock_show_message: Mock,
-        mock_repo_class: Mock,
-        mock_create_workflow: Mock,
         command: AddCommand,
         mock_settings: Mock,
         tmp_path: Path,
@@ -165,26 +163,27 @@ class TestAddCommand:
         test_file = specs_dir / "test.md"
         test_file.touch()
 
-        mock_repo = Mock()
-        mock_repo.status.return_value = None
-        mock_repo_class.return_value = mock_repo
+        with patch("spec_cli.cli.commands.add_command.show_message"):
+            with patch(
+                "spec_cli.cli.commands.add_command.SpecGitRepository"
+            ) as mock_repo_class:
+                with patch(
+                    "spec_cli.cli.commands.add_command.create_add_workflow"
+                ) as mock_create_workflow:
+                    mock_repo = Mock()
+                    mock_repo.status.return_value = None
+                    mock_repo_class.return_value = mock_repo
 
-        # Execute
-        result = command.execute(files=[test_file], dry_run=True)
+                    # Execute
+                    result = command.execute(files=[test_file], dry_run=True)
 
-        # Verify
-        assert result["success"] is True
-        assert "Dry run completed" in result["message"]
-        mock_create_workflow.assert_not_called()
+                    # Verify
+                    assert result["success"] is True
+                    assert "Dry run completed" in result["message"]
+                    mock_create_workflow.assert_not_called()
 
-    @patch("spec_cli.cli.commands.add_command.create_add_workflow")
-    @patch("spec_cli.cli.commands.add_command.SpecGitRepository")
-    @patch("spec_cli.cli.commands.add_command.show_message")
     def test_execute_when_files_to_add_then_adds_successfully(
         self,
-        mock_show_message: Mock,
-        mock_repo_class: Mock,
-        mock_create_workflow: Mock,
         command: AddCommand,
         mock_settings: Mock,
         tmp_path: Path,
@@ -196,35 +195,36 @@ class TestAddCommand:
         test_file = specs_dir / "test.md"
         test_file.touch()
 
-        mock_repo = Mock()
-        mock_repo.status.return_value = None
-        mock_repo_class.return_value = mock_repo
+        with patch("spec_cli.cli.commands.add_command.show_message"):
+            with patch(
+                "spec_cli.cli.commands.add_command.SpecGitRepository"
+            ) as mock_repo_class:
+                with patch(
+                    "spec_cli.cli.commands.add_command.create_add_workflow"
+                ) as mock_create_workflow:
+                    mock_repo = Mock()
+                    mock_repo.status.return_value = None
+                    mock_repo_class.return_value = mock_repo
 
-        mock_workflow = Mock()
-        mock_workflow.add_files.return_value = {
-            "success": True,
-            "added": [str(test_file)],
-            "skipped": [],
-            "failed": [],
-        }
-        mock_create_workflow.return_value = mock_workflow
+                    mock_workflow = Mock()
+                    mock_workflow.add_files.return_value = {
+                        "success": True,
+                        "added": [str(test_file)],
+                        "skipped": [],
+                        "failed": [],
+                    }
+                    mock_create_workflow.return_value = mock_workflow
 
-        # Execute
-        result = command.execute(files=[test_file], force=False)
+                    # Execute
+                    result = command.execute(files=[test_file], force=False)
 
-        # Verify
-        assert result["success"] is True
-        assert "Added 1 files" in result["message"]
-        mock_workflow.add_files.assert_called_once()
+                    # Verify
+                    assert result["success"] is True
+                    assert "Added 1 files" in result["message"]
+                    mock_workflow.add_files.assert_called_once()
 
-    @patch("spec_cli.cli.commands.add_command.create_add_workflow")
-    @patch("spec_cli.cli.commands.add_command.SpecGitRepository")
-    @patch("spec_cli.cli.commands.add_command.show_message")
     def test_execute_when_no_spec_files_then_returns_warning(
         self,
-        mock_show_message: Mock,
-        mock_repo_class: Mock,
-        mock_create_workflow: Mock,
         command: AddCommand,
         tmp_path: Path,
     ):
@@ -233,13 +233,18 @@ class TestAddCommand:
         other_file = tmp_path / "other.md"
         other_file.touch()
 
-        # Execute
-        result = command.execute(files=[other_file])
+        with patch("spec_cli.cli.commands.add_command.show_message"):
+            with patch("spec_cli.cli.commands.add_command.SpecGitRepository"):
+                with patch(
+                    "spec_cli.cli.commands.add_command.create_add_workflow"
+                ) as mock_create_workflow:
+                    # Execute
+                    result = command.execute(files=[other_file])
 
-        # Verify
-        assert result["success"] is True
-        assert "No spec files found" in result["message"]
-        mock_create_workflow.assert_not_called()
+                    # Verify
+                    assert result["success"] is True
+                    assert "No spec files found" in result["message"]
+                    mock_create_workflow.assert_not_called()
 
     def test_safe_execute_integration_when_valid_files_then_succeeds(
         self, mock_settings: Mock, tmp_path: Path

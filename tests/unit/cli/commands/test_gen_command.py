@@ -126,12 +126,8 @@ class TestGenCommand:
             test_dir
         )
 
-    @patch("spec_cli.file_system.path_resolver.PathResolver")
-    @patch("spec_cli.cli.commands.gen_command.show_message")
     def test_show_dry_run_preview_when_called_then_displays_preview_info(
         self,
-        mock_show_message: Mock,
-        mock_resolver_class: Mock,
         command: GenCommand,
         tmp_path: Path,
     ):
@@ -140,22 +136,30 @@ class TestGenCommand:
         test_file = tmp_path / "test.py"
         test_file.touch()
 
-        mock_resolver = Mock()
-        mock_resolver.get_spec_files_for_source.return_value = {
-            "index": tmp_path / ".specs" / "test.py" / "index.md",
-            "history": tmp_path / ".specs" / "test.py" / "history.md",
-        }
-        mock_resolver_class.return_value = mock_resolver
+        with patch(
+            "spec_cli.cli.commands.gen_command.show_message"
+        ) as mock_show_message:
+            with patch(
+                "spec_cli.file_system.path_resolver.PathResolver"
+            ) as mock_resolver_class:
+                mock_resolver = Mock()
+                mock_resolver.get_spec_files_for_source.return_value = {
+                    "index": tmp_path / ".specs" / "test.py" / "index.md",
+                    "history": tmp_path / ".specs" / "test.py" / "history.md",
+                }
+                mock_resolver_class.return_value = mock_resolver
 
-        # Execute
-        command._show_dry_run_preview(
-            [test_file], "default", ConflictResolutionStrategy.BACKUP_AND_REPLACE
-        )
+                # Execute
+                command._show_dry_run_preview(
+                    [test_file],
+                    "default",
+                    ConflictResolutionStrategy.BACKUP_AND_REPLACE,
+                )
 
-        # Verify
-        mock_show_message.assert_called_with(
-            "This is a dry run. No files would be modified.", "info"
-        )
+                # Verify
+                mock_show_message.assert_called_with(
+                    "This is a dry run. No files would be modified.", "info"
+                )
 
     @patch("spec_cli.cli.commands.gen_command.create_generation_workflow")
     @patch("spec_cli.cli.commands.gen_command.validate_generation_input")
@@ -173,25 +177,32 @@ class TestGenCommand:
         test_file = tmp_path / "test.py"
         test_file.touch()
 
-        mock_validate.return_value = {"valid": True, "errors": [], "warnings": []}
+        with patch("spec_cli.cli.commands.gen_command.show_message"):
+            with patch(
+                "spec_cli.cli.commands.gen_command.validate_generation_input"
+            ) as mock_validate:
+                with patch(
+                    "spec_cli.cli.commands.gen_command.create_generation_workflow"
+                ) as mock_create_workflow:
+                    mock_validate.return_value = {
+                        "valid": True,
+                        "errors": [],
+                        "warnings": [],
+                    }
 
-        with patch.object(command, "_expand_source_files", return_value=[test_file]):
-            # Execute
-            result = command.execute(files=[test_file], dry_run=True)
+                    with patch.object(
+                        command, "_expand_source_files", return_value=[test_file]
+                    ):
+                        # Execute
+                        result = command.execute(files=[test_file], dry_run=True)
 
-            # Verify
-            assert result["success"] is True
-            assert "Dry run completed" in result["message"]
-            mock_create_workflow.assert_not_called()
+                        # Verify
+                        assert result["success"] is True
+                        assert "Dry run completed" in result["message"]
+                        mock_create_workflow.assert_not_called()
 
-    @patch("spec_cli.cli.commands.gen_command.create_generation_workflow")
-    @patch("spec_cli.cli.commands.gen_command.validate_generation_input")
-    @patch("spec_cli.cli.commands.gen_command.show_message")
     def test_execute_when_validation_fails_then_raises_error(
         self,
-        mock_show_message: Mock,
-        mock_validate: Mock,
-        mock_create_workflow: Mock,
         command: GenCommand,
         tmp_path: Path,
     ):
@@ -200,27 +211,28 @@ class TestGenCommand:
         test_file = tmp_path / "test.py"
         test_file.touch()
 
-        mock_validate.return_value = {
-            "valid": False,
-            "errors": ["Template not found"],
-            "warnings": [],
-        }
+        with patch("spec_cli.cli.commands.gen_command.show_message"):
+            with patch(
+                "spec_cli.cli.commands.gen_command.validate_generation_input"
+            ) as mock_validate:
+                with patch(
+                    "spec_cli.cli.commands.gen_command.create_generation_workflow"
+                ):
+                    mock_validate.return_value = {
+                        "valid": False,
+                        "errors": ["Template not found"],
+                        "warnings": [],
+                    }
 
-        with patch.object(command, "_expand_source_files", return_value=[test_file]):
-            # Execute & Verify
-            with pytest.raises(SpecError, match="Validation failed"):
-                command.execute(files=[test_file])
+                    with patch.object(
+                        command, "_expand_source_files", return_value=[test_file]
+                    ):
+                        # Execute & Verify
+                        with pytest.raises(SpecError, match="Validation failed"):
+                            command.execute(files=[test_file])
 
-    @patch("spec_cli.cli.commands.gen_command.create_generation_workflow")
-    @patch("spec_cli.cli.commands.gen_command.validate_generation_input")
-    @patch("spec_cli.cli.commands.gen_command.get_user_confirmation")
-    @patch("spec_cli.cli.commands.gen_command.show_message")
     def test_execute_when_warnings_and_not_forced_then_prompts_user(
         self,
-        mock_show_message: Mock,
-        mock_confirm: Mock,
-        mock_validate: Mock,
-        mock_create_workflow: Mock,
         command: GenCommand,
         tmp_path: Path,
     ):
@@ -229,21 +241,33 @@ class TestGenCommand:
         test_file = tmp_path / "test.py"
         test_file.touch()
 
-        mock_validate.return_value = {
-            "valid": True,
-            "errors": [],
-            "warnings": ["Large file detected"],
-        }
-        mock_confirm.return_value = False  # User cancels
+        with patch("spec_cli.cli.commands.gen_command.show_message"):
+            with patch(
+                "spec_cli.cli.commands.gen_command.get_user_confirmation"
+            ) as mock_confirm:
+                with patch(
+                    "spec_cli.cli.commands.gen_command.validate_generation_input"
+                ) as mock_validate:
+                    with patch(
+                        "spec_cli.cli.commands.gen_command.create_generation_workflow"
+                    ):
+                        mock_validate.return_value = {
+                            "valid": True,
+                            "errors": [],
+                            "warnings": ["Large file detected"],
+                        }
+                        mock_confirm.return_value = False  # User cancels
 
-        with patch.object(command, "_expand_source_files", return_value=[test_file]):
-            # Execute
-            result = command.execute(files=[test_file], force=False)
+                        with patch.object(
+                            command, "_expand_source_files", return_value=[test_file]
+                        ):
+                            # Execute
+                            result = command.execute(files=[test_file], force=False)
 
-            # Verify
-            assert result["success"] is False
-            assert "cancelled due to warnings" in result["message"]
-            mock_confirm.assert_called_once()
+                            # Verify
+                            assert result["success"] is False
+                            assert "cancelled due to warnings" in result["message"]
+                            mock_confirm.assert_called_once()
 
     @patch("spec_cli.cli.commands.gen_command.create_generation_workflow")
     @patch("spec_cli.cli.commands.gen_command.validate_generation_input")
@@ -261,29 +285,44 @@ class TestGenCommand:
         test_file = tmp_path / "test.py"
         test_file.touch()
 
-        mock_validate.return_value = {"valid": True, "errors": [], "warnings": []}
+        with patch("spec_cli.cli.commands.gen_command.show_message"):
+            with patch(
+                "spec_cli.cli.commands.gen_command.validate_generation_input"
+            ) as mock_validate:
+                with patch(
+                    "spec_cli.cli.commands.gen_command.create_generation_workflow"
+                ) as mock_create_workflow:
+                    mock_validate.return_value = {
+                        "valid": True,
+                        "errors": [],
+                        "warnings": [],
+                    }
 
-        mock_result = Mock()
-        mock_result.success = True
-        mock_result.generated_files = ["file1.md", "file2.md"]
-        mock_result.skipped_files = []
-        mock_result.failed_files = []
-        mock_result.conflicts_resolved = []
-        mock_result.total_processing_time = 1.5
+                    mock_result = Mock()
+                    mock_result.success = True
+                    mock_result.generated_files = ["file1.md", "file2.md"]
+                    mock_result.skipped_files = []
+                    mock_result.failed_files = []
+                    mock_result.conflicts_resolved = []
+                    mock_result.total_processing_time = 1.5
 
-        mock_workflow = Mock()
-        mock_workflow.generate.return_value = mock_result
-        mock_create_workflow.return_value = mock_workflow
+                    mock_workflow = Mock()
+                    mock_workflow.generate.return_value = mock_result
+                    mock_create_workflow.return_value = mock_workflow
 
-        with patch.object(command, "_expand_source_files", return_value=[test_file]):
-            # Execute
-            result = command.execute(files=[test_file])
+                    with patch.object(
+                        command, "_expand_source_files", return_value=[test_file]
+                    ):
+                        # Execute
+                        result = command.execute(files=[test_file])
 
-            # Verify
-            assert result["success"] is True
-            assert "Generated documentation for 2 files" in result["message"]
-            assert result["data"]["generated"] == ["file1.md", "file2.md"]
-            assert result["data"]["processing_time"] == 1.5
+                        # Verify
+                        assert result["success"] is True
+                        assert (
+                            "Generated documentation for 2 files" in result["message"]
+                        )
+                        assert result["data"]["generated"] == ["file1.md", "file2.md"]
+                        assert result["data"]["processing_time"] == 1.5
 
     def test_safe_execute_integration_when_valid_files_then_succeeds(
         self, mock_settings: Mock, tmp_path: Path
