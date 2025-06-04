@@ -41,9 +41,9 @@ class FileChangeDetector:
             # Use usedforsecurity=False for Python 3.9+ to fix security warning
             # We're using MD5 for file integrity checking, not security
             if sys.version_info >= (3, 9):
-                md5_hash = hashlib.md5(usedforsecurity=False)  # type: ignore[call-arg]
+                md5_hash = hashlib.md5(usedforsecurity=False)  # nosec B303 # type: ignore[call-arg]
             else:
-                md5_hash = hashlib.md5()  # nosec B324
+                md5_hash = hashlib.md5()  # nosec B303
             sha256_hash = hashlib.sha256()
 
             with file_path.open("rb") as f:
