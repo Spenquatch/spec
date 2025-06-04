@@ -1,6 +1,5 @@
 """Spec commit command implementation."""
 
-
 import click
 
 from ...git.repository import SpecGitRepository

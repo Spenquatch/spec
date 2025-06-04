@@ -257,9 +257,9 @@ class GenerationPrompts:
                     selected_strategy_name
                 )
             else:
-                config[
-                    "conflict_strategy"
-                ] = ConflictResolutionStrategy.BACKUP_AND_REPLACE
+                config["conflict_strategy"] = (
+                    ConflictResolutionStrategy.BACKUP_AND_REPLACE
+                )
 
             # Auto-commit option
             config["auto_commit"] = click.confirm(

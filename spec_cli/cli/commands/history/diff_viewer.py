@@ -80,8 +80,8 @@ class DiffViewer:
                 new_line = new_lines[i] if i < len(new_lines) else ""
 
                 # Add line numbers and content
-                old_line_num = f"{i+1:4d}" if old_line else "    "
-                new_line_num = f"{i+1:4d}" if new_line else "    "
+                old_line_num = f"{i + 1:4d}" if old_line else "    "
+                new_line_num = f"{i + 1:4d}" if new_line else "    "
 
                 if old_line != new_line:
                     if old_line:

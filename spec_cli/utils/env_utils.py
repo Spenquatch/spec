@@ -224,17 +224,17 @@ def validate_env_vars(required_vars: Dict[str, Any]) -> Dict[str, str]:
             continue
 
         # Type validation
-        if expected_type == int:
+        if expected_type is int:
             try:
                 int(value)
             except ValueError:
                 errors[var_name] = f"Invalid integer value: {value}"
-        elif expected_type == float:
+        elif expected_type is float:
             try:
                 float(value)
             except ValueError:
                 errors[var_name] = f"Invalid float value: {value}"
-        elif expected_type == bool:
+        elif expected_type is bool:
             normalized = value.lower().strip()
             if normalized not in ["1", "true", "yes", "on", "0", "false", "no", "off"]:
                 errors[var_name] = f"Invalid boolean value: {value}"
@@ -334,35 +334,35 @@ class EnvironmentConfig:
         # Validate debug_level
         valid_levels = ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
         if self.debug_level not in valid_levels:
-            errors[
-                "debug_level"
-            ] = f"Invalid debug level '{self.debug_level}'. Must be one of: {valid_levels}"
+            errors["debug_level"] = (
+                f"Invalid debug level '{self.debug_level}'. Must be one of: {valid_levels}"
+            )
 
         # Validate console_width
         if self.console_width < 0:
-            errors[
-                "console_width"
-            ] = f"Console width must be >= 0, got {self.console_width}"
+            errors["console_width"] = (
+                f"Console width must be >= 0, got {self.console_width}"
+            )
         elif self.console_width > 0 and self.console_width < 40:
-            errors[
-                "console_width"
-            ] = f"Console width must be >= 40 if specified, got {self.console_width}"
+            errors["console_width"] = (
+                f"Console width must be >= 40 if specified, got {self.console_width}"
+            )
 
         # Validate api_timeout
         if self.api_timeout <= 0:
             errors["api_timeout"] = f"API timeout must be > 0, got {self.api_timeout}"
         elif self.api_timeout > 300:  # 5 minutes max
-            errors[
-                "api_timeout"
-            ] = f"API timeout too large (max 300s), got {self.api_timeout}"
+            errors["api_timeout"] = (
+                f"API timeout too large (max 300s), got {self.api_timeout}"
+            )
 
         # Validate max_retries
         if self.max_retries < 0:
             errors["max_retries"] = f"Max retries must be >= 0, got {self.max_retries}"
         elif self.max_retries > 10:
-            errors[
-                "max_retries"
-            ] = f"Max retries too large (max 10), got {self.max_retries}"
+            errors["max_retries"] = (
+                f"Max retries too large (max 10), got {self.max_retries}"
+            )
 
         debug_logger.log(
             "DEBUG",

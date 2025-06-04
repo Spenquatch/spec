@@ -1,6 +1,5 @@
 """Spec add command implementation."""
 
-
 import click
 
 from ..options import dry_run_option, files_argument, force_option, spec_command

@@ -1,6 +1,5 @@
 """Spec diff command implementation."""
 
-
 import click
 
 from ...logging.debug import debug_logger

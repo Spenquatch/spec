@@ -629,9 +629,9 @@ class SpecCommitManager:
                         "WARNING", "Could not get commit count", error=str(e)
                     )
 
-                status[
-                    "safe_for_operations"
-                ] = self.state_checker.is_safe_for_spec_operations()
+                status["safe_for_operations"] = (
+                    self.state_checker.is_safe_for_spec_operations()
+                )
 
             return status
 
