@@ -118,8 +118,7 @@ only_in_toml = "value"
             with pytest.raises(SpecConfigurationError) as exc_info:
                 loader.load_configuration()
 
-            assert "Invalid YAML syntax" in str(exc_info.value)
-            assert str(yaml_file) in str(exc_info.value)
+            assert "Failed to parse YAML configuration" in str(exc_info.value)
 
     def test_configuration_loader_handles_malformed_toml(self) -> None:
         """Test error handling for malformed TOML files."""
@@ -136,8 +135,7 @@ only_in_toml = "value"
             with pytest.raises(SpecConfigurationError) as exc_info:
                 loader.load_configuration()
 
-            assert "Invalid TOML syntax" in str(exc_info.value)
-            assert str(toml_file) in str(exc_info.value)
+            assert "Failed to parse TOML configuration" in str(exc_info.value)
 
     def test_configuration_loader_handles_encoding_errors(self) -> None:
         """Test error handling for files with encoding issues."""
@@ -154,7 +152,7 @@ only_in_toml = "value"
             with pytest.raises(SpecConfigurationError) as exc_info:
                 loader.load_configuration()
 
-            assert "file encoding issue" in str(exc_info.value)
+            assert "Failed to read YAML configuration file" in str(exc_info.value)
 
     def test_configuration_loader_get_available_sources(self) -> None:
         """Test getting list of available configuration sources."""

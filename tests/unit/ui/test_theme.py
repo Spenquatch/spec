@@ -8,6 +8,7 @@ from spec_cli.config.settings import SpecSettings
 from spec_cli.ui.theme import (
     ColorScheme,
     SpecTheme,
+    ThemeManager,
     get_current_theme,
     reset_theme,
     set_current_theme,
@@ -188,3 +189,48 @@ class TestThemeUpdates:
         # Verify the new theme has dark characteristics
         styles = theme._get_theme_styles()
         assert "bright_white" in styles["title"]
+
+
+class TestThemeManager:
+    """Test ThemeManager singleton functionality."""
+
+    def teardown_method(self) -> None:
+        """Reset theme manager after each test."""
+        reset_theme()
+
+    def test_theme_manager_singleton_behavior(self) -> None:
+        """Test ThemeManager provides singleton behavior."""
+        manager1 = ThemeManager()
+        manager2 = ThemeManager()
+
+        # Should be the same instance
+        assert manager1 is manager2
+
+        # Should have singleton attributes
+        assert hasattr(ThemeManager, "_is_singleton")
+        assert hasattr(ThemeManager, "_original_class")
+        assert ThemeManager._is_singleton is True
+
+    def test_theme_manager_provides_consistent_theme(self) -> None:
+        """Test ThemeManager returns consistent theme instances."""
+        manager = ThemeManager()
+
+        theme1 = manager.get_current_theme()
+        theme2 = manager.get_current_theme()
+
+        # Should return the same theme instance
+        assert theme1 is theme2
+
+    def test_theme_manager_reset_clears_theme(self) -> None:
+        """Test ThemeManager reset functionality."""
+        manager1 = ThemeManager()
+        theme1 = manager1.get_current_theme()
+
+        reset_theme()
+
+        manager2 = ThemeManager()
+        theme2 = manager2.get_current_theme()
+
+        # Should be different managers and themes after reset
+        assert manager1 is not manager2
+        assert theme1 is not theme2

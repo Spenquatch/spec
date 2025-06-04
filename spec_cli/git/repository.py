@@ -1,8 +1,10 @@
+import subprocess
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional
 
 from ..config.settings import SpecSettings, get_settings
 from ..logging.debug import debug_logger
+from ..utils.error_utils import create_error_context, handle_subprocess_error
 from .operations import GitOperations
 from .path_converter import GitPathConverter
 
@@ -153,7 +155,24 @@ class SpecGitRepository(GitRepository):
         try:
             result = self.operations.run_git_command(["rev-parse", "HEAD"])
             commit_hash = result.stdout.strip() if result.stdout else "unknown"
-        except Exception:
+        except Exception as e:
+            # Use centralized error handling for subprocess errors
+            if isinstance(e, subprocess.SubprocessError):
+                formatted_error = handle_subprocess_error(e)
+                context = create_error_context(self.settings.spec_dir)
+                context.update(
+                    {
+                        "operation": "git_commit_hash_retrieval",
+                        "git_command": "rev-parse HEAD",
+                    }
+                )
+                debug_logger.log(
+                    "WARNING",
+                    f"Failed to retrieve commit hash: {formatted_error}",
+                    **context,
+                )
+            else:
+                debug_logger.log("WARNING", f"Failed to retrieve commit hash: {e}")
             commit_hash = "unknown"
 
         debug_logger.log("INFO", "Commit created successfully")
@@ -317,9 +336,23 @@ class SpecGitRepository(GitRepository):
             return branch
 
         except Exception as e:
-            debug_logger.log(
-                "WARNING", "Could not determine current branch", error=str(e)
-            )
+            # Use centralized error handling for subprocess errors
+            if isinstance(e, subprocess.SubprocessError):
+                formatted_error = handle_subprocess_error(e)
+                context = create_error_context(self.settings.spec_dir)
+                context.update(
+                    {
+                        "operation": "git_current_branch",
+                        "git_command": "symbolic-ref --short HEAD",
+                    }
+                )
+                debug_logger.log(
+                    "WARNING",
+                    f"Could not determine current branch: {formatted_error}",
+                    **context,
+                )
+            else:
+                debug_logger.log("WARNING", f"Could not determine current branch: {e}")
             return "HEAD"  # Fallback for detached HEAD state
 
     def has_uncommitted_changes(self) -> bool:
@@ -407,7 +440,24 @@ class SpecGitRepository(GitRepository):
             return commits
 
         except Exception as e:
-            debug_logger.log("WARNING", "Could not get recent commits", error=str(e))
+            # Use centralized error handling for subprocess errors
+            if isinstance(e, subprocess.SubprocessError):
+                formatted_error = handle_subprocess_error(e)
+                context = create_error_context(self.settings.spec_dir)
+                context.update(
+                    {
+                        "operation": "git_recent_commits",
+                        "git_command": f"log --max-count={count}",
+                        "requested_count": count,
+                    }
+                )
+                debug_logger.log(
+                    "WARNING",
+                    f"Could not get recent commits: {formatted_error}",
+                    **context,
+                )
+            else:
+                debug_logger.log("WARNING", f"Could not get recent commits: {e}")
             return []
 
     def add_files(self, files: List[str]) -> None:

@@ -5,6 +5,7 @@ from typing import Any, Callable, Dict, List, Optional, cast
 from ..config.settings import SpecSettings, get_settings
 from ..core.workflow_orchestrator import SpecWorkflowOrchestrator
 from ..logging.debug import debug_logger
+from ..utils.error_utils import create_error_context, handle_os_error
 from .change_detector import FileChangeDetector
 from .conflict_resolver import ConflictResolutionStrategy, ConflictResolver
 from .processing_pipeline import FileProcessingPipeline, FileProcessingResult
@@ -272,8 +273,25 @@ class BatchFileProcessor:
                 result.warnings.extend(file_result.warnings)
 
             except Exception as e:
-                error_msg = f"Unexpected error processing {file_path}: {e}"
-                debug_logger.log("ERROR", error_msg)
+                if isinstance(e, OSError):
+                    formatted_error = handle_os_error(e)
+                    context = create_error_context(file_path)
+                    context.update(
+                        {
+                            "operation": "batch_file_processing",
+                            "batch_size": len(files),
+                            "current_index": i,
+                        }
+                    )
+                    debug_logger.log(
+                        "ERROR",
+                        f"Batch processing failed: {formatted_error}",
+                        **context,
+                    )
+                    error_msg = f"File processing failed: {formatted_error}"
+                else:
+                    error_msg = f"Unexpected error processing {file_path}: {e}"
+                    debug_logger.log("ERROR", error_msg)
 
                 result.failed_files.append(file_path)
                 result.errors.append(error_msg)
@@ -310,8 +328,22 @@ class BatchFileProcessor:
                 result.warnings.append("Auto-commit failed")
 
         except Exception as e:
-            result.warnings.append(f"Auto-commit failed: {e}")
-            debug_logger.log("WARNING", "Auto-commit failed", error=str(e))
+            if isinstance(e, OSError):
+                formatted_error = handle_os_error(e)
+                context = create_error_context(Path.cwd())
+                context.update(
+                    {
+                        "operation": "auto_commit",
+                        "successful_files_count": len(result.successful_files),
+                    }
+                )
+                debug_logger.log(
+                    "WARNING", f"Auto-commit failed: {formatted_error}", **context
+                )
+                result.warnings.append(f"Auto-commit failed: {formatted_error}")
+            else:
+                result.warnings.append(f"Auto-commit failed: {e}")
+                debug_logger.log("WARNING", "Auto-commit failed", error=str(e))
 
     def estimate_batch_processing(self, file_paths: List[Path]) -> Dict[str, Any]:
         """Estimate batch processing requirements.

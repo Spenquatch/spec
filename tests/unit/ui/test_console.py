@@ -5,7 +5,13 @@ from unittest.mock import Mock, patch
 from rich.console import Console
 
 from spec_cli.config.settings import SpecSettings
-from spec_cli.ui.console import SpecConsole, get_console, reset_console, set_console
+from spec_cli.ui.console import (
+    ConsoleManager,
+    SpecConsole,
+    get_console,
+    reset_console,
+    set_console,
+)
 from spec_cli.ui.theme import ColorScheme, SpecTheme
 
 
@@ -262,3 +268,48 @@ class TestEmojiReplacement:
 
         # Should contain the replacement character or remove emoji entirely
         assert "✅" not in replaced or "✓" in replaced
+
+
+class TestConsoleManager:
+    """Test ConsoleManager singleton functionality."""
+
+    def teardown_method(self) -> None:
+        """Reset console manager after each test."""
+        reset_console()
+
+    def test_console_manager_singleton_behavior(self) -> None:
+        """Test ConsoleManager provides singleton behavior."""
+        manager1 = ConsoleManager()
+        manager2 = ConsoleManager()
+
+        # Should be the same instance
+        assert manager1 is manager2
+
+        # Should have singleton attributes
+        assert hasattr(ConsoleManager, "_is_singleton")
+        assert hasattr(ConsoleManager, "_original_class")
+        assert ConsoleManager._is_singleton is True
+
+    def test_console_manager_provides_consistent_console(self) -> None:
+        """Test ConsoleManager returns consistent console instances."""
+        manager = ConsoleManager()
+
+        console1 = manager.get_console()
+        console2 = manager.get_console()
+
+        # Should return the same console instance
+        assert console1 is console2
+
+    def test_console_manager_reset_clears_console(self) -> None:
+        """Test ConsoleManager reset functionality."""
+        manager1 = ConsoleManager()
+        console1 = manager1.get_console()
+
+        reset_console()
+
+        manager2 = ConsoleManager()
+        console2 = manager2.get_console()
+
+        # Should be different managers and consoles after reset
+        assert manager1 is not manager2
+        assert console1 is not console2

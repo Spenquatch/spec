@@ -1,11 +1,15 @@
 from pathlib import Path
 from typing import Any, Dict, List
 
+from ..core.error_handler import ErrorHandler
 from ..exceptions import SpecConfigurationError
 
 
 class ConfigurationValidator:
     """Validates configuration values and provides helpful error messages."""
+
+    def __init__(self) -> None:
+        self.error_handler = ErrorHandler({"component": "config_validator"})
 
     def validate_configuration(self, config: Dict[str, Any]) -> List[str]:
         """Validate configuration and return list of validation errors."""
@@ -143,12 +147,18 @@ class ConfigurationValidator:
         """Validate configuration and raise exception if invalid."""
         errors = self.validate_configuration(config)
         if errors:
-            error_msg = "Configuration validation failed:\n" + "\n".join(
-                f"  - {error}" for error in errors
+            # Include specific errors in the exception message for better user experience
+            error_details = "; ".join(errors)
+            validation_error = Exception(
+                f"Configuration validation failed: {error_details}"
             )
-            raise SpecConfigurationError(
-                error_msg,
-                {"validation_errors": errors, "config_keys": list(config.keys())},
+            self.error_handler.log_and_raise(
+                validation_error,
+                "validate configuration",
+                reraise_as=SpecConfigurationError,
+                validation_errors=errors,
+                config_keys=list(config.keys()),
+                validation_stage="configuration_validation",
             )
 
     def get_validation_schema(self) -> Dict[str, Any]:

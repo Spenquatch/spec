@@ -7,6 +7,7 @@ import yaml
 from ..config.settings import SpecSettings, get_settings
 from ..exceptions import SpecTemplateError
 from ..logging.debug import debug_logger
+from ..utils.path_utils import ensure_directory, normalize_path
 from .config import TemplateConfig, TemplateValidator
 from .defaults import get_default_template_config
 
@@ -138,15 +139,28 @@ class TemplateLoader:
         template_file = self.settings.template_file
 
         try:
+            # Normalize template file path for consistent handling
+            normalized_template_file = normalize_path(template_file)
+
             # Backup existing file if requested
-            if backup_existing and template_file.exists():
-                self._backup_existing_file(template_file)
+            if backup_existing and normalized_template_file.exists():
+                self._backup_existing_file(normalized_template_file)
 
             # Prepare data for saving
             template_data = self._prepare_save_data(config)
 
+            # Ensure template directory exists
+            ensure_directory(normalized_template_file.parent)
+            debug_logger.log(
+                "DEBUG",
+                "Template directory ensured",
+                template_file=str(normalized_template_file),
+                template_dir=str(normalized_template_file.parent),
+                operation="template_file_creation",
+            )
+
             # Write to file
-            with template_file.open("w", encoding="utf-8") as f:
+            with normalized_template_file.open("w", encoding="utf-8") as f:
                 yaml.dump(
                     template_data,
                     f,

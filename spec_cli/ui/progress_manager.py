@@ -1,7 +1,9 @@
+import threading
 import time
 from dataclasses import dataclass
 from typing import Callable, Dict, List, Optional
 
+from ..core.error_handler import ErrorHandler
 from ..file_processing.progress_events import (
     ProcessingStage,
     ProgressEvent,
@@ -10,6 +12,7 @@ from ..file_processing.progress_events import (
     progress_reporter,
 )
 from ..logging.debug import debug_logger
+from ..utils.singleton import reset_singleton, singleton_decorator
 from .console import get_console
 from .progress_bar import SpecProgressBar
 from .spinner import SpinnerManager
@@ -58,6 +61,7 @@ class ProgressManager:
         """
         self.progress_reporter = progress_reporter_instance or progress_reporter
         self.auto_display = auto_display
+        self.error_handler = ErrorHandler({"component": "progress_manager"})
 
         # Progress tracking
         self.progress_states: Dict[str, ProgressState] = {}
@@ -106,12 +110,17 @@ class ProgressManager:
             try:
                 handler(event)
             except Exception as e:
-                debug_logger.log(
-                    "ERROR",
-                    "Progress event handler failed",
+                # Log the error but don't stop processing other handlers
+                self.error_handler.report(
+                    e,
+                    "handle progress event",
                     event_type=event.event_type.value,
-                    error=str(e),
+                    handler_name=handler.__name__
+                    if hasattr(handler, "__name__")
+                    else str(handler),
+                    progress_operation="progress_event_handling",
                 )
+                # Continue processing other handlers
 
     def _handle_batch_started(self, event: ProgressEvent) -> None:
         """Handle batch started event."""
@@ -396,40 +405,61 @@ class ProgressManager:
         debug_logger.log("INFO", "ProgressManager cleaned up")
 
 
-# Global progress manager instance
-_progress_manager: Optional[ProgressManager] = None
+@singleton_decorator
+class ProgressManagerSingleton:
+    """Manages global progress manager instances."""
+
+    def __init__(self) -> None:
+        """Initialize progress manager singleton."""
+        self._progress_manager: Optional[ProgressManager] = None
+        self._lock = threading.Lock()
+
+    def get_progress_manager(self) -> ProgressManager:
+        """Get the global progress manager instance.
+
+        Returns:
+            Global ProgressManager instance
+        """
+        if self._progress_manager is None:
+            with self._lock:
+                if self._progress_manager is None:
+                    self._progress_manager = ProgressManager()
+                    debug_logger.log("INFO", "Global progress manager initialized")
+
+        return self._progress_manager
+
+    def set_progress_manager(self, manager: ProgressManager) -> None:
+        """Set the global progress manager.
+
+        Args:
+            manager: ProgressManager instance to set as global
+        """
+        with self._lock:
+            self._progress_manager = manager
+            debug_logger.log("INFO", "Global progress manager updated")
+
+    def reset(self) -> None:
+        """Reset the global progress manager."""
+        with self._lock:
+            if self._progress_manager:
+                self._progress_manager.cleanup()
+            self._progress_manager = None
+            debug_logger.log("INFO", "Global progress manager reset")
 
 
+# Convenience functions for getting progress manager
 def get_progress_manager() -> ProgressManager:
-    """Get the global progress manager instance.
-
-    Returns:
-        Global ProgressManager instance
-    """
-    global _progress_manager
-
-    if _progress_manager is None:
-        _progress_manager = ProgressManager()
-        debug_logger.log("INFO", "Global progress manager initialized")
-
-    return _progress_manager
+    """Get the global progress manager instance."""
+    return ProgressManagerSingleton().get_progress_manager()
 
 
 def set_progress_manager(manager: ProgressManager) -> None:
-    """Set the global progress manager.
-
-    Args:
-        manager: ProgressManager instance to set as global
-    """
-    global _progress_manager
-    _progress_manager = manager
-    debug_logger.log("INFO", "Global progress manager updated")
+    """Set the global progress manager."""
+    ProgressManagerSingleton().set_progress_manager(manager)
 
 
 def reset_progress_manager() -> None:
     """Reset the global progress manager."""
-    global _progress_manager
-    if _progress_manager:
-        _progress_manager.cleanup()
-    _progress_manager = None
-    debug_logger.log("INFO", "Global progress manager reset")
+    manager = ProgressManagerSingleton()
+    manager.reset()
+    reset_singleton(ProgressManagerSingleton)

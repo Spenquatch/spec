@@ -780,17 +780,15 @@ class TestGlobalProgressManager:
         manager = get_progress_manager()
         assert manager == custom_manager
 
-    @patch("spec_cli.ui.progress_manager._progress_manager")
-    def test_reset_progress_manager_with_existing(
-        self, _mock_global_manager: Mock
-    ) -> None:
+    def test_reset_progress_manager_with_existing(self) -> None:
         """Test resetting progress manager when one exists."""
-        mock_manager = Mock()
-        _mock_global_manager = mock_manager
+        # Get a manager instance first
+        manager = get_progress_manager()
 
-        with patch("spec_cli.ui.progress_manager._progress_manager", mock_manager):
+        # Mock the cleanup method
+        with patch.object(manager, "cleanup") as mock_cleanup:
             reset_progress_manager()
-            mock_manager.cleanup.assert_called_once()
+            mock_cleanup.assert_called_once()
 
     def test_reset_progress_manager_no_existing(self) -> None:
         """Test resetting progress manager when none exists."""

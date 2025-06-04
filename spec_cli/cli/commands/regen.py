@@ -157,10 +157,24 @@ def regen_command(
             files_with_specs, preserve_history=preserve_history
         )
 
-        # Display results (reuse from gen command)
-        from .gen import _display_generation_results
-
-        _display_generation_results(result)
+        # Display results
+        if result.success:
+            if result.generated_files:
+                click.echo(
+                    f"✅ Regenerated {len(result.generated_files)} files successfully"
+                )
+                for gen_file in result.generated_files[:5]:
+                    click.echo(f"  - {gen_file}")
+                if len(result.generated_files) > 5:
+                    click.echo(f"  ... and {len(result.generated_files) - 5} more")
+        else:
+            click.echo("❌ Regeneration failed")
+            if result.failed_files:
+                click.echo(f"Failed to regenerate {len(result.failed_files)} files")
+                for failed_file in result.failed_files[:3]:
+                    click.echo(f"  - {failed_file}")
+                if len(result.failed_files) > 3:
+                    click.echo(f"  ... and {len(result.failed_files) - 3} more")
 
         debug_logger.log(
             "INFO",

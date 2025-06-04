@@ -367,7 +367,10 @@ class TestPathResolver:
             result = resolver.get_spec_files_for_source(external_file)
 
             # Should still work but use the file as-is for spec directory creation
-            expected_spec_dir = settings.specs_dir / temp_dir / "external"
+            # Note: Path normalization may resolve symlinks, so we compare resolved paths
+            expected_spec_dir = (
+                settings.specs_dir / Path(temp_dir).resolve() / "external"
+            )
             expected = {
                 "index": expected_spec_dir / "index.md",
                 "history": expected_spec_dir / "history.md",

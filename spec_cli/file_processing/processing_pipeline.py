@@ -4,6 +4,7 @@ from typing import Any, Dict, List, Optional, cast
 from ..logging.debug import debug_logger
 from ..templates.generator import SpecContentGenerator
 from ..templates.loader import load_template
+from ..utils.error_utils import create_error_context, handle_os_error
 from .change_detector import FileChangeDetector
 from .conflict_resolver import (
     ConflictInfo,
@@ -169,8 +170,24 @@ class FileProcessingPipeline:
             return result
 
         except Exception as e:
-            error_msg = f"File processing failed: {e}"
-            debug_logger.log("ERROR", error_msg, file_path=str(file_path))
+            if isinstance(e, OSError):
+                formatted_error = handle_os_error(e)
+                context = create_error_context(file_path)
+                context.update(
+                    {
+                        "operation": "file_processing_pipeline",
+                        "force_regenerate": force_regenerate,
+                    }
+                )
+                debug_logger.log(
+                    "ERROR",
+                    f"File processing pipeline failed: {formatted_error}",
+                    **context,
+                )
+                error_msg = f"File processing failed: {formatted_error}"
+            else:
+                error_msg = f"File processing failed: {e}"
+                debug_logger.log("ERROR", error_msg, file_path=str(file_path))
             result.errors.append(error_msg)
             return result
 
@@ -221,8 +238,21 @@ class FileProcessingPipeline:
                 try:
                     new_content = file_path.read_text(encoding="utf-8")
                 except OSError as e:
+                    formatted_error = handle_os_error(e)
+                    context = create_error_context(file_path)
+                    context.update(
+                        {
+                            "operation": "conflict_handling_read",
+                            "stage": "generated_content_read",
+                        }
+                    )
+                    debug_logger.log(
+                        "ERROR",
+                        f"Conflict handling failed: {formatted_error}",
+                        **context,
+                    )
                     errors.append(
-                        f"Could not read generated content for {file_path}: {e}"
+                        f"Could not read generated content for {file_path}: {formatted_error}"
                     )
                     continue
 
@@ -291,7 +321,8 @@ class FileProcessingPipeline:
         try:
             file_path.read_text(encoding="utf-8")
         except OSError as e:
-            issues.append(f"Cannot read file {file_path}: {e}")
+            formatted_error = handle_os_error(e)
+            issues.append(f"Cannot read file {file_path}: {formatted_error}")
 
         # Check file size
         try:
@@ -300,7 +331,8 @@ class FileProcessingPipeline:
             if size > max_size:
                 issues.append(f"File too large: {size} bytes (max {max_size})")
         except OSError as e:
-            issues.append(f"Cannot get file stats for {file_path}: {e}")
+            formatted_error = handle_os_error(e)
+            issues.append(f"Cannot get file stats for {file_path}: {formatted_error}")
 
         return issues
 

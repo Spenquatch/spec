@@ -1,12 +1,12 @@
-import os
 import shutil
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from ..config.settings import SpecSettings, get_settings
-from ..exceptions import SpecFileError, SpecPermissionError
+from ..exceptions import SpecFileError, SpecPermissionError, SpecValidationError
 from ..logging.debug import debug_logger
+from ..utils.path_utils import ensure_directory, ensure_path_permissions
 from .ignore_patterns import IgnorePatternMatcher
 from .path_resolver import PathResolver
 
@@ -28,18 +28,22 @@ class DirectoryManager:
         )
 
         try:
-            if not specs_dir.exists():
-                specs_dir.mkdir(parents=True, exist_ok=True)
-                debug_logger.log(
-                    "INFO", "Created .specs directory", specs_dir=str(specs_dir)
-                )
+            # Use centralized directory creation utility
+            ensure_directory(specs_dir)
+            debug_logger.log(
+                "INFO", "Ensured .specs directory exists", specs_dir=str(specs_dir)
+            )
 
-            # Verify write permissions
-            if not os.access(specs_dir, os.W_OK):
-                raise SpecPermissionError(
-                    f"No write permission for .specs directory: {specs_dir}",
-                    {"directory": str(specs_dir), "permission": "write"},
-                )
+            # Verify permissions using centralized utility
+            try:
+                ensure_path_permissions(specs_dir, require_write=True)
+            except SpecValidationError as e:
+                # Convert validation error to permission error for backward compatibility
+                if "permission" in str(e).lower():
+                    raise SpecPermissionError(
+                        str(e), {"directory": str(specs_dir), "permission": "write"}
+                    ) from e
+                raise
 
             # Create basic structure
             self._create_basic_structure(specs_dir)
@@ -94,24 +98,25 @@ class DirectoryManager:
         )
 
         try:
-            # Ensure parent directories exist
-            spec_dir.mkdir(parents=True, exist_ok=True)
+            # Use centralized directory creation utility
+            created_dir = ensure_directory(spec_dir)
 
-            # Verify the directory was created and is writable
-            if not spec_dir.exists() or not spec_dir.is_dir():
-                raise SpecFileError(f"Failed to create spec directory: {spec_dir}")
-
-            if not os.access(spec_dir, os.W_OK):
-                raise SpecPermissionError(
-                    f"No write permission for spec directory: {spec_dir}",
-                    {"directory": str(spec_dir), "permission": "write"},
-                )
+            # Verify permissions using centralized utility
+            try:
+                ensure_path_permissions(created_dir, require_write=True)
+            except SpecValidationError as e:
+                # Convert validation error to permission error for backward compatibility
+                if "permission" in str(e).lower():
+                    raise SpecPermissionError(
+                        str(e), {"directory": str(created_dir), "permission": "write"}
+                    ) from e
+                raise
 
             debug_logger.log(
                 "INFO", "Successfully created spec directory", spec_dir=str(spec_dir)
             )
 
-            return spec_dir
+            return created_dir
 
         except OSError as e:
             raise SpecFileError(

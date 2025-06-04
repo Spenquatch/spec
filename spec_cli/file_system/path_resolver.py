@@ -4,6 +4,7 @@ from typing import Dict, Optional, Union
 from ..config.settings import SpecSettings, get_settings
 from ..exceptions import SpecFileError, SpecValidationError
 from ..logging.debug import debug_logger
+from ..utils.path_utils import normalize_path, safe_relative_to
 from .path_utils import remove_specs_prefix
 
 
@@ -77,20 +78,24 @@ class PathResolver:
             SpecValidationError: If path is outside project boundaries
         """
         try:
-            # Resolve both paths to handle symlinks consistently
-            resolved_absolute = absolute_path.resolve()
-            resolved_root = self.settings.root_path.resolve()
+            # Use normalized paths for consistent handling
+            normalized_absolute = normalize_path(absolute_path)
+            normalized_root = normalize_path(self.settings.root_path)
 
-            relative_path = resolved_absolute.relative_to(resolved_root)
+            relative_path = safe_relative_to(
+                normalized_absolute, normalized_root, strict=True
+            )
             debug_logger.log(
                 "INFO",
                 "Path within project boundaries",
-                absolute=str(resolved_absolute),
+                absolute=str(normalized_absolute),
                 relative=str(relative_path),
+                operation="path_validation",
             )
             return relative_path
 
-        except ValueError as e:
+        except SpecValidationError as e:
+            # safe_relative_to already provides structured error handling
             raise SpecValidationError(
                 f"Path '{absolute_path}' is outside project root '{self.settings.root_path}'"
             ) from e
@@ -111,8 +116,17 @@ class PathResolver:
         # Convert absolute paths to relative to project root
         if file_path.is_absolute():
             try:
-                file_path = file_path.relative_to(self.settings.root_path)
-            except ValueError:
+                file_path = safe_relative_to(
+                    file_path, self.settings.root_path, strict=False
+                )
+                debug_logger.log(
+                    "DEBUG",
+                    "Converted absolute path to relative",
+                    file_path=str(file_path),
+                    root_path=str(self.settings.root_path),
+                    operation="spec_directory_conversion",
+                )
+            except SpecValidationError:
                 # File is outside project root, use as-is but log warning
                 debug_logger.log(
                     "WARNING",
@@ -145,8 +159,17 @@ class PathResolver:
         # Convert source file to relative path if needed
         if source_file.is_absolute():
             try:
-                relative_path = source_file.relative_to(self.settings.root_path)
-            except ValueError:
+                relative_path = safe_relative_to(
+                    source_file, self.settings.root_path, strict=False
+                )
+                debug_logger.log(
+                    "DEBUG",
+                    "Converted source file to relative path",
+                    source_file=str(source_file),
+                    relative_path=str(relative_path),
+                    operation="spec_files_resolution",
+                )
+            except SpecValidationError:
                 # File is outside project root, use as-is
                 relative_path = source_file
         else:
@@ -171,15 +194,18 @@ class PathResolver:
         # If absolute path, try to make relative to .specs/
         if path_obj.is_absolute():
             try:
-                relative_path = path_obj.relative_to(self.settings.specs_dir)
+                relative_path = safe_relative_to(
+                    path_obj, self.settings.specs_dir, strict=False
+                )
                 debug_logger.log(
                     "INFO",
                     "Converted absolute specs path",
                     absolute=str(path_obj),
                     relative=str(relative_path),
+                    operation="specs_path_conversion",
                 )
                 return relative_path
-            except ValueError:
+            except SpecValidationError:
                 # Path is not under .specs/, return as-is
                 debug_logger.log(
                     "INFO",
@@ -219,12 +245,12 @@ class PathResolver:
         """
         try:
             if path.is_absolute():
-                # Resolve both paths to handle symlinks consistently
-                resolved_path = path.resolve()
-                resolved_root = self.settings.root_path.resolve()
-                resolved_path.relative_to(resolved_root)
+                # Use normalized paths for consistent handling
+                normalized_path = normalize_path(path)
+                normalized_root = normalize_path(self.settings.root_path)
+                safe_relative_to(normalized_path, normalized_root, strict=True)
             return True
-        except ValueError:
+        except (ValueError, SpecValidationError):
             return False
 
     def get_absolute_path(self, relative_path: Path) -> Path:

@@ -6,8 +6,12 @@ from typing import Any, Callable, List, Optional
 
 import click
 
+from ..core.error_handler import ErrorHandler
 from ..exceptions import SpecError
 from ..logging.debug import debug_logger
+
+# Create CLI-specific error handler
+cli_error_handler = ErrorHandler({"module": "cli", "component": "utils"})
 
 
 def handle_cli_error(
@@ -20,6 +24,8 @@ def handle_cli_error(
         context: Optional context information
         exit_code: Exit code to use when exiting
     """
+    # Use ErrorHandler for consistent error reporting
+    cli_error_handler.report(error, "CLI command execution", cli_context=context)
 
     # Format error message based on type
     if isinstance(error, click.ClickException):
@@ -42,15 +48,6 @@ def handle_cli_error(
         from ..ui.error_display import show_message
 
         show_message(error_msg, "error", context)
-
-    # Log error for debugging
-    debug_logger.log(
-        "ERROR",
-        "CLI error occurred",
-        error=str(error),
-        error_type=type(error).__name__,
-        context=context,
-    )
 
     # Exit with appropriate code
     sys.exit(exit_code)
@@ -142,6 +139,7 @@ def echo_status(message: str, status_type: str = "info") -> None:
     show_message(message, status_type)
 
 
+@cli_error_handler.wrap
 def get_spec_repository() -> Any:
     """Get the spec repository instance with error handling.
 
@@ -162,7 +160,9 @@ def get_spec_repository() -> Any:
             )
         return repo
     except SpecRepositoryError as e:
-        raise click.ClickException(f"Repository error: {e}") from e
+        cli_error_handler.log_and_raise(
+            e, "get spec repository", reraise_as=click.ClickException
+        )
 
 
 def with_progress_context(operation_name: str) -> Callable:

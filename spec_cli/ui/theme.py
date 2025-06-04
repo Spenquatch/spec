@@ -5,6 +5,7 @@ from rich.theme import Theme
 
 from ..config.settings import SpecSettings, get_settings
 from ..logging.debug import debug_logger
+from ..utils.singleton import reset_singleton, singleton_decorator
 
 
 class ColorScheme(Enum):
@@ -208,41 +209,57 @@ class SpecTheme:
         return cls(color_scheme)
 
 
-# Global theme instance
-_current_theme: Optional[SpecTheme] = None
+@singleton_decorator
+class ThemeManager:
+    """Manages global theme instances."""
+
+    def __init__(self) -> None:
+        """Initialize theme manager."""
+        self._current_theme: Optional[SpecTheme] = None
+
+    def get_current_theme(self) -> SpecTheme:
+        """Get the current global theme instance.
+
+        Returns:
+            Current SpecTheme instance
+        """
+        if self._current_theme is None:
+            self._current_theme = SpecTheme.from_settings()
+            debug_logger.log("INFO", "Global theme initialized")
+
+        return self._current_theme
+
+    def set_current_theme(self, theme: SpecTheme) -> None:
+        """Set the current global theme.
+
+        Args:
+            theme: SpecTheme instance to set as current
+        """
+        self._current_theme = theme
+
+        debug_logger.log(
+            "INFO", "Global theme updated", color_scheme=theme.color_scheme.value
+        )
+
+    def reset_theme(self) -> None:
+        """Reset the global theme to default."""
+        self._current_theme = None
+        debug_logger.log("INFO", "Global theme reset")
 
 
+# Convenience functions
 def get_current_theme() -> SpecTheme:
-    """Get the current global theme instance.
-
-    Returns:
-        Current SpecTheme instance
-    """
-    global _current_theme
-
-    if _current_theme is None:
-        _current_theme = SpecTheme.from_settings()
-        debug_logger.log("INFO", "Global theme initialized")
-
-    return _current_theme
+    """Get the current global theme instance."""
+    return ThemeManager().get_current_theme()
 
 
 def set_current_theme(theme: SpecTheme) -> None:
-    """Set the current global theme.
-
-    Args:
-        theme: SpecTheme instance to set as current
-    """
-    global _current_theme
-    _current_theme = theme
-
-    debug_logger.log(
-        "INFO", "Global theme updated", color_scheme=theme.color_scheme.value
-    )
+    """Set the current global theme."""
+    ThemeManager().set_current_theme(theme)
 
 
 def reset_theme() -> None:
     """Reset the global theme to default."""
-    global _current_theme
-    _current_theme = None
-    debug_logger.log("INFO", "Global theme reset")
+    manager = ThemeManager()
+    manager.reset_theme()
+    reset_singleton(ThemeManager)

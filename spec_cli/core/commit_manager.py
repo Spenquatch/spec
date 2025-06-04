@@ -1,4 +1,5 @@
 import re
+import subprocess
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
@@ -6,6 +7,11 @@ from ..config.settings import SpecSettings, get_settings
 from ..exceptions import SpecGitError
 from ..git.repository import SpecGitRepository
 from ..logging.debug import debug_logger
+from ..utils.error_utils import (
+    create_error_context,
+    handle_os_error,
+    handle_subprocess_error,
+)
 from .repository_state import RepositoryStateChecker
 
 
@@ -85,8 +91,37 @@ class SpecCommitManager:
             return add_result
 
         except Exception as e:
-            error_msg = f"Add operation failed: {e}"
-            debug_logger.log("ERROR", error_msg)
+            if isinstance(e, OSError):
+                formatted_error = handle_os_error(e)
+                context = create_error_context(self.settings.specs_dir)
+                context.update(
+                    {
+                        "operation": "commit_manager_add_files",
+                        "file_count": len(file_paths),
+                        "force": force,
+                    }
+                )
+                debug_logger.log(
+                    "ERROR", f"Add operation failed: {formatted_error}", **context
+                )
+                error_msg = f"Add operation failed: {formatted_error}"
+            elif isinstance(e, subprocess.SubprocessError):
+                formatted_error = handle_subprocess_error(e)
+                context = create_error_context(self.settings.specs_dir)
+                context.update(
+                    {
+                        "operation": "commit_manager_add_files",
+                        "file_count": len(file_paths),
+                        "force": force,
+                    }
+                )
+                debug_logger.log(
+                    "ERROR", f"Add operation failed: {formatted_error}", **context
+                )
+                error_msg = f"Add operation failed: {formatted_error}"
+            else:
+                error_msg = f"Add operation failed: {e}"
+                debug_logger.log("ERROR", error_msg)
             add_result["errors"].append(error_msg)
             raise SpecGitError(error_msg) from e
 
@@ -205,8 +240,39 @@ class SpecCommitManager:
             return commit_result
 
         except Exception as e:
-            error_msg = f"Commit operation failed: {e}"
-            debug_logger.log("ERROR", error_msg)
+            if isinstance(e, OSError):
+                formatted_error = handle_os_error(e)
+                context = create_error_context(self.settings.specs_dir)
+                context.update(
+                    {
+                        "operation": "commit_manager_commit_changes",
+                        "message_length": len(message),
+                        "author": author,
+                        "allow_empty": allow_empty,
+                    }
+                )
+                debug_logger.log(
+                    "ERROR", f"Commit operation failed: {formatted_error}", **context
+                )
+                error_msg = f"Commit operation failed: {formatted_error}"
+            elif isinstance(e, subprocess.SubprocessError):
+                formatted_error = handle_subprocess_error(e)
+                context = create_error_context(self.settings.specs_dir)
+                context.update(
+                    {
+                        "operation": "commit_manager_commit_changes",
+                        "message_length": len(message),
+                        "author": author,
+                        "allow_empty": allow_empty,
+                    }
+                )
+                debug_logger.log(
+                    "ERROR", f"Commit operation failed: {formatted_error}", **context
+                )
+                error_msg = f"Commit operation failed: {formatted_error}"
+            else:
+                error_msg = f"Commit operation failed: {e}"
+                debug_logger.log("ERROR", error_msg)
             commit_result["errors"].append(error_msg)
             raise SpecGitError(error_msg) from e
 
@@ -282,8 +348,39 @@ class SpecCommitManager:
             return tag_result
 
         except Exception as e:
-            error_msg = f"Tag creation failed: {e}"
-            debug_logger.log("ERROR", error_msg)
+            if isinstance(e, OSError):
+                formatted_error = handle_os_error(e)
+                context = create_error_context(self.settings.specs_dir)
+                context.update(
+                    {
+                        "operation": "commit_manager_create_tag",
+                        "tag_name": tag_name,
+                        "force": force,
+                        "has_message": message is not None,
+                    }
+                )
+                debug_logger.log(
+                    "ERROR", f"Tag creation failed: {formatted_error}", **context
+                )
+                error_msg = f"Tag creation failed: {formatted_error}"
+            elif isinstance(e, subprocess.SubprocessError):
+                formatted_error = handle_subprocess_error(e)
+                context = create_error_context(self.settings.specs_dir)
+                context.update(
+                    {
+                        "operation": "commit_manager_create_tag",
+                        "tag_name": tag_name,
+                        "force": force,
+                        "has_message": message is not None,
+                    }
+                )
+                debug_logger.log(
+                    "ERROR", f"Tag creation failed: {formatted_error}", **context
+                )
+                error_msg = f"Tag creation failed: {formatted_error}"
+            else:
+                error_msg = f"Tag creation failed: {e}"
+                debug_logger.log("ERROR", error_msg)
             tag_result["errors"].append(error_msg)
             raise SpecGitError(error_msg) from e
 
@@ -368,8 +465,39 @@ class SpecCommitManager:
             return rollback_result
 
         except Exception as e:
-            error_msg = f"Rollback operation failed: {e}"
-            debug_logger.log("ERROR", error_msg)
+            if isinstance(e, OSError):
+                formatted_error = handle_os_error(e)
+                context = create_error_context(self.settings.specs_dir)
+                context.update(
+                    {
+                        "operation": "commit_manager_rollback",
+                        "target_commit": commit_hash,
+                        "hard": hard,
+                        "create_backup": create_backup,
+                    }
+                )
+                debug_logger.log(
+                    "ERROR", f"Rollback operation failed: {formatted_error}", **context
+                )
+                error_msg = f"Rollback operation failed: {formatted_error}"
+            elif isinstance(e, subprocess.SubprocessError):
+                formatted_error = handle_subprocess_error(e)
+                context = create_error_context(self.settings.specs_dir)
+                context.update(
+                    {
+                        "operation": "commit_manager_rollback",
+                        "target_commit": commit_hash,
+                        "hard": hard,
+                        "create_backup": create_backup,
+                    }
+                )
+                debug_logger.log(
+                    "ERROR", f"Rollback operation failed: {formatted_error}", **context
+                )
+                error_msg = f"Rollback operation failed: {formatted_error}"
+            else:
+                error_msg = f"Rollback operation failed: {e}"
+                debug_logger.log("ERROR", error_msg)
             rollback_result["errors"].append(error_msg)
             raise SpecGitError(error_msg) from e
 
@@ -407,8 +535,39 @@ class SpecCommitManager:
             )
 
         except Exception as e:
-            error_msg = f"Last commit rollback failed: {e}"
-            debug_logger.log("ERROR", error_msg)
+            if isinstance(e, OSError):
+                formatted_error = handle_os_error(e)
+                context = create_error_context(self.settings.specs_dir)
+                context.update(
+                    {
+                        "operation": "commit_manager_rollback_last",
+                        "create_backup": create_backup,
+                    }
+                )
+                debug_logger.log(
+                    "ERROR",
+                    f"Last commit rollback failed: {formatted_error}",
+                    **context,
+                )
+                error_msg = f"Last commit rollback failed: {formatted_error}"
+            elif isinstance(e, subprocess.SubprocessError):
+                formatted_error = handle_subprocess_error(e)
+                context = create_error_context(self.settings.specs_dir)
+                context.update(
+                    {
+                        "operation": "commit_manager_rollback_last",
+                        "create_backup": create_backup,
+                    }
+                )
+                debug_logger.log(
+                    "ERROR",
+                    f"Last commit rollback failed: {formatted_error}",
+                    **context,
+                )
+                error_msg = f"Last commit rollback failed: {formatted_error}"
+            else:
+                error_msg = f"Last commit rollback failed: {e}"
+                debug_logger.log("ERROR", error_msg)
             raise SpecGitError(error_msg) from e
 
     def get_commit_status(self) -> Dict[str, Any]:

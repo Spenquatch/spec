@@ -8,6 +8,7 @@ from ..file_system.directory_manager import DirectoryManager
 from ..file_system.file_metadata import FileMetadataExtractor
 from ..file_system.path_utils import normalize_path_separators
 from ..logging.debug import debug_logger
+from ..utils.path_utils import ensure_directory, normalize_path
 from .config import TemplateConfig
 from .substitution import TemplateSubstitution
 
@@ -280,11 +281,19 @@ class SpecContentGenerator:
             SpecTemplateError: If file writing fails
         """
         try:
-            # Ensure parent directory exists
-            file_path.parent.mkdir(parents=True, exist_ok=True)
+            # Ensure parent directory exists using path utilities
+            normalized_file_path = normalize_path(file_path)
+            ensure_directory(normalized_file_path.parent)
+            debug_logger.log(
+                "DEBUG",
+                "Output directory ensured",
+                file_path=str(normalized_file_path),
+                output_dir=str(normalized_file_path.parent),
+                operation="spec_file_generation",
+            )
 
             # Write content with UTF-8 encoding
-            with file_path.open("w", encoding="utf-8", newline="\n") as f:
+            with normalized_file_path.open("w", encoding="utf-8", newline="\n") as f:
                 f.write(content)
 
             debug_logger.log(
@@ -395,9 +404,16 @@ class SpecContentGenerator:
         issues = []
 
         try:
-            # Check if source file exists
-            if not file_path.exists():
-                issues.append(f"Source file does not exist: {file_path}")
+            # Check if source file exists using normalized path
+            normalized_file_path = normalize_path(file_path)
+            if not normalized_file_path.exists():
+                issues.append(f"Source file does not exist: {normalized_file_path}")
+                debug_logger.log(
+                    "WARNING",
+                    "Source file validation failed",
+                    file_path=str(normalized_file_path),
+                    operation="template_validation",
+                )
 
             # Validate template configuration
             if not template.index.strip():
@@ -438,9 +454,21 @@ class SpecContentGenerator:
 
             # Check write permissions
             try:
-                spec_dir = self.directory_manager.create_spec_directory(file_path)
-                if not spec_dir.exists():
-                    issues.append(f"Cannot create spec directory: {spec_dir}")
+                spec_dir = self.directory_manager.create_spec_directory(
+                    normalized_file_path
+                )
+                normalized_spec_dir = normalize_path(spec_dir)
+                if not normalized_spec_dir.exists():
+                    issues.append(
+                        f"Cannot create spec directory: {normalized_spec_dir}"
+                    )
+                    debug_logger.log(
+                        "WARNING",
+                        "Spec directory creation failed",
+                        spec_dir=str(normalized_spec_dir),
+                        file_path=str(normalized_file_path),
+                        operation="template_validation",
+                    )
             except SpecFileError as e:
                 issues.append(f"Directory creation error: {e}")
 

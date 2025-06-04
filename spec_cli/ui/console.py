@@ -4,6 +4,7 @@ from rich.console import Console
 
 from ..config.settings import get_settings
 from ..logging.debug import debug_logger
+from ..utils.singleton import reset_singleton, singleton_decorator
 from .theme import SpecTheme, get_current_theme
 
 
@@ -198,46 +199,62 @@ class SpecConsole:
         )
 
 
-# Global console instance
-_spec_console: Optional[SpecConsole] = None
+@singleton_decorator
+class ConsoleManager:
+    """Manages global console instances."""
+
+    def __init__(self) -> None:
+        """Initialize console manager."""
+        self._spec_console: Optional[SpecConsole] = None
+
+    def get_console(self) -> SpecConsole:
+        """Get the global spec console instance.
+
+        Returns:
+            Global SpecConsole instance
+        """
+        if self._spec_console is None:
+            settings = get_settings()
+
+            # Check for no-color preference
+            no_color = getattr(settings, "no_color", False)
+
+            self._spec_console = SpecConsole(no_color=no_color)
+            debug_logger.log("INFO", "Global console initialized")
+
+        return self._spec_console
+
+    def set_console(self, console: SpecConsole) -> None:
+        """Set the global console instance.
+
+        Args:
+            console: SpecConsole instance to set as global
+        """
+        self._spec_console = console
+        debug_logger.log("INFO", "Global console updated")
+
+    def reset_console(self) -> None:
+        """Reset the global console to default."""
+        self._spec_console = None
+        debug_logger.log("INFO", "Global console reset")
 
 
+# Convenience functions
 def get_console() -> SpecConsole:
-    """Get the global spec console instance.
-
-    Returns:
-        Global SpecConsole instance
-    """
-    global _spec_console
-
-    if _spec_console is None:
-        settings = get_settings()
-
-        # Check for no-color preference
-        no_color = getattr(settings, "no_color", False)
-
-        _spec_console = SpecConsole(no_color=no_color)
-        debug_logger.log("INFO", "Global console initialized")
-
-    return _spec_console
+    """Get the global spec console instance."""
+    return ConsoleManager().get_console()
 
 
 def set_console(console: SpecConsole) -> None:
-    """Set the global console instance.
-
-    Args:
-        console: SpecConsole instance to set as global
-    """
-    global _spec_console
-    _spec_console = console
-    debug_logger.log("INFO", "Global console updated")
+    """Set the global console instance."""
+    ConsoleManager().set_console(console)
 
 
 def reset_console() -> None:
     """Reset the global console to default."""
-    global _spec_console
-    _spec_console = None
-    debug_logger.log("INFO", "Global console reset")
+    manager = ConsoleManager()
+    manager.reset_console()
+    reset_singleton(ConsoleManager)
 
 
 # Convenient alias for the global console

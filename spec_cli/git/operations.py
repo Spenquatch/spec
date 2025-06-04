@@ -22,6 +22,13 @@ class GitOperations:
         self.specs_dir = specs_dir
         self.index_file = index_file
 
+        # Import here to avoid circular imports
+        from ..core.error_handler import ErrorHandler
+
+        self.git_error_handler = ErrorHandler(
+            {"module": "git", "component": "operations"}
+        )
+
         debug_logger.log(
             "INFO",
             "GitOperations initialized",
@@ -77,31 +84,35 @@ class GitOperations:
             return result
 
         except subprocess.CalledProcessError as e:
-            error_msg = f"Git command failed: {' '.join(cmd)}"
-            if e.stderr:
-                error_msg += f"\nStderr: {e.stderr}"
-            if e.stdout:
-                error_msg += f"\nStdout: {e.stdout}"
-
-            debug_logger.log(
-                "ERROR",
+            self.git_error_handler.log_and_raise(
+                e,
                 "Git command failed",
+                reraise_as=SpecGitError,
                 command=" ".join(cmd),
                 return_code=e.returncode,
-                error=error_msg,
             )
-
-            raise SpecGitError(error_msg) from e
+            # This should never be reached due to exception being raised
+            raise  # pragma: no cover
 
         except FileNotFoundError as e:
-            error_msg = "Git not found. Please ensure Git is installed and in PATH."
-            debug_logger.log("ERROR", error_msg)
-            raise SpecGitError(error_msg) from e
+            # Custom handling for Git not found
+            error_message = f"{e}. Please ensure Git is installed and in PATH"
+            self.git_error_handler.report(
+                e,
+                "git command execution (git not found)",
+                command=" ".join(cmd),
+            )
+            raise SpecGitError(error_message) from e
 
         except Exception as e:
-            error_msg = f"Unexpected error running Git command: {e}"
-            debug_logger.log("ERROR", error_msg)
-            raise SpecGitError(error_msg) from e
+            self.git_error_handler.log_and_raise(
+                e,
+                f"git command: {' '.join(cmd)}",
+                reraise_as=SpecGitError,
+                command=" ".join(cmd),
+            )
+            # This should never be reached due to exception being raised
+            raise  # pragma: no cover
 
     def _prepare_git_environment(self) -> Dict[str, str]:
         """Prepare environment variables for Git command.

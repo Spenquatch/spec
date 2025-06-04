@@ -7,6 +7,7 @@ from ..config.settings import SpecSettings, get_settings
 from ..exceptions import SpecFileError
 from ..file_system.directory_manager import DirectoryManager
 from ..logging.debug import debug_logger
+from ..utils.error_utils import create_error_context, handle_os_error
 from .change_detector import FileChangeDetector
 from .merge_helpers import ContentMerger
 
@@ -155,10 +156,21 @@ class ConflictResolver:
         try:
             existing_content = file_path.read_text(encoding="utf-8")
         except OSError as e:
+            formatted_error = handle_os_error(e)
+            context = create_error_context(file_path)
+            context.update(
+                {
+                    "operation": "conflict_detection_read",
+                    "conflict_type": "permission_denied",
+                }
+            )
+            debug_logger.log(
+                "ERROR", f"Conflict detection failed: {formatted_error}", **context
+            )
             return ConflictInfo(
                 ConflictType.PERMISSION_DENIED,
                 file_path,
-                metadata={"reason": f"Cannot read file: {e}"},
+                metadata={"reason": f"Cannot read file: {formatted_error}"},
             )
 
         # Check for size limits (configurable)
@@ -266,8 +278,23 @@ class ConflictResolver:
                 return result
 
         except Exception as e:
-            error_msg = f"Failed to resolve conflict: {e}"
-            debug_logger.log("ERROR", error_msg, file_path=str(conflict.file_path))
+            if isinstance(e, OSError):
+                formatted_error = handle_os_error(e)
+                context = create_error_context(conflict.file_path)
+                context.update(
+                    {
+                        "operation": "conflict_resolution",
+                        "conflict_type": conflict.conflict_type.value,
+                        "strategy": strategy.value,
+                    }
+                )
+                debug_logger.log(
+                    "ERROR", f"Conflict resolution failed: {formatted_error}", **context
+                )
+                error_msg = f"Failed to resolve conflict: {formatted_error}"
+            else:
+                error_msg = f"Failed to resolve conflict: {e}"
+                debug_logger.log("ERROR", error_msg, file_path=str(conflict.file_path))
 
             return ConflictResolutionResult(
                 success=False, strategy_used=strategy, errors=[error_msg]
@@ -336,13 +363,15 @@ class ConflictResolver:
             )
             return backup_path
         except OSError as e:
-            debug_logger.log(
-                "WARNING",
-                "Failed to create backup",
-                file_path=str(file_path),
-                error=str(e),
+            formatted_error = handle_os_error(e)
+            context = create_error_context(file_path)
+            context.update(
+                {"operation": "backup_creation", "backup_path": str(backup_path)}
             )
-            raise SpecFileError(f"Failed to create backup: {e}") from e
+            debug_logger.log(
+                "WARNING", f"Failed to create backup: {formatted_error}", **context
+            )
+            raise SpecFileError(f"Failed to create backup: {formatted_error}") from e
 
     def resolve_multiple_conflicts(
         self,

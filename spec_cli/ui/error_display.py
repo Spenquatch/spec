@@ -7,6 +7,7 @@ from rich.panel import Panel
 from rich.syntax import Syntax
 from rich.traceback import Traceback
 
+from ..core.error_handler import ErrorHandler
 from ..exceptions import SpecError
 from ..logging.debug import debug_logger
 from .console import get_console
@@ -35,6 +36,7 @@ class ErrorPanel:
         self.title = title or self._get_error_title(error)
         self.show_traceback = show_traceback
         self.console = console or get_console().console
+        self.error_handler = ErrorHandler({"component": "ui_display"})
 
         debug_logger.log(
             "INFO", "ErrorPanel initialized", error_type=type(error).__name__
@@ -117,11 +119,28 @@ class ErrorPanel:
         Returns:
             Formatted context string or None
         """
-        if isinstance(self.error, FileNotFoundError):
-            return SpecStyles.path(str(getattr(self.error, "filename", "Unknown file")))
-        elif isinstance(self.error, PermissionError):
-            return SpecStyles.warning("Check file and directory permissions")
-        return None
+        try:
+            # Use ErrorHandler for consistent context creation
+            self.error_handler.report(
+                self.error, "display error context", display_mode="ui"
+            )
+
+            if isinstance(self.error, FileNotFoundError):
+                return SpecStyles.path(
+                    str(getattr(self.error, "filename", "Unknown file"))
+                )
+            elif isinstance(self.error, PermissionError):
+                return SpecStyles.warning("Check file and directory permissions")
+            return None
+        except Exception:
+            # Fallback for UI display
+            if isinstance(self.error, FileNotFoundError):
+                return SpecStyles.path(
+                    str(getattr(self.error, "filename", "Unknown file"))
+                )
+            elif isinstance(self.error, PermissionError):
+                return SpecStyles.warning("Check file and directory permissions")
+            return None
 
     def _get_error_suggestions(self) -> List[str]:
         """Get suggestions for resolving the error.
@@ -165,8 +184,14 @@ class ErrorPanel:
                 tb_lines = tb_lines[:5] + ["  ... (truncated) ...\n"] + tb_lines[-3:]
 
             return "".join(tb_lines).strip()
-        except Exception:
-            debug_logger.log("WARNING", "Failed to format traceback")
+        except Exception as e:
+            # Use ErrorHandler for consistent error reporting
+            self.error_handler.report(
+                e,
+                "format traceback for display",
+                original_error=str(self.error),
+                formatting_stage="traceback_formatting",
+            )
             return None
 
     def print(self) -> None:
@@ -187,6 +212,7 @@ class DiagnosticDisplay:
             console: Console to use for output
         """
         self.console = console or get_console().console
+        self.error_handler = ErrorHandler({"component": "diagnostic_display"})
 
     def show_system_info(self, info: Dict[str, Any]) -> None:
         """Display system information.
@@ -284,6 +310,7 @@ class StackTraceFormatter:
             console: Console for output
         """
         self.console = console or get_console().console
+        self.error_handler = ErrorHandler({"component": "stack_trace_formatter"})
 
     def format_exception(
         self,

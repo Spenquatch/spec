@@ -8,6 +8,8 @@ from rich.theme import Theme
 
 from ..exceptions import SpecConfigurationError
 from ..logging.debug import debug_logger
+from ..utils.path_utils import normalize_path, resolve_project_root
+from ..utils.singleton import reset_singleton, singleton_decorator
 
 # Rich theme for consistent styling throughout the application
 SPEC_THEME = Theme(
@@ -28,7 +30,7 @@ class SpecSettings:
     """Global settings for spec operations with Rich terminal styling."""
 
     # Directory paths
-    root_path: Path = field(default_factory=Path.cwd)
+    root_path: Path = field(default_factory=lambda: resolve_project_root())
 
     # Computed paths (set in __post_init__)
     spec_dir: Path = field(init=False)
@@ -49,7 +51,9 @@ class SpecSettings:
 
     def __post_init__(self) -> None:
         """Initialize computed paths and environment settings."""
-        # Computed directory paths
+        # Normalize root path and compute directory paths
+        # Use resolve_symlinks=False to preserve original path structure
+        self.root_path = normalize_path(self.root_path, resolve_symlinks=False)
         self.spec_dir = self.root_path / ".spec"
         self.specs_dir = self.root_path / ".specs"
         self.index_file = self.root_path / ".spec-index"
@@ -116,30 +120,31 @@ class SpecSettings:
                 )
 
 
+@singleton_decorator
 class SettingsManager:
     """Manages global settings and console instances."""
 
-    _settings_instance: Optional[SpecSettings] = None
-    _console_instance: Optional[Console] = None
+    def __init__(self) -> None:
+        """Initialize settings manager."""
+        self._settings_instance: Optional[SpecSettings] = None
+        self._console_instance: Optional[Console] = None
 
-    @classmethod
-    def get_settings(cls, root_path: Optional[Path] = None) -> SpecSettings:
+    def get_settings(self, root_path: Optional[Path] = None) -> SpecSettings:
         """Get global settings instance."""
-        if cls._settings_instance is None or (
-            root_path and root_path != cls._settings_instance.root_path
+        if self._settings_instance is None or (
+            root_path and root_path != self._settings_instance.root_path
         ):
-            cls._settings_instance = SpecSettings(root_path or Path.cwd())
+            self._settings_instance = SpecSettings(root_path or Path.cwd())
             # Reset console when settings change
-            cls._console_instance = None
-        return cls._settings_instance
+            self._console_instance = None
+        return self._settings_instance
 
-    @classmethod
-    def get_console(cls, root_path: Optional[Path] = None) -> Console:
+    def get_console(self, root_path: Optional[Path] = None) -> Console:
         """Get Rich console instance with spec theming."""
-        settings = cls.get_settings(root_path)
+        settings = self.get_settings(root_path)
 
-        if cls._console_instance is None:
-            cls._console_instance = Console(
+        if self._console_instance is None:
+            self._console_instance = Console(
                 theme=SPEC_THEME,
                 force_terminal=settings.use_color,
                 width=settings.console_width,
@@ -151,21 +156,27 @@ class SettingsManager:
                 width=settings.console_width,
             )
 
-        return cls._console_instance
+        return self._console_instance
 
-    @classmethod
-    def reset(cls) -> None:
+    def reset(self) -> None:
         """Reset settings and console for testing."""
-        cls._settings_instance = None
-        cls._console_instance = None
+        self._settings_instance = None
+        self._console_instance = None
 
 
 # Convenience functions for getting settings and console
 def get_settings(root_path: Optional[Path] = None) -> SpecSettings:
     """Get global settings instance."""
-    return SettingsManager.get_settings(root_path)
+    return SettingsManager().get_settings(root_path)
 
 
 def get_console(root_path: Optional[Path] = None) -> Console:
     """Get Rich console instance."""
-    return SettingsManager.get_console(root_path)
+    return SettingsManager().get_console(root_path)
+
+
+def reset_settings() -> None:
+    """Reset settings manager for testing."""
+    manager = SettingsManager()
+    manager.reset()
+    reset_singleton(SettingsManager)

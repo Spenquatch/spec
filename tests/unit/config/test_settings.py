@@ -11,6 +11,7 @@ from spec_cli.config.settings import (
     SpecSettings,
     get_console,
     get_settings,
+    reset_settings,
 )
 from spec_cli.exceptions import SpecConfigurationError
 
@@ -144,12 +145,13 @@ class TestSettingsManager:
 
     def teardown_method(self) -> None:
         """Reset settings manager after each test."""
-        SettingsManager.reset()
+        reset_settings()
 
     def test_settings_manager_provides_singleton_behavior(self) -> None:
         """Test that SettingsManager returns the same instance."""
-        settings1 = SettingsManager.get_settings()
-        settings2 = SettingsManager.get_settings()
+        manager = SettingsManager()
+        settings1 = manager.get_settings()
+        settings2 = manager.get_settings()
 
         assert settings1 is settings2
 
@@ -160,8 +162,9 @@ class TestSettingsManager:
                 path1 = Path(temp_dir1)
                 path2 = Path(temp_dir2)
 
-                settings1 = SettingsManager.get_settings(path1)
-                settings2 = SettingsManager.get_settings(path2)
+                manager = SettingsManager()
+                settings1 = manager.get_settings(path1)
+                settings2 = manager.get_settings(path2)
 
                 assert settings1 is not settings2
                 assert settings1.root_path == path1
@@ -174,25 +177,29 @@ class TestSettingsManager:
                 path1 = Path(temp_dir1)
                 path2 = Path(temp_dir2)
 
+                manager = SettingsManager()
                 # Get console for first path
-                console1 = SettingsManager.get_console(path1)
+                console1 = manager.get_console(path1)
 
                 # Get console for second path (should reset)
-                console2 = SettingsManager.get_console(path2)
+                console2 = manager.get_console(path2)
 
                 # Should be different console instances
                 assert console1 is not console2
 
     def test_settings_manager_reset_functionality(self) -> None:
-        """Test that SettingsManager.reset() clears instances."""
-        settings1 = SettingsManager.get_settings()
-        console1 = SettingsManager.get_console()
+        """Test that reset_settings() clears instances."""
+        manager1 = SettingsManager()
+        settings1 = manager1.get_settings()
+        console1 = manager1.get_console()
 
-        SettingsManager.reset()
+        reset_settings()
 
-        settings2 = SettingsManager.get_settings()
-        console2 = SettingsManager.get_console()
+        manager2 = SettingsManager()
+        settings2 = manager2.get_settings()
+        console2 = manager2.get_console()
 
+        assert manager1 is not manager2
         assert settings1 is not settings2
         assert console1 is not console2
 
@@ -202,11 +209,12 @@ class TestConsoleIntegration:
 
     def teardown_method(self) -> None:
         """Reset settings manager after each test."""
-        SettingsManager.reset()
+        reset_settings()
 
     def test_console_uses_spec_theme_consistently(self) -> None:
         """Test that console uses the correct SPEC_THEME."""
-        console = SettingsManager.get_console()
+        manager = SettingsManager()
+        console = manager.get_console()
 
         # Test that SPEC_THEME contains expected styles
         assert "success" in SPEC_THEME.styles
@@ -224,15 +232,17 @@ class TestConsoleIntegration:
     def test_console_respects_color_settings(self) -> None:
         """Test that console respects color environment variables."""
         with patch.dict(os.environ, {"SPEC_USE_COLOR": "true"}, clear=True):
-            SettingsManager.reset()
-            console = SettingsManager.get_console()
+            reset_settings()
+            manager = SettingsManager()
+            console = manager.get_console()
 
             # When color is enabled, force_terminal should be True
             assert console._force_terminal is True
 
         with patch.dict(os.environ, {"SPEC_USE_COLOR": "false"}, clear=True):
-            SettingsManager.reset()
-            console = SettingsManager.get_console()
+            reset_settings()
+            manager = SettingsManager()
+            console = manager.get_console()
 
             # When color is disabled, force_terminal should be False
             assert console._force_terminal is False
@@ -240,8 +250,9 @@ class TestConsoleIntegration:
     def test_console_handles_width_configuration(self) -> None:
         """Test that console respects width configuration."""
         with patch.dict(os.environ, {"SPEC_CONSOLE_WIDTH": "100"}, clear=True):
-            SettingsManager.reset()
-            console = SettingsManager.get_console()
+            reset_settings()
+            manager = SettingsManager()
+            console = manager.get_console()
 
             # Check width configuration
             assert console._width == 100
@@ -252,18 +263,33 @@ class TestConvenienceFunctions:
 
     def teardown_method(self) -> None:
         """Reset settings manager after each test."""
-        SettingsManager.reset()
+        reset_settings()
 
     def test_get_settings_convenience_function(self) -> None:
         """Test that get_settings() works correctly."""
         settings = get_settings()
-        manager_settings = SettingsManager.get_settings()
+        manager = SettingsManager()
+        manager_settings = manager.get_settings()
 
         assert settings is manager_settings
 
     def test_get_console_convenience_function(self) -> None:
         """Test that get_console() works correctly."""
         console = get_console()
-        manager_console = SettingsManager.get_console()
+        manager = SettingsManager()
+        manager_console = manager.get_console()
 
         assert console is manager_console
+
+    def test_settings_manager_singleton_decorator_integration(self) -> None:
+        """Test that SettingsManager uses singleton decorator correctly."""
+        manager1 = SettingsManager()
+        manager2 = SettingsManager()
+
+        # Should be the same instance due to singleton decorator
+        assert manager1 is manager2
+
+        # Should have singleton attributes
+        assert hasattr(SettingsManager, "_is_singleton")
+        assert hasattr(SettingsManager, "_original_class")
+        assert SettingsManager._is_singleton is True

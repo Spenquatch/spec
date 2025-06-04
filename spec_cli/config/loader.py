@@ -4,6 +4,7 @@ from typing import Any, Dict, List
 
 import yaml
 
+from ..core.error_handler import ErrorHandler
 from ..exceptions import SpecConfigurationError
 from ..logging.debug import debug_logger
 
@@ -26,6 +27,7 @@ class ConfigurationLoader:
             root_path / ".specconfig.yaml",
             root_path / "pyproject.toml",
         ]
+        self.error_handler = ErrorHandler({"component": "config_loader"})
 
     def load_configuration(self) -> Dict[str, Any]:
         """Load configuration from available sources with precedence.
@@ -58,10 +60,13 @@ class ConfigurationLoader:
                             keys=list(source_config.keys()),
                         )
                 except Exception as e:
-                    raise SpecConfigurationError(
-                        f"Failed to load configuration from {source}: {e}",
-                        {"source_file": str(source), "error_type": type(e).__name__},
-                    ) from e
+                    self.error_handler.log_and_raise(
+                        e,
+                        "load configuration file",
+                        reraise_as=SpecConfigurationError,
+                        config_path=str(source),
+                        config_loading="configuration_loading",
+                    )
 
         if not config:
             debug_logger.log("INFO", "No configuration files found, using defaults")
@@ -87,15 +92,23 @@ class ConfigurationLoader:
                 data = yaml.safe_load(f)
             return data or {}
         except yaml.YAMLError as e:
-            raise SpecConfigurationError(
-                f"Invalid YAML syntax in {file_path}: {e}",
-                {"file_path": str(file_path), "yaml_error": str(e)},
-            ) from e
+            self.error_handler.log_and_raise(
+                e,
+                "parse YAML configuration",
+                reraise_as=SpecConfigurationError,
+                file_path=str(file_path),
+                yaml_parsing="yaml_syntax_error",
+            )
+            return {}  # This line will never be reached but satisfies mypy
         except UnicodeDecodeError as e:
-            raise SpecConfigurationError(
-                f"Unable to read {file_path} - file encoding issue: {e}",
-                {"file_path": str(file_path), "encoding_error": str(e)},
-            ) from e
+            self.error_handler.log_and_raise(
+                e,
+                "read YAML configuration file",
+                reraise_as=SpecConfigurationError,
+                file_path=str(file_path),
+                encoding_issue="unicode_decode_error",
+            )
+            return {}  # This line will never be reached but satisfies mypy
 
     def _load_from_pyproject_toml(self, file_path: Path) -> Dict[str, Any]:
         """Load configuration from pyproject.toml [tool.spec] section."""
@@ -116,15 +129,23 @@ class ConfigurationLoader:
             return tool_spec if isinstance(tool_spec, dict) else {}
 
         except tomllib.TOMLDecodeError as e:
-            raise SpecConfigurationError(
-                f"Invalid TOML syntax in {file_path}: {e}",
-                {"file_path": str(file_path), "toml_error": str(e)},
-            ) from e
+            self.error_handler.log_and_raise(
+                e,
+                "parse TOML configuration",
+                reraise_as=SpecConfigurationError,
+                file_path=str(file_path),
+                toml_parsing="toml_syntax_error",
+            )
+            return {}  # This line will never be reached but satisfies mypy
         except UnicodeDecodeError as e:
-            raise SpecConfigurationError(
-                f"Unable to read {file_path} - file encoding issue: {e}",
-                {"file_path": str(file_path), "encoding_error": str(e)},
-            ) from e
+            self.error_handler.log_and_raise(
+                e,
+                "read TOML configuration file",
+                reraise_as=SpecConfigurationError,
+                file_path=str(file_path),
+                encoding_issue="unicode_decode_error",
+            )
+            return {}  # This line will never be reached but satisfies mypy
 
     def get_available_sources(self) -> List[Path]:
         """Get list of available configuration sources."""

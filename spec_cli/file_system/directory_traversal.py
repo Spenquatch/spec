@@ -1,8 +1,9 @@
 from pathlib import Path
 from typing import Any, Dict, Generator, List, Optional
 
-from ..exceptions import SpecFileError
+from ..exceptions import SpecFileError, SpecValidationError
 from ..logging.debug import debug_logger
+from ..utils.path_utils import normalize_path, safe_relative_to
 from .file_metadata import FileMetadataExtractor
 from .file_type_detector import FileTypeDetector
 from .ignore_patterns import IgnorePatternMatcher
@@ -31,6 +32,9 @@ class DirectoryTraversal:
         """
         if directory is None:
             directory = self.root_path
+        else:
+            # Normalize string paths to Path objects
+            directory = normalize_path(directory)
 
         if not directory.exists() or not directory.is_dir():
             raise SpecFileError(f"Directory does not exist: {directory}")
@@ -51,8 +55,20 @@ class DirectoryTraversal:
 
                 # Convert to relative path for ignore checking
                 try:
-                    relative_path = file_path.relative_to(self.root_path)
-                except ValueError:
+                    relative_path = safe_relative_to(
+                        file_path, self.root_path, strict=False
+                    )
+                    if relative_path.is_absolute():
+                        # File is outside root path, skip
+                        debug_logger.log(
+                            "DEBUG",
+                            "Skipping file outside root path",
+                            file_path=str(file_path),
+                            root_path=str(self.root_path),
+                            operation="directory_traversal",
+                        )
+                        continue
+                except SpecValidationError:
                     # File is outside root path, skip
                     continue
 
@@ -114,6 +130,9 @@ class DirectoryTraversal:
         """
         if directory is None:
             directory = self.root_path
+        else:
+            # Normalize string paths to Path objects
+            directory = normalize_path(directory)
 
         debug_logger.log(
             "INFO", "Analyzing directory structure", directory=str(directory)
@@ -141,21 +160,38 @@ class DirectoryTraversal:
 
                 # Calculate depth
                 try:
-                    relative_path = file_path.relative_to(directory)
+                    normalized_directory = normalize_path(directory)
+                    relative_path = safe_relative_to(
+                        file_path, normalized_directory, strict=False
+                    )
+                    if relative_path.is_absolute():
+                        continue
                     depth = len(relative_path.parts)
                     if depth > max_depth:
                         max_depth = depth
                         deepest_path = str(relative_path)
-                except ValueError:
+                        debug_logger.log(
+                            "DEBUG",
+                            "New deepest path found",
+                            depth=depth,
+                            path=str(relative_path),
+                            operation="directory_analysis",
+                        )
+                except SpecValidationError:
                     continue
 
                 # Check if ignored
                 try:
-                    relative_to_root = file_path.relative_to(self.root_path)
+                    normalized_root = normalize_path(self.root_path)
+                    relative_to_root = safe_relative_to(
+                        file_path, normalized_root, strict=False
+                    )
+                    if relative_to_root.is_absolute():
+                        continue
                     if self.ignore_matcher.should_ignore(relative_to_root):
                         analysis["ignored_files"] += 1
                         continue
-                except ValueError:
+                except SpecValidationError:
                     continue
 
                 # Analyze file type
@@ -189,7 +225,12 @@ class DirectoryTraversal:
             files_by_size.sort(key=lambda x: x[1], reverse=True)
             for file_path, size in files_by_size[:5]:
                 try:
-                    relative_path = file_path.relative_to(directory)
+                    normalized_directory = normalize_path(directory)
+                    relative_path = safe_relative_to(
+                        file_path, normalized_directory, strict=False
+                    )
+                    if relative_path.is_absolute():
+                        continue
                     analysis["largest_files"].append(
                         {
                             "path": str(relative_path),
@@ -197,7 +238,14 @@ class DirectoryTraversal:
                             "size_formatted": self._format_size(size),
                         }
                     )
-                except ValueError:
+                    debug_logger.log(
+                        "DEBUG",
+                        "Added largest file to analysis",
+                        path=str(relative_path),
+                        size=size,
+                        operation="directory_analysis",
+                    )
+                except SpecValidationError:
                     continue
 
             debug_logger.log(
@@ -236,6 +284,9 @@ class DirectoryTraversal:
         """
         if directory is None:
             directory = self.root_path
+        else:
+            # Normalize string paths to Path objects
+            directory = normalize_path(directory)
 
         debug_logger.log(
             "INFO",
@@ -250,10 +301,22 @@ class DirectoryTraversal:
             for file_path in directory.rglob(pattern):
                 if file_path.is_file():
                     try:
-                        relative_path = file_path.relative_to(self.root_path)
+                        normalized_root = normalize_path(self.root_path)
+                        relative_path = safe_relative_to(
+                            file_path, normalized_root, strict=False
+                        )
+                        if relative_path.is_absolute():
+                            continue
                         if not self.ignore_matcher.should_ignore(relative_path):
                             matching_files.append(relative_path)
-                    except ValueError:
+                            debug_logger.log(
+                                "DEBUG",
+                                "Pattern match found",
+                                pattern=pattern,
+                                file_path=str(relative_path),
+                                operation="pattern_search",
+                            )
+                    except SpecValidationError:
                         continue
 
             debug_logger.log(
@@ -282,6 +345,9 @@ class DirectoryTraversal:
         """
         if directory is None:
             directory = self.root_path
+        else:
+            # Normalize string paths to Path objects
+            directory = normalize_path(directory)
 
         try:
             processable_files = self.find_processable_files(directory, max_files=100)
