@@ -94,7 +94,7 @@ class TestAddWorkflow:
     def test_is_spec_file_when_file_in_specs_directory_then_returns_true(self) -> None:
         """Test that files in .specs directory are detected as spec files."""
         workflow = AddWorkflow()
-        spec_file = Path(".specs/src/module/index.md")
+        spec_file = workflow.settings.specs_dir / "src/module/index.md"
 
         result = workflow._is_spec_file(spec_file)
 
