@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+from ....config.settings import SpecSettings, get_settings
 from ....exceptions import SpecGenerationError, SpecValidationError
 from ....file_processing.conflict_resolver import ConflictResolutionStrategy
 from ....git.repository import SpecGitRepository
@@ -409,13 +410,15 @@ class RegenerationWorkflow(GenerationWorkflow):
 class AddWorkflow:
     """Workflow for adding files to spec tracking."""
 
-    def __init__(self, force: bool = False):
+    def __init__(self, force: bool = False, settings: Optional[SpecSettings] = None):
         """Initialize add workflow.
 
         Args:
             force: Whether to force add ignored files
+            settings: Spec settings for directory paths
         """
         self.force = force
+        self.settings = settings or get_settings()
         self.git_repo = SpecGitRepository()
 
         debug_logger.log("INFO", "AddWorkflow initialized", force=force)
@@ -470,7 +473,7 @@ class AddWorkflow:
     def _is_spec_file(self, file_path: Path) -> bool:
         """Check if file is in .specs directory."""
         try:
-            file_path.relative_to(Path(".specs"))
+            file_path.relative_to(self.settings.specs_dir)
             return True
         except ValueError:
             return False

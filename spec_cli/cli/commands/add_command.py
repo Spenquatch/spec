@@ -92,7 +92,7 @@ class AddCommand(BaseCommand):
             )
 
         # Create and execute workflow
-        workflow = create_add_workflow(force=force)
+        workflow = create_add_workflow(force=force, settings=self.settings)
 
         show_message(f"Adding {len(files_to_add)} files to spec repository...", "info")
 

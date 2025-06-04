@@ -163,7 +163,7 @@ class TestAddCommand:
         with patch("spec_cli.ui.error_display.show_message"):
             with patch("spec_cli.git.repository.SpecGitRepository") as mock_repo_class:
                 with patch(
-                    "spec_cli.cli.commands.generation.workflows.create_add_workflow"
+                    "spec_cli.cli.commands.generation.create_add_workflow"
                 ) as mock_create_workflow:
                     mock_repo = Mock()
                     mock_repo.status.return_value = None
@@ -193,8 +193,22 @@ class TestAddCommand:
         with patch("spec_cli.ui.error_display.show_message"):
             with patch("spec_cli.git.repository.SpecGitRepository") as mock_repo_class:
                 with patch(
-                    "spec_cli.cli.commands.generation.workflows.create_add_workflow"
+                    "spec_cli.cli.commands.generation.create_add_workflow"
                 ) as mock_create_workflow:
+                    # Force reload to ensure fresh import with patched functions
+                    import importlib
+                    import sys
+
+                    if "spec_cli.cli.commands.add_command" in sys.modules:
+                        importlib.reload(
+                            sys.modules["spec_cli.cli.commands.add_command"]
+                        )
+
+                    from spec_cli.cli.commands.add_command import AddCommand
+
+                    # Create command inside patch context
+                    command = AddCommand(settings=command.settings)
+
                     mock_repo = Mock()
                     mock_repo.status.return_value = None
                     mock_repo_class.return_value = mock_repo
@@ -229,7 +243,7 @@ class TestAddCommand:
         with patch("spec_cli.ui.error_display.show_message"):
             with patch("spec_cli.git.repository.SpecGitRepository"):
                 with patch(
-                    "spec_cli.cli.commands.generation.workflows.create_add_workflow"
+                    "spec_cli.cli.commands.generation.create_add_workflow"
                 ) as mock_create_workflow:
                     # Execute
                     result = command.execute(files=[other_file])
@@ -250,7 +264,7 @@ class TestAddCommand:
         test_file.touch()
 
         with patch(
-            "spec_cli.cli.commands.generation.workflows.create_add_workflow"
+            "spec_cli.cli.commands.generation.create_add_workflow"
         ) as mock_create:
             with patch("spec_cli.git.repository.SpecGitRepository"):
                 mock_workflow = Mock()
