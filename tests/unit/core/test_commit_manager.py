@@ -33,8 +33,9 @@ class TestSpecCommitManager:
     @pytest.fixture
     def commit_manager(self, mock_settings: Mock) -> SpecCommitManager:
         """Create SpecCommitManager instance with mocked dependencies."""
-        with patch("spec_cli.core.commit_manager.SpecGitRepository"), patch(
-            "spec_cli.core.commit_manager.RepositoryStateChecker"
+        with (
+            patch("spec_cli.core.commit_manager.SpecGitRepository"),
+            patch("spec_cli.core.commit_manager.RepositoryStateChecker"),
         ):
             manager = SpecCommitManager(mock_settings)
             manager.git_repo = Mock()
@@ -43,19 +44,20 @@ class TestSpecCommitManager:
 
     def test_commit_manager_initialization(self, mock_settings: Mock) -> None:
         """Test SpecCommitManager initializes correctly."""
-        with patch("spec_cli.core.commit_manager.SpecGitRepository"), patch(
-            "spec_cli.core.commit_manager.RepositoryStateChecker"
+        with (
+            patch("spec_cli.core.commit_manager.SpecGitRepository"),
+            patch("spec_cli.core.commit_manager.RepositoryStateChecker"),
         ):
             manager = SpecCommitManager(mock_settings)
             assert manager.settings is mock_settings
 
     def test_commit_manager_default_settings(self) -> None:
         """Test SpecCommitManager uses default settings when none provided."""
-        with patch(
-            "spec_cli.core.commit_manager.get_settings"
-        ) as mock_get_settings, patch(
-            "spec_cli.core.commit_manager.SpecGitRepository"
-        ), patch("spec_cli.core.commit_manager.RepositoryStateChecker"):
+        with (
+            patch("spec_cli.core.commit_manager.get_settings") as mock_get_settings,
+            patch("spec_cli.core.commit_manager.SpecGitRepository"),
+            patch("spec_cli.core.commit_manager.RepositoryStateChecker"),
+        ):
             mock_get_settings.return_value = Mock()
             SpecCommitManager()
             mock_get_settings.assert_called_once()

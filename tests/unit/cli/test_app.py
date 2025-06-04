@@ -107,9 +107,10 @@ class TestMainFunction:
         mock_exception = click.ClickException("Test click error")
         mock_exception.exit_code = 2
 
-        with patch.object(
-            app_module, "_invoke_app", side_effect=mock_exception
-        ), patch.object(mock_exception, "show") as mock_show:
+        with (
+            patch.object(app_module, "_invoke_app", side_effect=mock_exception),
+            patch.object(mock_exception, "show") as mock_show,
+        ):
             main([])
 
             mock_show.assert_called_once()
@@ -124,9 +125,10 @@ class TestMainFunction:
 
         test_exception = RuntimeError("Test error")
 
-        with patch.object(
-            app_module, "_invoke_app", side_effect=test_exception
-        ), patch.object(app_module, "handle_cli_error") as mock_handle_error:
+        with (
+            patch.object(app_module, "_invoke_app", side_effect=test_exception),
+            patch.object(app_module, "handle_cli_error") as mock_handle_error,
+        ):
             main([])
 
             mock_handle_error.assert_called_once_with(

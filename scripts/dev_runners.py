@@ -84,9 +84,9 @@ def all_checks():
     failed_checks = []
 
     for check_func, name in checks:
-        print(f"\n{'='*50}")
+        print(f"\n{'=' * 50}")
         print(f"Running: {name}")
-        print(f"{'='*50}")
+        print(f"{'=' * 50}")
 
         # Capture the check function's exit behavior
         original_exit = sys.exit
@@ -119,9 +119,9 @@ def all_checks():
             print(f"✅ {name} passed")
 
     # Summary
-    print(f"\n{'='*50}")
+    print(f"\n{'=' * 50}")
     print("QUALITY CHECK SUMMARY")
-    print(f"{'='*50}")
+    print(f"{'=' * 50}")
 
     if failed_checks:
         print(f"❌ {len(failed_checks)} checks failed:")

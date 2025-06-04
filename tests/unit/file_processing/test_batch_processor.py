@@ -144,13 +144,13 @@ class TestBatchFileProcessor:
     @pytest.fixture
     def mock_processor(self, mock_settings: MagicMock) -> BatchFileProcessor:
         """Create BatchFileProcessor with mocked dependencies."""
-        with patch(
-            "spec_cli.file_processing.batch_processor.FileChangeDetector"
-        ), patch("spec_cli.file_processing.batch_processor.ConflictResolver"), patch(
-            "spec_cli.file_processing.batch_processor.SpecWorkflowOrchestrator"
-        ), patch(
-            "spec_cli.file_processing.batch_processor.FileProcessingPipeline"
-        ), patch("spec_cli.templates.generator.SpecContentGenerator"):
+        with (
+            patch("spec_cli.file_processing.batch_processor.FileChangeDetector"),
+            patch("spec_cli.file_processing.batch_processor.ConflictResolver"),
+            patch("spec_cli.file_processing.batch_processor.SpecWorkflowOrchestrator"),
+            patch("spec_cli.file_processing.batch_processor.FileProcessingPipeline"),
+            patch("spec_cli.templates.generator.SpecContentGenerator"),
+        ):
             processor = BatchFileProcessor(mock_settings)
             processor.change_detector = MagicMock()
             processor.conflict_resolver = MagicMock()

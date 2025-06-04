@@ -52,9 +52,10 @@ class TestDiffViewer:
         self,
     ) -> None:
         """Test that diff summary displays table with statistics."""
-        with patch("spec_cli.cli.commands.history.diff_viewer.get_console"), patch(
-            "spec_cli.ui.tables.StatusTable"
-        ) as mock_table_class:
+        with (
+            patch("spec_cli.cli.commands.history.diff_viewer.get_console"),
+            patch("spec_cli.ui.tables.StatusTable") as mock_table_class,
+        ):
             mock_table = Mock()
             mock_table_class.return_value = mock_table
 
@@ -112,11 +113,14 @@ class TestDiffViewer:
         new_content = "line 1\nline 2\nnew line 3"
         syntax = "python"
 
-        with patch(
-            "spec_cli.cli.commands.history.diff_viewer.Panel"
-        ) as mock_panel_class, patch(
-            "spec_cli.cli.commands.history.diff_viewer.Columns"
-        ) as mock_columns_class:
+        with (
+            patch(
+                "spec_cli.cli.commands.history.diff_viewer.Panel"
+            ) as mock_panel_class,
+            patch(
+                "spec_cli.cli.commands.history.diff_viewer.Columns"
+            ) as mock_columns_class,
+        ):
             mock_panel1 = Mock()
             mock_panel2 = Mock()
             mock_panel_class.side_effect = [mock_panel1, mock_panel2]

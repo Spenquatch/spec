@@ -27,9 +27,11 @@ class TestFileChangeDetector:
     @pytest.fixture
     def change_detector(self, mock_settings: MagicMock) -> FileChangeDetector:
         """Create change detector with mocked dependencies."""
-        with patch("spec_cli.file_processing.change_detector.FileCacheManager"), patch(
-            "spec_cli.file_processing.change_detector.FileMetadataExtractor"
-        ), patch("spec_cli.file_processing.change_detector.IgnorePatternMatcher"):
+        with (
+            patch("spec_cli.file_processing.change_detector.FileCacheManager"),
+            patch("spec_cli.file_processing.change_detector.FileMetadataExtractor"),
+            patch("spec_cli.file_processing.change_detector.IgnorePatternMatcher"),
+        ):
             detector = FileChangeDetector(mock_settings)
             # Replace attributes with properly typed mocks
             detector.cache_manager = MagicMock()
@@ -447,9 +449,10 @@ class TestFileChangeDetector:
     def test_cache_cleanup(self, change_detector: FileChangeDetector) -> None:
         """Test cache cleanup functionality."""
         # Mock current files
-        with patch("pathlib.Path.cwd") as mock_cwd, patch(
-            "pathlib.Path.rglob"
-        ) as mock_rglob:
+        with (
+            patch("pathlib.Path.cwd") as mock_cwd,
+            patch("pathlib.Path.rglob") as mock_rglob,
+        ):
             mock_cwd.return_value = Path("/test")
             mock_file = MagicMock()
             mock_file.is_file.return_value = True

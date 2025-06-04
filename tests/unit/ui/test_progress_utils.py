@@ -520,7 +520,7 @@ class TestProgressUtilsIntegration:
                 "inner_operation", total_items=5, auto_finish=False
             ) as inner_tracker:
                 for i in range(5):
-                    inner_tracker.update(1, f"Inner step {i+1}")
+                    inner_tracker.update(1, f"Inner step {i + 1}")
 
             outer_tracker.update(1, "Phase 1 complete")
             outer_tracker.update(1, "All phases complete")

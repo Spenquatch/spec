@@ -54,11 +54,12 @@ class TestDebugLogger:
             logger = DebugLogger()
 
             # Test different log levels
-            with patch.object(logger.logger, "debug") as mock_debug, patch.object(
-                logger.logger, "info"
-            ) as mock_info, patch.object(
-                logger.logger, "warning"
-            ) as mock_warning, patch.object(logger.logger, "error") as mock_error:
+            with (
+                patch.object(logger.logger, "debug") as mock_debug,
+                patch.object(logger.logger, "info") as mock_info,
+                patch.object(logger.logger, "warning") as mock_warning,
+                patch.object(logger.logger, "error") as mock_error,
+            ):
                 logger.log("DEBUG", "Debug message")
                 logger.log("INFO", "Info message")
                 logger.log("WARNING", "Warning message")
@@ -94,9 +95,10 @@ class TestDebugLogger:
         with patch.dict(os.environ, {"SPEC_DEBUG": "1", "SPEC_DEBUG_TIMING": "1"}):
             logger = DebugLogger()
 
-            with patch.object(logger.logger, "info") as mock_info, patch.object(
-                logger.logger, "error"
-            ) as mock_error:
+            with (
+                patch.object(logger.logger, "info") as mock_info,
+                patch.object(logger.logger, "error") as mock_error,
+            ):
                 with pytest.raises(ValueError):
                     with logger.timer("failing_operation"):
                         raise ValueError("Test error")

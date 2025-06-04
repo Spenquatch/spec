@@ -158,11 +158,11 @@ class TestConflictResolver:
     @pytest.fixture
     def conflict_resolver(self, mock_settings: MagicMock) -> ConflictResolver:
         """Create conflict resolver with mocked dependencies."""
-        with patch(
-            "spec_cli.file_processing.conflict_resolver.DirectoryManager"
-        ), patch(
-            "spec_cli.file_processing.conflict_resolver.FileChangeDetector"
-        ), patch("spec_cli.file_processing.conflict_resolver.ContentMerger"):
+        with (
+            patch("spec_cli.file_processing.conflict_resolver.DirectoryManager"),
+            patch("spec_cli.file_processing.conflict_resolver.FileChangeDetector"),
+            patch("spec_cli.file_processing.conflict_resolver.ContentMerger"),
+        ):
             resolver = ConflictResolver(mock_settings)
             # Replace attributes with properly typed mocks
             resolver.directory_manager = MagicMock()
