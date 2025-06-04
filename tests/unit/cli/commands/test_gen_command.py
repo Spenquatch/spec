@@ -129,7 +129,7 @@ class TestGenCommand:
 
     def test_show_dry_run_preview_when_called_then_displays_preview_info(
         self,
-        command: GenCommand,
+        mock_settings: Mock,
         tmp_path: Path,
     ):
         """Test dry run preview display."""
@@ -141,12 +141,24 @@ class TestGenCommand:
             with patch(
                 "spec_cli.file_system.path_resolver.PathResolver"
             ) as mock_resolver_class:
+                # Force reload to ensure fresh import with patched functions
+                import importlib
+                import sys
+
+                if "spec_cli.cli.commands.gen_command" in sys.modules:
+                    importlib.reload(sys.modules["spec_cli.cli.commands.gen_command"])
+
+                from spec_cli.cli.commands.gen_command import GenCommand
+
                 mock_resolver = Mock()
                 mock_resolver.get_spec_files_for_source.return_value = {
                     "index": tmp_path / ".specs" / "test.py" / "index.md",
                     "history": tmp_path / ".specs" / "test.py" / "history.md",
                 }
                 mock_resolver_class.return_value = mock_resolver
+
+                # Create command inside patch context
+                command = GenCommand(settings=mock_settings)
 
                 # Execute
                 command._show_dry_run_preview(
@@ -172,11 +184,24 @@ class TestGenCommand:
 
         with patch("spec_cli.ui.error_display.show_message"):
             with patch(
-                "spec_cli.cli.commands.gen_command.validate_generation_input"
+                "spec_cli.cli.commands.generation.validate_generation_input"
             ) as mock_validate:
                 with patch(
-                    "spec_cli.cli.commands.gen_command.create_generation_workflow"
+                    "spec_cli.cli.commands.generation.create_generation_workflow"
                 ) as mock_create_workflow:
+                    # Force reload to ensure fresh import with patched functions
+                    import importlib
+                    import sys
+
+                    if "spec_cli.cli.commands.gen_command" in sys.modules:
+                        importlib.reload(
+                            sys.modules["spec_cli.cli.commands.gen_command"]
+                        )
+
+                    from spec_cli.cli.commands.gen_command import GenCommand
+
+                    # Create command inside patch context
+                    command = GenCommand(settings=command.settings)
                     mock_validate.return_value = {
                         "valid": True,
                         "errors": [],
@@ -206,11 +231,24 @@ class TestGenCommand:
 
         with patch("spec_cli.ui.error_display.show_message"):
             with patch(
-                "spec_cli.cli.commands.gen_command.validate_generation_input"
+                "spec_cli.cli.commands.generation.validate_generation_input"
             ) as mock_validate:
                 with patch(
-                    "spec_cli.cli.commands.gen_command.create_generation_workflow"
+                    "spec_cli.cli.commands.generation.create_generation_workflow"
                 ):
+                    # Force reload to ensure fresh import with patched functions
+                    import importlib
+                    import sys
+
+                    if "spec_cli.cli.commands.gen_command" in sys.modules:
+                        importlib.reload(
+                            sys.modules["spec_cli.cli.commands.gen_command"]
+                        )
+
+                    from spec_cli.cli.commands.gen_command import GenCommand
+
+                    # Create command inside patch context
+                    command = GenCommand(settings=command.settings)
                     mock_validate.return_value = {
                         "valid": False,
                         "errors": ["Template not found"],
@@ -235,15 +273,26 @@ class TestGenCommand:
         test_file.touch()
 
         with patch("spec_cli.ui.error_display.show_message"):
-            with patch(
-                "spec_cli.cli.commands.gen_command.get_user_confirmation"
-            ) as mock_confirm:
+            with patch("spec_cli.cli.utils.get_user_confirmation") as mock_confirm:
                 with patch(
-                    "spec_cli.cli.commands.gen_command.validate_generation_input"
+                    "spec_cli.cli.commands.generation.validate_generation_input"
                 ) as mock_validate:
                     with patch(
-                        "spec_cli.cli.commands.gen_command.create_generation_workflow"
+                        "spec_cli.cli.commands.generation.create_generation_workflow"
                     ):
+                        # Force reload to ensure fresh import with patched functions
+                        import importlib
+                        import sys
+
+                        if "spec_cli.cli.commands.gen_command" in sys.modules:
+                            importlib.reload(
+                                sys.modules["spec_cli.cli.commands.gen_command"]
+                            )
+
+                        from spec_cli.cli.commands.gen_command import GenCommand
+
+                        # Create command inside patch context
+                        command = GenCommand(settings=command.settings)
                         mock_validate.return_value = {
                             "valid": True,
                             "errors": [],
@@ -274,11 +323,24 @@ class TestGenCommand:
 
         with patch("spec_cli.ui.error_display.show_message"):
             with patch(
-                "spec_cli.cli.commands.gen_command.validate_generation_input"
+                "spec_cli.cli.commands.generation.validate_generation_input"
             ) as mock_validate:
                 with patch(
-                    "spec_cli.cli.commands.gen_command.create_generation_workflow"
+                    "spec_cli.cli.commands.generation.create_generation_workflow"
                 ) as mock_create_workflow:
+                    # Force reload to ensure fresh import with patched functions
+                    import importlib
+                    import sys
+
+                    if "spec_cli.cli.commands.gen_command" in sys.modules:
+                        importlib.reload(
+                            sys.modules["spec_cli.cli.commands.gen_command"]
+                        )
+
+                    from spec_cli.cli.commands.gen_command import GenCommand
+
+                    # Create command inside patch context
+                    command = GenCommand(settings=command.settings)
                     mock_validate.return_value = {
                         "valid": True,
                         "errors": [],
@@ -320,11 +382,20 @@ class TestGenCommand:
         test_file.touch()
 
         with patch(
-            "spec_cli.cli.commands.generation.workflows.create_generation_workflow"
+            "spec_cli.cli.commands.generation.create_generation_workflow"
         ) as mock_create:
             with patch(
-                "spec_cli.cli.commands.gen_command.validate_generation_input"
+                "spec_cli.cli.commands.generation.validate_generation_input"
             ) as mock_validate:
+                # Force reload to ensure fresh import with patched functions
+                import importlib
+                import sys
+
+                if "spec_cli.cli.commands.gen_command" in sys.modules:
+                    importlib.reload(sys.modules["spec_cli.cli.commands.gen_command"])
+
+                from spec_cli.cli.commands.gen_command import GenCommand
+
                 mock_validate.return_value = {
                     "valid": True,
                     "errors": [],
