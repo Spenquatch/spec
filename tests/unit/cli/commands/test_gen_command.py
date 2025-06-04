@@ -161,14 +161,8 @@ class TestGenCommand:
                     "This is a dry run. No files would be modified.", "info"
                 )
 
-    @patch("spec_cli.cli.commands.gen_command.create_generation_workflow")
-    @patch("spec_cli.cli.commands.gen_command.validate_generation_input")
-    @patch("spec_cli.cli.commands.gen_command.show_message")
     def test_execute_when_dry_run_then_does_not_generate(
         self,
-        mock_show_message: Mock,
-        mock_validate: Mock,
-        mock_create_workflow: Mock,
         command: GenCommand,
         tmp_path: Path,
     ):
@@ -269,14 +263,8 @@ class TestGenCommand:
                             assert "cancelled due to warnings" in result["message"]
                             mock_confirm.assert_called_once()
 
-    @patch("spec_cli.cli.commands.gen_command.create_generation_workflow")
-    @patch("spec_cli.cli.commands.gen_command.validate_generation_input")
-    @patch("spec_cli.cli.commands.gen_command.show_message")
     def test_execute_when_successful_then_returns_success_result(
         self,
-        mock_show_message: Mock,
-        mock_validate: Mock,
-        mock_create_workflow: Mock,
         command: GenCommand,
         tmp_path: Path,
     ):
