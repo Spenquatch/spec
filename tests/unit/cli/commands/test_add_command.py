@@ -163,7 +163,7 @@ class TestAddCommand:
         with patch("spec_cli.cli.commands.add_command.show_message"):
             with patch("spec_cli.git.repository.SpecGitRepository") as mock_repo_class:
                 with patch(
-                    "spec_cli.cli.commands.add_command.create_add_workflow"
+                    "spec_cli.cli.commands.generation.workflows.create_add_workflow"
                 ) as mock_create_workflow:
                     mock_repo = Mock()
                     mock_repo.status.return_value = None
@@ -193,7 +193,7 @@ class TestAddCommand:
         with patch("spec_cli.cli.commands.add_command.show_message"):
             with patch("spec_cli.git.repository.SpecGitRepository") as mock_repo_class:
                 with patch(
-                    "spec_cli.cli.commands.add_command.create_add_workflow"
+                    "spec_cli.cli.commands.generation.workflows.create_add_workflow"
                 ) as mock_create_workflow:
                     mock_repo = Mock()
                     mock_repo.status.return_value = None
@@ -229,7 +229,7 @@ class TestAddCommand:
         with patch("spec_cli.cli.commands.add_command.show_message"):
             with patch("spec_cli.git.repository.SpecGitRepository"):
                 with patch(
-                    "spec_cli.cli.commands.add_command.create_add_workflow"
+                    "spec_cli.cli.commands.generation.workflows.create_add_workflow"
                 ) as mock_create_workflow:
                     # Execute
                     result = command.execute(files=[other_file])
@@ -250,7 +250,7 @@ class TestAddCommand:
         test_file.touch()
 
         with patch(
-            "spec_cli.cli.commands.add_command.create_add_workflow"
+            "spec_cli.cli.commands.generation.workflows.create_add_workflow"
         ) as mock_create:
             with patch("spec_cli.git.repository.SpecGitRepository"):
                 mock_workflow = Mock()

@@ -322,7 +322,7 @@ class TestGenCommand:
         test_file.touch()
 
         with patch(
-            "spec_cli.cli.commands.gen_command.create_generation_workflow"
+            "spec_cli.cli.commands.generation.workflows.create_generation_workflow"
         ) as mock_create:
             with patch(
                 "spec_cli.cli.commands.gen_command.validate_generation_input"

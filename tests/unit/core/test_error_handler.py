@@ -185,8 +185,12 @@ class TestErrorHandler:
                 call_args = mock_logger.log.call_args
                 kwargs = call_args[1]
 
-                # Should have fallback path context
-                assert kwargs["path_context_error"] == "/test/path"
+                # Should have fallback path context (normalize for cross-platform)
+                from spec_cli.file_system.path_utils import normalize_path_separators
+
+                expected_path = normalize_path_separators("/test/path")
+                actual_path = normalize_path_separators(kwargs["path_context_error"])
+                assert actual_path == expected_path
 
     def test_error_handler_when_log_and_raise_with_reraise_then_converts_exception(
         self,

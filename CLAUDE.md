@@ -460,6 +460,37 @@ def generate_spec(file_path: Path, template: Optional[str] = None) -> str:
     """
 ```
 
+### Cross-Platform Compatibility
+
+`spec` must work consistently across Windows, macOS, and Linux. We handle platform differences systematically:
+
+**Path Handling:**
+- Always use utilities from `spec_cli.file_system.path_utils`
+- `normalize_path_separators()` converts all paths to forward slashes
+- `convert_to_posix_style()` ensures POSIX-style paths for .specs/ operations
+- Never hardcode path separators in tests or logic
+
+**Testing Guidelines:**
+- Mock patches target import location: `patch("module.imported_function")`
+- NOT source location: `patch("source.module.function")` (fails Python < 3.11)
+- Use path normalization for assertions:
+  ```python
+  from spec_cli.file_system.path_utils import normalize_path_separators
+  expected = normalize_path_separators("/test/path")
+  actual = normalize_path_separators(result)
+  assert actual == expected
+  ```
+
+**CI Compatibility:**
+- Tests run on Python 3.8-3.12 across Windows, macOS, Linux
+- Mock behavior changed between Python versions - always patch at import location
+- Path separator differences must be handled in all test assertions
+
+**Common Pitfalls to Avoid:**
+- Hardcoded path separators: `assert path == "/test/path"` (fails on Windows)
+- Source-level mocking: `patch("spec_cli.ui.show_message")` (fails Python < 3.11)
+- Platform-specific test expectations without normalization
+
 ### Performance & Security
 
 - **Performance**: Batch operations, async processing, token counting, caching

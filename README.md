@@ -256,6 +256,47 @@ Hide `.spec/` and `.specs/` directories in your IDE. For VSCode, add to workspac
 pip install -i https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ --pre spec-ai
 ```
 
+## Cross-Platform Compatibility
+
+`spec` is designed to work consistently across all platforms (Windows, macOS, Linux). We handle cross-platform differences systematically:
+
+### Path Handling
+- **Problem**: Windows uses backslashes (`\`) while Unix systems use forward slashes (`/`)
+- **Solution**: We use dedicated path utilities in `spec_cli.file_system.path_utils`:
+  - `normalize_path_separators()` - Converts all paths to forward slashes
+  - `convert_to_posix_style()` - Alias for consistent POSIX-style paths
+  - All `.specs/` path operations use normalized separators
+
+### Testing Compatibility
+- **Problem**: Mock behavior and path assertions differ between Python versions
+- **Solution**:
+  - Tests use cross-platform path normalization for assertions
+  - Mock patches target the import location (`module.imported_function`) not source
+  - CI tests on Python 3.8-3.12 across Windows, macOS, and Linux
+
+### Mock Patching Guidelines
+When writing tests, always patch imported functions at their import location:
+```python
+# ✅ Correct - patch where function is imported
+with patch("spec_cli.cli.commands.my_command.imported_function"):
+
+# ❌ Wrong - patch at source (fails on Python < 3.11)
+with patch("spec_cli.original.module.imported_function"):
+```
+
+### Path Testing Guidelines
+Use path utilities for cross-platform test assertions:
+```python
+# ✅ Correct - normalize paths for comparison
+from spec_cli.file_system.path_utils import normalize_path_separators
+expected = normalize_path_separators("/expected/path")
+actual = normalize_path_separators(result_path)
+assert actual == expected
+
+# ❌ Wrong - hardcoded path separators
+assert result_path == "/expected/path"  # Fails on Windows
+```
+
 ## Contributing
 
 We follow a vertical slice development philosophy - implementing features completely through implementation, testing, and typing before moving on. See [CLAUDE.md](CLAUDE.md) for detailed development guidelines.
