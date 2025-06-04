@@ -252,9 +252,9 @@ class TestTemplateVariations:
         ]
 
         for section in advanced_sections:
-            assert (
-                section.lower() in config.index.lower()
-            ), f"Missing section: {section}"
+            assert section.lower() in config.index.lower(), (
+                f"Missing section: {section}"
+            )
 
         # History should also have advanced sections
         history_sections = [
@@ -266,9 +266,9 @@ class TestTemplateVariations:
         ]
 
         for section in history_sections:
-            assert (
-                section.lower() in config.history.lower()
-            ), f"Missing history section: {section}"
+            assert section.lower() in config.history.lower(), (
+                f"Missing history section: {section}"
+            )
 
     def test_templates_use_consistent_placeholder_style(self) -> None:
         """Test that all templates use consistent placeholder formatting."""
@@ -313,9 +313,9 @@ class TestTemplateIntegration:
 
         # Should use a reasonable percentage of available variables
         usage_ratio = len(used_vars) / len(available_vars)
-        assert (
-            usage_ratio >= 0.3
-        ), f"Templates only use {usage_ratio:.1%} of available variables"
+        assert usage_ratio >= 0.3, (
+            f"Templates only use {usage_ratio:.1%} of available variables"
+        )
 
         # Should include essential variables
         essential_vars = {
@@ -327,9 +327,9 @@ class TestTemplateIntegration:
             "date",
             "context",
         }
-        assert essential_vars.issubset(
-            used_vars
-        ), f"Missing essential variables: {essential_vars - used_vars}"
+        assert essential_vars.issubset(used_vars), (
+            f"Missing essential variables: {essential_vars - used_vars}"
+        )
 
     def test_template_preset_consistency(self) -> None:
         """Test that template presets are consistent in structure."""

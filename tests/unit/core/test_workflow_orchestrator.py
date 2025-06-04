@@ -382,9 +382,9 @@ class TestSpecWorkflowOrchestrator:
             actual_args, actual_kwargs = actual_call
 
             # Verify arguments match
-            assert (
-                actual_args == expected_args
-            ), f"Progress call {i}: expected {expected_args}, got {actual_args}"
+            assert actual_args == expected_args, (
+                f"Progress call {i}: expected {expected_args}, got {actual_args}"
+            )
 
         # Verify result is successful
         assert result["success"] is True

@@ -179,9 +179,9 @@ build/
 
         for file_path, should_ignore in test_cases:
             result = matcher.should_ignore(file_path)
-            assert (
-                result == should_ignore
-            ), f"Path '{file_path}' should_ignore={should_ignore}"
+            assert result == should_ignore, (
+                f"Path '{file_path}' should_ignore={should_ignore}"
+            )
 
     def test_should_ignore_matches_directory_patterns(
         self, mock_settings: Mock
@@ -210,9 +210,9 @@ node_modules
 
         for file_path, should_ignore in test_cases:
             result = matcher.should_ignore(file_path)
-            assert (
-                result == should_ignore
-            ), f"Path '{file_path}' should_ignore={should_ignore}"
+            assert result == should_ignore, (
+                f"Path '{file_path}' should_ignore={should_ignore}"
+            )
 
     def test_should_ignore_respects_negation_patterns(
         self, mock_settings: Mock

@@ -578,9 +578,9 @@ class TestProgressUtilsIntegration:
 
         for seconds, expected in test_cases:
             result = format_time_duration(seconds)
-            assert (
-                result == expected
-            ), f"Expected {expected} for {seconds}s, got {result}"
+            assert result == expected, (
+                f"Expected {expected} for {seconds}s, got {result}"
+            )
 
     def test_processing_speed_edge_cases(self) -> None:
         """Test processing speed calculation edge cases."""
