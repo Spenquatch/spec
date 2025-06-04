@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 from ..core.error_handler import ErrorHandler
 from ..exceptions import SpecConfigurationError
@@ -11,7 +11,7 @@ class ConfigurationValidator:
     def __init__(self) -> None:
         self.error_handler = ErrorHandler({"component": "config_validator"})
 
-    def validate_configuration(self, config: Dict[str, Any]) -> List[str]:
+    def validate_configuration(self, config: dict[str, Any]) -> list[str]:
         """Validate configuration and return list of validation errors."""
         errors = []
 
@@ -37,7 +37,7 @@ class ConfigurationValidator:
 
         return errors
 
-    def _validate_debug_config(self, config: Dict[str, Any]) -> List[str]:
+    def _validate_debug_config(self, config: dict[str, Any]) -> list[str]:
         """Validate debug configuration section."""
         errors = []
 
@@ -63,7 +63,7 @@ class ConfigurationValidator:
 
         return errors
 
-    def _validate_terminal_config(self, config: Dict[str, Any]) -> List[str]:
+    def _validate_terminal_config(self, config: dict[str, Any]) -> list[str]:
         """Validate terminal configuration section."""
         errors = []
 
@@ -92,7 +92,7 @@ class ConfigurationValidator:
 
         return errors
 
-    def _validate_path_config(self, config: Dict[str, Any]) -> List[str]:
+    def _validate_path_config(self, config: dict[str, Any]) -> list[str]:
         """Validate path configuration section."""
         errors = []
 
@@ -122,7 +122,7 @@ class ConfigurationValidator:
 
         return errors
 
-    def _validate_template_config(self, config: Dict[str, Any]) -> List[str]:
+    def _validate_template_config(self, config: dict[str, Any]) -> list[str]:
         """Validate template configuration section."""
         errors = []
 
@@ -143,7 +143,7 @@ class ConfigurationValidator:
 
         return errors
 
-    def validate_and_raise(self, config: Dict[str, Any]) -> None:
+    def validate_and_raise(self, config: dict[str, Any]) -> None:
         """Validate configuration and raise exception if invalid."""
         errors = self.validate_configuration(config)
         if errors:
@@ -161,7 +161,7 @@ class ConfigurationValidator:
                 validation_stage="configuration_validation",
             )
 
-    def get_validation_schema(self) -> Dict[str, Any]:
+    def get_validation_schema(self) -> dict[str, Any]:
         """Get the expected configuration schema for documentation."""
         return {
             "debug": {

@@ -2,12 +2,11 @@
 
 import ast
 from pathlib import Path
-from typing import List
 
 from spec_cli.validation.import_validator import ImportValidator, ImportViolation
 
 
-def check_imports_in_file(file_path: Path) -> List[ImportViolation]:
+def check_imports_in_file(file_path: Path) -> list[ImportViolation]:
     """Check imports in a single Python file.
 
     Args:
@@ -40,7 +39,7 @@ def check_imports_in_file(file_path: Path) -> List[ImportViolation]:
         raise SyntaxError(f"Syntax error in {file_path}: {e}") from e
 
 
-def cmd_check_imports(file_paths: List[str]) -> int:
+def cmd_check_imports(file_paths: list[str]) -> int:
     """Check imports command entry point.
 
     Args:

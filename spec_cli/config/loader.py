@@ -1,6 +1,6 @@
 import sys
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 import yaml
 
@@ -29,7 +29,7 @@ class ConfigurationLoader:
         ]
         self.error_handler = ErrorHandler({"component": "config_loader"})
 
-    def load_configuration(self) -> Dict[str, Any]:
+    def load_configuration(self) -> dict[str, Any]:
         """Load configuration from available sources with precedence.
 
         Precedence order (later overrides earlier):
@@ -73,7 +73,7 @@ class ConfigurationLoader:
 
         return config
 
-    def _load_from_file(self, file_path: Path) -> Dict[str, Any]:
+    def _load_from_file(self, file_path: Path) -> dict[str, Any]:
         """Load configuration from a specific file."""
         if file_path.name == "pyproject.toml":
             return self._load_from_pyproject_toml(file_path)
@@ -85,7 +85,7 @@ class ConfigurationLoader:
             )
             return {}
 
-    def _load_from_yaml(self, file_path: Path) -> Dict[str, Any]:
+    def _load_from_yaml(self, file_path: Path) -> dict[str, Any]:
         """Load configuration from YAML file."""
         try:
             with file_path.open("r", encoding="utf-8") as f:
@@ -110,7 +110,7 @@ class ConfigurationLoader:
             )
             return {}  # This line will never be reached but satisfies mypy
 
-    def _load_from_pyproject_toml(self, file_path: Path) -> Dict[str, Any]:
+    def _load_from_pyproject_toml(self, file_path: Path) -> dict[str, Any]:
         """Load configuration from pyproject.toml [tool.spec] section."""
         if tomllib is None:
             debug_logger.log(  # type: ignore[unreachable]
@@ -147,7 +147,7 @@ class ConfigurationLoader:
             )
             return {}  # This line will never be reached but satisfies mypy
 
-    def get_available_sources(self) -> List[Path]:
+    def get_available_sources(self) -> list[Path]:
         """Get list of available configuration sources."""
         return [source for source in self.config_sources if source.exists()]
 

@@ -1,6 +1,6 @@
 """Tests for status command (commands/status.py)."""
 
-from typing import Any, Dict, List
+from typing import Any
 from unittest.mock import MagicMock, Mock, patch
 
 from click.testing import CliRunner
@@ -75,9 +75,9 @@ class TestStatusCommand:
         """Test status command with git option."""
         mock_repo = MagicMock()
         mock_get_repo.return_value = mock_repo
-        mock_status_data: Dict[str, Any] = {"repository": {}, "files": {}, "git": {}}
+        mock_status_data: dict[str, Any] = {"repository": {}, "files": {}, "git": {}}
         mock_get_status.return_value = mock_status_data
-        mock_git_status: Dict[str, List[str]] = {
+        mock_git_status: dict[str, list[str]] = {
             "staged": [],
             "modified": [],
             "untracked": [],
@@ -105,7 +105,7 @@ class TestStatusCommand:
         """Test status command with summary option."""
         mock_repo = MagicMock()
         mock_get_repo.return_value = mock_repo
-        mock_status_data: Dict[str, Any] = {"repository": {}, "files": {}, "git": {}}
+        mock_status_data: dict[str, Any] = {"repository": {}, "files": {}, "git": {}}
         mock_get_status.return_value = mock_status_data
 
         runner = CliRunner()
@@ -293,7 +293,7 @@ class TestStatusHelperFunctions:
         mock_console = MagicMock()
         mock_get_console.return_value = mock_console
 
-        git_status: Dict[str, List[str]] = {
+        git_status: dict[str, list[str]] = {
             "staged": ["staged.md"],
             "modified": ["modified.md"],
             "untracked": ["untracked.md"],
@@ -312,7 +312,7 @@ class TestStatusHelperFunctions:
         mock_console = MagicMock()
         mock_get_console.return_value = mock_console
 
-        git_status: Dict[str, List[str]] = {
+        git_status: dict[str, list[str]] = {
             "staged": [],
             "modified": [],
             "untracked": [],

@@ -1,7 +1,7 @@
 """Spec status command implementation."""
 
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 import click
 
@@ -69,7 +69,7 @@ def status_command(
         raise click.ClickException(f"Status check failed: {e}") from e
 
 
-def _get_repository_status(repo: Any) -> Dict[str, Any]:
+def _get_repository_status(repo: Any) -> dict[str, Any]:
     """Get repository status information."""
     spec_dir = Path(".spec")
     specs_dir = Path(".specs")
@@ -102,7 +102,7 @@ def _get_repository_status(repo: Any) -> Dict[str, Any]:
     }
 
 
-def _get_git_status_data(repo: Any) -> Dict[str, Any]:
+def _get_git_status_data(repo: Any) -> dict[str, Any]:
     """Get git status data from repository.
 
     Args:
@@ -121,12 +121,12 @@ def _get_git_status_data(repo: Any) -> Dict[str, Any]:
         return {"staged": [], "modified": [], "untracked": []}
 
 
-def _get_repository_health(repo: Any) -> Dict[str, Any]:
+def _get_repository_health(repo: Any) -> dict[str, Any]:
     """Get repository health information."""
     spec_dir = Path(".spec")
     specs_dir = Path(".specs")
 
-    health: Dict[str, Dict[str, Any]] = {
+    health: dict[str, dict[str, Any]] = {
         "repository_structure": {"status": "healthy", "details": []},
         "git_configuration": {"status": "healthy", "details": []},
         "file_permissions": {"status": "healthy", "details": []},
@@ -173,7 +173,7 @@ def _get_repository_health(repo: Any) -> Dict[str, Any]:
     return health
 
 
-def _get_processing_summary() -> Dict[str, Any]:
+def _get_processing_summary() -> dict[str, Any]:
     """Get processing capabilities summary."""
     return {
         "template_system": {
@@ -192,7 +192,7 @@ def _get_processing_summary() -> Dict[str, Any]:
     }
 
 
-def _display_repository_status(status_info: Dict[str, Any]) -> None:
+def _display_repository_status(status_info: dict[str, Any]) -> None:
     """Display repository status using Rich formatting."""
 
     # Repository information
@@ -210,7 +210,7 @@ def _display_repository_status(status_info: Dict[str, Any]) -> None:
     git_table.print()
 
 
-def _display_health_check(health_info: Dict[str, Any]) -> None:
+def _display_health_check(health_info: dict[str, Any]) -> None:
     """Display health check results."""
     table = StatusTable("Repository Health Check")
 
@@ -230,7 +230,7 @@ def _display_health_check(health_info: Dict[str, Any]) -> None:
     table.print()
 
 
-def _display_git_status(git_status: Dict[str, Any]) -> None:
+def _display_git_status(git_status: dict[str, Any]) -> None:
     """Display Git status information."""
     console = get_console()
 
@@ -253,7 +253,7 @@ def _display_git_status(git_status: Dict[str, Any]) -> None:
         console.print("\n[green]Working directory clean[/green]")
 
 
-def _display_processing_summary(summary_info: Dict[str, Any]) -> None:
+def _display_processing_summary(summary_info: dict[str, Any]) -> None:
     """Display processing capabilities summary."""
     from ...ui.error_display import format_data
 

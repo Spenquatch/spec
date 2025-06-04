@@ -1,5 +1,5 @@
 import re
-from typing import Any, Dict, List, Optional, Set
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -18,12 +18,12 @@ class TemplateConfig(BaseModel):
 
     # Template metadata
     version: str = Field(default="1.0", description="Template version")
-    description: Optional[str] = Field(default=None, description="Template description")
-    author: Optional[str] = Field(default=None, description="Template author")
+    description: str | None = Field(default=None, description="Template description")
+    author: str | None = Field(default=None, description="Template author")
 
     # AI integration settings (extension points)
     ai_enabled: bool = Field(default=False, description="Enable AI content generation")
-    ai_model: Optional[str] = Field(default=None, description="AI model to use")
+    ai_model: str | None = Field(default=None, description="AI model to use")
     ai_temperature: float = Field(
         default=0.3, ge=0.0, le=1.0, description="AI creativity level"
     )
@@ -79,7 +79,7 @@ class TemplateConfig(BaseModel):
 
     @field_validator("ai_model")
     @classmethod
-    def validate_ai_model(cls, v: Optional[str], info: Any) -> Optional[str]:
+    def validate_ai_model(cls, v: str | None, info: Any) -> str | None:
         """Validate AI model specification."""
         # In Pydantic V2, we need to check the context differently
         # For now, we'll validate the model itself, and the ai_enabled check
@@ -89,7 +89,7 @@ class TemplateConfig(BaseModel):
                 raise ValueError("AI model cannot be empty")
         return v
 
-    def get_available_variables(self) -> Dict[str, str]:
+    def get_available_variables(self) -> dict[str, str]:
         """Get all available template variables with descriptions.
 
         Returns:
@@ -139,7 +139,7 @@ class TemplateConfig(BaseModel):
             "future_planning": "Future development and enhancement plans",
         }
 
-    def get_placeholders_in_templates(self) -> Set[str]:
+    def get_placeholders_in_templates(self) -> set[str]:
         """Extract all placeholders used in the templates.
 
         Returns:
@@ -156,7 +156,7 @@ class TemplateConfig(BaseModel):
 
         return placeholders
 
-    def validate_placeholders(self) -> List[str]:
+    def validate_placeholders(self) -> list[str]:
         """Validate that all placeholders in templates are recognized.
 
         Returns:
@@ -187,7 +187,7 @@ class TemplateConfig(BaseModel):
 
         return issues
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert template config to dictionary for serialization."""
         return {
             "index": self.index,
@@ -211,7 +211,7 @@ class TemplateValidator:
     def __init__(self) -> None:
         debug_logger.log("INFO", "TemplateValidator initialized")
 
-    def validate_config(self, config: TemplateConfig) -> List[str]:
+    def validate_config(self, config: TemplateConfig) -> list[str]:
         """Validate template configuration and return list of issues.
 
         Args:
@@ -247,7 +247,7 @@ class TemplateValidator:
 
         return issues
 
-    def _validate_template_structure(self, config: TemplateConfig) -> List[str]:
+    def _validate_template_structure(self, config: TemplateConfig) -> list[str]:
         """Validate template structure and content."""
         issues = []
 
@@ -276,7 +276,7 @@ class TemplateValidator:
 
         return issues
 
-    def _validate_ai_config(self, config: TemplateConfig) -> List[str]:
+    def _validate_ai_config(self, config: TemplateConfig) -> list[str]:
         """Validate AI configuration settings."""
         issues = []
 

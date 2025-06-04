@@ -1,6 +1,6 @@
 """Centralized Rich library imports and configuration for spec-cli UI."""
 
-from typing import Any, List, Optional, Union
+from typing import Any
 
 # Console and display components
 from rich.console import Console
@@ -30,9 +30,9 @@ from rich.traceback import Traceback
 
 
 def create_console(
-    theme: Optional[Theme] = None,
-    width: Optional[int] = None,
-    force_terminal: Optional[bool] = None,
+    theme: Theme | None = None,
+    width: int | None = None,
+    force_terminal: bool | None = None,
     **kwargs: Any,
 ) -> Console:
     """Create Rich console with consistent configuration.
@@ -84,7 +84,7 @@ def create_progress_bar(
         progress = create_progress_bar(show_remaining=False)
         task = progress.add_task("Processing...", total=100)
     """
-    columns: List[Any] = []
+    columns: list[Any] = []
 
     if show_spinner:
         columns.append(SpinnerColumn())
@@ -107,7 +107,7 @@ def create_progress_bar(
 
 
 def create_table(
-    title: Optional[str] = None,
+    title: str | None = None,
     show_header: bool = True,
     show_lines: bool = False,
     **kwargs: Any,
@@ -133,9 +133,9 @@ def create_table(
 
 def create_panel(
     content: Any,
-    title: Optional[str] = None,
-    style: Optional[Union[str, Style]] = None,
-    border_style: Optional[Union[str, Style]] = None,
+    title: str | None = None,
+    style: str | Style | None = None,
+    border_style: str | Style | None = None,
     **kwargs: Any,
 ) -> Panel:
     """Create Rich panel with standard configuration.
@@ -190,7 +190,7 @@ def create_syntax(
 
 
 def create_spinner(
-    name: str = "dots", text: Optional[str] = None, style: Optional[str] = None
+    name: str = "dots", text: str | None = None, style: str | None = None
 ) -> Spinner:
     """Create Rich spinner with standard configuration.
 

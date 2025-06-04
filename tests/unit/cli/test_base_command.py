@@ -1,7 +1,7 @@
 """Tests for BaseCommand class."""
 
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 from unittest.mock import Mock, patch
 
 import pytest
@@ -19,7 +19,7 @@ class TestBaseCommand:
     class ConcreteCommand(BaseCommand):
         """Concrete command implementation for testing."""
 
-        def execute(self, **kwargs: Any) -> Dict[str, Any]:
+        def execute(self, **kwargs: Any) -> dict[str, Any]:
             """Test execute implementation."""
             if kwargs.get("should_fail"):
                 raise ValueError("Test failure")
@@ -168,7 +168,7 @@ class TestBaseCommand:
         """Test get_command_name strips 'command' suffix."""
 
         class TestCommand(BaseCommand):
-            def execute(self, **kwargs: Any) -> Dict[str, Any]:
+            def execute(self, **kwargs: Any) -> dict[str, Any]:
                 return {"success": True, "message": "test"}
 
         command = TestCommand()
@@ -268,7 +268,7 @@ class TestBaseCommandIntegration:
     class IntegrationTestCommand(BaseCommand):
         """Command for integration testing."""
 
-        def execute(self, **kwargs: Any) -> Dict[str, Any]:
+        def execute(self, **kwargs: Any) -> dict[str, Any]:
             """Integration test execute implementation."""
             return self.create_result(True, "Integration test successful")
 

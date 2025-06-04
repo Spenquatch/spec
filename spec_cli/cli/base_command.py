@@ -1,7 +1,7 @@
 """Base command class for CLI commands with common functionality."""
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Optional
+from typing import Any
 
 from ..config.settings import SpecSettings, get_settings
 from ..core.error_handler import ErrorHandler
@@ -16,7 +16,7 @@ class BaseCommand(ABC):
     patterns that all commands should follow.
     """
 
-    def __init__(self, settings: Optional[SpecSettings] = None):
+    def __init__(self, settings: SpecSettings | None = None):
         """Initialize base command with settings and error handling.
 
         Args:
@@ -35,7 +35,7 @@ class BaseCommand(ABC):
         )
 
     @abstractmethod
-    def execute(self, **kwargs: Any) -> Dict[str, Any]:
+    def execute(self, **kwargs: Any) -> dict[str, Any]:
         """Execute the command with given arguments.
 
         Args:
@@ -95,7 +95,7 @@ class BaseCommand(ABC):
                 # This should never be reached due to exception being raised
                 raise  # pragma: no cover
 
-    def safe_execute(self, **kwargs: Any) -> Dict[str, Any]:
+    def safe_execute(self, **kwargs: Any) -> dict[str, Any]:
         """Safely execute command with error handling and validation.
 
         Args:
@@ -150,9 +150,9 @@ class BaseCommand(ABC):
         self,
         success: bool,
         message: str,
-        data: Optional[Any] = None,
+        data: Any | None = None,
         **additional_fields: Any,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Create standardized result dictionary.
 
         Args:

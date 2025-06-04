@@ -1,7 +1,7 @@
 """Add command implementation using BaseCommand."""
 
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from ...config.settings import SpecSettings
 from ...exceptions import SpecError
@@ -16,12 +16,12 @@ from .generation import create_add_workflow
 class AddCommand(BaseCommand):
     """Command to add spec files to Git tracking."""
 
-    def __init__(self, settings: Optional[SpecSettings] = None):
+    def __init__(self, settings: SpecSettings | None = None):
         """Initialize add command."""
         super().__init__(settings)
         self.console = get_console()
 
-    def execute(self, **kwargs: Any) -> Dict[str, Any]:
+    def execute(self, **kwargs: Any) -> dict[str, Any]:
         """Execute the add command.
 
         Args:
@@ -128,10 +128,10 @@ class AddCommand(BaseCommand):
 
         # Validate file paths exist
         for file_path in files:
-            if not isinstance(file_path, (str, Path)):
+            if not isinstance(file_path, str | Path):
                 raise SpecError(f"Invalid file path type: {type(file_path)}")
 
-    def _expand_spec_files(self, file_paths: List[Path]) -> List[Path]:
+    def _expand_spec_files(self, file_paths: list[Path]) -> list[Path]:
         """Expand directories to individual files."""
         expanded_files = []
 
@@ -146,7 +146,7 @@ class AddCommand(BaseCommand):
 
         return expanded_files
 
-    def _filter_spec_files(self, file_paths: List[Path]) -> List[Path]:
+    def _filter_spec_files(self, file_paths: list[Path]) -> list[Path]:
         """Filter to only files in .specs directory."""
         spec_files = []
         specs_dir = self.settings.specs_dir
@@ -163,10 +163,10 @@ class AddCommand(BaseCommand):
         return spec_files
 
     def _analyze_git_status(
-        self, spec_files: List[Path], repo: SpecGitRepository
-    ) -> Dict[str, List[str]]:
+        self, spec_files: list[Path], repo: SpecGitRepository
+    ) -> dict[str, list[str]]:
         """Analyze Git status for spec files."""
-        git_status: Dict[str, List[str]] = {
+        git_status: dict[str, list[str]] = {
             "untracked": [],
             "modified": [],
             "staged": [],
@@ -192,7 +192,7 @@ class AddCommand(BaseCommand):
         return git_status
 
     def _show_add_preview(
-        self, git_status: Dict[str, List[str]], is_dry_run: bool = False
+        self, git_status: dict[str, list[str]], is_dry_run: bool = False
     ) -> None:
         """Show preview of files to be added."""
         title = "Add Preview (Dry Run)" if is_dry_run else "Files to Add"
@@ -234,7 +234,7 @@ class AddCommand(BaseCommand):
                     f"  [yellow]M[/yellow] [path]{file_path}[/path] (modified)"
                 )
 
-    def _display_add_results(self, result: Dict[str, Any]) -> None:
+    def _display_add_results(self, result: dict[str, Any]) -> None:
         """Display add operation results."""
         # Show summary
         if result["success"]:

@@ -1,7 +1,7 @@
 """Content display utilities."""
 
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any
 
 from rich.markdown import Markdown
 from rich.panel import Panel
@@ -24,7 +24,7 @@ class ContentViewer:
     def display_file_content(
         self,
         file_path: Path,
-        content: Optional[str] = None,
+        content: str | None = None,
         line_numbers: bool = True,
         syntax_highlight: bool = True,
     ) -> None:
@@ -82,7 +82,7 @@ class ContentViewer:
             self.console.print(f"[red]Error displaying file: {e}[/red]")
 
     def display_spec_content(
-        self, spec_data: Dict[str, Any], show_metadata: bool = True
+        self, spec_data: dict[str, Any], show_metadata: bool = True
     ) -> None:
         """Display spec file content with metadata.
 
@@ -160,7 +160,7 @@ class ContentViewer:
 
         self.console.print(panel)
 
-    def _display_spec_metadata(self, metadata: Dict[str, Any]) -> None:
+    def _display_spec_metadata(self, metadata: dict[str, Any]) -> None:
         """Display spec file metadata."""
         from ....ui.tables import create_key_value_table
 
@@ -224,7 +224,7 @@ class ContentViewer:
 
 
 # Convenience functions
-def display_spec_content(spec_data: Dict[str, Any], show_metadata: bool = True) -> None:
+def display_spec_content(spec_data: dict[str, Any], show_metadata: bool = True) -> None:
     """Display spec file content with metadata."""
     viewer = ContentViewer()
     viewer.display_spec_content(spec_data, show_metadata)
@@ -232,7 +232,7 @@ def display_spec_content(spec_data: Dict[str, Any], show_metadata: bool = True) 
 
 def display_file_content(
     file_path: Path,
-    content: Optional[str] = None,
+    content: str | None = None,
     line_numbers: bool = True,
     syntax_highlight: bool = True,
 ) -> None:

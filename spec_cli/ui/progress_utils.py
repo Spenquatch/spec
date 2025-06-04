@@ -1,7 +1,8 @@
 import time
+from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Any, Callable, Dict, Iterator, List, Optional
+from typing import Any
 
 from ..logging.debug import debug_logger
 from .progress_bar import simple_progress
@@ -61,7 +62,7 @@ def calculate_processing_speed(completed_items: int, elapsed_time: float) -> flo
 
 @contextmanager
 def progress_context(
-    total_items: Optional[int] = None,
+    total_items: int | None = None,
     description: str = "Processing",
     show_spinner: bool = False,
 ) -> Iterator[Any]:
@@ -79,7 +80,7 @@ def progress_context(
         # Determinate progress with progress bar
         with simple_progress(total_items, description) as progress_bar:
 
-            def update_progress(count: int = 1, message: Optional[str] = None) -> None:
+            def update_progress(count: int = 1, message: str | None = None) -> None:
                 progress_bar.advance(count)
                 if message:
                     # Update description if needed (limited support)
@@ -91,7 +92,7 @@ def progress_context(
         # Indeterminate progress with spinner
         with spinner_context(description) as spinner:
 
-            def update_progress(count: int = 1, message: Optional[str] = None) -> None:
+            def update_progress(count: int = 1, message: str | None = None) -> None:
                 if message:
                     spinner.update_text(message)
 
@@ -99,7 +100,7 @@ def progress_context(
 
     else:
         # No visual progress
-        def update_progress(count: int = 1, message: Optional[str] = None) -> None:
+        def update_progress(count: int = 1, message: str | None = None) -> None:
             pass
 
         yield update_progress
@@ -136,7 +137,7 @@ def timed_operation(
             )
 
 
-def create_file_progress_tracker(files: List[Path]) -> Callable[[Path], None]:
+def create_file_progress_tracker(files: list[Path]) -> Callable[[Path], None]:
     """Create a progress tracker for file operations.
 
     Args:
@@ -177,7 +178,7 @@ class ProgressTracker:
     def __init__(
         self,
         operation_name: str,
-        total_items: Optional[int] = None,
+        total_items: int | None = None,
         auto_finish: bool = True,
     ) -> None:
         """Initialize progress tracker.
@@ -192,7 +193,7 @@ class ProgressTracker:
         self.auto_finish = auto_finish
 
         self.completed_items = 0
-        self.start_time: Optional[float] = None
+        self.start_time: float | None = None
         self.progress_manager = get_progress_manager()
         self.operation_id = f"{operation_name}_{int(time.time())}"
 
@@ -219,7 +220,7 @@ class ProgressTracker:
             "DEBUG", "Progress tracking started", operation_id=self.operation_id
         )
 
-    def update(self, count: int = 1, message: Optional[str] = None) -> None:
+    def update(self, count: int = 1, message: str | None = None) -> None:
         """Update progress.
 
         Args:
@@ -255,7 +256,7 @@ class ProgressTracker:
                 duration=f"{elapsed:.2f}s",
             )
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get progress statistics.
 
         Returns:
@@ -296,7 +297,7 @@ class ProgressTracker:
 
 # Convenience functions
 def track_progress(
-    operation_name: str, total_items: Optional[int] = None
+    operation_name: str, total_items: int | None = None
 ) -> ProgressTracker:
     """Create a progress tracker for an operation.
 
@@ -311,7 +312,7 @@ def track_progress(
 
 
 def show_progress_for_files(
-    files: List[Path], operation_name: str = "Processing files"
+    files: list[Path], operation_name: str = "Processing files"
 ) -> Callable[[Path], None]:
     """Show progress for file operations.
 

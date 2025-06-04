@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import Optional, Union
 
 from rich.style import Style
 from rich.text import Text
@@ -60,7 +59,7 @@ class SpecStyles:
         return f"[info]{text}[/info]"
 
     @staticmethod
-    def path(path: Union[str, Path]) -> str:
+    def path(path: str | Path) -> str:
         """Format path with appropriate styling.
 
         Args:
@@ -72,7 +71,7 @@ class SpecStyles:
         return f"[path]{path}[/path]"
 
     @staticmethod
-    def file(filename: Union[str, Path]) -> str:
+    def file(filename: str | Path) -> str:
         """Format filename with appropriate styling.
 
         Args:
@@ -84,7 +83,7 @@ class SpecStyles:
         return f"[file]{filename}[/file]"
 
     @staticmethod
-    def directory(dirname: Union[str, Path]) -> str:
+    def directory(dirname: str | Path) -> str:
         """Format directory name with appropriate styling.
 
         Args:
@@ -96,7 +95,7 @@ class SpecStyles:
         return f"[directory]{dirname}[/directory]"
 
     @staticmethod
-    def spec_file(filename: Union[str, Path]) -> str:
+    def spec_file(filename: str | Path) -> str:
         """Format spec file name with appropriate styling.
 
         Args:
@@ -205,7 +204,7 @@ def style_text(text: str, style_name: str) -> str:
     return f"[{style_name}]{text}[/{style_name}]"
 
 
-def format_path(path: Union[str, Path], path_type: str = "auto") -> str:
+def format_path(path: str | Path, path_type: str = "auto") -> str:
     """Format a path with appropriate styling based on type.
 
     Args:
@@ -266,7 +265,7 @@ def format_status(message: str, status: str, include_indicator: bool = True) -> 
     return f"{indicator} {formatted_message}" if indicator else formatted_message
 
 
-def create_rich_text(text: str, style: Optional[Union[str, Style]] = None) -> Text:
+def create_rich_text(text: str, style: str | Style | None = None) -> Text:
     """Create a Rich Text object with optional styling.
 
     Args:

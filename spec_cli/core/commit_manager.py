@@ -1,7 +1,7 @@
 import re
 import subprocess
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from ..config.settings import SpecSettings, get_settings
 from ..exceptions import SpecGitError
@@ -18,7 +18,7 @@ from .repository_state import RepositoryStateChecker
 class SpecCommitManager:
     """Manages Git commit operations for spec repository."""
 
-    def __init__(self, settings: Optional[SpecSettings] = None):
+    def __init__(self, settings: SpecSettings | None = None):
         self.settings = settings or get_settings()
         self.git_repo = SpecGitRepository(self.settings)
         self.state_checker = RepositoryStateChecker(self.settings)
@@ -26,8 +26,8 @@ class SpecCommitManager:
         debug_logger.log("INFO", "SpecCommitManager initialized")
 
     def add_files(
-        self, file_paths: List[str], force: bool = False, validate: bool = True
-    ) -> Dict[str, Any]:
+        self, file_paths: list[str], force: bool = False, validate: bool = True
+    ) -> dict[str, Any]:
         """Add files to the Git staging area.
 
         Args:
@@ -48,7 +48,7 @@ class SpecCommitManager:
             force=force,
         )
 
-        add_result: Dict[str, Any] = {
+        add_result: dict[str, Any] = {
             "success": False,
             "added": [],
             "skipped": [],
@@ -126,7 +126,7 @@ class SpecCommitManager:
             raise SpecGitError(error_msg) from e
 
     def _add_single_file(
-        self, file_path: str, force: bool, result: Dict[str, Any]
+        self, file_path: str, force: bool, result: dict[str, Any]
     ) -> None:
         """Add a single file to staging area."""
         # Validate file exists in .specs
@@ -166,10 +166,10 @@ class SpecCommitManager:
     def commit_changes(
         self,
         message: str,
-        author: Optional[str] = None,
+        author: str | None = None,
         validate: bool = True,
         allow_empty: bool = False,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Commit staged changes to the repository.
 
         Args:
@@ -188,7 +188,7 @@ class SpecCommitManager:
             "INFO", "Committing changes", message_length=len(message), author=author
         )
 
-        commit_result: Dict[str, Any] = {
+        commit_result: dict[str, Any] = {
             "success": False,
             "commit_hash": None,
             "files_committed": [],
@@ -279,10 +279,10 @@ class SpecCommitManager:
     def create_tag(
         self,
         tag_name: str,
-        message: Optional[str] = None,
-        commit_hash: Optional[str] = None,
+        message: str | None = None,
+        commit_hash: str | None = None,
         force: bool = False,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Create a Git tag for marking important commits.
 
         Args:
@@ -305,7 +305,7 @@ class SpecCommitManager:
             commit_hash=commit_hash,
         )
 
-        tag_result: Dict[str, Any] = {
+        tag_result: dict[str, Any] = {
             "success": False,
             "tag_name": tag_name,
             "commit_hash": commit_hash or "HEAD",
@@ -386,7 +386,7 @@ class SpecCommitManager:
 
     def rollback_to_commit(
         self, commit_hash: str, hard: bool = False, create_backup: bool = True
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Rollback repository to a specific commit.
 
         Args:
@@ -408,7 +408,7 @@ class SpecCommitManager:
             create_backup=create_backup,
         )
 
-        rollback_result: Dict[str, Any] = {
+        rollback_result: dict[str, Any] = {
             "success": False,
             "target_commit": commit_hash,
             "backup_tag": None,
@@ -501,7 +501,7 @@ class SpecCommitManager:
             rollback_result["errors"].append(error_msg)
             raise SpecGitError(error_msg) from e
 
-    def rollback_last_commit(self, create_backup: bool = True) -> Dict[str, Any]:
+    def rollback_last_commit(self, create_backup: bool = True) -> dict[str, Any]:
         """Rollback the last commit (soft reset).
 
         Args:
@@ -570,7 +570,7 @@ class SpecCommitManager:
                 debug_logger.log("ERROR", error_msg)
             raise SpecGitError(error_msg) from e
 
-    def get_commit_status(self) -> Dict[str, Any]:
+    def get_commit_status(self) -> dict[str, Any]:
         """Get current commit status and staging information.
 
         Returns:
@@ -643,11 +643,11 @@ class SpecCommitManager:
                 "safe_for_operations": False,
             }
 
-    def _validate_for_add_operation(self) -> List[str]:
+    def _validate_for_add_operation(self) -> list[str]:
         """Validate repository state for add operation."""
         return self.state_checker.validate_pre_operation_state("add")
 
-    def _validate_for_commit_operation(self, allow_empty: bool) -> List[str]:
+    def _validate_for_commit_operation(self, allow_empty: bool) -> list[str]:
         """Validate repository state for commit operation."""
         issues = self.state_checker.validate_pre_operation_state("commit")
 
@@ -676,7 +676,7 @@ class SpecCommitManager:
 
         return formatted
 
-    def _extract_commit_hash(self, git_output: str) -> Optional[str]:
+    def _extract_commit_hash(self, git_output: str) -> str | None:
         """Extract commit hash from Git command output."""
         # Look for commit hash patterns in output
         hash_pattern = r"\[\w+\s+([a-f0-9]{7,40})\]"
@@ -692,7 +692,7 @@ class SpecCommitManager:
 
         return None
 
-    def _validate_tag_name(self, tag_name: str) -> List[str]:
+    def _validate_tag_name(self, tag_name: str) -> list[str]:
         """Validate Git tag name."""
         issues = []
 
@@ -733,7 +733,7 @@ class SpecCommitManager:
         except Exception:
             return False
 
-    def get_recent_operations(self, count: int = 10) -> List[Dict[str, Any]]:
+    def get_recent_operations(self, count: int = 10) -> list[dict[str, Any]]:
         """Get recent Git operations for audit/debugging.
 
         Args:
@@ -744,7 +744,7 @@ class SpecCommitManager:
         """
         try:
             commits = self.git_repo.get_recent_commits(count)
-            operations: List[Dict[str, Any]] = []
+            operations: list[dict[str, Any]] = []
 
             for commit in commits:
                 operations.append(
@@ -767,7 +767,7 @@ class SpecCommitManager:
             return []
 
     def create_operation_summary(
-        self, operation_type: str, result: Dict[str, Any]
+        self, operation_type: str, result: dict[str, Any]
     ) -> str:
         """Create a human-readable summary of an operation.
 

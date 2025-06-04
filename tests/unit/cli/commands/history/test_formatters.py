@@ -1,6 +1,6 @@
 """Tests for history formatters (history/formatters.py)."""
 
-from typing import Any, Dict, List
+from typing import Any
 from unittest.mock import Mock, patch
 
 from spec_cli.cli.commands.history.formatters import (
@@ -253,7 +253,7 @@ class TestConvenienceFunctions:
         mock_formatter = Mock()
         mock_formatter_class.return_value = mock_formatter
 
-        diff_data: Dict[str, List[Any]] = {"files": []}
+        diff_data: dict[str, list[Any]] = {"files": []}
         format_diff_output(diff_data)
 
         mock_formatter_class.assert_called_once()

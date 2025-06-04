@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any
 
 from rich.console import Console
 
@@ -13,9 +13,9 @@ class SpecConsole:
 
     def __init__(
         self,
-        theme: Optional[SpecTheme] = None,
-        width: Optional[int] = None,
-        force_terminal: Optional[bool] = None,
+        theme: SpecTheme | None = None,
+        width: int | None = None,
+        force_terminal: bool | None = None,
         no_color: bool = False,
     ) -> None:
         """Initialize the spec console.
@@ -205,7 +205,7 @@ class ConsoleManager:
 
     def __init__(self) -> None:
         """Initialize console manager."""
-        self._spec_console: Optional[SpecConsole] = None
+        self._spec_console: SpecConsole | None = None
 
     def get_console(self) -> SpecConsole:
         """Get the global spec console instance.

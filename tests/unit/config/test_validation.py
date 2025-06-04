@@ -1,5 +1,5 @@
 import tempfile
-from typing import Any, Dict  # noqa: F401
+from typing import Any  # noqa: F401
 
 import pytest
 

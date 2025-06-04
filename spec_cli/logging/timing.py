@@ -1,7 +1,7 @@
 import time
 from contextlib import contextmanager
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 
 @dataclass
@@ -13,15 +13,15 @@ class TimingResult:
     start_time: float
     end_time: float
     success: bool = True
-    error: Optional[str] = None
+    error: str | None = None
 
 
 class TimingContext:
     """Context manager for collecting timing information across operations."""
 
     def __init__(self) -> None:
-        self.results: List[TimingResult] = []
-        self._active_operations: Dict[str, float] = {}
+        self.results: list[TimingResult] = []
+        self._active_operations: dict[str, float] = {}
 
     def __enter__(self) -> "TimingContext":
         return self
@@ -66,7 +66,7 @@ class TimingContext:
         finally:
             self._active_operations.pop(operation_name, None)
 
-    def get_summary(self) -> Dict[str, float]:
+    def get_summary(self) -> dict[str, float]:
         """Get timing summary statistics."""
         if not self.results:
             return {}
@@ -84,7 +84,7 @@ class TimingContext:
             "slowest_operation_ms": max(r.duration_ms for r in self.results),
         }
 
-    def get_slowest_operations(self, limit: int = 5) -> List[TimingResult]:
+    def get_slowest_operations(self, limit: int = 5) -> list[TimingResult]:
         """Get the slowest operations."""
         return sorted(self.results, key=lambda r: r.duration_ms, reverse=True)[:limit]
 

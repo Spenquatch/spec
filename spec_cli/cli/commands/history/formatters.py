@@ -1,7 +1,7 @@
 """Git output formatting utilities."""
 
 from datetime import datetime
-from typing import Any, Dict, List
+from typing import Any
 
 from ....ui.console import get_console
 
@@ -18,7 +18,7 @@ class GitLogFormatter:
     # No need for data formatter in this class
 
     def format_commit_log(
-        self, commits: List[Dict[str, Any]], compact: bool = False
+        self, commits: list[dict[str, Any]], compact: bool = False
     ) -> None:
         """Format and display commit log.
 
@@ -35,7 +35,7 @@ class GitLogFormatter:
         else:
             self._format_detailed_log(commits)
 
-    def _format_compact_log(self, commits: List[Dict[str, Any]]) -> None:
+    def _format_compact_log(self, commits: list[dict[str, Any]]) -> None:
         """Format compact commit log as table."""
         table = SpecTable(title="Commit History (Compact)")
         table.add_column("Hash", style="yellow", width=10)
@@ -67,7 +67,7 @@ class GitLogFormatter:
 
         table.print()
 
-    def _format_detailed_log(self, commits: List[Dict[str, Any]]) -> None:
+    def _format_detailed_log(self, commits: list[dict[str, Any]]) -> None:
         """Format detailed commit log."""
         for i, commit in enumerate(commits):
             if i > 0:
@@ -75,7 +75,7 @@ class GitLogFormatter:
 
             self._format_single_commit(commit)
 
-    def _format_single_commit(self, commit: Dict[str, Any]) -> None:
+    def _format_single_commit(self, commit: dict[str, Any]) -> None:
         """Format a single commit entry."""
         # Commit header
         commit_hash = commit.get("hash", "Unknown")
@@ -125,7 +125,7 @@ class GitDiffFormatter:
     def __init__(self) -> None:
         self.console = get_console()
 
-    def format_diff_output(self, diff_data: Dict[str, Any]) -> None:
+    def format_diff_output(self, diff_data: dict[str, Any]) -> None:
         """Format and display diff output.
 
         Args:
@@ -145,7 +145,7 @@ class GitDiffFormatter:
         for file_diff in diff_data["files"]:
             self._format_file_diff(file_diff)
 
-    def _format_file_diff(self, file_diff: Dict[str, Any]) -> None:
+    def _format_file_diff(self, file_diff: dict[str, Any]) -> None:
         """Format diff for a single file."""
         filename = file_diff.get("filename", "unknown")
         status = file_diff.get("status", "modified")
@@ -165,7 +165,7 @@ class GitDiffFormatter:
 
         self.console.print()  # Separator
 
-    def _format_diff_hunk(self, hunk: Dict[str, Any]) -> None:
+    def _format_diff_hunk(self, hunk: dict[str, Any]) -> None:
         """Format a diff hunk."""
         # Hunk header
         header = hunk.get("header", "")
@@ -193,7 +193,7 @@ class CommitFormatter:
     def __init__(self) -> None:
         self.console = get_console()
 
-    def format_commit_info(self, commit_data: Dict[str, Any]) -> None:
+    def format_commit_info(self, commit_data: dict[str, Any]) -> None:
         """Format detailed commit information.
 
         Args:
@@ -225,7 +225,7 @@ class CommitFormatter:
         if "stats" in commit_data:
             self._format_commit_stats(commit_data["stats"])
 
-    def _format_commit_stats(self, stats: Dict[str, Any]) -> None:
+    def _format_commit_stats(self, stats: dict[str, Any]) -> None:
         """Format commit statistics."""
         self.console.print("\n[bold cyan]Statistics:[/bold cyan]")
 
@@ -241,19 +241,19 @@ class CommitFormatter:
 
 
 # Convenience functions
-def format_commit_log(commits: List[Dict[str, Any]], compact: bool = False) -> None:
+def format_commit_log(commits: list[dict[str, Any]], compact: bool = False) -> None:
     """Format commit log with Rich styling."""
     formatter = GitLogFormatter()
     formatter.format_commit_log(commits, compact)
 
 
-def format_diff_output(diff_data: Dict[str, Any]) -> None:
+def format_diff_output(diff_data: dict[str, Any]) -> None:
     """Format diff output with Rich styling."""
     formatter = GitDiffFormatter()
     formatter.format_diff_output(diff_data)
 
 
-def format_commit_info(commit_data: Dict[str, Any]) -> None:
+def format_commit_info(commit_data: dict[str, Any]) -> None:
     """Format commit information with Rich styling."""
     formatter = CommitFormatter()
     formatter.format_commit_info(commit_data)

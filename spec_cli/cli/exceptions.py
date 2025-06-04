@@ -1,7 +1,5 @@
 """CLI-specific exception handling."""
 
-from typing import List, Optional
-
 import click
 
 from ..exceptions import SpecError
@@ -19,8 +17,8 @@ class CLIValidationError(CLIError):
     def __init__(
         self,
         message: str,
-        parameter: Optional[str] = None,
-        suggestions: Optional[List[str]] = None,
+        parameter: str | None = None,
+        suggestions: list[str] | None = None,
     ):
         super().__init__(message)
         self.parameter = parameter
@@ -59,7 +57,7 @@ def convert_to_click_exception(error: Exception) -> click.ClickException:
 
 
 def handle_validation_error(
-    parameter: str, message: str, suggestions: Optional[List[str]] = None
+    parameter: str, message: str, suggestions: list[str] | None = None
 ) -> None:
     """Handle validation errors with suggestions.
 

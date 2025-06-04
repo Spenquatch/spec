@@ -1,7 +1,7 @@
 """Tests for regen command module."""
 
 from pathlib import Path
-from typing import Any, List
+from typing import Any
 from unittest.mock import Mock, patch
 
 from spec_cli.cli.commands.regen import (
@@ -181,7 +181,7 @@ class TestShowRegenDryRunPreview:
         mock_console_instance = Mock()
         mock_console.return_value = mock_console_instance
 
-        source_files: List[Path] = []
+        source_files: list[Path] = []
         template = "default"
         preserve_history = False
 

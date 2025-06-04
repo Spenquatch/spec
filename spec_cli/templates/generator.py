@@ -1,6 +1,6 @@
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from ..config.settings import SpecSettings, get_settings
 from ..exceptions import SpecFileError, SpecTemplateError
@@ -16,7 +16,7 @@ from .substitution import TemplateSubstitution
 class SpecContentGenerator:
     """Generates spec content files using template substitution."""
 
-    def __init__(self, settings: Optional[SpecSettings] = None):
+    def __init__(self, settings: SpecSettings | None = None):
         self.settings = settings or get_settings()
         self.substitution = TemplateSubstitution()
         self.directory_manager = DirectoryManager(self.settings)
@@ -28,9 +28,9 @@ class SpecContentGenerator:
         self,
         file_path: Path,
         template: TemplateConfig,
-        custom_variables: Optional[Dict[str, Any]] = None,
+        custom_variables: dict[str, Any] | None = None,
         backup_existing: bool = True,
-    ) -> Dict[str, Path]:
+    ) -> dict[str, Path]:
         """Generate spec content files using template substitution.
 
         Args:
@@ -139,9 +139,9 @@ class SpecContentGenerator:
     def _prepare_substitutions(
         self,
         file_path: Path,
-        custom_variables: Dict[str, Any],
+        custom_variables: dict[str, Any],
         template: TemplateConfig,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Prepare complete substitution variables.
 
         Args:
@@ -177,7 +177,7 @@ class SpecContentGenerator:
 
         return substitutions
 
-    def _get_file_based_variables(self, file_path: Path) -> Dict[str, Any]:
+    def _get_file_based_variables(self, file_path: Path) -> dict[str, Any]:
         """Get variables based on file information.
 
         Args:
@@ -247,7 +247,7 @@ class SpecContentGenerator:
                 "file_size": "unknown",
             }
 
-    def _get_template_defaults(self, template: TemplateConfig) -> Dict[str, Any]:
+    def _get_template_defaults(self, template: TemplateConfig) -> dict[str, Any]:
         """Get default variables from template configuration.
 
         Args:
@@ -312,8 +312,8 @@ class SpecContentGenerator:
         self,
         file_path: Path,
         template: TemplateConfig,
-        custom_variables: Optional[Dict[str, Any]] = None,
-    ) -> Dict[str, Any]:
+        custom_variables: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
         """Preview what content generation would produce.
 
         Args:
@@ -389,8 +389,8 @@ class SpecContentGenerator:
         self,
         file_path: Path,
         template: TemplateConfig,
-        custom_variables: Optional[Dict[str, Any]] = None,
-    ) -> List[str]:
+        custom_variables: dict[str, Any] | None = None,
+    ) -> list[str]:
         """Validate that generation can proceed without errors.
 
         Args:
@@ -481,8 +481,8 @@ class SpecContentGenerator:
         self,
         file_path: Path,
         template: TemplateConfig,
-        custom_variables: Optional[Dict[str, Any]] = None,
-    ) -> Dict[str, Any]:
+        custom_variables: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
         """Get detailed statistics about what generation would produce.
 
         Args:
@@ -546,8 +546,8 @@ class SpecContentGenerator:
 def generate_spec_content(
     file_path: Path,
     template: TemplateConfig,
-    custom_variables: Optional[Dict[str, Any]] = None,
-) -> Dict[str, Path]:
+    custom_variables: dict[str, Any] | None = None,
+) -> dict[str, Path]:
     """Generate spec content (backward compatibility function).
 
     Args:

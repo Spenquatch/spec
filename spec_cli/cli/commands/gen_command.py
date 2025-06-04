@@ -1,7 +1,7 @@
 """Gen command implementation using BaseCommand."""
 
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from ...config.settings import SpecSettings
 from ...exceptions import SpecError
@@ -23,12 +23,12 @@ from .generation.workflows import GenerationResult
 class GenCommand(BaseCommand):
     """Command to generate documentation for source files."""
 
-    def __init__(self, settings: Optional[SpecSettings] = None):
+    def __init__(self, settings: SpecSettings | None = None):
         """Initialize gen command."""
         super().__init__(settings)
         self.console = get_console()
 
-    def execute(self, **kwargs: Any) -> Dict[str, Any]:
+    def execute(self, **kwargs: Any) -> dict[str, Any]:
         """Execute the gen command.
 
         Args:
@@ -179,7 +179,7 @@ class GenCommand(BaseCommand):
 
         # Validate file paths
         for file_path in files:
-            if not isinstance(file_path, (str, Path)):
+            if not isinstance(file_path, str | Path):
                 raise SpecError(f"Invalid file path type: {type(file_path)}")
 
         # Validate template
@@ -194,7 +194,7 @@ class GenCommand(BaseCommand):
                 f"Must be one of: {', '.join(valid_strategies)}"
             )
 
-    def _expand_source_files(self, source_files: List[Path]) -> List[Path]:
+    def _expand_source_files(self, source_files: list[Path]) -> list[Path]:
         """Expand directories to individual source files."""
         from .generation.validation import GenerationValidator
 
@@ -215,7 +215,7 @@ class GenCommand(BaseCommand):
 
     def _show_dry_run_preview(
         self,
-        source_files: List[Path],
+        source_files: list[Path],
         template: str,
         conflict_strategy: ConflictResolutionStrategy,
     ) -> None:
@@ -228,7 +228,7 @@ class GenCommand(BaseCommand):
         self.console.print(f"Files to process: [yellow]{len(source_files)}[/yellow]\n")
 
         # Helper to get spec files using centralized method
-        def get_spec_files_for_source(source_file: Path) -> Dict[str, Path]:
+        def get_spec_files_for_source(source_file: Path) -> dict[str, Path]:
             from ...file_system.path_resolver import PathResolver
 
             path_resolver = PathResolver(self.settings)

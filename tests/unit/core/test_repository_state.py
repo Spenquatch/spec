@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 from unittest.mock import Mock, patch
 
 import pytest
@@ -369,7 +369,7 @@ class TestRepositoryStateChecker:
         spec_dir.mkdir()
         specs_dir.mkdir()
 
-        health_report: Dict[str, Any] = {"checks": {}, "issues": [], "details": {}}
+        health_report: dict[str, Any] = {"checks": {}, "issues": [], "details": {}}
 
         # Test with proper permissions
         state_checker._check_permissions(health_report)
@@ -392,7 +392,7 @@ class TestRepositoryStateChecker:
         # Mock access to return False (no permissions)
         mock_access.return_value = False
 
-        health_report: Dict[str, Any] = {"checks": {}, "issues": [], "details": {}}
+        health_report: dict[str, Any] = {"checks": {}, "issues": [], "details": {}}
 
         state_checker._check_permissions(health_report)
 
@@ -411,7 +411,7 @@ class TestRepositoryStateChecker:
         (specs_dir / "subdir").mkdir()
         (specs_dir / "subdir" / "file2.md").write_text("content")
 
-        health_report: Dict[str, Any] = {"checks": {}, "details": {}, "warnings": []}
+        health_report: dict[str, Any] = {"checks": {}, "details": {}, "warnings": []}
 
         state_checker._check_specs_directory(health_report)
 
@@ -433,7 +433,7 @@ class TestRepositoryStateChecker:
                     "get_recent_commits",
                     return_value=[{"hash": "abc"}, {"hash": "def"}],
                 ):
-                    health_report: Dict[str, Any] = {
+                    health_report: dict[str, Any] = {
                         "checks": {},
                         "details": {},
                         "warnings": [],
@@ -462,7 +462,7 @@ class TestRepositoryStateChecker:
                     "get_recent_commits",
                     side_effect=Exception("Commit error"),
                 ):
-                    health_report: Dict[str, Any] = {
+                    health_report: dict[str, Any] = {
                         "checks": {},
                         "details": {},
                         "warnings": [],

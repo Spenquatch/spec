@@ -1,14 +1,7 @@
 import os
 import subprocess
-import sys
 from pathlib import Path
-from typing import Dict, List, Optional
-
-if sys.version_info >= (3, 9):
-    from subprocess import CompletedProcess
-else:
-    # For Python 3.8, import without subscripting support
-    CompletedProcess = subprocess.CompletedProcess
+from subprocess import CompletedProcess
 
 from ..exceptions import SpecGitError
 from ..logging.debug import debug_logger
@@ -38,7 +31,7 @@ class GitOperations:
         )
 
     def run_git_command(
-        self, args: List[str], capture_output: bool = True
+        self, args: list[str], capture_output: bool = True
     ) -> "CompletedProcess[str]":
         """Execute Git command with spec environment configuration.
 
@@ -114,7 +107,7 @@ class GitOperations:
             # This should never be reached due to exception being raised
             raise  # pragma: no cover
 
-    def _prepare_git_environment(self) -> Dict[str, str]:
+    def _prepare_git_environment(self) -> dict[str, str]:
         """Prepare environment variables for Git command.
 
         Returns:
@@ -135,7 +128,7 @@ class GitOperations:
 
         return env
 
-    def _prepare_git_command(self, args: List[str]) -> List[str]:
+    def _prepare_git_command(self, args: list[str]) -> list[str]:
         """Prepare Git command with required configuration flags.
 
         Args:
@@ -221,7 +214,7 @@ class GitOperations:
             debug_logger.log("WARNING", "Git is not available")
             return False
 
-    def get_git_version(self) -> Optional[str]:
+    def get_git_version(self) -> str | None:
         """Get Git version string.
 
         Returns:

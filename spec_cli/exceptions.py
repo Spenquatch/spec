@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Any
 
 
 class SpecError(Exception):
@@ -8,17 +8,17 @@ class SpecError(Exception):
     for debugging and user-friendly error messages.
     """
 
-    def __init__(self, message: str, context: Optional[Dict[str, Any]] = None):
+    def __init__(self, message: str, context: dict[str, Any] | None = None):
         self.message = message
         self.context = context or {}
-        self.details: Optional[str] = None
+        self.details: str | None = None
         super().__init__(self.message)
 
     def get_user_message(self) -> str:
         """Get user-friendly error message."""
         return self.message
 
-    def get_context(self) -> Dict[str, Any]:
+    def get_context(self) -> dict[str, Any]:
         """Get error context for debugging."""
         return self.context
 
@@ -33,7 +33,7 @@ class SpecNotInitializedError(SpecError):
     def __init__(
         self,
         message: str = "Spec repository not initialized",
-        context: Optional[Dict[str, Any]] = None,
+        context: dict[str, Any] | None = None,
     ):
         super().__init__(message, context)
 

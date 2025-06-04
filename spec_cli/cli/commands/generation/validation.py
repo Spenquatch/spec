@@ -1,7 +1,7 @@
 """Generation input validation."""
 
 from pathlib import Path
-from typing import Any, Dict, List, cast
+from typing import Any, cast
 
 from ....exceptions import SpecValidationError
 from ....file_processing.conflict_resolver import ConflictResolutionStrategy
@@ -16,10 +16,10 @@ class GenerationValidator:
 
     def validate_generation_input(
         self,
-        source_files: List[Path],
+        source_files: list[Path],
         template_name: str,
         conflict_strategy: ConflictResolutionStrategy,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Validate complete generation input.
 
         Args:
@@ -33,7 +33,7 @@ class GenerationValidator:
         Raises:
             SpecValidationError: If validation fails
         """
-        validation_result: Dict[str, Any] = {
+        validation_result: dict[str, Any] = {
             "valid": True,
             "warnings": [],
             "errors": [],
@@ -46,20 +46,20 @@ class GenerationValidator:
             validation_result["file_analysis"] = file_validation["analysis"]
 
             if file_validation["errors"]:
-                cast(List[str], validation_result["errors"]).extend(
+                cast(list[str], validation_result["errors"]).extend(
                     file_validation["errors"]
                 )
                 validation_result["valid"] = False
 
             if file_validation["warnings"]:
-                cast(List[str], validation_result["warnings"]).extend(
+                cast(list[str], validation_result["warnings"]).extend(
                     file_validation["warnings"]
                 )
 
             # Validate template
             template_validation = self.validate_template_selection(template_name)
             if not template_validation["valid"]:
-                cast(List[str], validation_result["errors"]).append(
+                cast(list[str], validation_result["errors"]).append(
                     template_validation["error"]
                 )
                 validation_result["valid"] = False
@@ -70,8 +70,8 @@ class GenerationValidator:
                 "INFO",
                 "Generation input validated",
                 valid=validation_result["valid"],
-                errors=len(cast(List[str], validation_result["errors"])),
-                warnings=len(cast(List[str], validation_result["warnings"])),
+                errors=len(cast(list[str], validation_result["errors"])),
+                warnings=len(cast(list[str], validation_result["warnings"])),
             )
 
             return validation_result
@@ -80,7 +80,7 @@ class GenerationValidator:
             debug_logger.log("ERROR", "Validation failed", error=str(e))
             raise SpecValidationError(f"Validation failed: {e}") from e
 
-    def validate_file_paths(self, file_paths: List[Path]) -> Dict[str, Any]:
+    def validate_file_paths(self, file_paths: list[Path]) -> dict[str, Any]:
         """Validate source file paths.
 
         Args:
@@ -156,7 +156,7 @@ class GenerationValidator:
             "analysis": analysis,
         }
 
-    def validate_template_selection(self, template_name: str) -> Dict[str, Any]:
+    def validate_template_selection(self, template_name: str) -> dict[str, Any]:
         """Validate template selection.
 
         Args:
@@ -191,7 +191,7 @@ class GenerationValidator:
                 "available": [],
             }
 
-    def _get_processable_files_in_directory(self, directory: Path) -> List[Path]:
+    def _get_processable_files_in_directory(self, directory: Path) -> list[Path]:
         """Get processable files in a directory."""
         processable_files = []
 
@@ -254,7 +254,7 @@ class GenerationValidator:
 
         return True
 
-    def _get_existing_specs(self, source_file: Path) -> Dict[str, Path]:
+    def _get_existing_specs(self, source_file: Path) -> dict[str, Path]:
         """Get existing spec files for a source file."""
         # Create spec directory path based on source file
         relative_path = (
@@ -269,10 +269,10 @@ class GenerationValidator:
 
 # Convenience functions
 def validate_generation_input(
-    source_files: List[Path],
+    source_files: list[Path],
     template_name: str,
     conflict_strategy: ConflictResolutionStrategy,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Validate generation input."""
     validator = GenerationValidator()
     return validator.validate_generation_input(
@@ -280,13 +280,13 @@ def validate_generation_input(
     )
 
 
-def validate_template_selection(template_name: str) -> Dict[str, Any]:
+def validate_template_selection(template_name: str) -> dict[str, Any]:
     """Validate template selection."""
     validator = GenerationValidator()
     return validator.validate_template_selection(template_name)
 
 
-def validate_file_paths(file_paths: List[Path]) -> Dict[str, Any]:
+def validate_file_paths(file_paths: list[Path]) -> dict[str, Any]:
     """Validate file paths for generation."""
     validator = GenerationValidator()
     return validator.validate_file_paths(file_paths)

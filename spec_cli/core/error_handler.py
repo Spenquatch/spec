@@ -1,8 +1,9 @@
 """Centralized error handling using error utilities."""
 
 import subprocess
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable, Dict, Optional, TypeVar
+from typing import Any, TypeVar
 
 from ..exceptions import SpecError
 from ..logging.debug import debug_logger
@@ -18,7 +19,7 @@ F = TypeVar("F", bound=Callable[..., Any])
 class ErrorHandler:
     """Centralized error handling with context information."""
 
-    def __init__(self, default_context: Optional[Dict[str, Any]] = None):
+    def __init__(self, default_context: dict[str, Any] | None = None):
         """Initialize error handler with optional default context.
 
         Args:
@@ -60,7 +61,7 @@ class ErrorHandler:
         self,
         exc: Exception,
         operation: str,
-        code_path: Optional[Path] = None,
+        code_path: Path | None = None,
         **additional_context: Any,
     ) -> None:
         """Report error with structured context information.
@@ -120,8 +121,8 @@ class ErrorHandler:
         self,
         exc: Exception,
         operation: str,
-        reraise_as: Optional[type] = None,
-        code_path: Optional[Path] = None,
+        reraise_as: type | None = None,
+        code_path: Path | None = None,
         **additional_context: Any,
     ) -> None:
         """Log error and re-raise as different exception type if needed.

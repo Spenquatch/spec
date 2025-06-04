@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 from unittest.mock import Mock, patch
 
 import pytest
@@ -155,7 +155,7 @@ class TestSpecRepositoryInitializer:
         self, initializer: SpecRepositoryInitializer
     ) -> None:
         """Test Git repository configuration."""
-        result: Dict[str, Any] = {"warnings": [], "created": []}
+        result: dict[str, Any] = {"warnings": [], "created": []}
 
         with patch.object(initializer.git_repo, "run_git_command") as mock_run:
             initializer._configure_git_repository(result)
@@ -179,7 +179,7 @@ class TestSpecRepositoryInitializer:
         self, initializer: SpecRepositoryInitializer
     ) -> None:
         """Test Git repository configuration handles errors."""
-        result: Dict[str, Any] = {"warnings": [], "created": []}
+        result: dict[str, Any] = {"warnings": [], "created": []}
 
         with patch.object(
             initializer.git_repo,
@@ -198,7 +198,7 @@ class TestSpecRepositoryInitializer:
         self, initializer: SpecRepositoryInitializer
     ) -> None:
         """Test .specs directory creation."""
-        result: Dict[str, Any] = {"errors": [], "created": []}
+        result: dict[str, Any] = {"errors": [], "created": []}
 
         with patch.object(
             initializer.directory_manager, "ensure_specs_directory"
@@ -212,7 +212,7 @@ class TestSpecRepositoryInitializer:
         self, initializer: SpecRepositoryInitializer
     ) -> None:
         """Test .specs directory creation handles errors."""
-        result: Dict[str, Any] = {"errors": [], "created": []}
+        result: dict[str, Any] = {"errors": [], "created": []}
 
         with patch.object(
             initializer.directory_manager,
@@ -229,7 +229,7 @@ class TestSpecRepositoryInitializer:
 
     def test_ignore_files_setup(self, initializer: SpecRepositoryInitializer) -> None:
         """Test ignore files setup."""
-        result: Dict[str, Any] = {"warnings": [], "created": []}
+        result: dict[str, Any] = {"warnings": [], "created": []}
 
         with patch.object(
             initializer.directory_manager, "setup_ignore_files"
@@ -243,7 +243,7 @@ class TestSpecRepositoryInitializer:
         self, initializer: SpecRepositoryInitializer
     ) -> None:
         """Test ignore files setup handles errors."""
-        result: Dict[str, Any] = {"warnings": [], "created": []}
+        result: dict[str, Any] = {"warnings": [], "created": []}
 
         with patch.object(
             initializer.directory_manager,
@@ -262,7 +262,7 @@ class TestSpecRepositoryInitializer:
         self, initializer: SpecRepositoryInitializer, tmp_path: Path
     ) -> None:
         """Test initial commit creation."""
-        result: Dict[str, Any] = {"created": [], "warnings": [], "skipped": []}
+        result: dict[str, Any] = {"created": [], "warnings": [], "skipped": []}
 
         # Mock no existing commits
         with patch.object(initializer.git_repo, "get_recent_commits", return_value=[]):
@@ -292,7 +292,7 @@ class TestSpecRepositoryInitializer:
         self, initializer: SpecRepositoryInitializer
     ) -> None:
         """Test initial commit is skipped when commits already exist."""
-        result: Dict[str, Any] = {"created": [], "warnings": [], "skipped": []}
+        result: dict[str, Any] = {"created": [], "warnings": [], "skipped": []}
 
         # Mock existing commits
         with patch.object(
@@ -308,7 +308,7 @@ class TestSpecRepositoryInitializer:
         self, initializer: SpecRepositoryInitializer, tmp_path: Path
     ) -> None:
         """Test initial commit creation handles errors."""
-        result: Dict[str, Any] = {"created": [], "warnings": [], "skipped": []}
+        result: dict[str, Any] = {"created": [], "warnings": [], "skipped": []}
 
         with patch.object(initializer.git_repo, "get_recent_commits", return_value=[]):
             with patch.object(
@@ -362,7 +362,7 @@ class TestSpecRepositoryInitializer:
         self, initializer: SpecRepositoryInitializer, tmp_path: Path
     ) -> None:
         """Test common directories creation."""
-        result: Dict[str, Any] = {"created": [], "warnings": []}
+        result: dict[str, Any] = {"created": [], "warnings": []}
 
         initializer._create_common_directories(result)
 
@@ -379,7 +379,7 @@ class TestSpecRepositoryInitializer:
         self, initializer: SpecRepositoryInitializer
     ) -> None:
         """Test common directories creation handles errors."""
-        result: Dict[str, Any] = {"created": [], "warnings": []}
+        result: dict[str, Any] = {"created": [], "warnings": []}
 
         # Mock mkdir to fail
         with patch("pathlib.Path.mkdir", side_effect=Exception("Mkdir failed")):
@@ -395,7 +395,7 @@ class TestSpecRepositoryInitializer:
         self, initializer: SpecRepositoryInitializer, tmp_path: Path
     ) -> None:
         """Test configuration files setup."""
-        result: Dict[str, Any] = {"created": [], "warnings": []}
+        result: dict[str, Any] = {"created": [], "warnings": []}
 
         with patch("pathlib.Path.exists", return_value=False):
             with patch("pathlib.Path.write_text") as mock_write:
@@ -413,7 +413,7 @@ class TestSpecRepositoryInitializer:
         self, initializer: SpecRepositoryInitializer
     ) -> None:
         """Test configuration files setup handles errors."""
-        result: Dict[str, Any] = {"created": [], "warnings": []}
+        result: dict[str, Any] = {"created": [], "warnings": []}
 
         with patch("json.dumps", side_effect=Exception("JSON failed")):
             initializer._setup_configuration_files(result)
@@ -428,7 +428,7 @@ class TestSpecRepositoryInitializer:
         self, initializer: SpecRepositoryInitializer
     ) -> None:
         """Test example templates creation."""
-        result: Dict[str, Any] = {"created": [], "warnings": []}
+        result: dict[str, Any] = {"created": [], "warnings": []}
 
         with patch("pathlib.Path.exists", return_value=False):
             with patch("pathlib.Path.write_text") as mock_write:
@@ -446,7 +446,7 @@ class TestSpecRepositoryInitializer:
         self, initializer: SpecRepositoryInitializer
     ) -> None:
         """Test example templates creation handles errors."""
-        result: Dict[str, Any] = {"created": [], "warnings": []}
+        result: dict[str, Any] = {"created": [], "warnings": []}
 
         with patch("pathlib.Path.write_text", side_effect=Exception("Template failed")):
             initializer._create_example_templates(result)
@@ -606,7 +606,7 @@ class TestSpecRepositoryInitializer:
         self, initializer: SpecRepositoryInitializer
     ) -> None:
         """Test initialization verification when successful."""
-        result: Dict[str, Any] = {"created": [], "errors": []}
+        result: dict[str, Any] = {"created": [], "errors": []}
 
         mock_health = {"overall_health": RepositoryHealth.HEALTHY, "issues": []}
 
@@ -624,7 +624,7 @@ class TestSpecRepositoryInitializer:
         self, initializer: SpecRepositoryInitializer
     ) -> None:
         """Test initialization verification when failed."""
-        result: Dict[str, Any] = {"created": [], "errors": []}
+        result: dict[str, Any] = {"created": [], "errors": []}
 
         mock_health = {
             "overall_health": RepositoryHealth.ERROR,
@@ -645,7 +645,7 @@ class TestSpecRepositoryInitializer:
         self, initializer: SpecRepositoryInitializer
     ) -> None:
         """Test initialization verification handles exceptions."""
-        result: Dict[str, Any] = {"created": [], "errors": [], "warnings": []}
+        result: dict[str, Any] = {"created": [], "errors": [], "warnings": []}
 
         with patch.object(
             initializer.state_checker,

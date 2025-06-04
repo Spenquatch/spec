@@ -2,7 +2,7 @@ import logging
 import os
 import time
 from contextlib import contextmanager
-from typing import Any, Dict, Optional
+from typing import Any
 
 from ..exceptions import SpecError
 
@@ -82,7 +82,7 @@ class DebugLogger:
         level_method(full_message)
 
     def log_error(
-        self, error: Exception, context: Optional[Dict[str, Any]] = None
+        self, error: Exception, context: dict[str, Any] | None = None
     ) -> None:
         """Log error with full context information.
 
@@ -142,7 +142,7 @@ class DebugLogger:
             )
 
     def log_function_call(
-        self, func_name: str, args: tuple = (), kwargs: Optional[Dict[str, Any]] = None
+        self, func_name: str, args: tuple = (), kwargs: dict[str, Any] | None = None
     ) -> None:
         """Log function call with arguments.
 
@@ -154,7 +154,7 @@ class DebugLogger:
         if not self.enabled:
             return
 
-        call_info: Dict[str, Any] = {"function": func_name}
+        call_info: dict[str, Any] = {"function": func_name}
 
         if args:
             call_info["args_count"] = len(args)

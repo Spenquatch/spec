@@ -1,5 +1,5 @@
 import re
-from typing import Any, Dict, List
+from typing import Any
 
 from ..logging.debug import debug_logger
 
@@ -19,7 +19,7 @@ class ContentMerger:
 
         debug_logger.log("INFO", "ContentMerger initialized")
 
-    def detect_content_sections(self, content: str) -> Dict[str, List[Dict[str, Any]]]:
+    def detect_content_sections(self, content: str) -> dict[str, list[dict[str, Any]]]:
         """Detect structured sections in markdown content.
 
         Args:
@@ -28,7 +28,7 @@ class ContentMerger:
         Returns:
             Dictionary mapping section types to detected sections
         """
-        sections: Dict[str, List[Any]] = {
+        sections: dict[str, list[Any]] = {
             "headings": [],
             "yaml_frontmatter": [],
             "code_blocks": [],
@@ -77,7 +77,7 @@ class ContentMerger:
         # Simple paragraph detection (non-empty lines not in other sections)
         lines = content.split("\n")
         in_code_block = False
-        current_paragraph: List[str] = []
+        current_paragraph: list[str] = []
         line_start = 0
 
         for i, line in enumerate(lines):
@@ -198,7 +198,7 @@ class ContentMerger:
 
     def detect_conflicts(
         self, base_content: str, new_content: str
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Detect potential conflicts between content versions.
 
         Args:
@@ -261,7 +261,7 @@ class ContentMerger:
 
     def create_merge_preview(
         self, base_content: str, new_content: str, strategy: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Create a preview of what merge would produce.
 
         Args:
@@ -302,7 +302,7 @@ class ContentMerger:
 
     def extract_metadata_diff(
         self, base_content: str, new_content: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Extract differences in metadata between content versions.
 
         Args:
@@ -315,7 +315,7 @@ class ContentMerger:
         base_sections = self.detect_content_sections(base_content)
         new_sections = self.detect_content_sections(new_content)
 
-        diff: Dict[str, List[Any]] = {
+        diff: dict[str, list[Any]] = {
             "headings_added": [],
             "headings_removed": [],
             "headings_modified": [],

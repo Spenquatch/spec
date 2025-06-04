@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any
 from unittest.mock import Mock, patch
 
 import pytest
@@ -21,18 +21,24 @@ class TestSpecWorkflowOrchestrator:
         self.mock_settings.project_root = Path("/test")
 
         # Create orchestrator with mocked dependencies
-        with patch(
-            "spec_cli.core.workflow_orchestrator.get_settings",
-            return_value=self.mock_settings,
-        ), patch(
-            "spec_cli.core.workflow_orchestrator.RepositoryStateChecker"
-        ) as mock_state_checker, patch(
-            "spec_cli.core.workflow_orchestrator.SpecCommitManager"
-        ) as mock_commit_manager, patch(
-            "spec_cli.core.workflow_orchestrator.SpecContentGenerator"
-        ) as _mock_content_gen, patch(
-            "spec_cli.core.workflow_orchestrator.DirectoryManager"
-        ) as _mock_dir_manager:
+        with (
+            patch(
+                "spec_cli.core.workflow_orchestrator.get_settings",
+                return_value=self.mock_settings,
+            ),
+            patch(
+                "spec_cli.core.workflow_orchestrator.RepositoryStateChecker"
+            ) as mock_state_checker,
+            patch(
+                "spec_cli.core.workflow_orchestrator.SpecCommitManager"
+            ) as mock_commit_manager,
+            patch(
+                "spec_cli.core.workflow_orchestrator.SpecContentGenerator"
+            ) as _mock_content_gen,
+            patch(
+                "spec_cli.core.workflow_orchestrator.DirectoryManager"
+            ) as _mock_dir_manager,
+        ):
             self.orchestrator = SpecWorkflowOrchestrator(self.mock_settings)
             self.mock_state_checker = mock_state_checker.return_value
             self.mock_commit_manager = mock_commit_manager.return_value
@@ -271,7 +277,7 @@ class TestSpecWorkflowOrchestrator:
         # Mock file existence check
         with patch.object(Path, "exists", return_value=True):
             # Mock the single file generation method with mixed results
-            def mock_single_gen(file_path: Path, **kwargs: Any) -> Dict[str, Any]:
+            def mock_single_gen(file_path: Path, **kwargs: Any) -> dict[str, Any]:
                 if "file1" in str(file_path):
                     return {
                         "success": True,
@@ -357,7 +363,7 @@ class TestSpecWorkflowOrchestrator:
                         )
 
         # Verify progress callback was called correctly
-        expected_calls: List[Tuple[Tuple[int, int, str], Dict[str, Any]]] = [
+        expected_calls: list[tuple[tuple[int, int, str], dict[str, Any]]] = [
             # Called for each file during processing
             ((0, 3, "Processing file1.py"), {}),
             ((1, 3, "Processing file2.py"), {}),
@@ -370,7 +376,7 @@ class TestSpecWorkflowOrchestrator:
         actual_calls = progress_callback.call_args_list
 
         for i, (expected_call, actual_call) in enumerate(
-            zip(expected_calls, actual_calls)
+            zip(expected_calls, actual_calls, strict=False)
         ):
             expected_args, expected_kwargs = expected_call
             actual_args, actual_kwargs = actual_call
@@ -523,18 +529,24 @@ class TestWorkflowExecutionStages:
         self.mock_settings = Mock(spec=SpecSettings)
         self.mock_settings.specs_dir = Path("/test/.specs")
 
-        with patch(
-            "spec_cli.core.workflow_orchestrator.get_settings",
-            return_value=self.mock_settings,
-        ), patch(
-            "spec_cli.core.workflow_orchestrator.RepositoryStateChecker"
-        ) as mock_state_checker, patch(
-            "spec_cli.core.workflow_orchestrator.SpecCommitManager"
-        ) as mock_commit_manager, patch(
-            "spec_cli.core.workflow_orchestrator.SpecContentGenerator"
-        ) as _mock_content_gen, patch(
-            "spec_cli.core.workflow_orchestrator.DirectoryManager"
-        ) as _mock_dir_manager:
+        with (
+            patch(
+                "spec_cli.core.workflow_orchestrator.get_settings",
+                return_value=self.mock_settings,
+            ),
+            patch(
+                "spec_cli.core.workflow_orchestrator.RepositoryStateChecker"
+            ) as mock_state_checker,
+            patch(
+                "spec_cli.core.workflow_orchestrator.SpecCommitManager"
+            ) as mock_commit_manager,
+            patch(
+                "spec_cli.core.workflow_orchestrator.SpecContentGenerator"
+            ) as _mock_content_gen,
+            patch(
+                "spec_cli.core.workflow_orchestrator.DirectoryManager"
+            ) as _mock_dir_manager,
+        ):
             self.orchestrator = SpecWorkflowOrchestrator(self.mock_settings)
             self.mock_state_checker = mock_state_checker.return_value
             self.mock_commit_manager = mock_commit_manager.return_value

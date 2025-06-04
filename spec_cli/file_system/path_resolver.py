@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import Dict, Optional, Union
 
 from ..config.settings import SpecSettings, get_settings
 from ..exceptions import SpecFileError, SpecValidationError
@@ -15,7 +14,7 @@ class PathResolver:
     validation, and conversion between different path contexts.
     """
 
-    def __init__(self, settings: Optional[SpecSettings] = None):
+    def __init__(self, settings: SpecSettings | None = None):
         self.settings = settings or get_settings()
 
     def resolve_input_path(self, path_str: str) -> Path:
@@ -147,7 +146,7 @@ class PathResolver:
 
         return spec_dir
 
-    def get_spec_files_for_source(self, source_file: Path) -> Dict[str, Path]:
+    def get_spec_files_for_source(self, source_file: Path) -> dict[str, Path]:
         """Get spec file paths for a source file.
 
         Args:
@@ -180,7 +179,7 @@ class PathResolver:
 
         return {"index": spec_dir / "index.md", "history": spec_dir / "history.md"}
 
-    def convert_from_specs_path(self, specs_path: Union[str, Path]) -> Path:
+    def convert_from_specs_path(self, specs_path: str | Path) -> Path:
         """Convert path from .specs/ context to relative project path.
 
         Args:

@@ -1,5 +1,6 @@
+from collections.abc import Generator
 from pathlib import Path
-from typing import Any, Dict, Generator, List, Optional
+from typing import Any
 
 from ..exceptions import SpecFileError, SpecValidationError
 from ..logging.debug import debug_logger
@@ -19,8 +20,8 @@ class DirectoryTraversal:
         self.metadata_extractor = FileMetadataExtractor()
 
     def find_processable_files(
-        self, directory: Optional[Path] = None, max_files: Optional[int] = None
-    ) -> List[Path]:
+        self, directory: Path | None = None, max_files: int | None = None
+    ) -> list[Path]:
         """Find all processable files in a directory tree.
 
         Args:
@@ -118,8 +119,8 @@ class DirectoryTraversal:
             )
 
     def analyze_directory_structure(
-        self, directory: Optional[Path] = None
-    ) -> Dict[str, Any]:
+        self, directory: Path | None = None
+    ) -> dict[str, Any]:
         """Analyze directory structure and provide detailed report.
 
         Args:
@@ -138,7 +139,7 @@ class DirectoryTraversal:
             "INFO", "Analyzing directory structure", directory=str(directory)
         )
 
-        analysis: Dict[str, Any] = {
+        analysis: dict[str, Any] = {
             "directory": str(directory),
             "total_files": 0,
             "processable_files": 0,
@@ -271,8 +272,8 @@ class DirectoryTraversal:
         return format_file_size(size_bytes)
 
     def find_files_by_pattern(
-        self, pattern: str, directory: Optional[Path] = None
-    ) -> List[Path]:
+        self, pattern: str, directory: Path | None = None
+    ) -> list[Path]:
         """Find files matching a pattern.
 
         Args:
@@ -334,7 +335,7 @@ class DirectoryTraversal:
                 {"pattern": pattern, "directory": str(directory), "os_error": str(e)},
             ) from e
 
-    def get_directory_summary(self, directory: Optional[Path] = None) -> Dict[str, Any]:
+    def get_directory_summary(self, directory: Path | None = None) -> dict[str, Any]:
         """Get a summary of directory contents.
 
         Args:
@@ -382,8 +383,8 @@ class DirectoryTraversal:
             }
 
     def _get_top_items(
-        self, items_dict: Dict[str, int], limit: int
-    ) -> List[Dict[str, Any]]:
+        self, items_dict: dict[str, int], limit: int
+    ) -> list[dict[str, Any]]:
         """Get top items from a count dictionary."""
         sorted_items = sorted(items_dict.items(), key=lambda x: x[1], reverse=True)
         return [{"type": item, "count": count} for item, count in sorted_items[:limit]]

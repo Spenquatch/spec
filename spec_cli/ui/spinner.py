@@ -1,6 +1,7 @@
 import threading
+from collections.abc import Generator
 from contextlib import contextmanager
-from typing import Any, Dict, Generator, Optional
+from typing import Any
 
 from rich.console import Console
 from rich.live import Live
@@ -18,7 +19,7 @@ class SpecSpinner:
         self,
         text: str = "Loading...",
         spinner_style: str = "dots",
-        console: Optional[Console] = None,
+        console: Console | None = None,
         speed: float = 1.0,
     ) -> None:
         """Initialize the spinner.
@@ -35,7 +36,7 @@ class SpecSpinner:
         self.speed = speed
 
         self.spinner = Spinner(spinner_style, speed=speed)
-        self.live: Optional[Live] = None
+        self.live: Live | None = None
         self._is_running = False
 
         debug_logger.log(
@@ -107,7 +108,7 @@ class TimedSpinner(SpecSpinner):
         """
         super().__init__(**kwargs)
         self.timeout = timeout
-        self._timer: Optional[threading.Timer] = None
+        self._timer: threading.Timer | None = None
 
     def start(self) -> None:
         """Start the spinner with timeout."""
@@ -137,15 +138,15 @@ class TimedSpinner(SpecSpinner):
 class SpinnerManager:
     """Manages multiple spinners and provides coordination."""
 
-    def __init__(self, console: Optional[Console] = None) -> None:
+    def __init__(self, console: Console | None = None) -> None:
         """Initialize spinner manager.
 
         Args:
             console: Console to use for all spinners
         """
         self.console = console or get_console().console
-        self.spinners: Dict[str, SpecSpinner] = {}
-        self._active_spinner: Optional[str] = None
+        self.spinners: dict[str, SpecSpinner] = {}
+        self._active_spinner: str | None = None
 
         debug_logger.log("INFO", "SpinnerManager initialized")
 

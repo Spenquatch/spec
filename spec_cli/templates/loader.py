@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any
 
 import yaml
 
@@ -15,7 +15,7 @@ from .defaults import get_default_template_config
 class TemplateLoader:
     """Loads template configuration from files with fallback to defaults."""
 
-    def __init__(self, settings: Optional[SpecSettings] = None):
+    def __init__(self, settings: SpecSettings | None = None):
         self.settings = settings or get_settings()
         self.validator = TemplateValidator()
         debug_logger.log(
@@ -201,9 +201,9 @@ class TemplateLoader:
                 "WARNING", "Could not create template backup", error=str(e)
             )
 
-    def _prepare_save_data(self, config: TemplateConfig) -> Dict[str, Any]:
+    def _prepare_save_data(self, config: TemplateConfig) -> dict[str, Any]:
         """Prepare template data for saving to YAML."""
-        data: Dict[str, Any] = {
+        data: dict[str, Any] = {
             "version": config.version,
         }
 
@@ -231,7 +231,7 @@ class TemplateLoader:
 
         return data
 
-    def get_template_info(self) -> Dict[str, Any]:
+    def get_template_info(self) -> dict[str, Any]:
         """Get information about the current template configuration.
 
         Returns:
@@ -276,7 +276,7 @@ class TemplateLoader:
 
 
 # Convenience function for backward compatibility
-def load_template(settings: Optional[SpecSettings] = None) -> TemplateConfig:
+def load_template(settings: SpecSettings | None = None) -> TemplateConfig:
     """Load template configuration (convenience function).
 
     Args:

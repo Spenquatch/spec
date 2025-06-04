@@ -1,5 +1,4 @@
 from enum import Enum
-from typing import Dict, Optional
 
 from rich.theme import Theme
 
@@ -22,7 +21,7 @@ class SpecTheme:
 
     def __init__(self, color_scheme: ColorScheme = ColorScheme.DEFAULT):
         self.color_scheme = color_scheme
-        self._theme: Optional[Theme] = None
+        self._theme: Theme | None = None
         self._load_theme()
 
         debug_logger.log(
@@ -36,7 +35,7 @@ class SpecTheme:
 
         debug_logger.log("DEBUG", "Theme loaded", style_count=len(theme_styles))
 
-    def _get_theme_styles(self) -> Dict[str, str]:
+    def _get_theme_styles(self) -> dict[str, str]:
         """Get theme styles based on current color scheme."""
         base_styles = {
             # Core status colors
@@ -150,7 +149,7 @@ class SpecTheme:
 
         debug_logger.log("INFO", "Color scheme updated", new_scheme=color_scheme.value)
 
-    def get_emoji_replacements(self) -> Dict[str, str]:
+    def get_emoji_replacements(self) -> dict[str, str]:
         """Get emoji to styled text replacements.
 
         Returns:
@@ -184,7 +183,7 @@ class SpecTheme:
         }
 
     @classmethod
-    def from_settings(cls, settings: Optional[SpecSettings] = None) -> "SpecTheme":
+    def from_settings(cls, settings: SpecSettings | None = None) -> "SpecTheme":
         """Create theme from settings configuration.
 
         Args:
@@ -215,7 +214,7 @@ class ThemeManager:
 
     def __init__(self) -> None:
         """Initialize theme manager."""
-        self._current_theme: Optional[SpecTheme] = None
+        self._current_theme: SpecTheme | None = None
 
     def get_current_theme(self) -> SpecTheme:
         """Get the current global theme instance.

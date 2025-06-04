@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import Union
 
 from ..file_system.path_utils import normalize_path_separators, remove_specs_prefix
 from ..logging.debug import debug_logger
@@ -14,7 +13,7 @@ class GitPathConverter:
             "INFO", "GitPathConverter initialized", specs_dir=str(specs_dir)
         )
 
-    def convert_to_git_path(self, path: Union[str, Path]) -> str:
+    def convert_to_git_path(self, path: str | Path) -> str:
         """Convert path to be relative to Git work tree (.specs/).
 
         Args:
@@ -71,7 +70,7 @@ class GitPathConverter:
         )
         return result
 
-    def convert_from_git_path(self, git_path: Union[str, Path]) -> Path:
+    def convert_from_git_path(self, git_path: str | Path) -> Path:
         """Convert path from Git work tree context to .specs/ prefixed path.
 
         Args:
@@ -105,7 +104,7 @@ class GitPathConverter:
 
         return result
 
-    def convert_to_absolute_specs_path(self, path: Union[str, Path]) -> Path:
+    def convert_to_absolute_specs_path(self, path: str | Path) -> Path:
         """Convert path to absolute path under .specs/ directory.
 
         Args:
@@ -136,7 +135,7 @@ class GitPathConverter:
 
         return absolute_path
 
-    def is_under_specs_dir(self, path: Union[str, Path]) -> bool:
+    def is_under_specs_dir(self, path: str | Path) -> bool:
         """Check if path is under the .specs/ directory.
 
         Args:
@@ -164,7 +163,7 @@ class GitPathConverter:
             )
             return False
 
-    def normalize_path_separators(self, path: Union[str, Path]) -> str:
+    def normalize_path_separators(self, path: str | Path) -> str:
         """Normalize path separators to forward slashes.
 
         Args:
@@ -182,7 +181,7 @@ class GitPathConverter:
         )
         return normalized
 
-    def get_conversion_info(self, path: Union[str, Path]) -> dict:
+    def get_conversion_info(self, path: str | Path) -> dict:
         """Get detailed information about path conversion.
 
         Args:

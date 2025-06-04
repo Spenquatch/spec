@@ -1,6 +1,6 @@
 import traceback
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from rich.console import Console
 from rich.panel import Panel
@@ -20,9 +20,9 @@ class ErrorPanel:
     def __init__(
         self,
         error: Exception,
-        title: Optional[str] = None,
+        title: str | None = None,
         show_traceback: bool = True,
-        console: Optional[Console] = None,
+        console: Console | None = None,
     ) -> None:
         """Initialize error panel.
 
@@ -54,7 +54,7 @@ class ErrorPanel:
         error_type = type(error).__name__
         if isinstance(error, SpecError):
             return f"[error]{error_type}[/error]"
-        elif isinstance(error, (ValueError, TypeError)):
+        elif isinstance(error, ValueError | TypeError):
             return f"[warning]{error_type}[/warning]"
         else:
             return "[error]Error[/error]"
@@ -113,7 +113,7 @@ class ErrorPanel:
             expand=False,
         )
 
-    def _get_error_context(self) -> Optional[str]:
+    def _get_error_context(self) -> str | None:
         """Get contextual information for the error.
 
         Returns:
@@ -142,7 +142,7 @@ class ErrorPanel:
                 return SpecStyles.warning("Check file and directory permissions")
             return None
 
-    def _get_error_suggestions(self) -> List[str]:
+    def _get_error_suggestions(self) -> list[str]:
         """Get suggestions for resolving the error.
 
         Returns:
@@ -169,7 +169,7 @@ class ErrorPanel:
 
         return suggestions
 
-    def _format_traceback(self) -> Optional[str]:
+    def _format_traceback(self) -> str | None:
         """Format traceback for display.
 
         Returns:
@@ -205,7 +205,7 @@ class ErrorPanel:
 class DiagnosticDisplay:
     """Display diagnostic information in formatted panels."""
 
-    def __init__(self, console: Optional[Console] = None) -> None:
+    def __init__(self, console: Console | None = None) -> None:
         """Initialize diagnostic display.
 
         Args:
@@ -214,7 +214,7 @@ class DiagnosticDisplay:
         self.console = console or get_console().console
         self.error_handler = ErrorHandler({"component": "diagnostic_display"})
 
-    def show_system_info(self, info: Dict[str, Any]) -> None:
+    def show_system_info(self, info: dict[str, Any]) -> None:
         """Display system information.
 
         Args:
@@ -238,7 +238,7 @@ class DiagnosticDisplay:
 
         self.console.print(panel)
 
-    def show_configuration(self, config: Dict[str, Any]) -> None:
+    def show_configuration(self, config: dict[str, Any]) -> None:
         """Display configuration information.
 
         Args:
@@ -271,7 +271,7 @@ class DiagnosticDisplay:
 
         self.console.print(panel)
 
-    def show_file_details(self, file_path: Path, details: Dict[str, Any]) -> None:
+    def show_file_details(self, file_path: Path, details: dict[str, Any]) -> None:
         """Display file details.
 
         Args:
@@ -303,7 +303,7 @@ class DiagnosticDisplay:
 class StackTraceFormatter:
     """Enhanced stack trace formatting with syntax highlighting."""
 
-    def __init__(self, console: Optional[Console] = None) -> None:
+    def __init__(self, console: Console | None = None) -> None:
         """Initialize stack trace formatter.
 
         Args:
@@ -357,9 +357,9 @@ class StackTraceFormatter:
 # Utility functions
 def show_error(
     error: Exception,
-    title: Optional[str] = None,
+    title: str | None = None,
     show_traceback: bool = True,
-    console: Optional[Console] = None,
+    console: Console | None = None,
 ) -> None:
     """Show an error with formatted panel.
 
@@ -375,8 +375,8 @@ def show_error(
 
 def show_warning(
     message: str,
-    details: Optional[str] = None,
-    console: Optional[Console] = None,
+    details: str | None = None,
+    console: Console | None = None,
 ) -> None:
     """Show a warning message.
 
@@ -403,8 +403,8 @@ def show_warning(
 
 def show_success(
     message: str,
-    details: Optional[str] = None,
-    console: Optional[Console] = None,
+    details: str | None = None,
+    console: Console | None = None,
 ) -> None:
     """Show a success message.
 
@@ -431,8 +431,8 @@ def show_success(
 
 def show_info(
     message: str,
-    details: Optional[str] = None,
-    console: Optional[Console] = None,
+    details: str | None = None,
+    console: Console | None = None,
 ) -> None:
     """Show an info message.
 
@@ -458,7 +458,7 @@ def show_info(
 
 
 def show_message(
-    message: str, message_type: str = "info", context: Optional[str] = None
+    message: str, message_type: str = "info", context: str | None = None
 ) -> None:
     """Show a message with appropriate styling.
 
@@ -484,9 +484,7 @@ def show_message(
         show_info(full_message)
 
 
-def format_data(
-    data: Any, title: Optional[str] = None, format_type: str = "auto"
-) -> None:
+def format_data(data: Any, title: str | None = None, format_type: str = "auto") -> None:
     """Format and display data using Rich formatting.
 
     Args:
@@ -521,7 +519,7 @@ def format_code_snippet(
     language: str = "python",
     theme: str = "monokai",
     line_numbers: bool = True,
-    highlight_lines: Optional[List[int]] = None,
+    highlight_lines: list[int] | None = None,
 ) -> Syntax:
     """Format code snippet with syntax highlighting.
 

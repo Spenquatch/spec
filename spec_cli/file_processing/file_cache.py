@@ -2,7 +2,7 @@ import json
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set
+from typing import Any
 
 from ..config.settings import SpecSettings, get_settings
 from ..exceptions import SpecFileError
@@ -20,7 +20,7 @@ class FileCacheEntry:
         size: int,
         mtime: float,
         last_processed: float,
-        metadata: Optional[Dict[str, Any]] = None,
+        metadata: dict[str, Any] | None = None,
     ):
         self.file_path = file_path
         self.hash_md5 = hash_md5
@@ -30,7 +30,7 @@ class FileCacheEntry:
         self.last_processed = last_processed
         self.metadata = metadata or {}
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
         return {
             "file_path": self.file_path,
@@ -43,7 +43,7 @@ class FileCacheEntry:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "FileCacheEntry":
+    def from_dict(cls, data: dict[str, Any]) -> "FileCacheEntry":
         """Create from dictionary."""
         return cls(
             file_path=data["file_path"],
@@ -67,10 +67,10 @@ class FileCacheEntry:
 class FileCacheManager:
     """Manages persistent file cache for change detection."""
 
-    def __init__(self, settings: Optional[SpecSettings] = None):
+    def __init__(self, settings: SpecSettings | None = None):
         self.settings = settings or get_settings()
         self.cache_file = self.settings.spec_dir / "cache.json"
-        self._cache: Dict[str, FileCacheEntry] = {}
+        self._cache: dict[str, FileCacheEntry] = {}
         self._cache_loaded = False
         self._cache_modified = False
 
@@ -169,7 +169,7 @@ class FileCacheManager:
             debug_logger.log("ERROR", "Failed to save cache", error=str(e))
             raise SpecFileError(f"Failed to save file cache: {e}") from e
 
-    def get_entry(self, file_path: str) -> Optional[FileCacheEntry]:
+    def get_entry(self, file_path: str) -> FileCacheEntry | None:
         """Get cache entry for a file."""
         self.load_cache()
         return self._cache.get(file_path)
@@ -197,13 +197,13 @@ class FileCacheManager:
             return True
         return False
 
-    def get_all_entries(self) -> Dict[str, FileCacheEntry]:
+    def get_all_entries(self) -> dict[str, FileCacheEntry]:
         """Get all cache entries."""
         self.load_cache()
         return self._cache.copy()
 
     def cleanup_stale_entries(
-        self, existing_files: Set[str], max_age_days: int = 30
+        self, existing_files: set[str], max_age_days: int = 30
     ) -> int:
         """Clean up stale cache entries.
 
@@ -242,7 +242,7 @@ class FileCacheManager:
 
         return len(stale_entries)
 
-    def get_cache_statistics(self) -> Dict[str, Any]:
+    def get_cache_statistics(self) -> dict[str, Any]:
         """Get cache statistics."""
         self.load_cache()
 
@@ -285,7 +285,7 @@ class FileCacheManager:
         # Rough estimate if file doesn't exist
         return len(self._cache) * 200  # ~200 bytes per entry estimate
 
-    def validate_cache_integrity(self) -> List[str]:
+    def validate_cache_integrity(self) -> list[str]:
         """Validate cache integrity and return issues.
 
         Returns:

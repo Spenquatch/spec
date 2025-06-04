@@ -1,8 +1,9 @@
 import time
 from abc import ABC, abstractmethod
+from collections.abc import Callable
 from functools import wraps
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any
 
 from ..config.settings import SpecSettings, get_settings
 from ..exceptions import SpecTemplateError
@@ -83,7 +84,7 @@ class AIContentProvider(ABC):
     def generate_content(
         self,
         file_path: Path,
-        context: Dict[str, Any],
+        context: dict[str, Any],
         content_type: str,
         max_tokens: int = 1000,
     ) -> str:
@@ -109,16 +110,16 @@ class AIContentProvider(ABC):
         pass
 
     @abstractmethod
-    def get_supported_content_types(self) -> List[str]:
+    def get_supported_content_types(self) -> list[str]:
         """Get list of supported content types."""
         pass
 
     @abstractmethod
-    def get_provider_info(self) -> Dict[str, Any]:
+    def get_provider_info(self) -> dict[str, Any]:
         """Get information about this provider."""
         pass
 
-    def validate_configuration(self) -> List[str]:
+    def validate_configuration(self) -> list[str]:
         """Validate provider configuration.
 
         Returns:
@@ -158,7 +159,7 @@ class PlaceholderAIProvider(AIContentProvider):
     def generate_content(
         self,
         file_path: Path,
-        context: Dict[str, Any],
+        context: dict[str, Any],
         content_type: str,
         max_tokens: int = 1000,
     ) -> str:
@@ -195,11 +196,11 @@ class PlaceholderAIProvider(AIContentProvider):
         """Placeholder provider is always available."""
         return True
 
-    def get_supported_content_types(self) -> List[str]:
+    def get_supported_content_types(self) -> list[str]:
         """Return all supported content types."""
         return self.supported_types.copy()
 
-    def get_provider_info(self) -> Dict[str, Any]:
+    def get_provider_info(self) -> dict[str, Any]:
         """Get provider information."""
         return {
             "name": "PlaceholderProvider",
@@ -215,7 +216,7 @@ class MockAIProvider(AIContentProvider):
     """Mock AI provider for testing that can be configured with responses."""
 
     def __init__(self) -> None:
-        self.responses: Dict[str, str] = {}
+        self.responses: dict[str, str] = {}
         self.call_count = 0
         self.should_fail = False
         self.failure_message = "Mock AI provider failure"
@@ -246,7 +247,7 @@ class MockAIProvider(AIContentProvider):
     def generate_content(
         self,
         file_path: Path,
-        context: Dict[str, Any],
+        context: dict[str, Any],
         content_type: str,
         max_tokens: int = 1000,
     ) -> str:
@@ -274,13 +275,13 @@ class MockAIProvider(AIContentProvider):
         """Mock provider availability."""
         return not self.should_fail
 
-    def get_supported_content_types(self) -> List[str]:
+    def get_supported_content_types(self) -> list[str]:
         """Return supported types (all types for testing)."""
         return (
             list(self.responses.keys()) if self.responses else ["purpose", "overview"]
         )
 
-    def get_provider_info(self) -> Dict[str, Any]:
+    def get_provider_info(self) -> dict[str, Any]:
         """Get mock provider information."""
         return {
             "name": "MockProvider",
@@ -304,12 +305,12 @@ class MockAIProvider(AIContentProvider):
 class AIContentManager:
     """Manages AI content generation with provider registration and fallback strategies."""
 
-    def __init__(self, settings: Optional[SpecSettings] = None):
+    def __init__(self, settings: SpecSettings | None = None):
         self.settings = settings or get_settings()
-        self.providers: Dict[str, AIContentProvider] = {}
+        self.providers: dict[str, AIContentProvider] = {}
         self.default_provider = PlaceholderAIProvider()
         self.enabled = False
-        self.preferred_provider: Optional[str] = None
+        self.preferred_provider: str | None = None
 
         debug_logger.log("INFO", "AIContentManager initialized", enabled=self.enabled)
 
@@ -338,7 +339,7 @@ class AIContentManager:
         self.enabled = enabled
         debug_logger.log("INFO", "AI content generation toggled", enabled=enabled)
 
-    def set_preferred_provider(self, provider_name: Optional[str]) -> bool:
+    def set_preferred_provider(self, provider_name: str | None) -> bool:
         """Set the preferred AI provider.
 
         Args:
@@ -369,10 +370,10 @@ class AIContentManager:
     def generate_ai_content(
         self,
         file_path: Path,
-        context: Dict[str, Any],
-        content_requests: List[str],
+        context: dict[str, Any],
+        content_requests: list[str],
         max_tokens_per_request: int = 1000,
-    ) -> Dict[str, str]:
+    ) -> dict[str, str]:
         """Generate AI content for multiple content types.
 
         Args:
@@ -443,7 +444,7 @@ class AIContentManager:
 
         return results
 
-    def _get_available_provider(self) -> Optional[AIContentProvider]:
+    def _get_available_provider(self) -> AIContentProvider | None:
         """Get the best available AI provider."""
         # Try preferred provider first
         if self.preferred_provider and self.preferred_provider in self.providers:
@@ -467,9 +468,9 @@ class AIContentManager:
 
         return None
 
-    def get_provider_status(self) -> Dict[str, Any]:
+    def get_provider_status(self) -> dict[str, Any]:
         """Get status of all registered providers."""
-        status: Dict[str, Any] = {
+        status: dict[str, Any] = {
             "enabled": self.enabled,
             "preferred_provider": self.preferred_provider,
             "providers": {},
@@ -491,7 +492,7 @@ class AIContentManager:
 
         return status
 
-    def validate_configuration(self) -> List[str]:
+    def validate_configuration(self) -> list[str]:
         """Validate AI configuration and providers."""
         issues = []
 
@@ -539,9 +540,9 @@ ai_content_manager = AIContentManager()
 @retry_with_backoff(max_retries=3, base_delay=1.0)
 def ask_llm(
     prompt: str,
-    context: Optional[Dict[str, Any]] = None,
+    context: dict[str, Any] | None = None,
     max_tokens: int = 1000,
-    provider_name: Optional[str] = None,
+    provider_name: str | None = None,
 ) -> str:
     """Ask LLM a question with retry logic (currently returns placeholder).
 

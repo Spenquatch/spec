@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from ..config.settings import SpecSettings, get_settings
 from ..git.repository import SpecGitRepository
@@ -29,13 +29,13 @@ class BranchStatus(Enum):
 class RepositoryStateChecker:
     """Checks and validates spec repository state and health."""
 
-    def __init__(self, settings: Optional[SpecSettings] = None):
+    def __init__(self, settings: SpecSettings | None = None):
         self.settings = settings or get_settings()
         self.git_repo = SpecGitRepository(self.settings)
 
         debug_logger.log("INFO", "RepositoryStateChecker initialized")
 
-    def check_repository_health(self) -> Dict[str, Any]:
+    def check_repository_health(self) -> dict[str, Any]:
         """Perform comprehensive repository health check.
 
         Returns:
@@ -43,7 +43,7 @@ class RepositoryStateChecker:
         """
         debug_logger.log("INFO", "Performing repository health check")
 
-        health_report: Dict[str, Any] = {
+        health_report: dict[str, Any] = {
             "overall_health": RepositoryHealth.HEALTHY,
             "issues": [],
             "warnings": [],
@@ -98,7 +98,7 @@ class RepositoryStateChecker:
             health_report["issues"].append(error_msg)
             return health_report
 
-    def _check_spec_repository(self, report: Dict[str, Any]) -> None:
+    def _check_spec_repository(self, report: dict[str, Any]) -> None:
         """Check if .spec repository exists and is valid."""
         spec_dir = self.settings.spec_dir
 
@@ -116,7 +116,7 @@ class RepositoryStateChecker:
             report["checks"]["spec_repo_exists"] = False
             report["details"]["spec_repo_missing"] = str(spec_dir)
 
-    def _check_specs_directory(self, report: Dict[str, Any]) -> None:
+    def _check_specs_directory(self, report: dict[str, Any]) -> None:
         """Check if .specs directory exists and is accessible."""
         specs_dir = self.settings.specs_dir
 
@@ -134,7 +134,7 @@ class RepositoryStateChecker:
             report["checks"]["spec_dir_exists"] = False
             report["details"]["specs_dir_missing"] = str(specs_dir)
 
-    def _check_git_repository(self, report: Dict[str, Any]) -> None:
+    def _check_git_repository(self, report: dict[str, Any]) -> None:
         """Check if Git repository is valid and accessible."""
         try:
             if self.git_repo.is_initialized():
@@ -164,7 +164,7 @@ class RepositoryStateChecker:
             report["checks"]["git_repo_valid"] = False
             report["issues"].append(f"Git repository check failed: {e}")
 
-    def _check_branch_status(self, report: Dict[str, Any]) -> None:
+    def _check_branch_status(self, report: dict[str, Any]) -> None:
         """Check branch cleanliness and status."""
         try:
             if report["checks"]["git_repo_valid"]:
@@ -183,7 +183,7 @@ class RepositoryStateChecker:
             report["checks"]["branch_status"] = BranchStatus.UNKNOWN
             report["warnings"].append(f"Could not check branch status: {e}")
 
-    def _check_work_tree(self, report: Dict[str, Any]) -> None:
+    def _check_work_tree(self, report: dict[str, Any]) -> None:
         """Check if work tree is valid and accessible."""
         try:
             if report["checks"]["git_repo_valid"]:
@@ -204,7 +204,7 @@ class RepositoryStateChecker:
             report["checks"]["work_tree_valid"] = False
             report["warnings"].append(f"Work tree check failed: {e}")
 
-    def _check_permissions(self, report: Dict[str, Any]) -> None:
+    def _check_permissions(self, report: dict[str, Any]) -> None:
         """Check file system permissions for spec operations."""
         import os
 
@@ -239,7 +239,7 @@ class RepositoryStateChecker:
 
         report["details"]["permission_issues"] = permission_issues
 
-    def _determine_overall_health(self, report: Dict[str, Any]) -> None:
+    def _determine_overall_health(self, report: dict[str, Any]) -> None:
         """Determine overall repository health based on checks."""
         checks = report["checks"]
         issues = report["issues"]
@@ -319,7 +319,7 @@ class RepositoryStateChecker:
             debug_logger.log("ERROR", "Safety check failed", error=str(e))
             return False
 
-    def get_repository_summary(self) -> Dict[str, Any]:
+    def get_repository_summary(self) -> dict[str, Any]:
         """Get a concise summary of repository status.
 
         Returns:
@@ -351,7 +351,7 @@ class RepositoryStateChecker:
                 "error": str(e),
             }
 
-    def validate_pre_operation_state(self, operation_name: str) -> List[str]:
+    def validate_pre_operation_state(self, operation_name: str) -> list[str]:
         """Validate that repository state is ready for a specific operation.
 
         Args:

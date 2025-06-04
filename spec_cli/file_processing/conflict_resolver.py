@@ -1,7 +1,7 @@
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional, cast
+from typing import Any, cast
 
 from ..config.settings import SpecSettings, get_settings
 from ..exceptions import SpecFileError
@@ -44,9 +44,9 @@ class ConflictInfo:
         self,
         conflict_type: ConflictType,
         file_path: Path,
-        existing_content: Optional[str] = None,
-        new_content: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None,
+        existing_content: str | None = None,
+        new_content: str | None = None,
+        metadata: dict[str, Any] | None = None,
     ):
         self.conflict_type = conflict_type
         self.file_path = file_path
@@ -55,7 +55,7 @@ class ConflictInfo:
         self.metadata = metadata or {}
         self.detected_at = datetime.now()
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary representation."""
         return {
             "conflict_type": self.conflict_type.value,
@@ -76,10 +76,10 @@ class ConflictResolutionResult:
         self,
         success: bool,
         strategy_used: ConflictResolutionStrategy,
-        final_content: Optional[str] = None,
-        backup_path: Optional[Path] = None,
-        errors: Optional[List[str]] = None,
-        warnings: Optional[List[str]] = None,
+        final_content: str | None = None,
+        backup_path: Path | None = None,
+        errors: list[str] | None = None,
+        warnings: list[str] | None = None,
     ):
         self.success = success
         self.strategy_used = strategy_used
@@ -89,7 +89,7 @@ class ConflictResolutionResult:
         self.warnings = warnings or []
         self.resolved_at = datetime.now()
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary representation."""
         return {
             "success": self.success,
@@ -107,7 +107,7 @@ class ConflictResolutionResult:
 class ConflictResolver:
     """Resolves file conflicts using configurable strategies."""
 
-    def __init__(self, settings: Optional[SpecSettings] = None):
+    def __init__(self, settings: SpecSettings | None = None):
         self.settings = settings or get_settings()
         self.directory_manager = DirectoryManager(self.settings)
         self.change_detector = FileChangeDetector(self.settings)
@@ -124,9 +124,7 @@ class ConflictResolver:
 
         debug_logger.log("INFO", "ConflictResolver initialized")
 
-    def detect_conflict(
-        self, file_path: Path, new_content: str
-    ) -> Optional[ConflictInfo]:
+    def detect_conflict(self, file_path: Path, new_content: str) -> ConflictInfo | None:
         """Detect if a conflict exists for the given file and content.
 
         Args:
@@ -213,7 +211,7 @@ class ConflictResolver:
     def resolve_conflict(
         self,
         conflict: ConflictInfo,
-        strategy: Optional[ConflictResolutionStrategy] = None,
+        strategy: ConflictResolutionStrategy | None = None,
         create_backup: bool = True,
     ) -> ConflictResolutionResult:
         """Resolve a conflict using the specified strategy.
@@ -302,7 +300,7 @@ class ConflictResolver:
 
     def _apply_strategy(
         self, conflict: ConflictInfo, strategy: ConflictResolutionStrategy
-    ) -> Optional[str]:
+    ) -> str | None:
         """Apply the specified resolution strategy."""
         if strategy == ConflictResolutionStrategy.KEEP_OURS:
             return conflict.existing_content
@@ -375,10 +373,10 @@ class ConflictResolver:
 
     def resolve_multiple_conflicts(
         self,
-        conflicts: List[ConflictInfo],
-        strategy_map: Optional[Dict[ConflictType, ConflictResolutionStrategy]] = None,
+        conflicts: list[ConflictInfo],
+        strategy_map: dict[ConflictType, ConflictResolutionStrategy] | None = None,
         create_backups: bool = True,
-    ) -> List[ConflictResolutionResult]:
+    ) -> list[ConflictResolutionResult]:
         """Resolve multiple conflicts using specified strategies.
 
         Args:
@@ -461,7 +459,7 @@ class ConflictResolver:
             conflict.conflict_type, ConflictResolutionStrategy.MERGE_INTELLIGENT
         )
 
-    def get_conflict_summary(self, conflicts: List[ConflictInfo]) -> Dict[str, Any]:
+    def get_conflict_summary(self, conflicts: list[ConflictInfo]) -> dict[str, Any]:
         """Get summary information about a list of conflicts.
 
         Args:
@@ -470,7 +468,7 @@ class ConflictResolver:
         Returns:
             Summary dictionary
         """
-        summary: Dict[str, Any] = {
+        summary: dict[str, Any] = {
             "total_conflicts": len(conflicts),
             "by_type": {},
             "recommendations": {},
@@ -481,15 +479,15 @@ class ConflictResolver:
         for conflict in conflicts:
             # Count by type
             conflict_type = conflict.conflict_type.value
-            cast(Dict[str, int], summary["by_type"])[conflict_type] = (
-                cast(Dict[str, int], summary["by_type"]).get(conflict_type, 0) + 1
+            cast(dict[str, int], summary["by_type"])[conflict_type] = (
+                cast(dict[str, int], summary["by_type"]).get(conflict_type, 0) + 1
             )
 
             # Get recommendations
             recommended_strategy = self.recommend_strategy(conflict)
             strategy_name = recommended_strategy.value
-            cast(Dict[str, int], summary["recommendations"])[strategy_name] = (
-                cast(Dict[str, int], summary["recommendations"]).get(strategy_name, 0)
+            cast(dict[str, int], summary["recommendations"])[strategy_name] = (
+                cast(dict[str, int], summary["recommendations"]).get(strategy_name, 0)
                 + 1
             )
 
@@ -508,8 +506,8 @@ class ConflictResolver:
         return summary
 
     def validate_resolution_strategies(
-        self, strategy_map: Dict[ConflictType, ConflictResolutionStrategy]
-    ) -> List[str]:
+        self, strategy_map: dict[ConflictType, ConflictResolutionStrategy]
+    ) -> list[str]:
         """Validate a set of resolution strategies.
 
         Args:

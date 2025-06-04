@@ -1,8 +1,9 @@
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any
 
 from ..logging.debug import debug_logger
 
@@ -45,15 +46,15 @@ class ProgressEvent:
 
     event_type: ProgressEventType
     timestamp: datetime = field(default_factory=datetime.now)
-    file_path: Optional[Path] = None
-    stage: Optional[ProcessingStage] = None
-    progress: Optional[float] = None  # 0.0 to 1.0
-    total_files: Optional[int] = None
-    processed_files: Optional[int] = None
-    message: Optional[str] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    file_path: Path | None = None
+    stage: ProcessingStage | None = None
+    progress: float | None = None  # 0.0 to 1.0
+    total_files: int | None = None
+    processed_files: int | None = None
+    message: str | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary representation."""
         return {
             "event_type": self.event_type.value,
@@ -72,8 +73,8 @@ class ProgressReporter:
     """Reports progress events to registered listeners."""
 
     def __init__(self) -> None:
-        self.listeners: List[Callable[[ProgressEvent], None]] = []
-        self.events: List[ProgressEvent] = []
+        self.listeners: list[Callable[[ProgressEvent], None]] = []
+        self.events: list[ProgressEvent] = []
         self.max_events = 1000  # Limit stored events to prevent memory issues
 
         debug_logger.log("INFO", "ProgressReporter initialized")
@@ -136,9 +137,7 @@ class ProgressReporter:
                 event_type=event.event_type.value,
             )
 
-    def emit_batch_started(
-        self, total_files: int, message: Optional[str] = None
-    ) -> None:
+    def emit_batch_started(self, total_files: int, message: str | None = None) -> None:
         """Emit batch started event."""
         event = ProgressEvent(
             event_type=ProgressEventType.BATCH_STARTED,
@@ -154,7 +153,7 @@ class ProgressReporter:
         total_files: int,
         successful_files: int,
         failed_files: int,
-        duration: Optional[float] = None,
+        duration: float | None = None,
     ) -> None:
         """Emit batch completed event."""
         event = ProgressEvent(
@@ -208,7 +207,7 @@ class ProgressReporter:
         self.emit_event(event)
 
     def emit_stage_update(
-        self, file_path: Path, stage: ProcessingStage, message: Optional[str] = None
+        self, file_path: Path, stage: ProcessingStage, message: str | None = None
     ) -> None:
         """Emit processing stage update."""
         event = ProgressEvent(
@@ -220,7 +219,7 @@ class ProgressReporter:
         self.emit_event(event)
 
     def emit_conflict_detected(
-        self, file_path: Path, conflict_type: str, strategy: Optional[str] = None
+        self, file_path: Path, conflict_type: str, strategy: str | None = None
     ) -> None:
         """Emit conflict detected event."""
         event = ProgressEvent(
@@ -234,7 +233,7 @@ class ProgressReporter:
         )
         self.emit_event(event)
 
-    def emit_warning(self, message: str, file_path: Optional[Path] = None) -> None:
+    def emit_warning(self, message: str, file_path: Path | None = None) -> None:
         """Emit warning event."""
         event = ProgressEvent(
             event_type=ProgressEventType.WARNING, file_path=file_path, message=message
@@ -244,8 +243,8 @@ class ProgressReporter:
     def emit_error(
         self,
         message: str,
-        file_path: Optional[Path] = None,
-        error: Optional[Exception] = None,
+        file_path: Path | None = None,
+        error: Exception | None = None,
     ) -> None:
         """Emit error event."""
         metadata = {}
@@ -261,7 +260,7 @@ class ProgressReporter:
         )
         self.emit_event(event)
 
-    def get_recent_events(self, count: int = 10) -> List[ProgressEvent]:
+    def get_recent_events(self, count: int = 10) -> list[ProgressEvent]:
         """Get recent progress events.
 
         Args:
@@ -272,7 +271,7 @@ class ProgressReporter:
         """
         return self.events[-count:] if self.events else []
 
-    def get_events_by_type(self, event_type: ProgressEventType) -> List[ProgressEvent]:
+    def get_events_by_type(self, event_type: ProgressEventType) -> list[ProgressEvent]:
         """Get all events of a specific type.
 
         Args:
@@ -288,7 +287,7 @@ class ProgressReporter:
         self.events.clear()
         debug_logger.log("DEBUG", "Progress events cleared")
 
-    def get_summary(self) -> Dict[str, Any]:
+    def get_summary(self) -> dict[str, Any]:
         """Get summary of progress events.
 
         Returns:
@@ -297,7 +296,7 @@ class ProgressReporter:
         if not self.events:
             return {"total_events": 0}
 
-        event_counts: Dict[str, int] = {}
+        event_counts: dict[str, int] = {}
         for event in self.events:
             event_type = event.event_type.value
             event_counts[event_type] = event_counts.get(event_type, 0) + 1

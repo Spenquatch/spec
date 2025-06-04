@@ -3,7 +3,7 @@
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from ....config.settings import SpecSettings, get_settings
 from ....exceptions import SpecGenerationError, SpecValidationError
@@ -19,15 +19,15 @@ from ....ui.progress_manager import get_progress_manager
 class GenerationResult:
     """Result of a generation operation."""
 
-    generated_files: List[Path]
-    skipped_files: List[Path]
-    failed_files: List[Dict[str, Any]]
-    conflicts_resolved: List[Dict[str, Any]]
+    generated_files: list[Path]
+    skipped_files: list[Path]
+    failed_files: list[dict[str, Any]]
+    conflicts_resolved: list[dict[str, Any]]
     total_processing_time: float
     success: bool
 
     @property
-    def summary(self) -> Dict[str, Any]:
+    def summary(self) -> dict[str, Any]:
         """Get operation summary."""
         return {
             "generated": len(self.generated_files),
@@ -47,7 +47,7 @@ class GenerationWorkflow:
         template_name: str = "default",
         conflict_strategy: ConflictResolutionStrategy = ConflictResolutionStrategy.BACKUP_AND_REPLACE,
         auto_commit: bool = False,
-        commit_message: Optional[str] = None,
+        commit_message: str | None = None,
     ):
         """Initialize generation workflow.
 
@@ -75,7 +75,7 @@ class GenerationWorkflow:
             conflict_strategy=conflict_strategy.value,
         )
 
-    def generate(self, source_files: List[Path]) -> GenerationResult:
+    def generate(self, source_files: list[Path]) -> GenerationResult:
         """Generate documentation for source files.
 
         Args:
@@ -180,7 +180,7 @@ class GenerationWorkflow:
                 success=False,
             )
 
-    def _validate_generation_inputs(self, source_files: List[Path]) -> None:
+    def _validate_generation_inputs(self, source_files: list[Path]) -> None:
         """Validate generation inputs."""
         if not source_files:
             raise SpecValidationError("No source files provided for generation")
@@ -198,7 +198,7 @@ class GenerationWorkflow:
             if not source_file.exists():
                 raise SpecValidationError(f"Source file does not exist: {source_file}")
 
-    def _generate_single_file(self, source_file: Path) -> Dict[str, Any]:
+    def _generate_single_file(self, source_file: Path) -> dict[str, Any]:
         """Generate documentation for a single file."""
         try:
             # Check if spec already exists
@@ -248,8 +248,8 @@ class GenerationWorkflow:
             ) from e
 
     def _handle_conflicts(
-        self, source_file: Path, spec_files: Dict[str, Path]
-    ) -> Dict[str, Any]:
+        self, source_file: Path, spec_files: dict[str, Path]
+    ) -> dict[str, Any]:
         """Handle file conflicts based on strategy."""
         resolutions = []
 
@@ -296,7 +296,7 @@ class GenerationWorkflow:
 
         return backup_path
 
-    def _get_spec_files_for_source(self, source_file: Path) -> Dict[str, Path]:
+    def _get_spec_files_for_source(self, source_file: Path) -> dict[str, Path]:
         """Get spec file paths for a source file."""
         # Use centralized path resolver method
         from ....config.settings import get_settings
@@ -307,7 +307,7 @@ class GenerationWorkflow:
 
         return path_resolver.get_spec_files_for_source(source_file)
 
-    def _commit_generated_files(self, generated_files: List[Path]) -> None:
+    def _commit_generated_files(self, generated_files: list[Path]) -> None:
         """Commit generated files to Git."""
         try:
             # Add files to Git
@@ -351,7 +351,7 @@ class RegenerationWorkflow(GenerationWorkflow):
         super().__init__(**kwargs)
 
     def regenerate(
-        self, source_files: List[Path], preserve_history: bool = True
+        self, source_files: list[Path], preserve_history: bool = True
     ) -> GenerationResult:
         """Regenerate documentation for existing files.
 
@@ -390,7 +390,7 @@ class RegenerationWorkflow(GenerationWorkflow):
         # Use parent generation method
         return self.generate(existing_spec_files)
 
-    def _preserve_history_files(self, source_files: List[Path]) -> None:
+    def _preserve_history_files(self, source_files: list[Path]) -> None:
         """Preserve history.md files during regeneration."""
         import shutil
 
@@ -410,7 +410,7 @@ class RegenerationWorkflow(GenerationWorkflow):
 class AddWorkflow:
     """Workflow for adding files to spec tracking."""
 
-    def __init__(self, force: bool = False, settings: Optional[SpecSettings] = None):
+    def __init__(self, force: bool = False, settings: SpecSettings | None = None):
         """Initialize add workflow.
 
         Args:
@@ -423,7 +423,7 @@ class AddWorkflow:
 
         debug_logger.log("INFO", "AddWorkflow initialized", force=force)
 
-    def add_files(self, file_paths: List[Path]) -> Dict[str, Any]:
+    def add_files(self, file_paths: list[Path]) -> dict[str, Any]:
         """Add files to spec tracking.
 
         Args:

@@ -20,5 +20,5 @@ repos:
     hooks:
       - id: mypy
         additional_dependencies: [types-PyYAML, types-click, "pydantic>=2.5.0,<2.11", tomli, rich, rich-click]
-        args: [--python-version=3.8]
+        args: [--python-version=3.10]
         files: ^spec_cli/

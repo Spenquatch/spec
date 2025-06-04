@@ -1,6 +1,7 @@
 import time
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, cast
+from typing import Any, cast
 
 from ..config.settings import SpecSettings, get_settings
 from ..core.workflow_orchestrator import SpecWorkflowOrchestrator
@@ -17,14 +18,14 @@ class BatchProcessingOptions:
 
     def __init__(
         self,
-        max_files: Optional[int] = None,
+        max_files: int | None = None,
         max_parallel: int = 1,
         force_regenerate: bool = False,
         skip_unchanged: bool = True,
-        conflict_strategy: Optional[ConflictResolutionStrategy] = None,
+        conflict_strategy: ConflictResolutionStrategy | None = None,
         create_backups: bool = True,
         auto_commit: bool = False,
-        custom_variables: Optional[Dict[str, Any]] = None,
+        custom_variables: dict[str, Any] | None = None,
     ):
         self.max_files = max_files
         self.max_parallel = max_parallel
@@ -44,24 +45,24 @@ class BatchProcessingResult:
     def __init__(self) -> None:
         self.success = False
         self.total_files = 0
-        self.successful_files: List[Path] = []
-        self.failed_files: List[Path] = []
-        self.skipped_files: List[Path] = []
-        self.file_results: Dict[str, FileProcessingResult] = {}
-        self.errors: List[str] = []
-        self.warnings: List[str] = []
-        self.start_time: Optional[float] = None
-        self.end_time: Optional[float] = None
-        self.workflow_id: Optional[str] = None
+        self.successful_files: list[Path] = []
+        self.failed_files: list[Path] = []
+        self.skipped_files: list[Path] = []
+        self.file_results: dict[str, FileProcessingResult] = {}
+        self.errors: list[str] = []
+        self.warnings: list[str] = []
+        self.start_time: float | None = None
+        self.end_time: float | None = None
+        self.workflow_id: str | None = None
 
     @property
-    def duration(self) -> Optional[float]:
+    def duration(self) -> float | None:
         """Get processing duration in seconds."""
         if self.start_time and self.end_time:
             return self.end_time - self.start_time
         return None
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary representation."""
         return {
             "success": self.success,
@@ -82,7 +83,7 @@ class BatchProcessingResult:
 class BatchFileProcessor:
     """Processes multiple files in batch with progress tracking and error recovery."""
 
-    def __init__(self, settings: Optional[SpecSettings] = None):
+    def __init__(self, settings: SpecSettings | None = None):
         self.settings = settings or get_settings()
         self.change_detector = FileChangeDetector(self.settings)
         self.conflict_resolver = ConflictResolver(self.settings)
@@ -105,9 +106,9 @@ class BatchFileProcessor:
 
     def process_files(
         self,
-        file_paths: List[Path],
-        options: Optional[BatchProcessingOptions] = None,
-        progress_callback: Optional[Callable[[int, int, str], None]] = None,
+        file_paths: list[Path],
+        options: BatchProcessingOptions | None = None,
+        progress_callback: Callable[[int, int, str], None] | None = None,
     ) -> BatchProcessingResult:
         """Process multiple files in batch.
 
@@ -222,10 +223,10 @@ class BatchFileProcessor:
 
     def _process_files_sequentially(
         self,
-        files: List[Path],
+        files: list[Path],
         options: BatchProcessingOptions,
         result: BatchProcessingResult,
-        progress_callback: Optional[Callable[[int, int, str], None]],
+        progress_callback: Callable[[int, int, str], None] | None,
     ) -> None:
         """Process files sequentially."""
         for i, file_path in enumerate(files):
@@ -345,7 +346,7 @@ class BatchFileProcessor:
                 result.warnings.append(f"Auto-commit failed: {e}")
                 debug_logger.log("WARNING", "Auto-commit failed", error=str(e))
 
-    def estimate_batch_processing(self, file_paths: List[Path]) -> Dict[str, Any]:
+    def estimate_batch_processing(self, file_paths: list[Path]) -> dict[str, Any]:
         """Estimate batch processing requirements.
 
         Args:
@@ -357,8 +358,8 @@ class BatchFileProcessor:
         return self.pipeline.get_processing_estimate(file_paths)
 
     def validate_batch_processing(
-        self, file_paths: List[Path], options: Optional[BatchProcessingOptions] = None
-    ) -> List[str]:
+        self, file_paths: list[Path], options: BatchProcessingOptions | None = None
+    ) -> list[str]:
         """Validate batch processing requirements.
 
         Args:
@@ -391,7 +392,7 @@ class BatchFileProcessor:
 
         return issues
 
-    def get_processing_summary(self, result: BatchProcessingResult) -> Dict[str, Any]:
+    def get_processing_summary(self, result: BatchProcessingResult) -> dict[str, Any]:
         """Get a summary of batch processing results.
 
         Args:
@@ -400,7 +401,7 @@ class BatchFileProcessor:
         Returns:
             Summary dictionary
         """
-        summary: Dict[str, Any] = {
+        summary: dict[str, Any] = {
             "overview": {
                 "total_files": result.total_files,
                 "successful": len(result.successful_files),
@@ -430,23 +431,23 @@ class BatchFileProcessor:
         # Analyze file results for conflicts and errors
         for file_result in result.file_results.values():
             if file_result.conflict_info:
-                conflicts_dict = cast(Dict[str, Any], summary["conflicts"])
+                conflicts_dict = cast(dict[str, Any], summary["conflicts"])
                 conflicts_dict["files_with_conflicts"] = (
                     cast(int, conflicts_dict["files_with_conflicts"]) + 1
                 )
 
                 conflict_type = file_result.conflict_info.conflict_type.value
                 conflict_types = cast(
-                    Dict[str, int],
-                    cast(Dict[str, Any], summary["conflicts"])["conflict_types"],
+                    dict[str, int],
+                    cast(dict[str, Any], summary["conflicts"])["conflict_types"],
                 )
                 conflict_types[conflict_type] = conflict_types.get(conflict_type, 0) + 1
 
                 if file_result.resolution_strategy:
                     strategy = file_result.resolution_strategy.value
                     resolution_strategies = cast(
-                        Dict[str, int],
-                        cast(Dict[str, Any], summary["conflicts"])[
+                        dict[str, int],
+                        cast(dict[str, Any], summary["conflicts"])[
                             "resolution_strategies"
                         ],
                     )
@@ -466,8 +467,8 @@ class BatchFileProcessor:
                     error_type = "other"
 
                 error_types = cast(
-                    Dict[str, int],
-                    cast(Dict[str, Any], summary["errors"])["error_types"],
+                    dict[str, int],
+                    cast(dict[str, Any], summary["errors"])["error_types"],
                 )
                 error_types[error_type] = error_types.get(error_type, 0) + 1
 
@@ -475,14 +476,14 @@ class BatchFileProcessor:
 
 
 # Convenience functions
-def process_files_batch(file_paths: List[Path], **kwargs: Any) -> BatchProcessingResult:
+def process_files_batch(file_paths: list[Path], **kwargs: Any) -> BatchProcessingResult:
     """Convenience function for batch processing."""
     processor = BatchFileProcessor()
     options = BatchProcessingOptions(**kwargs)
     return processor.process_files(file_paths, options)
 
 
-def estimate_processing_time(file_paths: List[Path]) -> Dict[str, Any]:
+def estimate_processing_time(file_paths: list[Path]) -> dict[str, Any]:
     """Convenience function for processing estimation."""
     processor = BatchFileProcessor()
     return processor.estimate_batch_processing(file_paths)

@@ -1,7 +1,6 @@
 import os
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Set
 
 from ..exceptions import SpecFileError
 from ..logging.debug import debug_logger
@@ -33,7 +32,7 @@ def ensure_file_readable(file_path: Path) -> bool:
     return True
 
 
-def get_file_extension_stats(files: List[Path]) -> Dict[str, int]:
+def get_file_extension_stats(files: list[Path]) -> dict[str, int]:
     """Get statistics about file extensions in a list of files.
 
     Args:
@@ -42,7 +41,7 @@ def get_file_extension_stats(files: List[Path]) -> Dict[str, int]:
     Returns:
         Dictionary with extension statistics
     """
-    extension_stats: Dict[str, int] = {}
+    extension_stats: dict[str, int] = {}
 
     for file_path in files:
         if file_path.is_file():
@@ -61,7 +60,7 @@ def get_file_extension_stats(files: List[Path]) -> Dict[str, int]:
     return extension_stats
 
 
-def find_largest_files(directory: Path, limit: int = 10) -> List[Dict[str, object]]:
+def find_largest_files(directory: Path, limit: int = 10) -> list[dict[str, object]]:
     """Find the largest files in a directory.
 
     Args:
@@ -103,7 +102,7 @@ def find_largest_files(directory: Path, limit: int = 10) -> List[Dict[str, objec
 
 def find_recently_modified_files(
     directory: Path, limit: int = 10
-) -> List[Dict[str, object]]:
+) -> list[dict[str, object]]:
     """Find the most recently modified files in a directory.
 
     Args:
@@ -136,7 +135,7 @@ def find_recently_modified_files(
         # Sort by modification time (newest first) and return top N
         files_with_time.sort(
             key=lambda x: x["modified_time"]
-            if isinstance(x["modified_time"], (int, float))
+            if isinstance(x["modified_time"], int | float)
             else 0,
             reverse=True,
         )
@@ -208,7 +207,7 @@ def safe_file_operation(file_path: Path, operation: str) -> bool:
         return False
 
 
-def get_unique_extensions(files: List[Path]) -> Set[str]:
+def get_unique_extensions(files: list[Path]) -> set[str]:
     """Get set of unique file extensions from a list of files.
 
     Args:
@@ -229,8 +228,8 @@ def get_unique_extensions(files: List[Path]) -> Set[str]:
 
 
 def filter_files_by_size(
-    files: List[Path], min_size: int = 0, max_size: Optional[int] = None
-) -> List[Path]:
+    files: list[Path], min_size: int = 0, max_size: int | None = None
+) -> list[Path]:
     """Filter files by size range.
 
     Args:

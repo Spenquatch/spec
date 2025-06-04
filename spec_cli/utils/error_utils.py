@@ -2,7 +2,7 @@
 
 import subprocess
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 
 def handle_os_error(exc: OSError) -> str:
@@ -101,7 +101,7 @@ def handle_subprocess_error(exc: subprocess.SubprocessError) -> str:
         return f"Subprocess error: {str(exc)}"
 
 
-def create_error_context(code_path: Path) -> Dict[str, Any]:
+def create_error_context(code_path: Path) -> dict[str, Any]:
     """Create standardized error context dictionary.
 
     Args:
@@ -122,7 +122,7 @@ def create_error_context(code_path: Path) -> Dict[str, Any]:
     if not isinstance(code_path, Path):
         raise TypeError(f"Expected Path object, got {type(code_path)}")
 
-    context: Dict[str, Any] = {
+    context: dict[str, Any] = {
         "file_path": str(code_path),
         "file_exists": code_path.exists(),
     }

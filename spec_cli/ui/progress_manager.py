@@ -1,7 +1,7 @@
 import threading
 import time
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Callable, Dict, List, Optional
 
 from ..core.error_handler import ErrorHandler
 from ..file_processing.progress_events import (
@@ -25,10 +25,10 @@ class ProgressState:
     operation_id: str
     total_items: int
     completed_items: int
-    current_item: Optional[str] = None
-    stage: Optional[ProcessingStage] = None
-    start_time: Optional[float] = None
-    estimated_completion: Optional[float] = None
+    current_item: str | None = None
+    stage: ProcessingStage | None = None
+    start_time: float | None = None
+    estimated_completion: float | None = None
 
     @property
     def progress_percentage(self) -> float:
@@ -38,7 +38,7 @@ class ProgressState:
         return self.completed_items / self.total_items
 
     @property
-    def elapsed_time(self) -> Optional[float]:
+    def elapsed_time(self) -> float | None:
         """Get elapsed time in seconds."""
         if self.start_time is None:
             return None
@@ -50,7 +50,7 @@ class ProgressManager:
 
     def __init__(
         self,
-        progress_reporter_instance: Optional[ProgressReporter] = None,
+        progress_reporter_instance: ProgressReporter | None = None,
         auto_display: bool = True,
     ) -> None:
         """Initialize progress manager.
@@ -64,8 +64,8 @@ class ProgressManager:
         self.error_handler = ErrorHandler({"component": "progress_manager"})
 
         # Progress tracking
-        self.progress_states: Dict[str, ProgressState] = {}
-        self.active_operations: Dict[str, str] = {}  # operation_id -> display_type
+        self.progress_states: dict[str, ProgressState] = {}
+        self.active_operations: dict[str, str] = {}  # operation_id -> display_type
 
         # Display components
         self.progress_bar = SpecProgressBar(
@@ -74,7 +74,7 @@ class ProgressManager:
         self.spinner_manager = SpinnerManager()
 
         # Event handling
-        self._event_handlers: Dict[ProgressEventType, List[Callable]] = {}
+        self._event_handlers: dict[ProgressEventType, list[Callable]] = {}
         self._setup_event_handling()
 
         debug_logger.log(
@@ -277,7 +277,7 @@ class ProgressManager:
             spinner_id = display_info.split(":", 1)[1]
             self.spinner_manager.update_spinner_text(spinner_id, text)
 
-    def _find_active_operation(self) -> Optional[str]:
+    def _find_active_operation(self) -> str | None:
         """Find the currently active operation."""
         # For now, just return the first active operation
         # In the future, this could be more sophisticated
@@ -338,7 +338,7 @@ class ProgressManager:
         self._cleanup_operation(operation_id)
         debug_logger.log("INFO", "Operation finished", operation_id=operation_id)
 
-    def get_operation_state(self, operation_id: str) -> Optional[ProgressState]:
+    def get_operation_state(self, operation_id: str) -> ProgressState | None:
         """Get the state of a progress operation.
 
         Args:
@@ -411,7 +411,7 @@ class ProgressManagerSingleton:
 
     def __init__(self) -> None:
         """Initialize progress manager singleton."""
-        self._progress_manager: Optional[ProgressManager] = None
+        self._progress_manager: ProgressManager | None = None
         self._lock = threading.Lock()
 
     def get_progress_manager(self) -> ProgressManager:

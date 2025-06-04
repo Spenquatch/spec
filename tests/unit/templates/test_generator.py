@@ -1,7 +1,7 @@
 import shutil
 import tempfile
+from collections.abc import Generator
 from pathlib import Path
-from typing import Dict, Generator
 from unittest.mock import Mock, patch
 
 import pytest
@@ -40,15 +40,19 @@ class TestSpecContentGenerator:
         )
 
     @pytest.fixture
-    def mock_dependencies(self) -> Generator[Dict[str, Mock], None, None]:
+    def mock_dependencies(self) -> Generator[dict[str, Mock], None, None]:
         """Mock all dependencies for isolated testing."""
-        with patch(
-            "spec_cli.templates.generator.DirectoryManager"
-        ) as mock_dir_mgr_class, patch(
-            "spec_cli.templates.generator.FileMetadataExtractor"
-        ) as mock_meta_class, patch(
-            "spec_cli.templates.generator.TemplateSubstitution"
-        ) as mock_sub_class:
+        with (
+            patch(
+                "spec_cli.templates.generator.DirectoryManager"
+            ) as mock_dir_mgr_class,
+            patch(
+                "spec_cli.templates.generator.FileMetadataExtractor"
+            ) as mock_meta_class,
+            patch(
+                "spec_cli.templates.generator.TemplateSubstitution"
+            ) as mock_sub_class,
+        ):
             # Setup directory manager mock
             mock_dir_mgr = Mock()
             mock_dir_mgr_class.return_value = mock_dir_mgr
@@ -104,7 +108,7 @@ class TestSpecContentGenerator:
     def test_generator_creates_index_and_history_files(
         self,
         basic_template: TemplateConfig,
-        mock_dependencies: Dict[str, Mock],
+        mock_dependencies: dict[str, Mock],
         temp_dir: Path,
     ) -> None:
         """Test that generator creates both index.md and history.md files."""
@@ -129,7 +133,7 @@ class TestSpecContentGenerator:
         assert mock_dependencies["substitution"].substitute.call_count == 2
 
     def test_generator_uses_file_based_variables(
-        self, basic_template: TemplateConfig, mock_dependencies: Dict[str, Mock]
+        self, basic_template: TemplateConfig, mock_dependencies: dict[str, Mock]
     ) -> None:
         """Test that generator extracts file-based variables."""
         generator = SpecContentGenerator()
@@ -145,7 +149,7 @@ class TestSpecContentGenerator:
         assert variables["file_type"] == "python"  # From mock metadata
 
     def test_generator_applies_custom_variables_with_precedence(
-        self, basic_template: TemplateConfig, mock_dependencies: Dict[str, Mock]
+        self, basic_template: TemplateConfig, mock_dependencies: dict[str, Mock]
     ) -> None:
         """Test that custom variables override file-based variables."""
         generator = SpecContentGenerator()
@@ -169,7 +173,7 @@ class TestSpecContentGenerator:
         assert substitutions["file_extension"] == "py"
 
     def test_generator_handles_backup_existing_files(
-        self, basic_template: TemplateConfig, mock_dependencies: Dict[str, Mock]
+        self, basic_template: TemplateConfig, mock_dependencies: dict[str, Mock]
     ) -> None:
         """Test that generator handles backing up existing files."""
         generator = SpecContentGenerator()
@@ -196,7 +200,7 @@ class TestSpecContentGenerator:
         ].backup_existing_files.assert_called_once()
 
     def test_generator_handles_file_writing_errors(
-        self, basic_template: TemplateConfig, mock_dependencies: Dict[str, Mock]
+        self, basic_template: TemplateConfig, mock_dependencies: dict[str, Mock]
     ) -> None:
         """Test that generator handles file writing errors gracefully."""
         generator = SpecContentGenerator()
@@ -214,7 +218,7 @@ class TestSpecContentGenerator:
         assert "Failed to generate spec content" in str(exc_info.value)
 
     def test_generator_integrates_with_substitution_engine(
-        self, basic_template: TemplateConfig, mock_dependencies: Dict[str, Mock]
+        self, basic_template: TemplateConfig, mock_dependencies: dict[str, Mock]
     ) -> None:
         """Test integration with the substitution engine."""
         generator = SpecContentGenerator()
@@ -234,7 +238,7 @@ class TestSpecContentGenerator:
         assert basic_template.history in call_args
 
     def test_generator_integrates_with_directory_manager(
-        self, basic_template: TemplateConfig, mock_dependencies: Dict[str, Mock]
+        self, basic_template: TemplateConfig, mock_dependencies: dict[str, Mock]
     ) -> None:
         """Test integration with directory manager."""
         generator = SpecContentGenerator()
@@ -250,7 +254,7 @@ class TestSpecContentGenerator:
         dir_mgr.check_existing_specs.assert_called_once()
 
     def test_generator_integrates_with_metadata_extractor(
-        self, basic_template: TemplateConfig, mock_dependencies: Dict[str, Mock]
+        self, basic_template: TemplateConfig, mock_dependencies: dict[str, Mock]
     ) -> None:
         """Test integration with metadata extractor."""
         generator = SpecContentGenerator()
@@ -268,7 +272,7 @@ class TestSpecContentGenerator:
         assert variables["file_category"] == "source"
 
     def test_generator_creates_spec_directories(
-        self, basic_template: TemplateConfig, mock_dependencies: Dict[str, Mock]
+        self, basic_template: TemplateConfig, mock_dependencies: dict[str, Mock]
     ) -> None:
         """Test that generator creates spec directories correctly."""
         generator = SpecContentGenerator()
@@ -283,7 +287,7 @@ class TestSpecContentGenerator:
         ].create_spec_directory.assert_called_once_with(test_file)
 
     def test_generator_previews_generation_results(
-        self, basic_template: TemplateConfig, mock_dependencies: Dict[str, Mock]
+        self, basic_template: TemplateConfig, mock_dependencies: dict[str, Mock]
     ) -> None:
         """Test preview functionality."""
         generator = SpecContentGenerator()
@@ -304,7 +308,7 @@ class TestSpecContentGenerator:
         assert isinstance(preview["generation_ready"], bool)
 
     def test_generator_validates_generation_requirements(
-        self, basic_template: TemplateConfig, mock_dependencies: Dict[str, Mock]
+        self, basic_template: TemplateConfig, mock_dependencies: dict[str, Mock]
     ) -> None:
         """Test validation functionality."""
         generator = SpecContentGenerator()
@@ -330,7 +334,7 @@ class TestSpecContentGenerator:
                 assert len(issues) == 0
 
     def test_generator_provides_generation_statistics(
-        self, basic_template: TemplateConfig, mock_dependencies: Dict[str, Mock]
+        self, basic_template: TemplateConfig, mock_dependencies: dict[str, Mock]
     ) -> None:
         """Test statistics functionality."""
         generator = SpecContentGenerator()
@@ -350,7 +354,7 @@ class TestSpecContentGenerator:
         assert mock_sub.get_substitution_stats.call_count == 2
 
     def test_generator_handles_missing_source_files(
-        self, basic_template: TemplateConfig, mock_dependencies: Dict[str, Mock]
+        self, basic_template: TemplateConfig, mock_dependencies: dict[str, Mock]
     ) -> None:
         """Test handling of missing source files."""
         generator = SpecContentGenerator()
@@ -366,7 +370,7 @@ class TestSpecContentGenerator:
         # Should still work since we're just analyzing templates, not reading the source file
 
     def test_generator_extracts_template_defaults(
-        self, mock_dependencies: Dict[str, Mock]
+        self, mock_dependencies: dict[str, Mock]
     ) -> None:
         """Test extraction of template defaults."""
         generator = SpecContentGenerator()
@@ -388,7 +392,7 @@ class TestSpecContentGenerator:
         assert "creation_time" in defaults
 
     def test_backward_compatibility_function_works(
-        self, basic_template: TemplateConfig, mock_dependencies: Dict[str, Mock]
+        self, basic_template: TemplateConfig, mock_dependencies: dict[str, Mock]
     ) -> None:
         """Test that the backward compatibility function works."""
         test_file = Path("test.py")
@@ -549,13 +553,16 @@ class TestGeneratorIntegration:
         test_file = Path("example.py")
 
         # Mock only the file system dependencies
-        with patch.object(
-            generator.directory_manager, "ensure_specs_directory"
-        ), patch.object(
-            generator.directory_manager, "create_spec_directory"
-        ) as mock_create, patch.object(
-            generator.directory_manager, "check_existing_specs"
-        ) as mock_check, patch.object(generator, "_write_content_file") as mock_write:
+        with (
+            patch.object(generator.directory_manager, "ensure_specs_directory"),
+            patch.object(
+                generator.directory_manager, "create_spec_directory"
+            ) as mock_create,
+            patch.object(
+                generator.directory_manager, "check_existing_specs"
+            ) as mock_check,
+            patch.object(generator, "_write_content_file") as mock_write,
+        ):
             mock_create.return_value = Path("/test/.specs/example.py")
             mock_check.return_value = {"index.md": False, "history.md": False}
 

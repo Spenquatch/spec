@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from ..logging.debug import debug_logger
 
@@ -37,18 +37,18 @@ class WorkflowStep:
     name: str
     stage: WorkflowStage
     status: WorkflowStatus = WorkflowStatus.PENDING
-    start_time: Optional[datetime] = None
-    end_time: Optional[datetime] = None
-    duration: Optional[float] = None
-    result: Optional[Dict[str, Any]] = None
-    error: Optional[str] = None
+    start_time: datetime | None = None
+    end_time: datetime | None = None
+    duration: float | None = None
+    result: dict[str, Any] | None = None
+    error: str | None = None
 
     def start(self) -> None:
         """Mark step as started."""
         self.status = WorkflowStatus.RUNNING
         self.start_time = datetime.now()
 
-    def complete(self, result: Optional[Dict[str, Any]] = None) -> None:
+    def complete(self, result: dict[str, Any] | None = None) -> None:
         """Mark step as completed."""
         self.status = WorkflowStatus.COMPLETED
         self.end_time = datetime.now()
@@ -72,11 +72,11 @@ class WorkflowState:
     workflow_id: str
     workflow_type: str
     status: WorkflowStatus = WorkflowStatus.PENDING
-    start_time: Optional[datetime] = None
-    end_time: Optional[datetime] = None
-    duration: Optional[float] = None
-    steps: List[WorkflowStep] = field(default_factory=list)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    start_time: datetime | None = None
+    end_time: datetime | None = None
+    duration: float | None = None
+    steps: list[WorkflowStep] = field(default_factory=list)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def start(self) -> None:
         """Start the workflow."""
@@ -118,22 +118,22 @@ class WorkflowState:
         self.steps.append(step)
         return step
 
-    def get_current_step(self) -> Optional[WorkflowStep]:
+    def get_current_step(self) -> WorkflowStep | None:
         """Get the currently running step."""
         for step in reversed(self.steps):
             if step.status == WorkflowStatus.RUNNING:
                 return step
         return None
 
-    def get_failed_steps(self) -> List[WorkflowStep]:
+    def get_failed_steps(self) -> list[WorkflowStep]:
         """Get all failed steps."""
         return [step for step in self.steps if step.status == WorkflowStatus.FAILED]
 
-    def get_completed_steps(self) -> List[WorkflowStep]:
+    def get_completed_steps(self) -> list[WorkflowStep]:
         """Get all completed steps."""
         return [step for step in self.steps if step.status == WorkflowStatus.COMPLETED]
 
-    def get_summary(self) -> Dict[str, Any]:
+    def get_summary(self) -> dict[str, Any]:
         """Get workflow summary."""
         current_step = self.get_current_step()
         return {
@@ -152,12 +152,12 @@ class WorkflowStateManager:
     """Manages workflow state tracking and persistence."""
 
     def __init__(self) -> None:
-        self.active_workflows: Dict[str, WorkflowState] = {}
-        self.workflow_history: List[WorkflowState] = []
+        self.active_workflows: dict[str, WorkflowState] = {}
+        self.workflow_history: list[WorkflowState] = []
         debug_logger.log("INFO", "WorkflowStateManager initialized")
 
     def create_workflow(
-        self, workflow_type: str, metadata: Optional[Dict[str, Any]] = None
+        self, workflow_type: str, metadata: dict[str, Any] | None = None
     ) -> WorkflowState:
         """Create a new workflow."""
         workflow_id = f"{workflow_type}-{datetime.now().strftime('%Y%m%d-%H%M%S')}"
@@ -205,7 +205,7 @@ class WorkflowStateManager:
             if len(self.workflow_history) > 100:
                 self.workflow_history = self.workflow_history[-50:]
 
-    def get_workflow(self, workflow_id: str) -> Optional[WorkflowState]:
+    def get_workflow(self, workflow_id: str) -> WorkflowState | None:
         """Get workflow by ID."""
         # Check active workflows first
         if workflow_id in self.active_workflows:
@@ -218,11 +218,11 @@ class WorkflowStateManager:
 
         return None
 
-    def get_active_workflows(self) -> List[WorkflowState]:
+    def get_active_workflows(self) -> list[WorkflowState]:
         """Get all active workflows."""
         return list(self.active_workflows.values())
 
-    def get_recent_workflows(self, count: int = 10) -> List[WorkflowState]:
+    def get_recent_workflows(self, count: int = 10) -> list[WorkflowState]:
         """Get recent workflows from history."""
         return self.workflow_history[-count:] if self.workflow_history else []
 

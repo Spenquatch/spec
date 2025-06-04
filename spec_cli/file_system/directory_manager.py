@@ -1,7 +1,7 @@
 import shutil
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from ..config.settings import SpecSettings, get_settings
 from ..exceptions import SpecFileError, SpecPermissionError, SpecValidationError
@@ -14,7 +14,7 @@ from .path_resolver import PathResolver
 class DirectoryManager:
     """Manages spec directory creation, structure, and safety operations."""
 
-    def __init__(self, settings: Optional[SpecSettings] = None):
+    def __init__(self, settings: SpecSettings | None = None):
         self.settings = settings or get_settings()
         self.path_resolver = PathResolver(self.settings)
         self.ignore_matcher = IgnorePatternMatcher(self.settings)
@@ -128,7 +128,7 @@ class DirectoryManager:
                 },
             ) from e
 
-    def check_existing_specs(self, spec_dir: Path) -> Dict[str, bool]:
+    def check_existing_specs(self, spec_dir: Path) -> dict[str, bool]:
         """Check which spec files already exist in the directory.
 
         Args:
@@ -156,8 +156,8 @@ class DirectoryManager:
         return existing
 
     def backup_existing_files(
-        self, spec_dir: Path, backup_suffix: Optional[str] = None
-    ) -> List[Path]:
+        self, spec_dir: Path, backup_suffix: str | None = None
+    ) -> list[Path]:
         """Create backups of existing spec files.
 
         Args:
@@ -171,7 +171,7 @@ class DirectoryManager:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             backup_suffix = f".backup_{timestamp}"
 
-        backup_files: List[Path] = []
+        backup_files: list[Path] = []
 
         if not spec_dir.exists():
             return backup_files
@@ -199,7 +199,7 @@ class DirectoryManager:
 
     def remove_spec_directory(
         self, spec_dir: Path, backup_first: bool = True
-    ) -> Optional[List[Path]]:
+    ) -> list[Path] | None:
         """Remove a spec directory and optionally create backups.
 
         Args:
@@ -363,7 +363,7 @@ Thumbs.db
                 error=str(e),
             )
 
-    def get_directory_stats(self, directory: Path) -> Dict[str, Any]:
+    def get_directory_stats(self, directory: Path) -> dict[str, Any]:
         """Get statistics about a directory.
 
         Args:

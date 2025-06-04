@@ -6,19 +6,19 @@ across the application with proper thread safety and testing support.
 
 import threading
 from functools import wraps
-from typing import Any, Dict, Type, TypeVar, cast
+from typing import Any, TypeVar, cast
 
 from ..logging.debug import debug_logger
 
 T = TypeVar("T")
 
 # Thread-safe singleton instances storage
-_instances: Dict[Type[Any], Any] = {}
-_instance_locks: Dict[Type[Any], threading.Lock] = {}
+_instances: dict[type[Any], Any] = {}
+_instance_locks: dict[type[Any], threading.Lock] = {}
 _global_lock = threading.Lock()
 
 
-def singleton_decorator(cls: Type[T]) -> Type[T]:
+def singleton_decorator(cls: type[T]) -> type[T]:
     """Thread-safe singleton decorator.
 
     Args:
@@ -73,7 +73,7 @@ def singleton_decorator(cls: Type[T]) -> Type[T]:
     get_instance._original_class = cls  # type: ignore
     get_instance._is_singleton = True  # type: ignore
 
-    return cast(Type[T], get_instance)
+    return cast(type[T], get_instance)
 
 
 class SingletonMeta(type):
@@ -88,8 +88,8 @@ class SingletonMeta(type):
                 self.initialized = True
     """
 
-    _instances: Dict[Type[Any], Any] = {}
-    _locks: Dict[Type[Any], threading.Lock] = {}
+    _instances: dict[type[Any], Any] = {}
+    _locks: dict[type[Any], threading.Lock] = {}
     _global_lock = threading.Lock()
 
     def __call__(cls, *args: Any, **kwargs: Any) -> Any:
@@ -116,7 +116,7 @@ class SingletonMeta(type):
         return cls._instances[cls]
 
 
-def reset_singleton(cls: Type[Any]) -> None:
+def reset_singleton(cls: type[Any]) -> None:
     """Reset singleton instance for testing purposes.
 
     Args:

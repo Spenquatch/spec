@@ -1,5 +1,6 @@
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any
 
 from ..config.settings import SpecSettings, get_settings
 from ..exceptions import SpecWorkflowError
@@ -20,7 +21,7 @@ from .workflow_state import (
 class SpecWorkflowOrchestrator:
     """Orchestrates high-level spec generation workflows."""
 
-    def __init__(self, settings: Optional[SpecSettings] = None):
+    def __init__(self, settings: SpecSettings | None = None):
         self.settings = settings or get_settings()
         self.state_checker = RepositoryStateChecker(self.settings)
         self.commit_manager = SpecCommitManager(self.settings)
@@ -32,10 +33,10 @@ class SpecWorkflowOrchestrator:
     def generate_spec_for_file(
         self,
         file_path: Path,
-        custom_variables: Optional[Dict[str, Any]] = None,
+        custom_variables: dict[str, Any] | None = None,
         auto_commit: bool = True,
         create_backup: bool = True,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Generate spec documentation for a single file.
 
         Args:
@@ -167,7 +168,7 @@ class SpecWorkflowOrchestrator:
             step.fail(str(e))
             raise
 
-    def _execute_backup_stage(self, workflow: WorkflowState) -> Dict[str, Any]:
+    def _execute_backup_stage(self, workflow: WorkflowState) -> dict[str, Any]:
         """Execute backup stage."""
         step = workflow.add_step("Create backup", WorkflowStage.BACKUP)
         step.start()
@@ -205,8 +206,8 @@ class SpecWorkflowOrchestrator:
         self,
         workflow: WorkflowState,
         file_path: Path,
-        custom_variables: Optional[Dict[str, Any]],
-    ) -> Dict[str, Path]:
+        custom_variables: dict[str, Any] | None,
+    ) -> dict[str, Path]:
         """Execute content generation stage."""
         step = workflow.add_step("Generate spec content", WorkflowStage.GENERATION)
         step.start()
@@ -238,8 +239,8 @@ class SpecWorkflowOrchestrator:
             raise
 
     def _execute_commit_stage(
-        self, workflow: WorkflowState, file_path: Path, generated_files: Dict[str, Path]
-    ) -> Dict[str, Any]:
+        self, workflow: WorkflowState, file_path: Path, generated_files: dict[str, Path]
+    ) -> dict[str, Any]:
         """Execute commit stage."""
         step = workflow.add_step("Commit generated content", WorkflowStage.COMMIT)
         step.start()
@@ -342,12 +343,12 @@ class SpecWorkflowOrchestrator:
 
     def generate_specs_for_files(
         self,
-        file_paths: List[Path],
-        custom_variables: Optional[Dict[str, Any]] = None,
+        file_paths: list[Path],
+        custom_variables: dict[str, Any] | None = None,
         auto_commit: bool = True,
         create_backup: bool = True,
-        progress_callback: Optional[Callable[[int, int, str], None]] = None,
-    ) -> Dict[str, Any]:
+        progress_callback: Callable[[int, int, str], None] | None = None,
+    ) -> dict[str, Any]:
         """Generate spec documentation for multiple files.
 
         Args:
@@ -382,7 +383,7 @@ class SpecWorkflowOrchestrator:
             workflow.start()
 
             with debug_logger.timer("batch_spec_generation_workflow"):
-                results: Dict[str, Any] = {
+                results: dict[str, Any] = {
                     "success": True,
                     "workflow_id": workflow.workflow_id,
                     "total_files": len(file_paths),
@@ -472,8 +473,8 @@ class SpecWorkflowOrchestrator:
             raise SpecWorkflowError(error_msg) from e
 
     def _execute_batch_commit_stage(
-        self, workflow: WorkflowState, batch_results: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, workflow: WorkflowState, batch_results: dict[str, Any]
+    ) -> dict[str, Any]:
         """Execute batch commit stage."""
         step = workflow.add_step("Batch commit generated content", WorkflowStage.COMMIT)
         step.start()
@@ -540,9 +541,9 @@ class SpecWorkflowOrchestrator:
     def create_pull_request_stub(
         self,
         workflow_id: str,
-        title: Optional[str] = None,
-        description: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        title: str | None = None,
+        description: str | None = None,
+    ) -> dict[str, Any]:
         """Stub for PR creation integration (future implementation).
 
         Args:
@@ -583,7 +584,7 @@ class SpecWorkflowOrchestrator:
 
         return pr_info
 
-    def get_workflow_status(self, workflow_id: str) -> Optional[Dict[str, Any]]:
+    def get_workflow_status(self, workflow_id: str) -> dict[str, Any] | None:
         """Get status of a specific workflow.
 
         Args:
@@ -612,7 +613,7 @@ class SpecWorkflowOrchestrator:
 
         return status
 
-    def list_active_workflows(self) -> List[Dict[str, Any]]:
+    def list_active_workflows(self) -> list[dict[str, Any]]:
         """List all active workflows.
 
         Returns:

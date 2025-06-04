@@ -1,8 +1,9 @@
 """CLI utility functions."""
 
 import sys
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable, List, Optional
+from typing import Any
 
 import click
 
@@ -15,7 +16,7 @@ cli_error_handler = ErrorHandler({"module": "cli", "component": "utils"})
 
 
 def handle_cli_error(
-    error: Exception, context: Optional[str] = None, exit_code: int = 1
+    error: Exception, context: str | None = None, exit_code: int = 1
 ) -> None:
     """Handle CLI errors with appropriate formatting and exit codes.
 
@@ -71,7 +72,7 @@ def setup_cli_logging(debug_mode: bool = False, verbose: bool = False) -> None:
         pass
 
 
-def validate_file_paths(file_paths: List[str]) -> List[Path]:
+def validate_file_paths(file_paths: list[str]) -> list[Path]:
     """Validate and normalize file paths from CLI input.
 
     Args:

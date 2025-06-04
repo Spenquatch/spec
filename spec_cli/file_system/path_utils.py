@@ -6,10 +6,9 @@ and proper prefix handling for .specs/ directories.
 """
 
 from pathlib import Path
-from typing import Union
 
 
-def normalize_path_separators(path: Union[str, Path]) -> str:
+def normalize_path_separators(path: str | Path) -> str:
     """Normalize path separators to forward slashes for cross-platform consistency.
 
     Args:
@@ -57,7 +56,7 @@ def remove_specs_prefix(path_str: str) -> str:
     return normalize_path_separators(path_str)
 
 
-def ensure_specs_prefix(path: Union[str, Path]) -> str:
+def ensure_specs_prefix(path: str | Path) -> str:
     """Ensure path has .specs/ prefix with normalized separators.
 
     Args:
@@ -85,7 +84,7 @@ def ensure_specs_prefix(path: Union[str, Path]) -> str:
     return f".specs/{cleaned_path}"
 
 
-def is_specs_path(path: Union[str, Path]) -> bool:
+def is_specs_path(path: str | Path) -> bool:
     """Check if path is under .specs/ directory (cross-platform).
 
     Args:
@@ -106,7 +105,7 @@ def is_specs_path(path: Union[str, Path]) -> bool:
     return normalized_path.startswith(".specs/")
 
 
-def convert_to_posix_style(path: Union[str, Path]) -> str:
+def convert_to_posix_style(path: str | Path) -> str:
     """Convert path to POSIX-style (forward slashes) regardless of platform.
 
     This is an alias for normalize_path_separators for semantic clarity.

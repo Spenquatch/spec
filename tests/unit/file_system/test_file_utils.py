@@ -1,7 +1,7 @@
 import tempfile
 import time
+from collections.abc import Generator
 from pathlib import Path
-from typing import Generator
 from unittest.mock import Mock, patch
 
 import pytest
@@ -106,8 +106,8 @@ class TestFileUtils:
             for i in range(len(largest_files) - 1):
                 size_current = largest_files[i]["size"]
                 size_next = largest_files[i + 1]["size"]
-                assert isinstance(size_current, (int, float))
-                assert isinstance(size_next, (int, float))
+                assert isinstance(size_current, int | float)
+                assert isinstance(size_next, int | float)
                 assert size_current >= size_next
 
     def test_recently_modified_finder_sorts_by_time(
@@ -137,8 +137,8 @@ class TestFileUtils:
             for i in range(len(recent_files) - 1):
                 time_current = recent_files[i]["modified_time"]
                 time_next = recent_files[i + 1]["modified_time"]
-                assert isinstance(time_current, (int, float))
-                assert isinstance(time_next, (int, float))
+                assert isinstance(time_current, int | float)
+                assert isinstance(time_next, int | float)
                 assert time_current >= time_next
 
     def test_safe_file_operation_checks_permissions(self, temp_file: Path) -> None:

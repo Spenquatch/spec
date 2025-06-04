@@ -6,7 +6,7 @@ with proper type conversion and default value handling.
 
 import os
 from dataclasses import dataclass
-from typing import Any, Dict, cast
+from typing import Any, cast
 
 from ..logging.debug import debug_logger
 
@@ -195,7 +195,7 @@ def get_env_float(key: str, default: float = 0.0) -> float:
         return default
 
 
-def validate_env_vars(required_vars: Dict[str, Any]) -> Dict[str, str]:
+def validate_env_vars(required_vars: dict[str, Any]) -> dict[str, str]:
     """Validate that required environment variables are set.
 
     Args:
@@ -317,7 +317,7 @@ class EnvironmentConfig:
 
         return config
 
-    def validate(self) -> Dict[str, str]:
+    def validate(self) -> dict[str, str]:
         """Validate the current configuration values.
 
         Returns:

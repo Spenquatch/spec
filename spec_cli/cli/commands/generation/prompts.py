@@ -1,7 +1,6 @@
 """Interactive prompts for generation commands."""
 
 from pathlib import Path
-from typing import Dict, List, Optional, Union
 
 import click
 
@@ -15,7 +14,7 @@ class TemplateSelector:
     def __init__(self) -> None:
         self.console = get_console()
 
-    def select_template(self, current_template: Optional[str] = None) -> str:
+    def select_template(self, current_template: str | None = None) -> str:
         """Prompt user to select a template.
 
         Args:
@@ -90,7 +89,7 @@ class ConflictResolver:
     def resolve_conflicts(
         self,
         source_file: Path,
-        existing_files: List[Path],
+        existing_files: list[Path],
         suggested_strategy: ConflictResolutionStrategy,
     ) -> ConflictResolutionStrategy:
         """Prompt user to resolve file conflicts.
@@ -181,7 +180,7 @@ class GenerationPrompts:
 
     def confirm_generation(
         self,
-        source_files: List[Path],
+        source_files: list[Path],
         template_name: str,
         conflict_strategy: ConflictResolutionStrategy,
     ) -> bool:
@@ -215,8 +214,8 @@ class GenerationPrompts:
         return click.confirm("\nProceed with generation?", default=True)
 
     def get_generation_config(
-        self, current_template: Optional[str] = None, interactive: bool = True
-    ) -> Dict[str, Union[str, ConflictResolutionStrategy, bool, None]]:
+        self, current_template: str | None = None, interactive: bool = True
+    ) -> dict[str, str | ConflictResolutionStrategy | bool | None]:
         """Get complete generation configuration from user.
 
         Args:
@@ -226,7 +225,7 @@ class GenerationPrompts:
         Returns:
             Dictionary with generation configuration
         """
-        config: Dict[str, Union[str, ConflictResolutionStrategy, bool, None]] = {}
+        config: dict[str, str | ConflictResolutionStrategy | bool | None] = {}
 
         if interactive:
             # Template selection
@@ -284,7 +283,7 @@ class GenerationPrompts:
 
 
 # Convenience functions
-def select_template(current_template: Optional[str] = None) -> str:
+def select_template(current_template: str | None = None) -> str:
     """Select template interactively."""
     selector = TemplateSelector()
     return selector.select_template(current_template)
@@ -292,7 +291,7 @@ def select_template(current_template: Optional[str] = None) -> str:
 
 def resolve_conflicts(
     source_file: Path,
-    existing_files: List[Path],
+    existing_files: list[Path],
     suggested_strategy: ConflictResolutionStrategy,
 ) -> ConflictResolutionStrategy:
     """Resolve conflicts interactively."""
@@ -301,7 +300,7 @@ def resolve_conflicts(
 
 
 def confirm_generation(
-    source_files: List[Path],
+    source_files: list[Path],
     template_name: str,
     conflict_strategy: ConflictResolutionStrategy,
 ) -> bool:

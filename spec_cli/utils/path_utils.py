@@ -2,14 +2,11 @@
 
 import os
 from pathlib import Path
-from typing import Union
 
 from ..exceptions import SpecValidationError
 
 
-def safe_relative_to(
-    path: Union[str, Path], root: Union[str, Path], strict: bool = True
-) -> Path:
+def safe_relative_to(path: str | Path, root: str | Path, strict: bool = True) -> Path:
     """Safely compute relative path with consistent error handling.
 
     Args:
@@ -31,9 +28,9 @@ def safe_relative_to(
         >>> safe_relative_to("/outside/file.py", "/project", strict=False)
         Path("/outside/file.py")
     """
-    if not isinstance(path, (str, Path)):
+    if not isinstance(path, str | Path):
         raise TypeError(f"path must be str or Path, got {type(path)}")
-    if not isinstance(root, (str, Path)):
+    if not isinstance(root, str | Path):
         raise TypeError(f"root must be str or Path, got {type(root)}")
 
     path_obj = Path(path).resolve()
@@ -52,7 +49,7 @@ def safe_relative_to(
         return path_obj
 
 
-def ensure_directory(path: Union[str, Path], parents: bool = True) -> Path:
+def ensure_directory(path: str | Path, parents: bool = True) -> Path:
     """Create directory if it doesn't exist with consistent error handling.
 
     Args:
@@ -71,7 +68,7 @@ def ensure_directory(path: Union[str, Path], parents: bool = True) -> Path:
         >>> ensure_directory("/project/.specs/docs")
         Path("/project/.specs/docs")
     """
-    if not isinstance(path, (str, Path)):
+    if not isinstance(path, str | Path):
         raise TypeError(f"path must be str or Path, got {type(path)}")
 
     path_obj = Path(path)
@@ -87,7 +84,7 @@ def ensure_directory(path: Union[str, Path], parents: bool = True) -> Path:
     return path_obj
 
 
-def normalize_path(path: Union[str, Path], resolve_symlinks: bool = True) -> Path:
+def normalize_path(path: str | Path, resolve_symlinks: bool = True) -> Path:
     """Normalize path with consistent handling of strings and Path objects.
 
     Args:
@@ -106,7 +103,7 @@ def normalize_path(path: Union[str, Path], resolve_symlinks: bool = True) -> Pat
         >>> normalize_path("/project/./docs")
         Path("/project/docs")
     """
-    if not isinstance(path, (str, Path)):
+    if not isinstance(path, str | Path):
         raise TypeError(f"path must be str or Path, got {type(path)}")
 
     path_obj = Path(path)
@@ -121,7 +118,7 @@ def normalize_path(path: Union[str, Path], resolve_symlinks: bool = True) -> Pat
             return Path.cwd() / path_obj
 
 
-def resolve_project_root(start_path: Union[str, Path, None] = None) -> Path:
+def resolve_project_root(start_path: str | Path | None = None) -> Path:
     """Find project root directory by looking for Git repository or spec markers.
 
     Args:
@@ -137,7 +134,7 @@ def resolve_project_root(start_path: Union[str, Path, None] = None) -> Path:
         >>> resolve_project_root()
         Path("/project/root")
     """
-    if start_path is not None and not isinstance(start_path, (str, Path)):
+    if start_path is not None and not isinstance(start_path, str | Path):
         raise TypeError(
             f"start_path must be str, Path, or None, got {type(start_path)}"
         )
@@ -172,7 +169,7 @@ def resolve_project_root(start_path: Union[str, Path, None] = None) -> Path:
     return current_path
 
 
-def is_subpath(child: Union[str, Path], parent: Union[str, Path]) -> bool:
+def is_subpath(child: str | Path, parent: str | Path) -> bool:
     """Check if child path is a subpath of parent path.
 
     Args:
@@ -191,9 +188,9 @@ def is_subpath(child: Union[str, Path], parent: Union[str, Path]) -> bool:
         >>> is_subpath("/other/file.py", "/project")
         False
     """
-    if not isinstance(child, (str, Path)):
+    if not isinstance(child, str | Path):
         raise TypeError(f"child must be str or Path, got {type(child)}")
-    if not isinstance(parent, (str, Path)):
+    if not isinstance(parent, str | Path):
         raise TypeError(f"parent must be str or Path, got {type(parent)}")
 
     try:
@@ -205,9 +202,7 @@ def is_subpath(child: Union[str, Path], parent: Union[str, Path]) -> bool:
         return False
 
 
-def get_relative_path_or_absolute(
-    path: Union[str, Path], base: Union[str, Path]
-) -> Path:
+def get_relative_path_or_absolute(path: str | Path, base: str | Path) -> Path:
     """Get relative path if possible, otherwise return absolute path.
 
     Args:
@@ -226,9 +221,9 @@ def get_relative_path_or_absolute(
         >>> get_relative_path_or_absolute("/other/file.py", "/project")
         Path("/other/file.py")
     """
-    if not isinstance(path, (str, Path)):
+    if not isinstance(path, str | Path):
         raise TypeError(f"path must be str or Path, got {type(path)}")
-    if not isinstance(base, (str, Path)):
+    if not isinstance(base, str | Path):
         raise TypeError(f"base must be str or Path, got {type(base)}")
 
     try:
@@ -237,9 +232,7 @@ def get_relative_path_or_absolute(
         return normalize_path(path)
 
 
-def ensure_path_permissions(
-    path: Union[str, Path], require_write: bool = False
-) -> None:
+def ensure_path_permissions(path: str | Path, require_write: bool = False) -> None:
     """Check and ensure path has required permissions.
 
     Args:
@@ -254,7 +247,7 @@ def ensure_path_permissions(
         >>> ensure_path_permissions("/project/.specs", require_write=True)
         # Passes if directory exists and is writable
     """
-    if not isinstance(path, (str, Path)):
+    if not isinstance(path, str | Path):
         raise TypeError(f"path must be str or Path, got {type(path)}")
 
     path_obj = Path(path)

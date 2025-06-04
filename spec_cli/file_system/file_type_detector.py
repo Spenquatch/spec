@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import Optional, Set
 
 from ..logging.debug import debug_logger
 
@@ -249,15 +248,15 @@ class FileTypeDetector:
         )
         return True
 
-    def get_supported_extensions(self) -> Set[str]:
+    def get_supported_extensions(self) -> set[str]:
         """Get all supported file extensions."""
         return set(self.LANGUAGE_EXTENSIONS.keys())
 
-    def get_supported_filenames(self) -> Set[str]:
+    def get_supported_filenames(self) -> set[str]:
         """Get all supported special filenames."""
         return set(self.SPECIAL_FILENAMES.keys())
 
-    def get_file_category(self, file_path: Path) -> Optional[str]:
+    def get_file_category(self, file_path: Path) -> str | None:
         """Get the broader category for a file type.
 
         Args:

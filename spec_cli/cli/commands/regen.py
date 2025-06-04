@@ -1,7 +1,6 @@
 """Spec regen command implementation."""
 
 from pathlib import Path
-from typing import Dict, List
 
 import click
 
@@ -190,7 +189,7 @@ def regen_command(
         raise click.ClickException(f"Regeneration failed: {e}") from e
 
 
-def _find_all_spec_sources() -> List[Path]:
+def _find_all_spec_sources() -> list[Path]:
     """Find all source files that have existing specs."""
     source_files = []
     specs_dir = Path(".specs")
@@ -214,11 +213,11 @@ def _find_all_spec_sources() -> List[Path]:
     return source_files
 
 
-def _filter_files_with_specs(source_files: List[Path]) -> List[Path]:
+def _filter_files_with_specs(source_files: list[Path]) -> list[Path]:
     """Filter files to only those with existing specs."""
     files_with_specs = []
 
-    def get_spec_files_for_source(source_file: Path) -> Dict[str, Path]:
+    def get_spec_files_for_source(source_file: Path) -> dict[str, Path]:
         relative_path = (
             source_file.relative_to(Path.cwd())
             if source_file.is_absolute()
@@ -236,12 +235,12 @@ def _filter_files_with_specs(source_files: List[Path]) -> List[Path]:
 
 
 def _show_regen_dry_run_preview(
-    source_files: List[Path], template: str, preserve_history: bool
+    source_files: list[Path], template: str, preserve_history: bool
 ) -> None:
     """Show dry run preview of regeneration."""
     console = get_console()
 
-    def get_spec_files_for_source(source_file: Path) -> Dict[str, Path]:
+    def get_spec_files_for_source(source_file: Path) -> dict[str, Path]:
         relative_path = (
             source_file.relative_to(Path.cwd())
             if source_file.is_absolute()

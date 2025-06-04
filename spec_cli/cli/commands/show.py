@@ -1,7 +1,7 @@
 """Spec show command implementation."""
 
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 import click
 
@@ -198,7 +198,7 @@ def _is_spec_file(file_path: Path) -> bool:
         return False
 
 
-def _parse_spec_content(content: str) -> Optional[dict]:
+def _parse_spec_content(content: str) -> dict | None:
     """Parse spec file content for metadata."""
     try:
         # Simple parsing - look for frontmatter

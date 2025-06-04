@@ -1,7 +1,6 @@
 """Tests for progress utilities functionality."""
 
 from pathlib import Path
-from typing import List
 from unittest.mock import Mock, patch
 
 import pytest
@@ -233,7 +232,7 @@ class TestCreateFileProgressTracker:
         mock_manager = Mock()
         mock_get_manager.return_value = mock_manager
 
-        files: List[Path] = []
+        files: list[Path] = []
         tracker_func = create_file_progress_tracker(files)
 
         # Should still set up operation

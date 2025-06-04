@@ -1,6 +1,6 @@
 """Tests for diff command (commands/diff.py)."""
 
-from typing import Any, Dict
+from typing import Any
 from unittest.mock import Mock, patch
 
 from click.testing import CliRunner
@@ -194,7 +194,7 @@ class TestDiffUtilityFunctions:
         mock_console = Mock()
         mock_get_console.return_value = mock_console
 
-        diff_data: Dict[str, Any] = {"files": []}
+        diff_data: dict[str, Any] = {"files": []}
         _display_diff_stats(diff_data)
 
         mock_console.print.assert_called_with("[muted]No changes found[/muted]")
@@ -284,7 +284,7 @@ class TestDiffUtilityFunctions:
         mock_console = Mock()
         mock_get_console.return_value = mock_console
 
-        diff_data: Dict[str, Any] = {"files": []}
+        diff_data: dict[str, Any] = {"files": []}
         _display_plain_diff(diff_data)
 
         # Should handle empty data gracefully

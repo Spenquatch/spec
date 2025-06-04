@@ -1,5 +1,6 @@
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Literal, Optional
+from typing import Any, Literal
 
 from rich.console import Console
 from rich.table import Table
@@ -15,12 +16,12 @@ class SpecTable:
 
     def __init__(
         self,
-        title: Optional[str] = None,
+        title: str | None = None,
         show_header: bool = True,
         show_lines: bool = False,
         show_edge: bool = True,
         expand: bool = False,
-        console: Optional[Console] = None,
+        console: Console | None = None,
     ) -> None:
         """Initialize the spec table.
 
@@ -55,12 +56,12 @@ class SpecTable:
     def add_column(
         self,
         header: str,
-        style: Optional[str] = None,
+        style: str | None = None,
         justify: Literal["default", "left", "center", "right", "full"] = "left",
-        width: Optional[int] = None,
-        min_width: Optional[int] = None,
-        max_width: Optional[int] = None,
-        ratio: Optional[int] = None,
+        width: int | None = None,
+        min_width: int | None = None,
+        max_width: int | None = None,
+        ratio: int | None = None,
         no_wrap: bool = False,
         overflow: Literal["fold", "crop", "ellipsis", "ignore"] = "ellipsis",
     ) -> None:
@@ -91,7 +92,7 @@ class SpecTable:
 
         debug_logger.log("DEBUG", "Column added to table", header=header, style=style)
 
-    def add_row(self, *values: Any, style: Optional[str] = None) -> None:
+    def add_row(self, *values: Any, style: str | None = None) -> None:
         """Add a row to the table.
 
         Args:
@@ -101,7 +102,7 @@ class SpecTable:
         # Convert values to strings and apply styling
         formatted_values = []
         for value in values:
-            if isinstance(value, (str, Text)):
+            if isinstance(value, str | Text):
                 formatted_values.append(value)
             else:
                 formatted_values.append(str(value))
@@ -146,7 +147,7 @@ class FileListTable(SpecTable):
         self,
         file_path: Path,
         file_type: str = "file",
-        size: Optional[int] = None,
+        size: int | None = None,
         status: str = "pending",
     ) -> None:
         """Add a file row to the table.
@@ -279,7 +280,7 @@ class ComparisonTable(SpecTable):
 
 # Utility functions
 def create_file_table(
-    files: List[Path], title: str = "Files", **kwargs: Any
+    files: list[Path], title: str = "Files", **kwargs: Any
 ) -> FileListTable:
     """Create a table for displaying file information.
 
@@ -307,7 +308,7 @@ def create_file_table(
 
 
 def create_status_table(
-    data: Dict[str, Any], title: str = "Status", **kwargs: Any
+    data: dict[str, Any], title: str = "Status", **kwargs: Any
 ) -> StatusTable:
     """Create a table for displaying status information.
 
@@ -325,7 +326,7 @@ def create_status_table(
         # Determine status based on value type and content
         if isinstance(value, bool):
             status = "success" if value else "error"
-        elif isinstance(value, (int, float)) and value > 0:
+        elif isinstance(value, int | float) and value > 0:
             status = "success"
         else:
             status = "info"
@@ -336,9 +337,9 @@ def create_status_table(
 
 
 def print_simple_table(
-    data: List[Dict[str, Any]],
-    headers: Optional[List[str]] = None,
-    title: Optional[str] = None,
+    data: list[dict[str, Any]],
+    headers: list[str] | None = None,
+    title: str | None = None,
 ) -> None:
     """Print a simple table from list of dictionaries.
 
@@ -368,9 +369,7 @@ def print_simple_table(
     table.print()
 
 
-def create_key_value_table(
-    data: Dict[str, Any], title: Optional[str] = None
-) -> SpecTable:
+def create_key_value_table(data: dict[str, Any], title: str | None = None) -> SpecTable:
     """Create a key-value table from a dictionary.
 
     Args:
@@ -392,9 +391,7 @@ def create_key_value_table(
     return table
 
 
-def format_table_data(
-    data: Any, formatter: Optional[Callable[[Any], str]] = None
-) -> str:
+def format_table_data(data: Any, formatter: Callable[[Any], str] | None = None) -> str:
     """Format data for table display.
 
     Args:
@@ -411,7 +408,7 @@ def format_table_data(
         return str(data)
     elif isinstance(data, bool):
         return "Yes" if data else "No"
-    elif isinstance(data, (int, float)):
+    elif isinstance(data, int | float):
         return str(data)
     elif data is None:
         return "-"

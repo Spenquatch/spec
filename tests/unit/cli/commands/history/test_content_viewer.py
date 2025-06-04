@@ -1,7 +1,7 @@
 """Tests for content viewer module."""
 
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 from unittest.mock import Mock, patch
 
 from spec_cli.cli.commands.history.content_viewer import (
@@ -60,7 +60,7 @@ class TestContentViewer:
         mock_console.return_value = mock_console_instance
 
         viewer = ContentViewer()
-        spec_data: Dict[str, Any] = {"metadata": {}}
+        spec_data: dict[str, Any] = {"metadata": {}}
 
         viewer.display_spec_content(spec_data, show_metadata=False)
 

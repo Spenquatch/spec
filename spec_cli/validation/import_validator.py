@@ -2,7 +2,6 @@
 
 import ast
 from dataclasses import dataclass
-from typing import List
 
 
 @dataclass
@@ -27,7 +26,7 @@ class ImportViolation:
     reason: str
 
 
-def extract_import_nodes(tree: ast.AST) -> List[ast.Import]:
+def extract_import_nodes(tree: ast.AST) -> list[ast.Import]:
     """Extract all import statements from AST tree.
 
     Args:
@@ -52,7 +51,7 @@ def extract_import_nodes(tree: ast.AST) -> List[ast.Import]:
     return import_nodes
 
 
-def extract_from_import_nodes(tree: ast.AST) -> List[ast.ImportFrom]:
+def extract_from_import_nodes(tree: ast.AST) -> list[ast.ImportFrom]:
     """Extract all from-import statements from AST tree.
 
     Args:
@@ -103,7 +102,7 @@ class ImportValidator:
 
         self.tree = tree
 
-    def validate(self) -> List[ImportViolation]:
+    def validate(self) -> list[ImportViolation]:
         """Validate imports against policy rules.
 
         Returns:

@@ -1,6 +1,7 @@
 import re
+from collections.abc import Callable
 from datetime import datetime
-from typing import Any, Callable, Dict, List, Optional, Set
+from typing import Any
 
 from ..config.settings import SpecSettings, get_settings
 from ..exceptions import SpecTemplateError
@@ -14,7 +15,7 @@ class TemplateSubstitution:
         self,
         open_delimiter: str = "{{",
         close_delimiter: str = "}}",
-        settings: Optional[SpecSettings] = None,
+        settings: SpecSettings | None = None,
     ):
         self.settings = settings or get_settings()
         self.open_delimiter = open_delimiter
@@ -44,7 +45,7 @@ class TemplateSubstitution:
             close_delimiter=close_delimiter,
         )
 
-    def substitute(self, template: str, variables: Dict[str, Any]) -> str:
+    def substitute(self, template: str, variables: dict[str, Any]) -> str:
         """Substitute variables in template content.
 
         Args:
@@ -121,8 +122,8 @@ class TemplateSubstitution:
             raise SpecTemplateError(error_msg) from e
 
     def _prepare_substitution_context(
-        self, variables: Dict[str, Any], found_variables: Set[str]
-    ) -> Dict[str, str]:
+        self, variables: dict[str, Any], found_variables: set[str]
+    ) -> dict[str, str]:
         """Prepare complete substitution context with built-in and provided variables.
 
         Args:
@@ -171,7 +172,7 @@ class TemplateSubstitution:
             return "[To be filled]"
         elif isinstance(value, bool):
             return "Yes" if value else "No"
-        elif isinstance(value, (list, tuple)):
+        elif isinstance(value, list | tuple):
             if not value:
                 return "[None specified]"
             return "\\n".join(f"- {item}" for item in value)
@@ -206,7 +207,7 @@ class TemplateSubstitution:
         """Generate current day."""
         return str(datetime.now().day)
 
-    def get_variables_in_template(self, template: str) -> Set[str]:
+    def get_variables_in_template(self, template: str) -> set[str]:
         """Extract all variable names from a template.
 
         Args:
@@ -217,7 +218,7 @@ class TemplateSubstitution:
         """
         return set(self.variable_pattern.findall(template))
 
-    def validate_template_syntax(self, template: str) -> List[str]:
+    def validate_template_syntax(self, template: str) -> list[str]:
         """Validate template syntax and return issues.
 
         Args:
@@ -266,8 +267,8 @@ class TemplateSubstitution:
         return issues
 
     def preview_substitution(
-        self, template: str, variables: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, template: str, variables: dict[str, Any]
+    ) -> dict[str, Any]:
         """Preview what substitution would produce without actually doing it.
 
         Args:
@@ -303,7 +304,7 @@ class TemplateSubstitution:
 
         return preview
 
-    def get_builtin_variables(self) -> List[str]:
+    def get_builtin_variables(self) -> list[str]:
         """Get list of available built-in variables.
 
         Returns:
@@ -371,8 +372,8 @@ class TemplateSubstitution:
         return False
 
     def get_substitution_stats(
-        self, template: str, variables: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, template: str, variables: dict[str, Any]
+    ) -> dict[str, Any]:
         """Get detailed statistics about substitution process.
 
         Args:

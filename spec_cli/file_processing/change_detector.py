@@ -1,8 +1,7 @@
 import hashlib
-import sys
 import time
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 from ..config.settings import SpecSettings, get_settings
 from ..exceptions import SpecFileError
@@ -15,7 +14,7 @@ from .file_cache import FileCacheEntry, FileCacheManager
 class FileChangeDetector:
     """Detects file changes using hash comparison and caching."""
 
-    def __init__(self, settings: Optional[SpecSettings] = None):
+    def __init__(self, settings: SpecSettings | None = None):
         self.settings = settings or get_settings()
         self.cache_manager = FileCacheManager(self.settings)
         self.metadata_extractor = FileMetadataExtractor()
@@ -23,7 +22,7 @@ class FileChangeDetector:
 
         debug_logger.log("INFO", "FileChangeDetector initialized")
 
-    def calculate_file_hashes(self, file_path: Path) -> Tuple[str, str]:
+    def calculate_file_hashes(self, file_path: Path) -> tuple[str, str]:
         """Calculate MD5 and SHA256 hashes for a file.
 
         Args:
@@ -40,10 +39,7 @@ class FileChangeDetector:
         try:
             # Use usedforsecurity=False for Python 3.9+ to fix security warning
             # We're using MD5 for file integrity checking, not security
-            if sys.version_info >= (3, 9):
-                md5_hash = hashlib.md5(usedforsecurity=False)  # nosec B303 # type: ignore[call-arg]
-            else:
-                md5_hash = hashlib.md5()  # nosec B303
+            md5_hash = hashlib.md5(usedforsecurity=False)  # nosec B303
             sha256_hash = hashlib.sha256()
 
             with file_path.open("rb") as f:
@@ -71,7 +67,7 @@ class FileChangeDetector:
             debug_logger.log("ERROR", error_msg)
             raise SpecFileError(error_msg) from e
 
-    def get_file_info(self, file_path: Path) -> Dict[str, Any]:
+    def get_file_info(self, file_path: Path) -> dict[str, Any]:
         """Get comprehensive file information including hashes.
 
         Args:
@@ -246,8 +242,8 @@ class FileChangeDetector:
         return cache_entry
 
     def detect_changes_in_directory(
-        self, directory: Path, deep_scan: bool = False, max_files: Optional[int] = None
-    ) -> Dict[str, List[Path]]:
+        self, directory: Path, deep_scan: bool = False, max_files: int | None = None
+    ) -> dict[str, list[Path]]:
         """Detect changes in all files within a directory.
 
         Args:
@@ -266,7 +262,7 @@ class FileChangeDetector:
             max_files=max_files,
         )
 
-        changes: Dict[str, List[Path]] = {
+        changes: dict[str, list[Path]] = {
             "changed": [],
             "unchanged": [],
             "new": [],
@@ -349,8 +345,8 @@ class FileChangeDetector:
             raise SpecFileError(error_msg) from e
 
     def get_files_needing_processing(
-        self, file_paths: List[Path], force_all: bool = False
-    ) -> List[Path]:
+        self, file_paths: list[Path], force_all: bool = False
+    ) -> list[Path]:
         """Get list of files that need processing based on change detection.
 
         Args:
@@ -390,7 +386,7 @@ class FileChangeDetector:
         """Save the current cache state."""
         self.cache_manager.save_cache()
 
-    def get_change_summary(self, changes: Dict[str, List[Path]]) -> Dict[str, Any]:
+    def get_change_summary(self, changes: dict[str, list[Path]]) -> dict[str, Any]:
         """Get a summary of detected changes.
 
         Args:

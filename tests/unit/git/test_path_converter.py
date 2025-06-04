@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import List, Union
 
 import pytest
 
@@ -141,7 +140,7 @@ class TestGitPathConverter:
     ) -> None:
         """Test detection of paths under .specs/ directory."""
         # Paths under .specs/
-        under_specs: List[Union[Path, str]] = [
+        under_specs: list[Path | str] = [
             tmp_path / ".specs" / "src" / "main.py",
             "src/main.py",  # Relative path interpreted as under .specs/
             ".specs/docs/README.md",
@@ -151,7 +150,7 @@ class TestGitPathConverter:
             assert converter.is_under_specs_dir(path) is True
 
         # Paths not under .specs/
-        not_under_specs: List[Union[Path, str]] = [
+        not_under_specs: list[Path | str] = [
             tmp_path / "other" / "file.py",
             "/absolute/path/elsewhere.py",
         ]

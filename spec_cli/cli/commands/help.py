@@ -1,7 +1,5 @@
 """Spec help command implementation."""
 
-from typing import Dict, Optional
-
 import click
 
 from ...ui.console import get_console
@@ -10,7 +8,7 @@ from ...ui.tables import SpecTable
 
 @click.command()
 @click.argument("command_name", required=False)
-def help_command(command_name: Optional[str]) -> None:
+def help_command(command_name: str | None) -> None:
     """Show help information for spec commands.
 
     COMMAND_NAME: Optional specific command to show help for
@@ -108,7 +106,7 @@ def _display_command_help(command: str) -> None:
             console.print(f"  spec {example['command']}\n")
 
 
-def _get_command_help(command: str) -> Dict:
+def _get_command_help(command: str) -> dict:
     """Get help data for a specific command."""
 
     help_data = {

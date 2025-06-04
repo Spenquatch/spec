@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, Dict, List, Optional, cast
+from typing import Any, cast
 
 from ..logging.debug import debug_logger
 from ..templates.generator import SpecContentGenerator
@@ -21,12 +21,12 @@ class FileProcessingResult:
         self,
         file_path: Path,
         success: bool,
-        generated_files: Optional[Dict[str, Path]] = None,
-        conflict_info: Optional[ConflictInfo] = None,
-        resolution_strategy: Optional[ConflictResolutionStrategy] = None,
-        errors: Optional[List[str]] = None,
-        warnings: Optional[List[str]] = None,
-        metadata: Optional[Dict[str, Any]] = None,
+        generated_files: dict[str, Path] | None = None,
+        conflict_info: ConflictInfo | None = None,
+        resolution_strategy: ConflictResolutionStrategy | None = None,
+        errors: list[str] | None = None,
+        warnings: list[str] | None = None,
+        metadata: dict[str, Any] | None = None,
     ):
         self.file_path = file_path
         self.success = success
@@ -37,7 +37,7 @@ class FileProcessingResult:
         self.warnings = warnings or []
         self.metadata = metadata or {}
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary representation."""
         return {
             "file_path": str(self.file_path),
@@ -76,8 +76,8 @@ class FileProcessingPipeline:
     def process_file(
         self,
         file_path: Path,
-        custom_variables: Optional[Dict[str, Any]] = None,
-        conflict_strategy: Optional[ConflictResolutionStrategy] = None,
+        custom_variables: dict[str, Any] | None = None,
+        conflict_strategy: ConflictResolutionStrategy | None = None,
         force_regenerate: bool = False,
     ) -> FileProcessingResult:
         """Process a single file through the complete pipeline.
@@ -192,8 +192,8 @@ class FileProcessingPipeline:
             return result
 
     def _generate_content(
-        self, file_path: Path, template: Any, custom_variables: Optional[Dict[str, Any]]
-    ) -> Dict[str, Any]:
+        self, file_path: Path, template: Any, custom_variables: dict[str, Any] | None
+    ) -> dict[str, Any]:
         """Generate content for the file."""
         try:
             generated_files = self.content_generator.generate_spec_content(
@@ -218,9 +218,9 @@ class FileProcessingPipeline:
 
     def _handle_conflicts(
         self,
-        generated_files: Dict[str, Path],
-        strategy: Optional[ConflictResolutionStrategy],
-    ) -> Dict[str, Any]:
+        generated_files: dict[str, Path],
+        strategy: ConflictResolutionStrategy | None,
+    ) -> dict[str, Any]:
         """Handle conflicts for generated files."""
         conflicts = []
         resolved_conflicts = []
@@ -301,7 +301,7 @@ class FileProcessingPipeline:
                 "warnings": warnings,
             }
 
-    def validate_file_for_processing(self, file_path: Path) -> List[str]:
+    def validate_file_for_processing(self, file_path: Path) -> list[str]:
         """Validate that a file can be processed.
 
         Args:
@@ -336,7 +336,7 @@ class FileProcessingPipeline:
 
         return issues
 
-    def get_processing_estimate(self, files: List[Path]) -> Dict[str, Any]:
+    def get_processing_estimate(self, files: list[Path]) -> dict[str, Any]:
         """Estimate processing requirements for a list of files.
 
         Args:
@@ -345,7 +345,7 @@ class FileProcessingPipeline:
         Returns:
             Dictionary with processing estimates
         """
-        estimate: Dict[str, Any] = {
+        estimate: dict[str, Any] = {
             "total_files": len(files),
             "processable_files": 0,
             "files_needing_processing": 0,
@@ -356,7 +356,7 @@ class FileProcessingPipeline:
         for file_path in files:
             issues = self.validate_file_for_processing(file_path)
             if issues:
-                cast(List[str], estimate["validation_issues"]).extend(issues)
+                cast(list[str], estimate["validation_issues"]).extend(issues)
                 continue
 
             estimate["processable_files"] = cast(int, estimate["processable_files"]) + 1

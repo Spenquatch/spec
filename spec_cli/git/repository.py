@@ -1,6 +1,6 @@
 import subprocess
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from ..config.settings import SpecSettings, get_settings
 from ..logging.debug import debug_logger
@@ -13,7 +13,7 @@ class GitRepository(ABC):
     """Abstract interface for Git repository operations."""
 
     @abstractmethod
-    def add(self, paths: List[str]) -> None:
+    def add(self, paths: list[str]) -> None:
         """Add files to Git index.
 
         Args:
@@ -49,7 +49,7 @@ class GitRepository(ABC):
         pass
 
     @abstractmethod
-    def log(self, paths: Optional[List[str]] = None) -> None:
+    def log(self, paths: list[str] | None = None) -> None:
         """Show commit log.
 
         Args:
@@ -61,7 +61,7 @@ class GitRepository(ABC):
         pass
 
     @abstractmethod
-    def diff(self, paths: Optional[List[str]] = None) -> None:
+    def diff(self, paths: list[str] | None = None) -> None:
         """Show differences.
 
         Args:
@@ -85,7 +85,7 @@ class GitRepository(ABC):
 class SpecGitRepository(GitRepository):
     """Git repository implementation for spec operations with isolated repository."""
 
-    def __init__(self, settings: Optional[SpecSettings] = None):
+    def __init__(self, settings: SpecSettings | None = None):
         self.settings = settings or get_settings()
         self.operations = GitOperations(
             spec_dir=self.settings.spec_dir,
@@ -101,7 +101,7 @@ class SpecGitRepository(GitRepository):
             specs_dir=str(self.settings.specs_dir),
         )
 
-    def add(self, paths: List[str]) -> None:
+    def add(self, paths: list[str]) -> None:
         """Add files to spec Git index.
 
         Args:
@@ -185,7 +185,7 @@ class SpecGitRepository(GitRepository):
         git_args = ["status"]
         self.operations.run_git_command(git_args, capture_output=False)
 
-    def log(self, paths: Optional[List[str]] = None) -> None:
+    def log(self, paths: list[str] | None = None) -> None:
         """Show spec repository log.
 
         Args:
@@ -210,7 +210,7 @@ class SpecGitRepository(GitRepository):
 
         self.operations.run_git_command(git_args, capture_output=False)
 
-    def diff(self, paths: Optional[List[str]] = None) -> None:
+    def diff(self, paths: list[str] | None = None) -> None:
         """Show spec repository diff.
 
         Args:
@@ -286,7 +286,7 @@ class SpecGitRepository(GitRepository):
 
         debug_logger.log("INFO", "Spec repository initialized successfully")
 
-    def get_repository_info(self) -> Dict[str, Any]:
+    def get_repository_info(self) -> dict[str, Any]:
         """Get information about the spec repository.
 
         Returns:
@@ -400,7 +400,7 @@ class SpecGitRepository(GitRepository):
         except Exception:
             return True  # Assume staged changes if command fails
 
-    def get_recent_commits(self, count: int = 10) -> List[Dict[str, str]]:
+    def get_recent_commits(self, count: int = 10) -> list[dict[str, str]]:
         """Get recent commits from the repository.
 
         Args:
@@ -460,7 +460,7 @@ class SpecGitRepository(GitRepository):
                 debug_logger.log("WARNING", f"Could not get recent commits: {e}")
             return []
 
-    def add_files(self, files: List[str]) -> None:
+    def add_files(self, files: list[str]) -> None:
         """Add specific files to the Git index.
 
         Args:
@@ -479,7 +479,7 @@ class SpecGitRepository(GitRepository):
         """Initialize the spec repository (wrapper for initialize_repository)."""
         self.initialize_repository()
 
-    def run_git_command(self, args: List[str]) -> Any:
+    def run_git_command(self, args: list[str]) -> Any:
         """Run a Git command (exposed for configuration purposes).
 
         Args:
@@ -490,7 +490,7 @@ class SpecGitRepository(GitRepository):
         """
         return self.operations.run_git_command(args)
 
-    def get_staged_files(self) -> List[str]:
+    def get_staged_files(self) -> list[str]:
         """Get list of staged files.
 
         Returns:
@@ -510,7 +510,7 @@ class SpecGitRepository(GitRepository):
         except Exception:
             return []
 
-    def get_unstaged_files(self) -> List[str]:
+    def get_unstaged_files(self) -> list[str]:
         """Get list of unstaged files.
 
         Returns:
@@ -528,7 +528,7 @@ class SpecGitRepository(GitRepository):
         except Exception:
             return []
 
-    def get_untracked_files(self) -> List[str]:
+    def get_untracked_files(self) -> list[str]:
         """Get list of untracked files.
 
         Returns:
@@ -548,7 +548,7 @@ class SpecGitRepository(GitRepository):
         except Exception:
             return []
 
-    def get_current_commit_hash(self) -> Optional[str]:
+    def get_current_commit_hash(self) -> str | None:
         """Get current commit hash.
 
         Returns:
@@ -560,7 +560,7 @@ class SpecGitRepository(GitRepository):
         except Exception:
             return None
 
-    def get_parent_commit_hash(self, commit_hash: str) -> Optional[str]:
+    def get_parent_commit_hash(self, commit_hash: str) -> str | None:
         """Get parent commit hash.
 
         Args:

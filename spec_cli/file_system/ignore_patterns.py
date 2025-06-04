@@ -1,6 +1,6 @@
 import re
 from pathlib import Path
-from typing import List, Optional, Pattern
+from re import Pattern
 
 from ..config.settings import SpecSettings, get_settings
 from ..logging.debug import debug_logger
@@ -9,12 +9,12 @@ from ..logging.debug import debug_logger
 class IgnorePatternMatcher:
     """Handles .specignore pattern matching with gitignore-style syntax."""
 
-    def __init__(self, settings: Optional[SpecSettings] = None):
+    def __init__(self, settings: SpecSettings | None = None):
         self.settings = settings or get_settings()
-        self.patterns: List[Pattern[str]] = []
-        self.raw_patterns: List[str] = []
-        self.negation_patterns: List[Pattern[str]] = []
-        self.loaded_from: Optional[Path] = None
+        self.patterns: list[Pattern[str]] = []
+        self.raw_patterns: list[str] = []
+        self.negation_patterns: list[Pattern[str]] = []
+        self.loaded_from: Path | None = None
 
         # Default patterns to always ignore
         self.default_ignore_patterns = [
@@ -95,7 +95,7 @@ class IgnorePatternMatcher:
             negation_patterns=len(self.negation_patterns),
         )
 
-    def _compile_patterns(self, patterns: List[str]) -> None:
+    def _compile_patterns(self, patterns: list[str]) -> None:
         """Compile patterns into regex objects."""
         self.patterns = []
         self.negation_patterns = []
@@ -209,7 +209,7 @@ class IgnorePatternMatcher:
 
         return ignored
 
-    def filter_paths(self, paths: List[Path]) -> List[Path]:
+    def filter_paths(self, paths: list[Path]) -> list[Path]:
         """Filter a list of paths, removing ignored ones.
 
         Args:

@@ -1,6 +1,6 @@
 """Rich diff display utilities."""
 
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from rich.columns import Columns
 from rich.panel import Panel
@@ -18,9 +18,9 @@ class DiffViewer:
     def display_file_diff(
         self,
         filename: str,
-        old_content: Optional[str] = None,
-        new_content: Optional[str] = None,
-        diff_lines: Optional[List[str]] = None,
+        old_content: str | None = None,
+        new_content: str | None = None,
+        diff_lines: list[str] | None = None,
         syntax: str = "text",
     ) -> None:
         """Display a file diff with Rich formatting.
@@ -45,7 +45,7 @@ class DiffViewer:
         else:
             self.console.print("[yellow]No diff content available[/yellow]")
 
-    def _display_unified_diff(self, diff_lines: List[str]) -> None:
+    def _display_unified_diff(self, diff_lines: list[str]) -> None:
         """Display unified diff format."""
         for line in diff_lines:
             if line.startswith("+++") or line.startswith("---"):
@@ -126,7 +126,7 @@ class DiffViewer:
             # Fallback to simple display
             self.console.print("[yellow]Content comparison unavailable[/yellow]")
 
-    def display_diff_summary(self, diff_summary: Dict[str, Any]) -> None:
+    def display_diff_summary(self, diff_summary: dict[str, Any]) -> None:
         """Display diff summary statistics.
 
         Args:
@@ -179,9 +179,9 @@ def create_diff_view() -> DiffViewer:
 
 def display_file_diff(
     filename: str,
-    old_content: Optional[str] = None,
-    new_content: Optional[str] = None,
-    diff_lines: Optional[List[str]] = None,
+    old_content: str | None = None,
+    new_content: str | None = None,
+    diff_lines: list[str] | None = None,
     syntax: str = "text",
 ) -> None:
     """Display a file diff with Rich formatting."""
@@ -189,7 +189,7 @@ def display_file_diff(
     viewer.display_file_diff(filename, old_content, new_content, diff_lines, syntax)
 
 
-def display_unified_diff(diff_lines: List[str]) -> None:
+def display_unified_diff(diff_lines: list[str]) -> None:
     """Display unified diff format."""
     viewer = DiffViewer()
     viewer._display_unified_diff(diff_lines)

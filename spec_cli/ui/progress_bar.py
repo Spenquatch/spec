@@ -1,5 +1,6 @@
+from collections.abc import Generator
 from contextlib import contextmanager
-from typing import Any, Dict, Generator, List, Optional
+from typing import Any
 
 from rich.console import Console
 from rich.progress import (
@@ -21,7 +22,7 @@ class SpecProgressBar:
 
     def __init__(
         self,
-        console: Optional[Console] = None,
+        console: Console | None = None,
         show_percentage: bool = True,
         show_time_elapsed: bool = True,
         show_time_remaining: bool = True,
@@ -56,7 +57,7 @@ class SpecProgressBar:
             refresh_per_second=refresh_per_second,
         )
 
-        self.tasks: Dict[str, TaskID] = {}
+        self.tasks: dict[str, TaskID] = {}
         self._is_started = False
 
         debug_logger.log(
@@ -66,7 +67,7 @@ class SpecProgressBar:
             auto_refresh=auto_refresh,
         )
 
-    def _build_columns(self) -> List[ProgressColumn]:
+    def _build_columns(self) -> list[ProgressColumn]:
         """Build progress bar columns based on configuration."""
         columns = [
             TextColumn("[progress.description]{task.description}"),
@@ -106,8 +107,8 @@ class SpecProgressBar:
     def add_task(
         self,
         description: str,
-        total: Optional[int] = None,
-        task_id: Optional[str] = None,
+        total: int | None = None,
+        task_id: str | None = None,
     ) -> str:
         """Add a new progress task.
 
@@ -143,10 +144,10 @@ class SpecProgressBar:
     def update_task(
         self,
         task_id: str,
-        advance: Optional[int] = None,
-        completed: Optional[int] = None,
-        total: Optional[int] = None,
-        description: Optional[str] = None,
+        advance: int | None = None,
+        completed: int | None = None,
+        total: int | None = None,
+        description: str | None = None,
         **kwargs: Any,
     ) -> None:
         """Update a progress task.
@@ -217,7 +218,7 @@ class SpecProgressBar:
 
         debug_logger.log("DEBUG", "Progress task removed", task_id=task_id)
 
-    def get_task_info(self, task_id: str) -> Optional[Dict[str, Any]]:
+    def get_task_info(self, task_id: str) -> dict[str, Any] | None:
         """Get information about a task.
 
         Args:
@@ -247,8 +248,8 @@ class SpecProgressBar:
     def task_context(
         self,
         description: str,
-        total: Optional[int] = None,
-        task_id: Optional[str] = None,
+        total: int | None = None,
+        task_id: str | None = None,
     ) -> Generator[str, None, None]:
         """Context manager for progress tasks.
 
@@ -292,7 +293,7 @@ class SimpleProgressBar:
         self.progress_bar = SpecProgressBar(
             show_time_remaining=True, show_percentage=True
         )
-        self.task_id: Optional[str] = None
+        self.task_id: str | None = None
 
     def start(self) -> None:
         """Start the progress bar."""

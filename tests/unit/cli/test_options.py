@@ -1,7 +1,7 @@
 """Tests for CLI options and decorators (options.py)."""
 
 from pathlib import Path
-from typing import Tuple, cast
+from typing import cast
 
 import click
 from click.testing import CliRunner
@@ -178,7 +178,7 @@ class TestArgumentDecorators:
 
         @files_argument
         @click.command()
-        def test_cmd(files: Tuple[str, ...]) -> None:
+        def test_cmd(files: tuple[str, ...]) -> None:
             click.echo(f"files: {list(files)}")
 
         runner = CliRunner()
@@ -197,7 +197,7 @@ class TestArgumentDecorators:
 
         @optional_files_argument
         @click.command()
-        def test_cmd(files: Tuple[str, ...]) -> None:
+        def test_cmd(files: tuple[str, ...]) -> None:
             click.echo(f"files: {list(files)}")
 
         runner = CliRunner()

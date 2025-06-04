@@ -446,11 +446,12 @@ class TestUtilityFunctions:
         # Create temporary files for testing
         files = [Path("/test/file1.txt"), Path("/test/file2.py")]
 
-        with patch.object(Path, "is_dir", return_value=False), patch.object(
-            Path, "exists", return_value=True
-        ), patch.object(Path, "is_file", return_value=True), patch.object(
-            Path, "stat"
-        ) as mock_stat:
+        with (
+            patch.object(Path, "is_dir", return_value=False),
+            patch.object(Path, "exists", return_value=True),
+            patch.object(Path, "is_file", return_value=True),
+            patch.object(Path, "stat") as mock_stat,
+        ):
             mock_stat.return_value.st_size = 1024
             table = create_file_table(files)
 
@@ -466,11 +467,12 @@ class TestUtilityFunctions:
 
         files = [Path("/test/dir"), Path("/test/file.txt")]
 
-        with patch.object(Path, "is_dir", side_effect=[True, False]), patch.object(
-            Path, "exists", return_value=True
-        ), patch.object(Path, "is_file", side_effect=[False, True]), patch.object(
-            Path, "stat"
-        ) as mock_stat:
+        with (
+            patch.object(Path, "is_dir", side_effect=[True, False]),
+            patch.object(Path, "exists", return_value=True),
+            patch.object(Path, "is_file", side_effect=[False, True]),
+            patch.object(Path, "stat") as mock_stat,
+        ):
             mock_stat.return_value.st_size = 512
             table = create_file_table(files)
 
@@ -487,11 +489,12 @@ class TestUtilityFunctions:
         files = [Path("/test/file.txt")]
         custom_title = "Project Files"
 
-        with patch.object(Path, "is_dir", return_value=False), patch.object(
-            Path, "exists", return_value=True
-        ), patch.object(Path, "is_file", return_value=True), patch.object(
-            Path, "stat"
-        ) as mock_stat:
+        with (
+            patch.object(Path, "is_dir", return_value=False),
+            patch.object(Path, "exists", return_value=True),
+            patch.object(Path, "is_file", return_value=True),
+            patch.object(Path, "stat") as mock_stat,
+        ):
             mock_stat.return_value.st_size = 256
             table = create_file_table(files, title=custom_title)
 
@@ -505,9 +508,11 @@ class TestUtilityFunctions:
 
         files = [Path("/nonexistent/file.txt")]
 
-        with patch.object(Path, "is_dir", return_value=False), patch.object(
-            Path, "exists", return_value=False
-        ), patch.object(Path, "is_file", return_value=False):
+        with (
+            patch.object(Path, "is_dir", return_value=False),
+            patch.object(Path, "exists", return_value=False),
+            patch.object(Path, "is_file", return_value=False),
+        ):
             table = create_file_table(files)
 
             assert isinstance(table, FileListTable)
@@ -632,9 +637,9 @@ class TestUtilityFunctions:
         mock_console: Mock = Mock()
         mock_get_console.return_value.console = mock_console
 
-        from typing import Any, Dict, List
+        from typing import Any
 
-        data: List[Dict[str, Any]] = [
+        data: list[dict[str, Any]] = [
             {"name": "John", "age": 30, "city": "New York"},
             {"name": "Jane", "city": "Boston"},  # Missing age
         ]
@@ -838,11 +843,12 @@ class TestTableIntegration:
         files = [Path("/test1.py"), Path("/test2.py")]
         status_data = {"files": len(files), "ready": True}
 
-        with patch.object(Path, "is_dir", return_value=False), patch.object(
-            Path, "exists", return_value=True
-        ), patch.object(Path, "is_file", return_value=True), patch.object(
-            Path, "stat"
-        ) as mock_stat:
+        with (
+            patch.object(Path, "is_dir", return_value=False),
+            patch.object(Path, "exists", return_value=True),
+            patch.object(Path, "is_file", return_value=True),
+            patch.object(Path, "stat") as mock_stat,
+        ):
             mock_stat.return_value.st_size = 1024
 
             # Create file table

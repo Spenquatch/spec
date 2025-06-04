@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, Dict, List, Optional, cast
+from typing import Any, cast
 
 from ..config.settings import SpecSettings, get_settings
 from ..file_system.directory_manager import DirectoryManager
@@ -11,7 +11,7 @@ from .repository_state import RepositoryHealth, RepositoryStateChecker
 class SpecRepositoryInitializer:
     """Handles spec repository initialization and setup."""
 
-    def __init__(self, settings: Optional[SpecSettings] = None):
+    def __init__(self, settings: SpecSettings | None = None):
         self.settings = settings or get_settings()
         self.git_repo = SpecGitRepository(self.settings)
         self.directory_manager = DirectoryManager(self.settings)
@@ -19,7 +19,7 @@ class SpecRepositoryInitializer:
 
         debug_logger.log("INFO", "SpecRepositoryInitializer initialized")
 
-    def initialize_repository(self, force: bool = False) -> Dict[str, Any]:
+    def initialize_repository(self, force: bool = False) -> dict[str, Any]:
         """Initialize a new spec repository with full setup.
 
         Args:
@@ -33,7 +33,7 @@ class SpecRepositoryInitializer:
         """
         debug_logger.log("INFO", "Initializing spec repository", force=force)
 
-        init_result: Dict[str, Any] = {
+        init_result: dict[str, Any] = {
             "success": False,
             "created": [],
             "skipped": [],
@@ -51,7 +51,7 @@ class SpecRepositoryInitializer:
                         RepositoryHealth.HEALTHY,
                         RepositoryHealth.WARNING,
                     ]:
-                        cast(List[str], init_result["skipped"]).append(
+                        cast(list[str], init_result["skipped"]).append(
                             "Repository already exists and is healthy"
                         )
                         init_result["success"] = True
@@ -76,15 +76,15 @@ class SpecRepositoryInitializer:
                 self._verify_initialization(init_result)
 
                 init_result["success"] = (
-                    len(cast(List[str], init_result["errors"])) == 0
+                    len(cast(list[str], init_result["errors"])) == 0
                 )
 
             debug_logger.log(
                 "INFO",
                 "Repository initialization complete",
                 success=init_result["success"],
-                created=len(cast(List[str], init_result["created"])),
-                errors=len(cast(List[str], init_result["errors"])),
+                created=len(cast(list[str], init_result["created"])),
+                errors=len(cast(list[str], init_result["errors"])),
             )
 
             return init_result
@@ -92,11 +92,11 @@ class SpecRepositoryInitializer:
         except Exception as e:
             error_msg = f"Repository initialization failed: {e}"
             debug_logger.log("ERROR", error_msg)
-            cast(List[str], init_result["errors"]).append(error_msg)
+            cast(list[str], init_result["errors"]).append(error_msg)
             init_result["success"] = False
             return init_result
 
-    def _initialize_spec_git_repo(self, result: Dict[str, Any], force: bool) -> None:
+    def _initialize_spec_git_repo(self, result: dict[str, Any], force: bool) -> None:
         """Initialize the .spec Git repository."""
         spec_dir = self.settings.spec_dir
 
@@ -120,7 +120,7 @@ class SpecRepositoryInitializer:
         except Exception as e:
             result["errors"].append(f"Failed to initialize Git repository: {e}")
 
-    def _configure_git_repository(self, result: Dict[str, Any]) -> None:
+    def _configure_git_repository(self, result: dict[str, Any]) -> None:
         """Configure the Git repository with appropriate settings."""
         try:
             # Set up Git configuration for spec repository
@@ -143,7 +143,7 @@ class SpecRepositoryInitializer:
         except Exception as e:
             result["warnings"].append(f"Git configuration failed: {e}")
 
-    def _initialize_specs_directory(self, result: Dict[str, Any]) -> None:
+    def _initialize_specs_directory(self, result: dict[str, Any]) -> None:
         """Initialize the .specs directory structure."""
         try:
             self.directory_manager.ensure_specs_directory()
@@ -154,7 +154,7 @@ class SpecRepositoryInitializer:
         except Exception as e:
             result["errors"].append(f"Failed to create .specs directory: {e}")
 
-    def _setup_ignore_files(self, result: Dict[str, Any]) -> None:
+    def _setup_ignore_files(self, result: dict[str, Any]) -> None:
         """Setup ignore files for the repository."""
         try:
             self.directory_manager.setup_ignore_files()
@@ -163,7 +163,7 @@ class SpecRepositoryInitializer:
         except Exception as e:
             result["warnings"].append(f"Could not setup ignore files: {e}")
 
-    def _create_initial_commit(self, result: Dict[str, Any]) -> None:
+    def _create_initial_commit(self, result: dict[str, Any]) -> None:
         """Create an initial commit in the spec repository."""
         try:
             # Check if there are any commits
@@ -203,7 +203,7 @@ Generated and maintained by [Spec CLI](https://github.com/spec-cli).
         except Exception as e:
             result["warnings"].append(f"Initial commit setup failed: {e}")
 
-    def _update_main_gitignore(self, result: Dict[str, Any]) -> None:
+    def _update_main_gitignore(self, result: dict[str, Any]) -> None:
         """Update the main project .gitignore to include spec files."""
         try:
             self.directory_manager.update_main_gitignore()
@@ -212,7 +212,7 @@ Generated and maintained by [Spec CLI](https://github.com/spec-cli).
         except Exception as e:
             result["warnings"].append(f"Could not update main .gitignore: {e}")
 
-    def _verify_initialization(self, result: Dict[str, Any]) -> None:
+    def _verify_initialization(self, result: dict[str, Any]) -> None:
         """Verify that initialization was successful."""
         try:
             health = self.state_checker.check_repository_health()
@@ -231,7 +231,7 @@ Generated and maintained by [Spec CLI](https://github.com/spec-cli).
         except Exception as e:
             result["warnings"].append(f"Could not verify initialization: {e}")
 
-    def bootstrap_repository_structure(self) -> Dict[str, Any]:
+    def bootstrap_repository_structure(self) -> dict[str, Any]:
         """Bootstrap additional repository structure and configuration.
 
         Returns:
@@ -239,7 +239,7 @@ Generated and maintained by [Spec CLI](https://github.com/spec-cli).
         """
         debug_logger.log("INFO", "Bootstrapping repository structure")
 
-        bootstrap_result: Dict[str, Any] = {
+        bootstrap_result: dict[str, Any] = {
             "success": False,
             "created": [],
             "errors": [],
@@ -249,7 +249,7 @@ Generated and maintained by [Spec CLI](https://github.com/spec-cli).
         try:
             # Ensure repository is initialized
             if not self.state_checker.is_safe_for_spec_operations():
-                cast(List[str], bootstrap_result["errors"]).append(
+                cast(list[str], bootstrap_result["errors"]).append(
                     "Repository not initialized or not safe for operations"
                 )
                 return bootstrap_result
@@ -264,14 +264,14 @@ Generated and maintained by [Spec CLI](https://github.com/spec-cli).
             self._create_example_templates(bootstrap_result)
 
             bootstrap_result["success"] = (
-                len(cast(List[str], bootstrap_result["errors"])) == 0
+                len(cast(list[str], bootstrap_result["errors"])) == 0
             )
 
             debug_logger.log(
                 "INFO",
                 "Repository bootstrap complete",
                 success=bootstrap_result["success"],
-                created=len(cast(List[str], bootstrap_result["created"])),
+                created=len(cast(list[str], bootstrap_result["created"])),
             )
 
             return bootstrap_result
@@ -279,10 +279,10 @@ Generated and maintained by [Spec CLI](https://github.com/spec-cli).
         except Exception as e:
             error_msg = f"Repository bootstrap failed: {e}"
             debug_logger.log("ERROR", error_msg)
-            cast(List[str], bootstrap_result["errors"]).append(error_msg)
+            cast(list[str], bootstrap_result["errors"]).append(error_msg)
             return bootstrap_result
 
-    def _create_common_directories(self, result: Dict[str, Any]) -> None:
+    def _create_common_directories(self, result: dict[str, Any]) -> None:
         """Create common directory structure in .specs."""
         common_dirs = [
             "docs",
@@ -300,7 +300,7 @@ Generated and maintained by [Spec CLI](https://github.com/spec-cli).
             except Exception as e:
                 result["warnings"].append(f"Could not create directory {dir_name}: {e}")
 
-    def _setup_configuration_files(self, result: Dict[str, Any]) -> None:
+    def _setup_configuration_files(self, result: dict[str, Any]) -> None:
         """Setup configuration files in the repository."""
         try:
             # Create .spec/config.json for repository-specific settings
@@ -327,7 +327,7 @@ Generated and maintained by [Spec CLI](https://github.com/spec-cli).
         except Exception as e:
             result["warnings"].append(f"Could not create configuration files: {e}")
 
-    def _create_example_templates(self, result: Dict[str, Any]) -> None:
+    def _create_example_templates(self, result: dict[str, Any]) -> None:
         """Create example template files if they don't exist."""
         try:
             template_file = Path.cwd() / ".spectemplate"
@@ -357,7 +357,7 @@ Generated and maintained by [Spec CLI](https://github.com/spec-cli).
         except Exception as e:
             result["warnings"].append(f"Could not create example templates: {e}")
 
-    def check_initialization_requirements(self) -> List[str]:
+    def check_initialization_requirements(self) -> list[str]:
         """Check if system meets requirements for repository initialization.
 
         Returns:
@@ -410,13 +410,13 @@ Generated and maintained by [Spec CLI](https://github.com/spec-cli).
 
         return issues
 
-    def get_initialization_plan(self) -> Dict[str, Any]:
+    def get_initialization_plan(self) -> dict[str, Any]:
         """Get a plan for what initialization would do.
 
         Returns:
             Dictionary describing the initialization plan
         """
-        plan: Dict[str, Any] = {
+        plan: dict[str, Any] = {
             "actions": [],
             "requirements": self.check_initialization_requirements(),
             "current_state": self.state_checker.get_repository_summary(),
@@ -426,17 +426,17 @@ Generated and maintained by [Spec CLI](https://github.com/spec-cli).
         current_state = self.state_checker.check_repository_health()
 
         if not current_state["checks"]["spec_repo_exists"]:
-            cast(List[str], plan["actions"]).append(
+            cast(list[str], plan["actions"]).append(
                 f"Create Git repository: {self.settings.spec_dir}"
             )
-            cast(List[str], plan["actions"]).append("Configure Git repository settings")
+            cast(list[str], plan["actions"]).append("Configure Git repository settings")
 
         if not current_state["checks"]["spec_dir_exists"]:
-            cast(List[str], plan["actions"]).append(
+            cast(list[str], plan["actions"]).append(
                 f"Create .specs directory: {self.settings.specs_dir}"
             )
 
-        cast(List[str], plan["actions"]).extend(
+        cast(list[str], plan["actions"]).extend(
             [
                 "Setup .specignore file with sensible defaults",
                 "Create initial README.md in .specs",

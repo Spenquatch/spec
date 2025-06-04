@@ -2,7 +2,6 @@
 
 import tempfile
 from pathlib import Path
-from typing import Dict
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -99,7 +98,7 @@ class TestFileProcessingPipeline:
     """Test FileProcessingPipeline class."""
 
     @pytest.fixture
-    def mock_dependencies(self) -> Dict[str, MagicMock]:
+    def mock_dependencies(self) -> dict[str, MagicMock]:
         """Create mock dependencies for pipeline."""
         content_generator = MagicMock()
         change_detector = MagicMock()
@@ -115,13 +114,13 @@ class TestFileProcessingPipeline:
 
     @pytest.fixture
     def pipeline(
-        self, mock_dependencies: Dict[str, MagicMock]
+        self, mock_dependencies: dict[str, MagicMock]
     ) -> FileProcessingPipeline:
         """Create pipeline with mock dependencies."""
         return FileProcessingPipeline(**mock_dependencies)
 
     def test_file_processing_pipeline_complete_flow(
-        self, pipeline: FileProcessingPipeline, mock_dependencies: Dict[str, MagicMock]
+        self, pipeline: FileProcessingPipeline, mock_dependencies: dict[str, MagicMock]
     ) -> None:
         """Test complete file processing pipeline flow."""
         file_path = Path("/test/file.py")
@@ -181,7 +180,7 @@ class TestFileProcessingPipeline:
         assert ProcessingStage.CACHE_UPDATE in stage_calls
 
     def test_pipeline_change_detection_integration(
-        self, pipeline: FileProcessingPipeline, mock_dependencies: Dict[str, MagicMock]
+        self, pipeline: FileProcessingPipeline, mock_dependencies: dict[str, MagicMock]
     ) -> None:
         """Test pipeline integration with change detection."""
         file_path = Path("/test/unchanged_file.py")
@@ -208,7 +207,7 @@ class TestFileProcessingPipeline:
         change_detector.has_file_changed.assert_not_called()
 
     def test_pipeline_conflict_resolution_integration(
-        self, pipeline: FileProcessingPipeline, mock_dependencies: Dict[str, MagicMock]
+        self, pipeline: FileProcessingPipeline, mock_dependencies: dict[str, MagicMock]
     ) -> None:
         """Test pipeline integration with conflict resolution."""
         file_path = Path("/test/file.py")
@@ -241,10 +240,10 @@ class TestFileProcessingPipeline:
         conflict_resolver.resolve_conflict.return_value = resolution_result
 
         # Mock template loading and file existence
-        with patch(
-            "spec_cli.file_processing.processing_pipeline.load_template"
-        ), patch.object(Path, "exists", return_value=True), patch.object(
-            Path, "read_text", return_value="new content"
+        with (
+            patch("spec_cli.file_processing.processing_pipeline.load_template"),
+            patch.object(Path, "exists", return_value=True),
+            patch.object(Path, "read_text", return_value="new content"),
         ):
             # Process file
             result = pipeline.process_file(file_path)
@@ -263,7 +262,7 @@ class TestFileProcessingPipeline:
         )
 
     def test_pipeline_content_generation_integration(
-        self, pipeline: FileProcessingPipeline, mock_dependencies: Dict[str, MagicMock]
+        self, pipeline: FileProcessingPipeline, mock_dependencies: dict[str, MagicMock]
     ) -> None:
         """Test pipeline integration with content generation."""
         file_path = Path("/test/file.py")
@@ -309,7 +308,7 @@ class TestFileProcessingPipeline:
         assert result.generated_files == generated_files
 
     def test_pipeline_error_handling(
-        self, pipeline: FileProcessingPipeline, mock_dependencies: Dict[str, MagicMock]
+        self, pipeline: FileProcessingPipeline, mock_dependencies: dict[str, MagicMock]
     ) -> None:
         """Test pipeline error handling."""
         file_path = Path("/test/file.py")
@@ -336,7 +335,7 @@ class TestFileProcessingPipeline:
         assert "Generation failed" in result.errors[0]
 
     def test_pipeline_validation_and_estimation(
-        self, pipeline: FileProcessingPipeline, mock_dependencies: Dict[str, MagicMock]
+        self, pipeline: FileProcessingPipeline, mock_dependencies: dict[str, MagicMock]
     ) -> None:
         """Test pipeline validation and estimation functionality."""
         # Test file validation
@@ -399,7 +398,7 @@ class TestFileProcessingPipeline:
             temp_path.unlink()
 
     def test_pipeline_with_custom_conflict_strategy(
-        self, pipeline: FileProcessingPipeline, mock_dependencies: Dict[str, MagicMock]
+        self, pipeline: FileProcessingPipeline, mock_dependencies: dict[str, MagicMock]
     ) -> None:
         """Test pipeline with custom conflict resolution strategy."""
         file_path = Path("/test/file.py")
@@ -430,10 +429,10 @@ class TestFileProcessingPipeline:
         conflict_resolver.resolve_conflict.return_value = resolution_result
 
         # Mock template loading and file existence
-        with patch(
-            "spec_cli.file_processing.processing_pipeline.load_template"
-        ), patch.object(Path, "exists", return_value=True), patch.object(
-            Path, "read_text", return_value="new content"
+        with (
+            patch("spec_cli.file_processing.processing_pipeline.load_template"),
+            patch.object(Path, "exists", return_value=True),
+            patch.object(Path, "read_text", return_value="new content"),
         ):
             # Process with custom strategy
             result = pipeline.process_file(file_path, conflict_strategy=custom_strategy)
@@ -445,7 +444,7 @@ class TestFileProcessingPipeline:
         assert result.resolution_strategy == custom_strategy
 
     def test_pipeline_conflict_resolution_failure(
-        self, pipeline: FileProcessingPipeline, mock_dependencies: Dict[str, MagicMock]
+        self, pipeline: FileProcessingPipeline, mock_dependencies: dict[str, MagicMock]
     ) -> None:
         """Test pipeline handling of conflict resolution failures."""
         file_path = Path("/test/file.py")
@@ -473,10 +472,10 @@ class TestFileProcessingPipeline:
         conflict_resolver.resolve_conflict.return_value = resolution_result
 
         # Mock template loading and file existence
-        with patch(
-            "spec_cli.file_processing.processing_pipeline.load_template"
-        ), patch.object(Path, "exists", return_value=True), patch.object(
-            Path, "read_text", return_value="new content"
+        with (
+            patch("spec_cli.file_processing.processing_pipeline.load_template"),
+            patch.object(Path, "exists", return_value=True),
+            patch.object(Path, "read_text", return_value="new content"),
         ):
             # Process file
             result = pipeline.process_file(file_path)

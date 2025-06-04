@@ -1,7 +1,6 @@
 import os
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Optional
 
 from rich.console import Console
 from rich.theme import Theme
@@ -47,7 +46,7 @@ class SpecSettings:
 
     # Terminal styling settings
     use_color: bool = field(init=False)
-    console_width: Optional[int] = field(default=None)
+    console_width: int | None = field(default=None)
 
     def __post_init__(self) -> None:
         """Initialize computed paths and environment settings."""
@@ -126,10 +125,10 @@ class SettingsManager:
 
     def __init__(self) -> None:
         """Initialize settings manager."""
-        self._settings_instance: Optional[SpecSettings] = None
-        self._console_instance: Optional[Console] = None
+        self._settings_instance: SpecSettings | None = None
+        self._console_instance: Console | None = None
 
-    def get_settings(self, root_path: Optional[Path] = None) -> SpecSettings:
+    def get_settings(self, root_path: Path | None = None) -> SpecSettings:
         """Get global settings instance."""
         if self._settings_instance is None or (
             root_path and root_path != self._settings_instance.root_path
@@ -139,7 +138,7 @@ class SettingsManager:
             self._console_instance = None
         return self._settings_instance
 
-    def get_console(self, root_path: Optional[Path] = None) -> Console:
+    def get_console(self, root_path: Path | None = None) -> Console:
         """Get Rich console instance with spec theming."""
         settings = self.get_settings(root_path)
 
@@ -165,12 +164,12 @@ class SettingsManager:
 
 
 # Convenience functions for getting settings and console
-def get_settings(root_path: Optional[Path] = None) -> SpecSettings:
+def get_settings(root_path: Path | None = None) -> SpecSettings:
     """Get global settings instance."""
     return SettingsManager().get_settings(root_path)
 
 
-def get_console(root_path: Optional[Path] = None) -> Console:
+def get_console(root_path: Path | None = None) -> Console:
     """Get Rich console instance."""
     return SettingsManager().get_console(root_path)
 

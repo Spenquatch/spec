@@ -2,7 +2,7 @@ import os
 import stat
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 from ..exceptions import SpecFileError
 from ..logging.debug import debug_logger
@@ -15,7 +15,7 @@ class FileMetadataExtractor:
     def __init__(self) -> None:
         self.type_detector = FileTypeDetector()
 
-    def get_file_metadata(self, file_path: Path) -> Dict[str, Any]:
+    def get_file_metadata(self, file_path: Path) -> dict[str, Any]:
         """Extract comprehensive metadata about a file.
 
         Args:
@@ -121,7 +121,7 @@ class FileMetadataExtractor:
             except Exception:
                 return 0
 
-    def get_directory_composition(self, directory_path: Path) -> Dict[str, Any]:
+    def get_directory_composition(self, directory_path: Path) -> dict[str, Any]:
         """Analyze the composition of files in a directory.
 
         Args:
@@ -133,7 +133,7 @@ class FileMetadataExtractor:
         if not directory_path.is_dir():
             raise SpecFileError(f"Path is not a directory: {directory_path}")
 
-        composition: Dict[str, Any] = {
+        composition: dict[str, Any] = {
             "total_files": 0,
             "total_size": 0,
             "file_types": {},
@@ -226,7 +226,7 @@ class FileMetadataExtractor:
                 {"directory_path": str(directory_path), "os_error": str(e)},
             ) from e
 
-    def compare_files(self, file1: Path, file2: Path) -> Dict[str, Any]:
+    def compare_files(self, file1: Path, file2: Path) -> dict[str, Any]:
         """Compare two files and return comparison results."""
         try:
             meta1 = self.get_file_metadata(file1)

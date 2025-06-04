@@ -4,8 +4,6 @@ import sys
 import types
 
 # Configure rich-click for beautiful help
-from typing import Optional
-
 import click
 
 from ..ui.console import get_console
@@ -71,7 +69,7 @@ app.add_command(show_command, name="show")
 app.add_command(commit_command, name="commit")
 
 
-def _invoke_app(args: Optional[list] = None) -> None:
+def _invoke_app(args: list | None = None) -> None:
     """Invoke the CLI app with given arguments.
 
     This function is separated to make testing easier.
@@ -82,7 +80,7 @@ def _invoke_app(args: Optional[list] = None) -> None:
     app(args=args, standalone_mode=False)
 
 
-def main(args: Optional[list] = None) -> None:
+def main(args: list | None = None) -> None:
     """Main CLI entry point.
 
     Args:

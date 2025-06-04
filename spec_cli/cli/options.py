@@ -1,7 +1,8 @@
 """Shared CLI options and decorators."""
 
+from collections.abc import Callable
 from functools import update_wrapper
-from typing import Any, Callable, Optional
+from typing import Any
 
 import click
 
@@ -95,7 +96,7 @@ def common_options(f: Callable) -> Callable:
     return f
 
 
-def spec_command(name: Optional[str] = None, **kwargs: Any) -> Callable[..., Any]:
+def spec_command(name: str | None = None, **kwargs: Any) -> Callable[..., Any]:
     """Decorator for spec commands with common setup."""
 
     def decorator(f: Callable) -> Any:
