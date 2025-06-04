@@ -160,7 +160,7 @@ class TestAddCommand:
         test_file = specs_dir / "test.md"
         test_file.touch()
 
-        with patch("spec_cli.cli.commands.add_command.show_message"):
+        with patch("spec_cli.ui.error_display.show_message"):
             with patch("spec_cli.git.repository.SpecGitRepository") as mock_repo_class:
                 with patch(
                     "spec_cli.cli.commands.generation.workflows.create_add_workflow"
@@ -190,7 +190,7 @@ class TestAddCommand:
         test_file = specs_dir / "test.md"
         test_file.touch()
 
-        with patch("spec_cli.cli.commands.add_command.show_message"):
+        with patch("spec_cli.ui.error_display.show_message"):
             with patch("spec_cli.git.repository.SpecGitRepository") as mock_repo_class:
                 with patch(
                     "spec_cli.cli.commands.generation.workflows.create_add_workflow"
@@ -226,7 +226,7 @@ class TestAddCommand:
         other_file = tmp_path / "other.md"
         other_file.touch()
 
-        with patch("spec_cli.cli.commands.add_command.show_message"):
+        with patch("spec_cli.ui.error_display.show_message"):
             with patch("spec_cli.git.repository.SpecGitRepository"):
                 with patch(
                     "spec_cli.cli.commands.generation.workflows.create_add_workflow"

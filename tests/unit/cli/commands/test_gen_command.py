@@ -137,9 +137,7 @@ class TestGenCommand:
         test_file = tmp_path / "test.py"
         test_file.touch()
 
-        with patch(
-            "spec_cli.cli.commands.gen_command.show_message"
-        ) as mock_show_message:
+        with patch("spec_cli.ui.error_display.show_message") as mock_show_message:
             with patch(
                 "spec_cli.file_system.path_resolver.PathResolver"
             ) as mock_resolver_class:
@@ -172,7 +170,7 @@ class TestGenCommand:
         test_file = tmp_path / "test.py"
         test_file.touch()
 
-        with patch("spec_cli.cli.commands.gen_command.show_message"):
+        with patch("spec_cli.ui.error_display.show_message"):
             with patch(
                 "spec_cli.cli.commands.gen_command.validate_generation_input"
             ) as mock_validate:
@@ -206,7 +204,7 @@ class TestGenCommand:
         test_file = tmp_path / "test.py"
         test_file.touch()
 
-        with patch("spec_cli.cli.commands.gen_command.show_message"):
+        with patch("spec_cli.ui.error_display.show_message"):
             with patch(
                 "spec_cli.cli.commands.gen_command.validate_generation_input"
             ) as mock_validate:
@@ -236,7 +234,7 @@ class TestGenCommand:
         test_file = tmp_path / "test.py"
         test_file.touch()
 
-        with patch("spec_cli.cli.commands.gen_command.show_message"):
+        with patch("spec_cli.ui.error_display.show_message"):
             with patch(
                 "spec_cli.cli.commands.gen_command.get_user_confirmation"
             ) as mock_confirm:
@@ -274,7 +272,7 @@ class TestGenCommand:
         test_file = tmp_path / "test.py"
         test_file.touch()
 
-        with patch("spec_cli.cli.commands.gen_command.show_message"):
+        with patch("spec_cli.ui.error_display.show_message"):
             with patch(
                 "spec_cli.cli.commands.gen_command.validate_generation_input"
             ) as mock_validate:
