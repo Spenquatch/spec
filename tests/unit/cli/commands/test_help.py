@@ -1,6 +1,5 @@
 """Tests for help command (commands/help.py)."""
 
-
 import pytest
 from click.testing import CliRunner
 

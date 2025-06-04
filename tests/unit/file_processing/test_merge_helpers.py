@@ -1,6 +1,5 @@
 """Tests for content merging functionality."""
 
-
 import pytest
 
 from spec_cli.file_processing.merge_helpers import ContentMerger
