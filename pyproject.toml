@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "spec"
-version = "0.1.54"
+version = "0.1.55"
 description = "A versioned documentation layer for AI-assisted development"
 authors = ["Spenser McConnell <spensermcconnell@gmail.com>"]
 readme = "README.md"
