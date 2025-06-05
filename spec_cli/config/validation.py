@@ -1,14 +1,21 @@
+"""Configuration validation module for spec CLI.
+
+Provides ConfigurationValidator class for validating configuration values
+and generating helpful error messages for various configuration sections.
+"""
+
 from pathlib import Path
 from typing import Any
 
-from ..core.error_handler import ErrorHandler
 from ..exceptions import SpecConfigurationError
+from ..utils.error_handler import ErrorHandler
 
 
 class ConfigurationValidator:
     """Validates configuration values and provides helpful error messages."""
 
     def __init__(self) -> None:
+        """Initialize configuration validator with error handler."""
         self.error_handler = ErrorHandler({"component": "config_validator"})
 
     def validate_configuration(self, config: dict[str, Any]) -> list[str]:

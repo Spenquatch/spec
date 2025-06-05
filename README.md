@@ -115,6 +115,67 @@ Each source file gets a documentation directory with:
 
 ## Advanced Usage
 
+### Dependency Synchronization
+
+`spec` automatically keeps your pre-commit configuration synchronized with your Poetry dependencies. This ensures consistency between your development tools (mypy, ruff, bandit, etc.) and their versions across both environments.
+
+#### How It Works
+
+The project includes an automatic sync script that:
+- Reads your `pyproject.toml` Poetry dependencies
+- Maps development tools to their corresponding pre-commit repositories
+- Automatically includes type stub dependencies (like `types-click`, `types-PyYAML`)
+- Updates `.pre-commit-config.yaml` with the correct versions
+
+#### Automatic Synchronization
+
+The sync runs automatically whenever you modify `pyproject.toml`:
+
+```bash
+# This automatically triggers sync when you commit changes to pyproject.toml
+poetry add --group dev types-requests
+git add pyproject.toml
+git commit -m "Add types-requests"
+# → Pre-commit hook updates .pre-commit-config.yaml automatically
+```
+
+#### Manual Synchronization
+
+You can also run the sync manually:
+
+```bash
+# Generate/update pre-commit config from poetry dependencies
+python scripts/sync-pre-commit.py
+
+# Show what would change without making changes
+python scripts/sync-pre-commit.py --dry-run
+
+# Quiet mode (used by pre-commit hook)
+python scripts/sync-pre-commit.py --quiet
+```
+
+#### Supported Tools
+
+The sync script automatically configures pre-commit hooks for:
+- **mypy** - Type checking with automatic type stub dependencies
+- **ruff** - Linting and formatting (both `ruff` and `ruff-format` hooks)
+- **black** - Code formatting
+- **isort** - Import sorting
+- **bandit** - Security analysis
+
+Type dependencies (`types-*` packages) are automatically detected and added to the mypy hook configuration.
+
+#### Automatic File Staging
+
+When formatting tools (like ruff-format) modify files during a commit, those changes are automatically staged so the commit can proceed without manual intervention. This prevents the common issue where:
+
+1. You run `git commit`
+2. Pre-commit hooks format your files
+3. The commit fails because formatted files aren't staged
+4. You have to run `git add` and commit again
+
+With automatic staging enabled, formatted files are immediately re-staged and the commit proceeds smoothly. This is especially useful for AI agents that may force commits without checking for formatting changes.
+
 ### Custom Templates
 
 Create a `.spectemplate` file to customize documentation format:

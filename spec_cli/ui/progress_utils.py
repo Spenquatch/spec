@@ -1,3 +1,9 @@
+"""
+Utility functions and classes for progress tracking operations.
+
+Provides time estimation, progress contexts, and operation tracking helpers.
+"""
+
 import time
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager

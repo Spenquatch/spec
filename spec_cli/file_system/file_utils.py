@@ -1,3 +1,11 @@
+"""File system utilities for operations, statistics, and metadata.
+
+This module provides essential file system utilities including readability
+checks, size formatting, timestamp handling, file discovery operations,
+and safe file operation validation. These utilities are used throughout
+the spec system for consistent file handling.
+"""
+
 import os
 from datetime import datetime
 from pathlib import Path
@@ -14,6 +22,7 @@ def ensure_file_readable(file_path: Path) -> bool:
 
     Returns:
         True if readable, False otherwise
+
     """
     if not file_path.exists():
         debug_logger.log("WARNING", "File does not exist", file_path=str(file_path))
@@ -40,6 +49,7 @@ def get_file_extension_stats(files: list[Path]) -> dict[str, int]:
 
     Returns:
         Dictionary with extension statistics
+
     """
     extension_stats: dict[str, int] = {}
 
@@ -69,6 +79,7 @@ def find_largest_files(directory: Path, limit: int = 10) -> list[dict[str, objec
 
     Returns:
         List of dictionaries with file info, sorted by size (largest first)
+
     """
     if not directory.is_dir():
         raise SpecFileError(f"Path is not a directory: {directory}")
@@ -111,6 +122,7 @@ def find_recently_modified_files(
 
     Returns:
         List of dictionaries with file info, sorted by modification time (newest first)
+
     """
     if not directory.is_dir():
         raise SpecFileError(f"Path is not a directory: {directory}")
@@ -153,6 +165,7 @@ def format_file_size(size_bytes: int) -> str:
 
     Returns:
         Formatted size string
+
     """
     size_float = float(size_bytes)
     for unit in ["B", "KB", "MB", "GB", "TB"]:
@@ -170,6 +183,7 @@ def format_timestamp(timestamp: float) -> str:
 
     Returns:
         Formatted timestamp string
+
     """
     dt = datetime.fromtimestamp(timestamp)
     return dt.strftime("%Y-%m-%d %H:%M:%S")
@@ -184,6 +198,7 @@ def safe_file_operation(file_path: Path, operation: str) -> bool:
 
     Returns:
         True if operation is safe, False otherwise
+
     """
     if not file_path.exists():
         return False
@@ -215,6 +230,7 @@ def get_unique_extensions(files: list[Path]) -> set[str]:
 
     Returns:
         Set of unique extensions (lowercase)
+
     """
     extensions = set()
 
@@ -239,6 +255,7 @@ def filter_files_by_size(
 
     Returns:
         Filtered list of file paths
+
     """
     filtered = []
 

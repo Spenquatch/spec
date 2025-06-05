@@ -1,3 +1,11 @@
+"""Intelligent directory traversal with filtering and analysis.
+
+This module provides comprehensive directory traversal capabilities for spec
+generation, including file type detection, ignore pattern filtering, and
+directory structure analysis. It ensures safe and efficient processing of
+project files while respecting project boundaries and ignore patterns.
+"""
+
 from collections.abc import Generator
 from pathlib import Path
 from typing import Any
@@ -14,6 +22,12 @@ class DirectoryTraversal:
     """Handles intelligent directory traversal with filtering and analysis."""
 
     def __init__(self, root_path: Path):
+        """Initialize the DirectoryTraversal.
+
+        Args:
+            root_path: Root directory for traversal operations
+
+        """
         self.root_path = root_path
         self.ignore_matcher = IgnorePatternMatcher()
         self.type_detector = FileTypeDetector()
@@ -30,6 +44,7 @@ class DirectoryTraversal:
 
         Returns:
             List of processable file paths
+
         """
         if directory is None:
             directory = self.root_path
@@ -128,6 +143,7 @@ class DirectoryTraversal:
 
         Returns:
             Dictionary with analysis results
+
         """
         if directory is None:
             directory = self.root_path
@@ -282,6 +298,7 @@ class DirectoryTraversal:
 
         Returns:
             List of matching file paths
+
         """
         if directory is None:
             directory = self.root_path
@@ -343,6 +360,7 @@ class DirectoryTraversal:
 
         Returns:
             Dictionary with directory summary
+
         """
         if directory is None:
             directory = self.root_path

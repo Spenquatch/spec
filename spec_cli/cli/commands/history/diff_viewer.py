@@ -13,6 +13,7 @@ class DiffViewer:
     """Rich-based diff viewer with syntax highlighting."""
 
     def __init__(self) -> None:
+        """Initialize diff viewer with Rich console."""
         self.console = get_console()
 
     def display_file_diff(

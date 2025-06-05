@@ -1,3 +1,11 @@
+"""File type detection and processability analysis for spec generation.
+
+This module provides comprehensive file type detection based on extensions
+and special filenames, determining whether files should be processed for
+spec generation. It includes support for programming languages, web
+technologies, data formats, and configuration files.
+"""
+
 from pathlib import Path
 
 from ..logging.debug import debug_logger
@@ -141,6 +149,7 @@ class FileTypeDetector:
 
         Returns:
             String representing the file type category
+
         """
         extension = file_path.suffix.lower()
         filename = file_path.name.lower()
@@ -185,6 +194,7 @@ class FileTypeDetector:
 
         Returns:
             True if file is likely binary, False otherwise
+
         """
         extension = file_path.suffix.lower()
         is_binary = extension in self.BINARY_EXTENSIONS
@@ -207,6 +217,7 @@ class FileTypeDetector:
 
         Returns:
             True if file should be processed, False otherwise
+
         """
         # Check if binary
         if self.is_binary_file(file_path):
@@ -264,6 +275,7 @@ class FileTypeDetector:
 
         Returns:
             Category string or None if unknown
+
         """
         file_type = self.get_file_type(file_path)
 

@@ -7,8 +7,8 @@ from unittest.mock import patch
 
 import pytest
 
-from spec_cli.core.error_handler import ErrorHandler, default_error_handler
 from spec_cli.exceptions import SpecError, SpecFileError
+from spec_cli.utils.error_handler import ErrorHandler, default_error_handler
 
 
 class TestErrorHandler:
@@ -17,7 +17,7 @@ class TestErrorHandler:
     def test_error_handler_when_wrap_function_then_catches_exceptions(self):
         """Test that wrap decorator catches and reports exceptions."""
         # Create mock logger to capture calls
-        with patch("spec_cli.core.error_handler.debug_logger") as mock_logger:
+        with patch("spec_cli.utils.error_handler.debug_logger") as mock_logger:
             handler = ErrorHandler()
 
             @handler.wrap
@@ -58,7 +58,7 @@ class TestErrorHandler:
 
     def test_error_handler_when_report_called_then_logs_with_context(self):
         """Test that report method logs errors with context."""
-        with patch("spec_cli.core.error_handler.debug_logger") as mock_logger:
+        with patch("spec_cli.utils.error_handler.debug_logger") as mock_logger:
             handler = ErrorHandler({"default_key": "default_value"})
             exc = ValueError("Test error")
 
@@ -81,9 +81,9 @@ class TestErrorHandler:
 
     def test_error_handler_when_os_error_then_uses_handle_os_error(self):
         """Test that OSError uses handle_os_error utility."""
-        with patch("spec_cli.core.error_handler.debug_logger") as mock_logger:
+        with patch("spec_cli.utils.error_handler.debug_logger") as mock_logger:
             with patch(
-                "spec_cli.core.error_handler.handle_os_error"
+                "spec_cli.utils.error_handler.handle_os_error"
             ) as mock_handle_os_error:
                 mock_handle_os_error.return_value = "Formatted OS error"
 
@@ -104,9 +104,9 @@ class TestErrorHandler:
         self,
     ):
         """Test that SubprocessError uses handle_subprocess_error utility."""
-        with patch("spec_cli.core.error_handler.debug_logger") as mock_logger:
+        with patch("spec_cli.utils.error_handler.debug_logger") as mock_logger:
             with patch(
-                "spec_cli.core.error_handler.handle_subprocess_error"
+                "spec_cli.utils.error_handler.handle_subprocess_error"
             ) as mock_handle_subprocess_error:
                 mock_handle_subprocess_error.return_value = "Formatted subprocess error"
 
@@ -125,7 +125,7 @@ class TestErrorHandler:
 
     def test_error_handler_when_spec_error_then_uses_spec_error_context(self):
         """Test that SpecError uses its own context and user message."""
-        with patch("spec_cli.core.error_handler.debug_logger") as mock_logger:
+        with patch("spec_cli.utils.error_handler.debug_logger") as mock_logger:
             handler = ErrorHandler()
             exc = SpecError("Test spec error", {"spec_key": "spec_value"})
 
@@ -142,9 +142,9 @@ class TestErrorHandler:
 
     def test_error_handler_when_code_path_provided_then_includes_path_context(self):
         """Test that code_path parameter adds path context."""
-        with patch("spec_cli.core.error_handler.debug_logger") as mock_logger:
+        with patch("spec_cli.utils.error_handler.debug_logger") as mock_logger:
             with patch(
-                "spec_cli.core.error_handler.create_error_context"
+                "spec_cli.utils.error_handler.create_error_context"
             ) as mock_create_context:
                 mock_create_context.return_value = {
                     "file_path": "/test/path",
@@ -168,9 +168,9 @@ class TestErrorHandler:
 
     def test_error_handler_when_path_context_fails_then_continues_gracefully(self):
         """Test that errors in path context creation don't break error reporting."""
-        with patch("spec_cli.core.error_handler.debug_logger") as mock_logger:
+        with patch("spec_cli.utils.error_handler.debug_logger") as mock_logger:
             with patch(
-                "spec_cli.core.error_handler.create_error_context"
+                "spec_cli.utils.error_handler.create_error_context"
             ) as mock_create_context:
                 mock_create_context.side_effect = Exception("Context creation failed")
 
@@ -196,7 +196,7 @@ class TestErrorHandler:
         self,
     ):
         """Test log_and_raise with reraise_as parameter."""
-        with patch("spec_cli.core.error_handler.debug_logger"):
+        with patch("spec_cli.utils.error_handler.debug_logger"):
             handler = ErrorHandler()
             exc = OSError(errno.ENOENT, "No such file")
 
@@ -211,7 +211,7 @@ class TestErrorHandler:
         self,
     ):
         """Test log_and_raise without reraise_as preserves original exception."""
-        with patch("spec_cli.core.error_handler.debug_logger"):
+        with patch("spec_cli.utils.error_handler.debug_logger"):
             handler = ErrorHandler()
             exc = ValueError("Original error")
 
@@ -222,7 +222,7 @@ class TestErrorHandler:
         self,
     ):
         """Test that default context is included in all error reports."""
-        with patch("spec_cli.core.error_handler.debug_logger") as mock_logger:
+        with patch("spec_cli.utils.error_handler.debug_logger") as mock_logger:
             default_context = {"module": "test_module", "version": "1.0"}
             handler = ErrorHandler(default_context)
 
@@ -238,7 +238,7 @@ class TestErrorHandler:
         self,
     ):
         """Test that additional context overrides default context."""
-        with patch("spec_cli.core.error_handler.debug_logger") as mock_logger:
+        with patch("spec_cli.utils.error_handler.debug_logger") as mock_logger:
             default_context = {"key": "default_value", "static": "unchanged"}
             handler = ErrorHandler(default_context)
 
@@ -260,7 +260,7 @@ class TestDefaultErrorHandler:
 
     def test_default_error_handler_when_used_then_works_correctly(self):
         """Test that default error handler works correctly."""
-        with patch("spec_cli.core.error_handler.debug_logger") as mock_logger:
+        with patch("spec_cli.utils.error_handler.debug_logger") as mock_logger:
             exc = ValueError("Test error")
             default_error_handler.report(exc, "test operation")
 
@@ -275,7 +275,7 @@ class TestErrorHandlerIntegration:
 
     def test_error_handler_when_real_os_error_then_formats_correctly(self):
         """Test ErrorHandler with real OSError."""
-        with patch("spec_cli.core.error_handler.debug_logger") as mock_logger:
+        with patch("spec_cli.utils.error_handler.debug_logger") as mock_logger:
             handler = ErrorHandler()
 
             try:
@@ -294,7 +294,7 @@ class TestErrorHandlerIntegration:
 
     def test_error_handler_when_real_subprocess_error_then_formats_correctly(self):
         """Test ErrorHandler with real subprocess error."""
-        with patch("spec_cli.core.error_handler.debug_logger") as mock_logger:
+        with patch("spec_cli.utils.error_handler.debug_logger") as mock_logger:
             handler = ErrorHandler()
 
             try:
@@ -314,7 +314,7 @@ class TestErrorHandlerIntegration:
         self,
     ):
         """Test that wrapped function arguments are included in context."""
-        with patch("spec_cli.core.error_handler.debug_logger") as mock_logger:
+        with patch("spec_cli.utils.error_handler.debug_logger") as mock_logger:
             handler = ErrorHandler()
 
             @handler.wrap

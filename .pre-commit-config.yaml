@@ -1,24 +1,108 @@
 repos:
-  - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
-    hooks:
-      - id: trailing-whitespace
-      - id: end-of-file-fixer
-      - id: check-yaml
-      - id: check-added-large-files
-      - id: check-merge-conflict
-
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.11.12
-    hooks:
-      - id: ruff
-        args: [--fix]
-      - id: ruff-format
-
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.16.0
-    hooks:
-      - id: mypy
-        additional_dependencies: [types-PyYAML, types-click, "pydantic>=2.5.0,<2.11", tomli, rich, rich-click]
-        args: [--python-version=3.10]
-        files: ^spec_cli/
+- repo: local
+  hooks:
+  - id: sync-pre-commit-deps
+    name: Sync pre-commit dependencies with poetry
+    entry: python scripts/sync-pre-commit.py --quiet
+    language: system
+    pass_filenames: false
+    files: ^pyproject\.toml$
+- repo: local
+  hooks:
+  - id: auto-stage-formatted
+    name: Auto-stage formatted files
+    entry: python scripts/auto-stage-formatted.py
+    language: system
+    pass_filenames: false
+    always_run: true
+    stages:
+    - pre-commit
+- repo: local
+  hooks:
+  - id: auto-stage-formatted
+    name: Auto-stage formatted files
+    entry: python scripts/auto-stage-formatted.py
+    language: system
+    pass_filenames: false
+    always_run: true
+    stages:
+    - pre-commit
+- repo: local
+  hooks:
+  - id: auto-stage-formatted
+    name: Auto-stage formatted files
+    entry: python scripts/auto-stage-formatted.py
+    language: system
+    pass_filenames: false
+    always_run: true
+    stages:
+    - pre-commit
+- repo: local
+  hooks:
+  - id: auto-stage-formatted
+    name: Auto-stage formatted files
+    entry: python scripts/auto-stage-formatted.py
+    language: system
+    pass_filenames: false
+    always_run: true
+    stages:
+    - pre-commit
+- repo: local
+  hooks:
+  - id: auto-stage-formatted
+    name: Auto-stage formatted files
+    entry: python scripts/auto-stage-formatted.py
+    language: system
+    pass_filenames: false
+    always_run: true
+    stages:
+    - pre-commit
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v4.5.0
+  hooks:
+  - id: trailing-whitespace
+  - id: end-of-file-fixer
+  - id: check-yaml
+  - id: check-added-large-files
+  - id: check-merge-conflict
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  rev: v0.11.12
+  hooks:
+  - id: ruff
+    args:
+    - --fix
+    files: ^spec_cli/
+  - id: ruff-format
+    files: ^spec_cli/
+- repo: https://github.com/pre-commit/mirrors-mypy
+  rev: v1.16.0
+  hooks:
+  - id: mypy
+    additional_dependencies:
+    - types-PyYAML
+    - types-click
+    - pydantic
+    - tomli
+    - rich
+    - rich-click
+    args:
+    - --python-version=3.10
+    files: ^spec_cli/
+- repo: https://github.com/pycqa/bandit
+  rev: 1.7.8
+  hooks:
+  - id: bandit
+    args:
+    - -lll
+    - --exclude
+    - tests,scripts
+- repo: local
+  hooks:
+  - id: auto-stage-formatted
+    name: Auto-stage formatted files
+    entry: python scripts/auto-stage-formatted.py
+    language: system
+    pass_filenames: false
+    always_run: true
+    stages:
+    - pre-commit

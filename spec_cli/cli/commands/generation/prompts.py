@@ -12,6 +12,7 @@ class TemplateSelector:
     """Interactive template selection."""
 
     def __init__(self) -> None:
+        """Initialize template selector with console interface."""
         self.console = get_console()
 
     def select_template(self, current_template: str | None = None) -> str:
@@ -84,6 +85,7 @@ class ConflictResolver:
     """Interactive conflict resolution."""
 
     def __init__(self) -> None:
+        """Initialize conflict resolver with console interface."""
         self.console = get_console()
 
     def resolve_conflicts(
@@ -174,6 +176,7 @@ class GenerationPrompts:
     """Comprehensive generation prompts."""
 
     def __init__(self) -> None:
+        """Initialize generation prompts with selector, resolver, and console."""
         self.template_selector = TemplateSelector()
         self.conflict_resolver = ConflictResolver()
         self.console = get_console()

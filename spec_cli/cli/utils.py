@@ -7,9 +7,9 @@ from typing import Any
 
 import click
 
-from ..core.error_handler import ErrorHandler
 from ..exceptions import SpecError
 from ..logging.debug import debug_logger
+from ..utils.error_handler import ErrorHandler
 
 # Create CLI-specific error handler
 cli_error_handler = ErrorHandler({"module": "cli", "component": "utils"})
@@ -166,14 +166,14 @@ def get_spec_repository() -> Any:
         )
 
 
-def with_progress_context(operation_name: str) -> Callable:
-    """Decorator to wrap command with progress context.
+def with_progress_context(operation_name: str) -> Callable[..., Any]:
+    """Wrap command with progress context.
 
     Args:
         operation_name: Name of the operation for progress tracking
     """
 
-    def decorator(f: Callable) -> Callable:
+    def decorator(f: Callable[..., Any]) -> Callable[..., Any]:
         def wrapper(*args: Any, **kwargs: Any) -> Any:
             from ..ui.progress_manager import get_progress_manager
 

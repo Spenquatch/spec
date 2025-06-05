@@ -1,3 +1,18 @@
+"""Git commit management module for spec CLI.
+
+This module provides the SpecCommitManager class which handles all Git commit
+operations for the spec repository. It manages staging files, creating commits,
+tags, and rollback operations with comprehensive error handling and validation.
+
+Key responsibilities:
+- Adding files to Git staging area with validation and force options
+- Creating commits with proper message formatting and author handling
+- Managing Git tags for backup and milestone marking
+- Providing rollback capabilities with backup creation
+- Monitoring repository status and commit history
+- Ensuring safe operations through pre-operation validation
+"""
+
 import re
 import subprocess
 from datetime import datetime
@@ -19,6 +34,16 @@ class SpecCommitManager:
     """Manages Git commit operations for spec repository."""
 
     def __init__(self, settings: SpecSettings | None = None):
+        """Initialize the commit manager with configuration and dependencies.
+
+        Args:
+            settings: Optional SpecSettings instance. If None, uses default settings
+                     from get_settings()
+
+        The commit manager sets up all required components for Git operations:
+        - Git repository interface for executing Git commands
+        - State checker for repository health and operation safety validation
+        """
         self.settings = settings or get_settings()
         self.git_repo = SpecGitRepository(self.settings)
         self.state_checker = RepositoryStateChecker(self.settings)

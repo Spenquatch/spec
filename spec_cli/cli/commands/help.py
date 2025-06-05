@@ -1,5 +1,7 @@
 """Spec help command implementation."""
 
+from typing import Any
+
 import click
 
 from ...ui.console import get_console
@@ -106,9 +108,8 @@ def _display_command_help(command: str) -> None:
             console.print(f"  spec {example['command']}\n")
 
 
-def _get_command_help(command: str) -> dict:
+def _get_command_help(command: str) -> dict[str, Any]:
     """Get help data for a specific command."""
-
     help_data = {
         "init": {
             "description": "Initialize spec repository",

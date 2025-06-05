@@ -1,3 +1,10 @@
+"""Persistent file cache for change detection.
+
+This module provides caching functionality for file metadata and hashes to enable
+efficient change detection across spec processing sessions. The cache stores file
+hashes, timestamps, and metadata to avoid reprocessing unchanged files.
+"""
+
 import json
 import time
 from datetime import datetime
@@ -22,6 +29,17 @@ class FileCacheEntry:
         last_processed: float,
         metadata: dict[str, Any] | None = None,
     ):
+        """Initialize file cache entry.
+
+        Args:
+            file_path: Path to the cached file
+            hash_md5: MD5 hash of the file content
+            hash_sha256: SHA256 hash of the file content
+            size: Size of the file in bytes
+            mtime: Last modification time of the file
+            last_processed: Timestamp when file was last processed
+            metadata: Additional metadata about the cached file
+        """
         self.file_path = file_path
         self.hash_md5 = hash_md5
         self.hash_sha256 = hash_sha256
@@ -68,6 +86,11 @@ class FileCacheManager:
     """Manages persistent file cache for change detection."""
 
     def __init__(self, settings: SpecSettings | None = None):
+        """Initialize the file cache manager.
+
+        Args:
+            settings: Optional SpecSettings instance. Uses default settings if None.
+        """
         self.settings = settings or get_settings()
         self.cache_file = self.settings.spec_dir / "cache.json"
         self._cache: dict[str, FileCacheEntry] = {}

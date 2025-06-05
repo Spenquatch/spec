@@ -1,5 +1,7 @@
 """Spec commit command implementation."""
 
+from typing import Any
+
 import click
 
 from ...git.repository import SpecGitRepository
@@ -101,7 +103,7 @@ def commit_command(
         raise click.ClickException(f"Commit failed: {e}") from e
 
 
-def _auto_stage_changes(repo: SpecGitRepository, status: dict) -> None:
+def _auto_stage_changes(repo: SpecGitRepository, status: dict[str, Any]) -> None:
     """Automatically stage modified and deleted files."""
     # Stage modified files
     modified_files = status.get("modified", [])
@@ -130,7 +132,7 @@ def _auto_stage_changes(repo: SpecGitRepository, status: dict) -> None:
         show_message(f"Auto-staged {total_staged} files", "info")
 
 
-def _show_commit_preview(staged_files: list, message: str, amend: bool) -> None:
+def _show_commit_preview(staged_files: list[str], message: str, amend: bool) -> None:
     """Show preview of what will be committed."""
     console = get_console()
 
@@ -155,7 +157,7 @@ def _show_commit_preview(staged_files: list, message: str, amend: bool) -> None:
 
 
 def _show_commit_result(
-    repo: SpecGitRepository, commit_hash: str, staged_files: list
+    repo: SpecGitRepository, commit_hash: str, staged_files: list[str]
 ) -> None:
     """Show commit result details."""
     console = get_console()

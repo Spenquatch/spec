@@ -1,3 +1,11 @@
+"""Progress event system for file processing operations.
+
+This module provides a comprehensive event system for tracking and reporting
+progress during batch file processing. It supports various event types,
+processing stages, and allows external listeners to monitor processing progress
+in real-time.
+"""
+
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -73,6 +81,7 @@ class ProgressReporter:
     """Reports progress events to registered listeners."""
 
     def __init__(self) -> None:
+        """Initialize the progress reporter with empty listeners and event storage."""
         self.listeners: list[Callable[[ProgressEvent], None]] = []
         self.events: list[ProgressEvent] = []
         self.max_events = 1000  # Limit stored events to prevent memory issues

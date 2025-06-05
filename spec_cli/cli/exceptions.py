@@ -20,6 +20,13 @@ class CLIValidationError(CLIError):
         parameter: str | None = None,
         suggestions: list[str] | None = None,
     ):
+        """Initialize CLI validation error.
+
+        Args:
+            message: Error message
+            parameter: Parameter name that caused the error
+            suggestions: Optional list of suggestions for fixing the error
+        """
         super().__init__(message)
         self.parameter = parameter
         self.suggestions = suggestions or []

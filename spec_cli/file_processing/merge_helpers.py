@@ -1,3 +1,11 @@
+"""Content merging utilities for spec documentation.
+
+This module provides functionality for intelligently merging markdown content
+during spec documentation updates. It handles section detection, conflict
+identification, and various merge strategies to preserve important content
+while incorporating new changes.
+"""
+
 import re
 from typing import Any
 
@@ -8,6 +16,7 @@ class ContentMerger:
     """Utilities for merging and combining file content."""
 
     def __init__(self) -> None:
+        """Initialize the content merger with pattern matchers."""
         # Patterns for detecting markdown sections
         self.section_patterns = {
             "heading": re.compile(r"^(#{1,6})\s+(.+)$", re.MULTILINE),

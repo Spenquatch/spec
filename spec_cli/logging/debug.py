@@ -1,3 +1,9 @@
+"""Debug logging utilities with structured output and timing capabilities.
+
+Provides enhanced debug logging with environment-based configuration,
+structured data support, and performance timing integration.
+"""
+
 import logging
 import os
 import time
@@ -11,6 +17,7 @@ class DebugLogger:
     """Enhanced debug logging with structured output and timing capabilities."""
 
     def __init__(self) -> None:
+        """Initialize debug logger with environment-based configuration."""
         self.enabled = self._is_debug_enabled()
         self.level = self._get_debug_level()
         self.timing_enabled = self._is_timing_enabled()
@@ -142,7 +149,10 @@ class DebugLogger:
             )
 
     def log_function_call(
-        self, func_name: str, args: tuple = (), kwargs: dict[str, Any] | None = None
+        self,
+        func_name: str,
+        args: tuple[Any, ...] = (),
+        kwargs: dict[str, Any] | None = None,
     ) -> None:
         """Log function call with arguments.
 

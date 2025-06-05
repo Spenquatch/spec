@@ -1,3 +1,10 @@
+"""Theme management for the spec CLI interface.
+
+This module provides color schemes and theming functionality for the spec CLI,
+allowing customization of the visual appearance and supporting different
+terminal environments.
+"""
+
 from enum import Enum
 
 from rich.theme import Theme
@@ -20,6 +27,11 @@ class SpecTheme:
     """Manages theming and color schemes for the spec CLI interface."""
 
     def __init__(self, color_scheme: ColorScheme = ColorScheme.DEFAULT):
+        """Initialize the SpecTheme.
+
+        Args:
+            color_scheme: Color scheme to use for the theme
+        """
         self.color_scheme = color_scheme
         self._theme: Theme | None = None
         self._load_theme()

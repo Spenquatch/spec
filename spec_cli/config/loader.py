@@ -1,12 +1,18 @@
+"""Configuration loading module for spec CLI.
+
+Provides ConfigurationLoader class for loading and parsing configuration
+from multiple sources including YAML and TOML files with proper precedence handling.
+"""
+
 import sys
 from pathlib import Path
 from typing import Any
 
 import yaml
 
-from ..core.error_handler import ErrorHandler
 from ..exceptions import SpecConfigurationError
 from ..logging.debug import debug_logger
+from ..utils.error_handler import ErrorHandler
 
 # Handle tomllib import for multiple Python versions
 if sys.version_info >= (3, 11):
@@ -22,6 +28,11 @@ class ConfigurationLoader:
     """Loads configuration from various sources with precedence handling."""
 
     def __init__(self, root_path: Path):
+        """Initialize configuration loader with project root path.
+
+        Args:
+            root_path: Path to the project root directory
+        """
         self.root_path = root_path
         self.config_sources = [
             root_path / ".specconfig.yaml",

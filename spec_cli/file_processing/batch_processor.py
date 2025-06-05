@@ -1,12 +1,19 @@
+"""Batch file processing module.
+
+Provides functionality for processing multiple files in batches with progress tracking,
+error recovery, and conflict resolution. Includes options for parallel processing,
+automatic commit, and comprehensive result reporting.
+"""
+
 import time
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any, cast
 
 from ..config.settings import SpecSettings, get_settings
-from ..core.workflow_orchestrator import SpecWorkflowOrchestrator
 from ..logging.debug import debug_logger
 from ..utils.error_utils import create_error_context, handle_os_error
+from ..utils.workflow_utils import create_workflow_result
 from .change_detector import FileChangeDetector
 from .conflict_resolver import ConflictResolutionStrategy, ConflictResolver
 from .processing_pipeline import FileProcessingPipeline, FileProcessingResult
@@ -27,6 +34,18 @@ class BatchProcessingOptions:
         auto_commit: bool = False,
         custom_variables: dict[str, Any] | None = None,
     ):
+        """Initialize batch processing options.
+
+        Args:
+            max_files: Maximum number of files to process (None for unlimited)
+            max_parallel: Maximum number of parallel processing threads
+            force_regenerate: Whether to force regeneration of all files
+            skip_unchanged: Whether to skip files that haven't changed
+            conflict_strategy: Strategy for resolving conflicts (defaults to MERGE_INTELLIGENT)
+            create_backups: Whether to create backups before processing
+            auto_commit: Whether to automatically commit successful changes
+            custom_variables: Custom variables for template processing
+        """
         self.max_files = max_files
         self.max_parallel = max_parallel
         self.force_regenerate = force_regenerate
@@ -43,6 +62,11 @@ class BatchProcessingResult:
     """Result of batch processing operation."""
 
     def __init__(self) -> None:
+        """Initialize empty batch processing result.
+
+        Creates a new result object with default values for tracking
+        batch processing outcomes, timing, and file categorization.
+        """
         self.success = False
         self.total_files = 0
         self.successful_files: list[Path] = []
@@ -84,10 +108,14 @@ class BatchFileProcessor:
     """Processes multiple files in batch with progress tracking and error recovery."""
 
     def __init__(self, settings: SpecSettings | None = None):
+        """Initialize batch file processor.
+
+        Args:
+            settings: Optional spec settings to use, defaults to global settings
+        """
         self.settings = settings or get_settings()
         self.change_detector = FileChangeDetector(self.settings)
         self.conflict_resolver = ConflictResolver(self.settings)
-        self.workflow_orchestrator = SpecWorkflowOrchestrator(self.settings)
         self.progress_reporter = progress_reporter
 
         # Create processing pipeline
@@ -315,18 +343,27 @@ class BatchFileProcessor:
                 successful_files=len(result.successful_files),
             )
 
-            # Use workflow orchestrator for commit
-            workflow_result = self.workflow_orchestrator.generate_specs_for_files(
-                result.successful_files,
-                custom_variables=options.custom_variables,
-                auto_commit=True,
-                create_backup=options.create_backups,
-            )
+            # Use direct git operations instead of workflow orchestrator
+            from ..git.repository import SpecGitRepository
 
-            result.workflow_id = workflow_result.get("workflow_id")
+            repo = SpecGitRepository(self.settings)
 
-            if not workflow_result.get("success"):
-                result.warnings.append("Auto-commit failed")
+            try:
+                # Add processed files to git
+                repo.add_files([str(f) for f in result.successful_files])
+
+                # Create commit
+                commit_msg = f"Process {len(result.successful_files)} spec files"
+                repo.commit(commit_msg)
+
+                # Create simplified workflow result
+                workflow_result = create_workflow_result(
+                    result.successful_files, True, f"batch-{int(time.time())}"
+                )
+                result.workflow_id = workflow_result["workflow_id"]
+
+            except Exception as git_error:
+                result.warnings.append(f"Auto-commit failed: {git_error}")
 
         except Exception as e:
             if isinstance(e, OSError):
@@ -477,13 +514,13 @@ class BatchFileProcessor:
 
 # Convenience functions
 def process_files_batch(file_paths: list[Path], **kwargs: Any) -> BatchProcessingResult:
-    """Convenience function for batch processing."""
+    """Process files in batch using default processor."""
     processor = BatchFileProcessor()
     options = BatchProcessingOptions(**kwargs)
     return processor.process_files(file_paths, options)
 
 
 def estimate_processing_time(file_paths: list[Path]) -> dict[str, Any]:
-    """Convenience function for processing estimation."""
+    """Estimate processing time for given file paths."""
     processor = BatchFileProcessor()
     return processor.estimate_batch_processing(file_paths)

@@ -39,7 +39,7 @@ from .generation import create_regeneration_workflow, validate_generation_input
 def regen_command(
     debug: bool,
     verbose: bool,
-    files: tuple,
+    files: tuple[str, ...],
     all: bool,
     template: str,
     preserve_history: bool,

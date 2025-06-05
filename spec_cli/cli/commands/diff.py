@@ -1,5 +1,7 @@
 """Spec diff command implementation."""
 
+from typing import Any
+
 import click
 
 from ...logging.debug import debug_logger
@@ -27,7 +29,7 @@ from .history import format_diff_output
 def diff_command(
     debug: bool,
     verbose: bool,
-    files: tuple,
+    files: tuple[str, ...],
     cached: bool,
     commit: str,
     unified: int,
@@ -101,7 +103,7 @@ def diff_command(
         raise click.ClickException(f"Diff failed: {e}") from e
 
 
-def _display_diff_stats(diff_data: dict) -> None:
+def _display_diff_stats(diff_data: dict[str, Any]) -> None:
     """Display diff statistics summary."""
     console = get_console()
     files = diff_data.get("files", [])
@@ -138,7 +140,7 @@ def _display_diff_stats(diff_data: dict) -> None:
             console.print(f"  [path]{filename}[/path] ({changes})")
 
 
-def _display_plain_diff(diff_data: dict) -> None:
+def _display_plain_diff(diff_data: dict[str, Any]) -> None:
     """Display diff without color formatting."""
     console = get_console()
 

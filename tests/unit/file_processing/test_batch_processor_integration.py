@@ -85,11 +85,12 @@ class TestBatchProcessorErrorIntegration:
         with patch.object(
             batch_processor.pipeline, "process_file", return_value=mock_file_result
         ):
-            with patch.object(
-                batch_processor.workflow_orchestrator,
-                "generate_specs_for_files",
-                side_effect=os_error,
-            ):
+            with patch("spec_cli.git.repository.SpecGitRepository") as mock_repo_class:
+                mock_repo = Mock()
+                mock_repo_class.return_value = mock_repo
+                # Mock SpecGitRepository constructor to raise OS error
+                mock_repo_class.side_effect = os_error
+
                 result = batch_processor.process_files(sample_files[:1], options)
 
                 # Verify warning includes formatted error

@@ -19,7 +19,6 @@ def init_command(debug: bool, verbose: bool, force: bool) -> None:
     Creates a new spec repository in the current directory with proper
     directory structure and Git configuration.
     """
-
     try:
         # Create repository instance
         repo = SpecGitRepository()

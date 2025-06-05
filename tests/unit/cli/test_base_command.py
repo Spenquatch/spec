@@ -8,8 +8,8 @@ import pytest
 
 from spec_cli.cli.base_command import BaseCommand
 from spec_cli.config.settings import SpecSettings
-from spec_cli.core.error_handler import ErrorHandler
 from spec_cli.exceptions import SpecError
+from spec_cli.utils.error_handler import ErrorHandler
 
 
 class TestBaseCommand:

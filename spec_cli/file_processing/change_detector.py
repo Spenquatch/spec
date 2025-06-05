@@ -1,3 +1,10 @@
+"""File change detection using hash comparison and caching.
+
+This module provides functionality for detecting file changes between spec
+processing runs. It uses file hashing (MD5 and SHA256) and metadata comparison
+to efficiently determine which files need reprocessing.
+"""
+
 import hashlib
 import time
 from pathlib import Path
@@ -15,6 +22,11 @@ class FileChangeDetector:
     """Detects file changes using hash comparison and caching."""
 
     def __init__(self, settings: SpecSettings | None = None):
+        """Initialize the file change detector.
+
+        Args:
+            settings: Optional SpecSettings instance. Uses default settings if None.
+        """
         self.settings = settings or get_settings()
         self.cache_manager = FileCacheManager(self.settings)
         self.metadata_extractor = FileMetadataExtractor()

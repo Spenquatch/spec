@@ -1,9 +1,15 @@
+"""
+Coordinate progress display across different UI components.
+
+Integrates with progress events and manages progress bars and spinners.
+"""
+
 import threading
 import time
 from collections.abc import Callable
 from dataclasses import dataclass
+from typing import Any
 
-from ..core.error_handler import ErrorHandler
 from ..file_processing.progress_events import (
     ProcessingStage,
     ProgressEvent,
@@ -12,6 +18,7 @@ from ..file_processing.progress_events import (
     progress_reporter,
 )
 from ..logging.debug import debug_logger
+from ..utils.error_handler import ErrorHandler
 from ..utils.singleton import reset_singleton, singleton_decorator
 from .console import get_console
 from .progress_bar import SpecProgressBar
@@ -74,7 +81,7 @@ class ProgressManager:
         self.spinner_manager = SpinnerManager()
 
         # Event handling
-        self._event_handlers: dict[ProgressEventType, list[Callable]] = {}
+        self._event_handlers: dict[ProgressEventType, list[Callable[..., Any]]] = {}
         self._setup_event_handling()
 
         debug_logger.log(

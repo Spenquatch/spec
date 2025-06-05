@@ -1,3 +1,9 @@
+"""Console management for the spec CLI interface.
+
+This module provides a wrapper around Rich Console with spec-specific configuration,
+theming, and emoji handling for consistent output formatting across the CLI.
+"""
+
 from typing import Any
 
 from rich.console import Console

@@ -1,0 +1,11 @@
+# Example pre-commit hook configuration for dependency checking
+# Add this to your .pre-commit-config.yaml:
+
+- repo: local
+  hooks:
+    - id: check-deps-consistency
+      name: Check poetry/pre-commit dependency consistency
+      entry: python scripts/check-deps-consistency.py
+      language: system
+      pass_filenames: false
+      files: ^(pyproject\.toml|\.pre-commit-config\.yaml)$

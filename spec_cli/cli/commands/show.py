@@ -22,7 +22,7 @@ from .history import display_file_content, display_spec_content
 def show_command(
     debug: bool,
     verbose: bool,
-    files: tuple,
+    files: tuple[str, ...],
     commit: str,
     no_syntax: bool,
     no_line_numbers: bool,
@@ -198,7 +198,7 @@ def _is_spec_file(file_path: Path) -> bool:
         return False
 
 
-def _parse_spec_content(content: str) -> dict | None:
+def _parse_spec_content(content: str) -> dict[str, Any] | None:
     """Parse spec file content for metadata."""
     try:
         # Simple parsing - look for frontmatter

@@ -10,7 +10,7 @@ from ..logging.debug import debug_logger
 
 
 # Common option decorators
-def debug_option(f: Callable) -> Callable:
+def debug_option(f: Callable[..., Any]) -> Callable[..., Any]:
     """Add debug mode option."""
 
     def callback(ctx: click.Context, param: click.Parameter, value: bool) -> bool:
@@ -27,7 +27,7 @@ def debug_option(f: Callable) -> Callable:
     )(f)
 
 
-def verbose_option(f: Callable) -> Callable:
+def verbose_option(f: Callable[..., Any]) -> Callable[..., Any]:
     """Add verbose mode option."""
     return click.option(
         "--verbose",
@@ -37,7 +37,7 @@ def verbose_option(f: Callable) -> Callable:
     )(f)
 
 
-def dry_run_option(f: Callable) -> Callable:
+def dry_run_option(f: Callable[..., Any]) -> Callable[..., Any]:
     """Add dry run option."""
     return click.option(
         "--dry-run",
@@ -46,7 +46,7 @@ def dry_run_option(f: Callable) -> Callable:
     )(f)
 
 
-def force_option(f: Callable) -> Callable:
+def force_option(f: Callable[..., Any]) -> Callable[..., Any]:
     """Add force option."""
     return click.option(
         "--force",
@@ -55,10 +55,10 @@ def force_option(f: Callable) -> Callable:
     )(f)
 
 
-def message_option(required: bool = False) -> Callable:
+def message_option(required: bool = False) -> Callable[..., Any]:
     """Add commit message option."""
 
-    def decorator(f: Callable) -> Callable:
+    def decorator(f: Callable[..., Any]) -> Callable[..., Any]:
         return click.option(
             "--message",
             "-m",
@@ -69,7 +69,7 @@ def message_option(required: bool = False) -> Callable:
     return decorator
 
 
-def files_argument(f: Callable) -> Callable:
+def files_argument(f: Callable[..., Any]) -> Callable[..., Any]:
     """Add files argument."""
     return click.argument(
         "files",
@@ -79,7 +79,7 @@ def files_argument(f: Callable) -> Callable:
     )(f)
 
 
-def optional_files_argument(f: Callable) -> Callable:
+def optional_files_argument(f: Callable[..., Any]) -> Callable[..., Any]:
     """Add optional files argument."""
     return click.argument(
         "files",
@@ -89,7 +89,7 @@ def optional_files_argument(f: Callable) -> Callable:
     )(f)
 
 
-def common_options(f: Callable) -> Callable:
+def common_options(f: Callable[..., Any]) -> Callable[..., Any]:
     """Apply common options to a command."""
     f = debug_option(f)
     f = verbose_option(f)
@@ -97,9 +97,9 @@ def common_options(f: Callable) -> Callable:
 
 
 def spec_command(name: str | None = None, **kwargs: Any) -> Callable[..., Any]:
-    """Decorator for spec commands with common setup."""
+    """Decorate spec commands with common setup."""
 
-    def decorator(f: Callable) -> Any:
+    def decorator(f: Callable[..., Any]) -> Any:
         # Apply common options
         f_with_options = common_options(f)
 

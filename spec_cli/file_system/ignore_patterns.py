@@ -1,6 +1,14 @@
+"""Pattern matching system for .specignore files with gitignore-style syntax.
+
+This module provides gitignore-compatible pattern matching for spec file operations,
+including support for negation patterns, directory matching, and runtime pattern
+management. The system ensures consistent file filtering across all spec operations.
+"""
+
 import re
 from pathlib import Path
 from re import Pattern
+from typing import Any
 
 from ..config.settings import SpecSettings, get_settings
 from ..logging.debug import debug_logger
@@ -10,6 +18,12 @@ class IgnorePatternMatcher:
     """Handles .specignore pattern matching with gitignore-style syntax."""
 
     def __init__(self, settings: SpecSettings | None = None):
+        """Initialize the IgnorePatternMatcher.
+
+        Args:
+            settings: Optional spec settings (defaults to global settings)
+
+        """
         self.settings = settings or get_settings()
         self.patterns: list[Pattern[str]] = []
         self.raw_patterns: list[str] = []
@@ -167,6 +181,7 @@ class IgnorePatternMatcher:
 
         Returns:
             True if file should be ignored, False otherwise
+
         """
         # Convert to string for pattern matching
         path_str = str(file_path).replace("\\", "/")  # Normalize path separators
@@ -217,6 +232,7 @@ class IgnorePatternMatcher:
 
         Returns:
             Filtered list with ignored paths removed
+
         """
         filtered = []
         ignored_count = 0
@@ -237,7 +253,7 @@ class IgnorePatternMatcher:
 
         return filtered
 
-    def get_pattern_summary(self) -> dict:
+    def get_pattern_summary(self) -> dict[str, Any]:
         """Get summary of loaded patterns for debugging."""
         return {
             "total_patterns": len(self.patterns),
@@ -258,6 +274,7 @@ class IgnorePatternMatcher:
 
         Returns:
             True if pattern matches path
+
         """
         try:
             regex_pattern = self._gitignore_to_regex(pattern)
@@ -289,6 +306,7 @@ class IgnorePatternMatcher:
 
         Returns:
             True if pattern was added successfully
+
         """
         try:
             regex_pattern = self._gitignore_to_regex(pattern)

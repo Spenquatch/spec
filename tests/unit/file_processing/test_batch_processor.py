@@ -147,14 +147,12 @@ class TestBatchFileProcessor:
         with (
             patch("spec_cli.file_processing.batch_processor.FileChangeDetector"),
             patch("spec_cli.file_processing.batch_processor.ConflictResolver"),
-            patch("spec_cli.file_processing.batch_processor.SpecWorkflowOrchestrator"),
             patch("spec_cli.file_processing.batch_processor.FileProcessingPipeline"),
             patch("spec_cli.templates.generator.SpecContentGenerator"),
         ):
             processor = BatchFileProcessor(mock_settings)
             processor.change_detector = MagicMock()
             processor.conflict_resolver = MagicMock()
-            processor.workflow_orchestrator = MagicMock()
             processor.pipeline = MagicMock()
             processor.progress_reporter = MagicMock()
             return processor
@@ -307,18 +305,21 @@ class TestBatchFileProcessor:
             file_path=file_paths[0], success=True
         )
 
-        # Mock workflow orchestrator
-        mock_processor.workflow_orchestrator.generate_specs_for_files.return_value = {
-            "success": True,
-            "workflow_id": "workflow123",
-        }
+        # Mock git repository operations for auto-commit
+        with patch("spec_cli.git.repository.SpecGitRepository") as mock_repo_class:
+            mock_repo = MagicMock()
+            mock_repo_class.return_value = mock_repo
+            mock_repo.add_files.return_value = None
+            mock_repo.commit.return_value = "abc123"
 
-        # Process files
-        result = mock_processor.process_files(file_paths, options)
+            # Process files
+            result = mock_processor.process_files(file_paths, options)
 
-        # Verify auto-commit was attempted
-        mock_processor.workflow_orchestrator.generate_specs_for_files.assert_called_once()
-        assert result.workflow_id == "workflow123"
+            # Verify auto-commit was attempted
+            mock_repo.add_files.assert_called_once()
+            mock_repo.commit.assert_called_once()
+            assert result.workflow_id is not None
+            assert result.workflow_id.startswith("batch-")
 
     def test_batch_processing_options_configuration(
         self, mock_processor: BatchFileProcessor

@@ -8,8 +8,8 @@ import pytest
 
 from spec_cli.config.loader import ConfigurationLoader
 from spec_cli.config.validation import ConfigurationValidator
-from spec_cli.core.error_handler import ErrorHandler
 from spec_cli.exceptions import SpecConfigurationError
+from spec_cli.utils.error_handler import ErrorHandler
 
 
 class TestConfigLoaderErrorIntegration:

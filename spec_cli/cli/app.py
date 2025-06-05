@@ -69,7 +69,7 @@ app.add_command(show_command, name="show")
 app.add_command(commit_command, name="commit")
 
 
-def _invoke_app(args: list | None = None) -> None:
+def _invoke_app(args: list[str] | None = None) -> None:
     """Invoke the CLI app with given arguments.
 
     This function is separated to make testing easier.
@@ -80,8 +80,8 @@ def _invoke_app(args: list | None = None) -> None:
     app(args=args, standalone_mode=False)
 
 
-def main(args: list | None = None) -> None:
-    """Main CLI entry point.
+def main(args: list[str] | None = None) -> None:
+    """Run the main CLI entry point.
 
     Args:
         args: Command line arguments (uses sys.argv if None)

@@ -17,6 +17,7 @@ class ContentViewer:
     """Rich-based content viewer with syntax highlighting."""
 
     def __init__(self) -> None:
+        """Initialize content viewer with Rich console."""
         self.console = get_console()
 
     # No need for data formatter in this class

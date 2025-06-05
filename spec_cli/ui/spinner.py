@@ -1,3 +1,9 @@
+"""
+Rich spinner components for indeterminate progress indication.
+
+Provides animated spinners with text updates and timeout management.
+"""
+
 import threading
 from collections.abc import Generator
 from contextlib import contextmanager

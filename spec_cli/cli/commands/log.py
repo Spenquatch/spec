@@ -24,7 +24,7 @@ from .history import format_commit_log
 def log_command(
     debug: bool,
     verbose: bool,
-    files: tuple,
+    files: tuple[str, ...],
     limit: int,
     oneline: bool,
     since: str,

@@ -1,3 +1,18 @@
+"""Workflow orchestration module for spec CLI.
+
+This module provides the SpecWorkflowOrchestrator class which manages high-level
+spec generation workflows. It coordinates between different components to execute
+complete spec generation processes including validation, backup, content generation,
+committing, and error handling with rollback capabilities.
+
+Key responsibilities:
+- Orchestrating end-to-end spec generation workflows for single files and batches
+- Managing workflow state and step tracking through the workflow state manager
+- Coordinating validation, backup, generation, and commit stages
+- Handling error conditions with automatic rollback to backup points
+- Providing progress tracking and status reporting for long-running operations
+"""
+
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any
@@ -22,6 +37,18 @@ class SpecWorkflowOrchestrator:
     """Orchestrates high-level spec generation workflows."""
 
     def __init__(self, settings: SpecSettings | None = None):
+        """Initialize the workflow orchestrator with configuration and dependencies.
+
+        Args:
+            settings: Optional SpecSettings instance. If None, uses default settings
+                     from get_settings()
+
+        The orchestrator sets up all required components for workflow execution:
+        - State checker for repository health validation
+        - Commit manager for Git operations and backup management
+        - Content generator for spec document creation
+        - Directory manager for file system operations
+        """
         self.settings = settings or get_settings()
         self.state_checker = RepositoryStateChecker(self.settings)
         self.commit_manager = SpecCommitManager(self.settings)

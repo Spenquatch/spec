@@ -1,3 +1,10 @@
+"""Template variable substitution engine with configurable delimiters.
+
+This module handles the substitution of variables in template content, providing
+built-in variable generators for dates and timestamps, template syntax validation,
+and comprehensive substitution preview and statistics capabilities.
+"""
+
 import re
 from collections.abc import Callable
 from datetime import datetime
@@ -17,6 +24,13 @@ class TemplateSubstitution:
         close_delimiter: str = "}}",
         settings: SpecSettings | None = None,
     ):
+        """Initialize the template substitution engine.
+
+        Args:
+            open_delimiter: Opening delimiter for variables (default: '{{')
+            close_delimiter: Closing delimiter for variables (default: '}}')
+            settings: Optional spec settings (uses global settings if None)
+        """
         self.settings = settings or get_settings()
         self.open_delimiter = open_delimiter
         self.close_delimiter = close_delimiter

@@ -12,7 +12,7 @@ from .add_command import AddCommand
 @force_option
 @dry_run_option
 def add_command(
-    debug: bool, verbose: bool, files: tuple, force: bool, dry_run: bool
+    debug: bool, verbose: bool, files: tuple[str, ...], force: bool, dry_run: bool
 ) -> None:
     """Add spec files to Git tracking.
 

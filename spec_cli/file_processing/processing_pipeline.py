@@ -1,3 +1,11 @@
+"""File processing pipeline for spec documentation generation.
+
+This module provides the core pipeline for processing files through all stages
+of spec documentation generation, including change detection, content generation,
+conflict resolution, and cache updates. It orchestrates the complete workflow
+for individual file processing.
+"""
+
 from pathlib import Path
 from typing import Any, cast
 
@@ -28,6 +36,18 @@ class FileProcessingResult:
         warnings: list[str] | None = None,
         metadata: dict[str, Any] | None = None,
     ):
+        """Initialize file processing result.
+
+        Args:
+            file_path: Path to the processed file
+            success: Whether processing was successful
+            generated_files: Dictionary of generated files by type
+            conflict_info: Information about any conflicts encountered
+            resolution_strategy: Strategy used to resolve conflicts
+            errors: List of errors encountered during processing
+            warnings: List of warnings generated during processing
+            metadata: Additional metadata about the processing
+        """
         self.file_path = file_path
         self.success = success
         self.generated_files = generated_files or {}
@@ -66,6 +86,14 @@ class FileProcessingPipeline:
         conflict_resolver: ConflictResolver,
         progress_reporter: ProgressReporter,
     ):
+        """Initialize the file processing pipeline.
+
+        Args:
+            content_generator: Generator for spec content creation.
+            change_detector: Detector for file changes.
+            conflict_resolver: Resolver for file conflicts.
+            progress_reporter: Reporter for processing progress events.
+        """
         self.content_generator = content_generator
         self.change_detector = change_detector
         self.conflict_resolver = conflict_resolver

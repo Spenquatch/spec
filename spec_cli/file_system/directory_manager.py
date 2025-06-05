@@ -1,3 +1,11 @@
+"""Directory management for spec structures and safety operations.
+
+This module handles creation and management of spec directory structures,
+including .specs directory setup, spec file organization, backup operations,
+and integration with ignore files. It ensures proper directory permissions
+and provides safe directory operations with error handling.
+"""
+
 import shutil
 from datetime import datetime
 from pathlib import Path
@@ -15,6 +23,12 @@ class DirectoryManager:
     """Manages spec directory creation, structure, and safety operations."""
 
     def __init__(self, settings: SpecSettings | None = None):
+        """Initialize the DirectoryManager.
+
+        Args:
+            settings: Optional spec settings (defaults to global settings)
+
+        """
         self.settings = settings or get_settings()
         self.path_resolver = PathResolver(self.settings)
         self.ignore_matcher = IgnorePatternMatcher(self.settings)
@@ -86,6 +100,7 @@ class DirectoryManager:
 
         Returns:
             Path to the created spec directory
+
         """
         # Resolve to spec directory path
         spec_dir = self.path_resolver.convert_to_spec_directory_path(file_path)
@@ -136,6 +151,7 @@ class DirectoryManager:
 
         Returns:
             Dictionary indicating which files exist
+
         """
         index_file = spec_dir / "index.md"
         history_file = spec_dir / "history.md"
@@ -166,6 +182,7 @@ class DirectoryManager:
 
         Returns:
             List of created backup file paths
+
         """
         if backup_suffix is None:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -208,6 +225,7 @@ class DirectoryManager:
 
         Returns:
             List of backup files if backup_first is True, None otherwise
+
         """
         backup_files = None
 
@@ -241,7 +259,7 @@ class DirectoryManager:
             ) from e
 
     def setup_ignore_files(self) -> None:
-        """Setup ignore files for the project."""
+        """Set up ignore files for the project."""
         # Ensure .specignore exists with sensible defaults
         ignore_file = self.settings.ignore_file
 
@@ -371,6 +389,7 @@ Thumbs.db
 
         Returns:
             Dictionary with directory statistics
+
         """
         if not directory.exists() or not directory.is_dir():
             return {"exists": False}

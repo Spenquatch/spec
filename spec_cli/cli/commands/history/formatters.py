@@ -13,6 +13,7 @@ class GitLogFormatter:
     """Formats Git log output with Rich styling."""
 
     def __init__(self) -> None:
+        """Initialize Git log formatter with Rich console."""
         self.console = get_console()
 
     # No need for data formatter in this class
@@ -123,6 +124,7 @@ class GitDiffFormatter:
     """Formats Git diff output with Rich styling."""
 
     def __init__(self) -> None:
+        """Initialize Git diff formatter with Rich console."""
         self.console = get_console()
 
     def format_diff_output(self, diff_data: dict[str, Any]) -> None:
@@ -191,6 +193,7 @@ class CommitFormatter:
     """Formats commit information and statistics."""
 
     def __init__(self) -> None:
+        """Initialize commit formatter with Rich console."""
         self.console = get_console()
 
     def format_commit_info(self, commit_data: dict[str, Any]) -> None:

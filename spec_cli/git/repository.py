@@ -1,3 +1,9 @@
+"""Git repository abstraction and implementation for spec operations.
+
+Provides abstract interface and concrete implementation for Git operations
+within the isolated spec repository environment.
+"""
+
 import subprocess
 from abc import ABC, abstractmethod
 from typing import Any
@@ -86,6 +92,11 @@ class SpecGitRepository(GitRepository):
     """Git repository implementation for spec operations with isolated repository."""
 
     def __init__(self, settings: SpecSettings | None = None):
+        """Initialize spec Git repository with configuration settings.
+
+        Args:
+            settings: Optional spec settings, defaults to global settings if None
+        """
         self.settings = settings or get_settings()
         self.operations = GitOperations(
             spec_dir=self.settings.spec_dir,

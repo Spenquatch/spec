@@ -194,7 +194,6 @@ def _get_processing_summary() -> dict[str, Any]:
 
 def _display_repository_status(status_info: dict[str, Any]) -> None:
     """Display repository status using Rich formatting."""
-
     # Repository information
     repo_table = create_key_value_table(
         status_info["repository"], "Repository Information"

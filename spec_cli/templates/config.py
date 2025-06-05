@@ -1,3 +1,10 @@
+"""Template configuration management for spec generation.
+
+This module provides configuration classes for template validation, AI integration
+settings, and template behavior configuration. It includes comprehensive validation
+for template syntax and placeholder management.
+"""
+
 import re
 from typing import Any
 
@@ -209,6 +216,10 @@ class TemplateValidator:
     """Validates template configuration and provides detailed feedback."""
 
     def __init__(self) -> None:
+        """Initialize the template validator.
+
+        Sets up validation infrastructure and logs initialization.
+        """
         debug_logger.log("INFO", "TemplateValidator initialized")
 
     def validate_config(self, config: TemplateConfig) -> list[str]:

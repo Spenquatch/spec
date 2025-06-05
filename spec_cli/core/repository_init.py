@@ -1,3 +1,18 @@
+"""Repository initialization module for spec CLI.
+
+This module provides the SpecRepositoryInitializer class which handles the complete
+setup and initialization of spec repositories. It manages the creation of the
+.spec Git repository, .specs directory structure, configuration files, and
+initial repository health validation.
+
+Key responsibilities:
+- Creating isolated .spec Git repository with proper configuration
+- Setting up .specs directory structure and ignore files
+- Bootstrapping common directories and example templates
+- Validating system requirements and repository health
+- Creating initial commits and managing repository state
+"""
+
 from pathlib import Path
 from typing import Any, cast
 
@@ -12,6 +27,17 @@ class SpecRepositoryInitializer:
     """Handles spec repository initialization and setup."""
 
     def __init__(self, settings: SpecSettings | None = None):
+        """Initialize the repository initializer with configuration and dependencies.
+
+        Args:
+            settings: Optional SpecSettings instance. If None, uses default settings
+                     from get_settings()
+
+        The initializer sets up all required components for repository operations:
+        - Git repository interface for .spec operations
+        - Directory manager for .specs structure
+        - State checker for repository health validation
+        """
         self.settings = settings or get_settings()
         self.git_repo = SpecGitRepository(self.settings)
         self.directory_manager = DirectoryManager(self.settings)
@@ -155,7 +181,7 @@ class SpecRepositoryInitializer:
             result["errors"].append(f"Failed to create .specs directory: {e}")
 
     def _setup_ignore_files(self, result: dict[str, Any]) -> None:
-        """Setup ignore files for the repository."""
+        """Set up ignore files for the repository."""
         try:
             self.directory_manager.setup_ignore_files()
             result["created"].append("Created .specignore file with defaults")
@@ -301,7 +327,7 @@ Generated and maintained by [Spec CLI](https://github.com/spec-cli).
                 result["warnings"].append(f"Could not create directory {dir_name}: {e}")
 
     def _setup_configuration_files(self, result: dict[str, Any]) -> None:
-        """Setup configuration files in the repository."""
+        """Set up configuration files in the repository."""
         try:
             # Create .spec/config.json for repository-specific settings
             config_file = self.settings.spec_dir / "config.json"

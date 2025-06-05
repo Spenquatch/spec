@@ -1,4 +1,11 @@
+"""Path conversion utilities for Git operations in different contexts.
+
+Handles conversion between absolute paths, .specs/ prefixed paths, and
+Git work tree relative paths for cross-platform compatibility.
+"""
+
 from pathlib import Path
+from typing import Any
 
 from ..file_system.path_utils import normalize_path_separators, remove_specs_prefix
 from ..logging.debug import debug_logger
@@ -8,6 +15,11 @@ class GitPathConverter:
     """Converts paths between different Git contexts (.specs/, relative, absolute)."""
 
     def __init__(self, specs_dir: Path):
+        """Initialize path converter with specs directory configuration.
+
+        Args:
+            specs_dir: Path to the .specs working tree directory
+        """
         self.specs_dir = specs_dir
         debug_logger.log(
             "INFO", "GitPathConverter initialized", specs_dir=str(specs_dir)
@@ -181,7 +193,7 @@ class GitPathConverter:
         )
         return normalized
 
-    def get_conversion_info(self, path: str | Path) -> dict:
+    def get_conversion_info(self, path: str | Path) -> dict[str, Any]:
         """Get detailed information about path conversion.
 
         Args:

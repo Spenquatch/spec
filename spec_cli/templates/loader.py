@@ -1,3 +1,10 @@
+"""Template configuration file loading and saving.
+
+This module handles loading template configurations from .spectemplate files,
+with validation, backup functionality, and fallback to default configurations.
+Supports YAML format with comprehensive error handling.
+"""
+
 import os
 from pathlib import Path
 from typing import Any
@@ -16,6 +23,11 @@ class TemplateLoader:
     """Loads template configuration from files with fallback to defaults."""
 
     def __init__(self, settings: SpecSettings | None = None):
+        """Initialize the template loader.
+
+        Args:
+            settings: Optional spec settings (uses global settings if None)
+        """
         self.settings = settings or get_settings()
         self.validator = TemplateValidator()
         debug_logger.log(

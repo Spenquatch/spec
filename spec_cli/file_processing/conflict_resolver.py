@@ -1,3 +1,11 @@
+"""Conflict resolution for file processing operations.
+
+This module provides functionality for detecting and resolving file conflicts
+that occur during spec documentation generation. It supports multiple resolution
+strategies and can handle various types of conflicts including content modifications,
+permission issues, and structural differences.
+"""
+
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
@@ -48,6 +56,15 @@ class ConflictInfo:
         new_content: str | None = None,
         metadata: dict[str, Any] | None = None,
     ):
+        """Initialize conflict information.
+
+        Args:
+            conflict_type: Type of conflict detected
+            file_path: Path to the conflicted file
+            existing_content: Current content of the file
+            new_content: New content that would be written
+            metadata: Additional metadata about the conflict
+        """
         self.conflict_type = conflict_type
         self.file_path = file_path
         self.existing_content = existing_content
@@ -81,6 +98,16 @@ class ConflictResolutionResult:
         errors: list[str] | None = None,
         warnings: list[str] | None = None,
     ):
+        """Initialize conflict resolution result.
+
+        Args:
+            success: Whether conflict resolution was successful
+            strategy_used: Strategy that was applied to resolve the conflict
+            final_content: Final content after resolution
+            backup_path: Path to backup file if created
+            errors: List of errors encountered during resolution
+            warnings: List of warnings generated during resolution
+        """
         self.success = success
         self.strategy_used = strategy_used
         self.final_content = final_content
@@ -108,6 +135,11 @@ class ConflictResolver:
     """Resolves file conflicts using configurable strategies."""
 
     def __init__(self, settings: SpecSettings | None = None):
+        """Initialize the conflict resolver.
+
+        Args:
+            settings: Optional SpecSettings instance. Uses default settings if None.
+        """
         self.settings = settings or get_settings()
         self.directory_manager = DirectoryManager(self.settings)
         self.change_detector = FileChangeDetector(self.settings)

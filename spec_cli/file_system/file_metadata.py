@@ -1,3 +1,11 @@
+"""Comprehensive file metadata extraction and analysis.
+
+This module provides detailed file metadata extraction including size,
+timestamps, permissions, file type analysis, and directory composition
+statistics. It integrates with the file type detection system to provide
+comprehensive file analysis for spec generation and reporting.
+"""
+
 import os
 import stat
 from datetime import datetime
@@ -13,6 +21,10 @@ class FileMetadataExtractor:
     """Extracts comprehensive metadata from files for analysis and reporting."""
 
     def __init__(self) -> None:
+        """Initialize the FileMetadataExtractor.
+
+        Sets up the internal FileTypeDetector for file type analysis.
+        """
         self.type_detector = FileTypeDetector()
 
     def get_file_metadata(self, file_path: Path) -> dict[str, Any]:
@@ -26,6 +38,7 @@ class FileMetadataExtractor:
 
         Raises:
             SpecFileError: If file cannot be accessed or analyzed
+
         """
         try:
             # Ensure path is absolute for consistent results
@@ -129,6 +142,7 @@ class FileMetadataExtractor:
 
         Returns:
             Dictionary with directory composition statistics
+
         """
         if not directory_path.is_dir():
             raise SpecFileError(f"Path is not a directory: {directory_path}")

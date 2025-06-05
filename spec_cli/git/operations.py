@@ -1,3 +1,9 @@
+"""Low-level Git command execution with spec environment configuration.
+
+Provides isolated Git operations for the spec repository using custom
+environment variables to maintain separation from the main project repository.
+"""
+
 import os
 import subprocess
 from pathlib import Path
@@ -11,12 +17,19 @@ class GitOperations:
     """Handles low-level Git command execution with spec environment configuration."""
 
     def __init__(self, spec_dir: Path, specs_dir: Path, index_file: Path):
+        """Initialize Git operations with spec repository configuration.
+
+        Args:
+            spec_dir: Path to .spec bare repository directory
+            specs_dir: Path to .specs working tree directory
+            index_file: Path to Git index file for spec repository
+        """
         self.spec_dir = spec_dir
         self.specs_dir = specs_dir
         self.index_file = index_file
 
         # Import here to avoid circular imports
-        from ..core.error_handler import ErrorHandler
+        from ..utils.error_handler import ErrorHandler
 
         self.git_error_handler = ErrorHandler(
             {"module": "git", "component": "operations"}

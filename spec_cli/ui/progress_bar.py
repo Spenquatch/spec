@@ -1,3 +1,9 @@
+"""
+Rich progress bar components for determinate progress tracking.
+
+Provides configurable progress bars with time estimates and task management.
+"""
+
 from collections.abc import Generator
 from contextlib import contextmanager
 from typing import Any

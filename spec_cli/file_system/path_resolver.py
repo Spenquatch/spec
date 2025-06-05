@@ -1,3 +1,11 @@
+"""Path resolution and validation for spec operations.
+
+This module provides comprehensive path handling including resolution of
+input paths, validation of project boundaries, conversion between different
+path contexts (.specs vs project paths), and safe path operations with
+consistent cross-platform behavior.
+"""
+
 from pathlib import Path
 
 from ..config.settings import SpecSettings, get_settings
@@ -15,6 +23,12 @@ class PathResolver:
     """
 
     def __init__(self, settings: SpecSettings | None = None):
+        """Initialize the PathResolver.
+
+        Args:
+            settings: Optional spec settings (defaults to global settings)
+
+        """
         self.settings = settings or get_settings()
 
     def resolve_input_path(self, path_str: str) -> Path:
@@ -29,6 +43,7 @@ class PathResolver:
         Raises:
             SpecValidationError: If path is outside project boundaries
             SpecFileError: If path resolution fails
+
         """
         with debug_logger.timer(f"resolve_input_path_{Path(path_str).name}"):
             debug_logger.log("INFO", "Resolving input path", input_path=path_str)
@@ -75,6 +90,7 @@ class PathResolver:
 
         Raises:
             SpecValidationError: If path is outside project boundaries
+
         """
         try:
             # Use normalized paths for consistent handling
@@ -107,6 +123,7 @@ class PathResolver:
 
         Returns:
             Path to spec directory (e.g., src/models.py -> .specs/src/models/)
+
         """
         debug_logger.log(
             "INFO", "Converting to spec directory path", source_file=str(file_path)
@@ -154,6 +171,7 @@ class PathResolver:
 
         Returns:
             Dictionary mapping file types to their spec file paths
+
         """
         # Convert source file to relative path if needed
         if source_file.is_absolute():
@@ -187,6 +205,7 @@ class PathResolver:
 
         Returns:
             Path relative to project root (for Git operations)
+
         """
         path_obj = Path(specs_path)
 
@@ -241,6 +260,7 @@ class PathResolver:
 
         Returns:
             True if path is within project boundaries
+
         """
         try:
             if path.is_absolute():
@@ -260,6 +280,7 @@ class PathResolver:
 
         Returns:
             Absolute path
+
         """
         absolute_path = self.settings.root_path / relative_path
         debug_logger.log(
@@ -278,6 +299,7 @@ class PathResolver:
 
         Raises:
             SpecFileError: If path does not exist
+
         """
         absolute_path = self.get_absolute_path(path) if not path.is_absolute() else path
 

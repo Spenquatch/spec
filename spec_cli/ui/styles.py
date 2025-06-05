@@ -1,3 +1,9 @@
+"""
+Global style helpers and utilities for consistent text formatting.
+
+Provides style functions for paths, messages, and Rich text creation.
+"""
+
 from pathlib import Path
 
 from rich.style import Style

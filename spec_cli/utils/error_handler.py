@@ -7,7 +7,7 @@ from typing import Any, TypeVar
 
 from ..exceptions import SpecError
 from ..logging.debug import debug_logger
-from ..utils.error_utils import (
+from .error_utils import (
     create_error_context,
     handle_os_error,
     handle_subprocess_error,
@@ -28,7 +28,7 @@ class ErrorHandler:
         self.default_context = default_context or {}
 
     def wrap(self, func: F) -> F:
-        """Decorator to wrap functions with consistent error handling.
+        """Wrap functions with consistent error handling.
 
         Args:
             func: Function to wrap with error handling

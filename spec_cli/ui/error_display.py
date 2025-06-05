@@ -1,3 +1,9 @@
+"""
+Display error messages and diagnostics with Rich formatting.
+
+Provides error panels, stack traces, and diagnostic information display.
+"""
+
 import traceback
 from pathlib import Path
 from typing import Any
@@ -7,9 +13,9 @@ from rich.panel import Panel
 from rich.syntax import Syntax
 from rich.traceback import Traceback
 
-from ..core.error_handler import ErrorHandler
 from ..exceptions import SpecError
 from ..logging.debug import debug_logger
+from ..utils.error_handler import ErrorHandler
 from .console import get_console
 from .styles import SpecStyles
 

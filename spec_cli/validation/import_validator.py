@@ -27,7 +27,7 @@ class ImportViolation:
 
 
 def extract_import_nodes(tree: ast.AST) -> list[ast.Import]:
-    """Extract all import statements from AST tree.
+    r"""Extract all import statements from AST tree.
 
     Args:
         tree: AST tree to extract imports from
@@ -36,7 +36,7 @@ def extract_import_nodes(tree: ast.AST) -> list[ast.Import]:
         List of ast.Import nodes found in the tree
 
     Example:
-        tree = ast.parse("import os\\nimport sys")
+        tree = ast.parse(r"import os\nimport sys")
         imports = extract_import_nodes(tree)
         assert len(imports) == 2
     """
@@ -52,7 +52,7 @@ def extract_import_nodes(tree: ast.AST) -> list[ast.Import]:
 
 
 def extract_from_import_nodes(tree: ast.AST) -> list[ast.ImportFrom]:
-    """Extract all from-import statements from AST tree.
+    r"""Extract all from-import statements from AST tree.
 
     Args:
         tree: AST tree to extract from-imports from
@@ -61,7 +61,7 @@ def extract_from_import_nodes(tree: ast.AST) -> list[ast.ImportFrom]:
         List of ast.ImportFrom nodes found in the tree
 
     Example:
-        tree = ast.parse("from pathlib import Path\\nfrom typing import List")
+        tree = ast.parse(r"from pathlib import Path\nfrom typing import List")
         from_imports = extract_from_import_nodes(tree)
         assert len(from_imports) == 2
     """

@@ -2,9 +2,9 @@
 
 from unittest.mock import patch
 
-from spec_cli.core.error_handler import ErrorHandler
 from spec_cli.file_processing.progress_events import ProgressEvent, ProgressEventType
 from spec_cli.ui.progress_manager import ProgressManager
+from spec_cli.utils.error_handler import ErrorHandler
 
 
 class TestProgressManagerErrorIntegration:

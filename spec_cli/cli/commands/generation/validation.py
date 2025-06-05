@@ -12,6 +12,7 @@ class GenerationValidator:
     """Validates generation command inputs."""
 
     def __init__(self) -> None:
+        """Initialize generation validator."""
         pass
 
     def validate_generation_input(

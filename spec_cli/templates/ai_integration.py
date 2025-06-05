@@ -1,3 +1,10 @@
+"""AI integration framework for template content generation.
+
+This module provides the infrastructure for AI-powered content generation,
+including abstract provider interfaces, retry mechanisms, placeholder providers
+for testing, and a content manager for provider coordination.
+"""
+
 import time
 from abc import ABC, abstractmethod
 from collections.abc import Callable
@@ -17,8 +24,8 @@ def retry_with_backoff(
     max_delay: float = 60.0,
     exponential_base: float = 2.0,
     jitter: bool = True,
-) -> Callable:
-    """Decorator for retrying AI API calls with exponential backoff.
+) -> Callable[..., Any]:
+    """Retry AI API calls with exponential backoff.
 
     Args:
         max_retries: Maximum number of retry attempts
@@ -28,7 +35,7 @@ def retry_with_backoff(
         jitter: Whether to add random jitter to delays
     """
 
-    def decorator(func: Callable) -> Callable:
+    def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         @wraps(func)
         def wrapper(*args: Any, **kwargs: Any) -> Any:
             last_exception = None
@@ -132,6 +139,10 @@ class PlaceholderAIProvider(AIContentProvider):
     """Placeholder AI provider that generates template placeholders instead of AI content."""
 
     def __init__(self) -> None:
+        """Initialize the placeholder AI provider.
+
+        Sets up supported content types and logs initialization.
+        """
         self.supported_types = [
             "purpose",
             "overview",
@@ -193,7 +204,7 @@ class PlaceholderAIProvider(AIContentProvider):
             return f"### {formatted_type}\n\n[AI-generated {content_type} content for {file_name} would appear here. This would be tailored to the specific {file_type} file and its role in the project.]"
 
     def is_available(self) -> bool:
-        """Placeholder provider is always available."""
+        """Check if placeholder provider is available."""
         return True
 
     def get_supported_content_types(self) -> list[str]:
@@ -216,6 +227,10 @@ class MockAIProvider(AIContentProvider):
     """Mock AI provider for testing that can be configured with responses."""
 
     def __init__(self) -> None:
+        """Initialize the mock AI provider.
+
+        Sets up mock response storage and failure simulation capabilities.
+        """
         self.responses: dict[str, str] = {}
         self.call_count = 0
         self.should_fail = False
@@ -306,6 +321,11 @@ class AIContentManager:
     """Manages AI content generation with provider registration and fallback strategies."""
 
     def __init__(self, settings: SpecSettings | None = None):
+        """Initialize the AI content manager.
+
+        Args:
+            settings: Optional spec settings (uses global settings if None)
+        """
         self.settings = settings or get_settings()
         self.providers: dict[str, AIContentProvider] = {}
         self.default_provider = PlaceholderAIProvider()

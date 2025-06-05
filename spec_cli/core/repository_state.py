@@ -1,3 +1,18 @@
+"""Repository state management and health checking module for spec CLI.
+
+This module provides comprehensive repository state monitoring and health checking
+capabilities for spec repositories. It includes classes for assessing repository
+health, branch status, and validating that repositories are in a safe state
+for spec operations.
+
+Key responsibilities:
+- Monitoring repository health with detailed status reporting
+- Checking branch cleanliness and Git repository state
+- Validating pre-operation conditions for safe spec operations
+- Providing structured health reports with warnings and errors
+- Ensuring repository integrity before performing critical operations
+"""
+
 from enum import Enum
 from typing import Any
 
@@ -30,6 +45,15 @@ class RepositoryStateChecker:
     """Checks and validates spec repository state and health."""
 
     def __init__(self, settings: SpecSettings | None = None):
+        """Initialize the repository state checker with configuration.
+
+        Args:
+            settings: Optional SpecSettings instance. If None, uses default settings
+                     from get_settings()
+
+        The state checker sets up the Git repository interface for performing
+        comprehensive health checks and state validation operations.
+        """
         self.settings = settings or get_settings()
         self.git_repo = SpecGitRepository(self.settings)
 

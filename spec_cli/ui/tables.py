@@ -1,3 +1,9 @@
+"""
+Rich table components for displaying data in formatted tables.
+
+Provides file lists, status tables, and comparison table utilities.
+"""
+
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any, Literal

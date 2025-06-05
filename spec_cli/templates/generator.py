@@ -1,3 +1,10 @@
+"""Spec content generation using template substitution.
+
+This module provides the main content generation functionality, combining template
+configuration with variable substitution to produce spec documentation files. It
+handles file metadata extraction, directory management, and content writing.
+"""
+
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -17,6 +24,11 @@ class SpecContentGenerator:
     """Generates spec content files using template substitution."""
 
     def __init__(self, settings: SpecSettings | None = None):
+        """Initialize the spec content generator.
+
+        Args:
+            settings: Optional spec settings (uses global settings if None)
+        """
         self.settings = settings or get_settings()
         self.substitution = TemplateSubstitution()
         self.directory_manager = DirectoryManager(self.settings)

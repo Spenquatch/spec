@@ -2,12 +2,12 @@
 
 from unittest.mock import Mock, patch
 
-from spec_cli.core.error_handler import ErrorHandler
 from spec_cli.ui.error_display import (
     DiagnosticDisplay,
     ErrorPanel,
     StackTraceFormatter,
 )
+from spec_cli.utils.error_handler import ErrorHandler
 
 
 class TestErrorPanelIntegration:

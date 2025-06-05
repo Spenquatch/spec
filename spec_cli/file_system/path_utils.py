@@ -9,7 +9,7 @@ from pathlib import Path
 
 
 def normalize_path_separators(path: str | Path) -> str:
-    """Normalize path separators to forward slashes for cross-platform consistency.
+    r"""Normalize path separators to forward slashes for cross-platform consistency.
 
     Args:
         path: Path to normalize (string or Path object)
@@ -18,16 +18,17 @@ def normalize_path_separators(path: str | Path) -> str:
         Path string with forward slashes as separators
 
     Examples:
-        >>> normalize_path_separators("src\\models\\user.py")
+        >>> normalize_path_separators("src\models\user.py")
         'src/models/user.py'
         >>> normalize_path_separators(Path("src/models/user.py"))
         'src/models/user.py'
+
     """
     return str(path).replace("\\", "/")
 
 
 def remove_specs_prefix(path_str: str) -> str:
-    """Remove .specs/ or .specs\\ prefix from path in a cross-platform way.
+    r"""Remove .specs/ or .specs\ prefix from path in a cross-platform way.
 
     Args:
         path_str: Path string that may have .specs prefix
@@ -38,10 +39,11 @@ def remove_specs_prefix(path_str: str) -> str:
     Examples:
         >>> remove_specs_prefix(".specs/src/models/user.py")
         'src/models/user.py'
-        >>> remove_specs_prefix(".specs\\\\src\\\\models\\\\user.py")
+        >>> remove_specs_prefix(".specs\\src\\models\\user.py")
         'src/models/user.py'
         >>> remove_specs_prefix("src/models/user.py")
         'src/models/user.py'
+
     """
     # Handle both Unix and Windows style .specs prefixes
     specs_prefixes = [".specs/", ".specs\\"]
@@ -57,7 +59,7 @@ def remove_specs_prefix(path_str: str) -> str:
 
 
 def ensure_specs_prefix(path: str | Path) -> str:
-    """Ensure path has .specs/ prefix with normalized separators.
+    r"""Ensure path has .specs/ prefix with normalized separators.
 
     Args:
         path: Path that should have .specs/ prefix
@@ -70,8 +72,9 @@ def ensure_specs_prefix(path: str | Path) -> str:
         '.specs/src/models/user.py'
         >>> ensure_specs_prefix(".specs/src/models/user.py")
         '.specs/src/models/user.py'
-        >>> ensure_specs_prefix(".specs\\\\src\\\\models\\\\user.py")
+        >>> ensure_specs_prefix(".specs\\src\\models\\user.py")
         '.specs/src/models/user.py'
+
     """
     normalized_path = normalize_path_separators(path)
 
@@ -85,7 +88,7 @@ def ensure_specs_prefix(path: str | Path) -> str:
 
 
 def is_specs_path(path: str | Path) -> bool:
-    """Check if path is under .specs/ directory (cross-platform).
+    r"""Check if path is under .specs/ directory (cross-platform).
 
     Args:
         path: Path to check
@@ -96,10 +99,11 @@ def is_specs_path(path: str | Path) -> bool:
     Examples:
         >>> is_specs_path(".specs/src/models/user.py")
         True
-        >>> is_specs_path(".specs\\\\src\\\\models\\\\user.py")
+        >>> is_specs_path(".specs\\src\\models\\user.py")
         True
         >>> is_specs_path("src/models/user.py")
         False
+
     """
     normalized_path = normalize_path_separators(path)
     return normalized_path.startswith(".specs/")
@@ -115,5 +119,6 @@ def convert_to_posix_style(path: str | Path) -> str:
 
     Returns:
         POSIX-style path string
+
     """
     return normalize_path_separators(path)

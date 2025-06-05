@@ -1,3 +1,17 @@
+"""Workflow state management and tracking module for spec CLI.
+
+This module provides comprehensive workflow state tracking capabilities including
+workflow steps, timing, status management, and persistence. It supports complex
+workflows with multiple stages, error handling, and detailed progress tracking.
+
+Key responsibilities:
+- Tracking workflow execution status and timing information
+- Managing individual workflow steps with stage-based organization
+- Providing workflow state persistence and history management
+- Supporting workflow rollback and error recovery scenarios
+- Offering detailed progress reporting and status summaries
+"""
+
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
@@ -152,6 +166,12 @@ class WorkflowStateManager:
     """Manages workflow state tracking and persistence."""
 
     def __init__(self) -> None:
+        """Initialize the workflow state manager.
+
+        Sets up in-memory storage for active workflows and workflow history.
+        The manager maintains separate collections for currently running workflows
+        and completed workflow history for auditing and debugging purposes.
+        """
         self.active_workflows: dict[str, WorkflowState] = {}
         self.workflow_history: list[WorkflowState] = []
         debug_logger.log("INFO", "WorkflowStateManager initialized")

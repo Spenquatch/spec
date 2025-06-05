@@ -1,3 +1,9 @@
+"""Configuration settings and management for spec CLI.
+
+Provides SpecSettings dataclass for application settings and SettingsManager
+singleton for managing global settings and Rich console instances with theming.
+"""
+
 import os
 from dataclasses import dataclass, field
 from pathlib import Path

@@ -31,7 +31,7 @@ from .gen_command import GenCommand
 def gen_command(
     debug: bool,
     verbose: bool,
-    files: tuple,
+    files: tuple[str, ...],
     template: str,
     conflict_strategy: str,
     commit: bool,

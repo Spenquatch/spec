@@ -1,3 +1,9 @@
+"""Performance timing utilities for measuring operation duration.
+
+Provides context managers and data structures for collecting timing information
+across multiple operations, with support for error tracking and summary statistics.
+"""
+
 import time
 from contextlib import contextmanager
 from dataclasses import dataclass
@@ -20,13 +26,26 @@ class TimingContext:
     """Context manager for collecting timing information across operations."""
 
     def __init__(self) -> None:
+        """Initialize timing context with empty results and operation tracking."""
         self.results: list[TimingResult] = []
         self._active_operations: dict[str, float] = {}
 
     def __enter__(self) -> "TimingContext":
+        """Enter the timing context manager.
+
+        Returns:
+            Self for use in with statement
+        """
         return self
 
     def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
+        """Exit the timing context manager.
+
+        Args:
+            exc_type: Exception type if exception occurred
+            exc_val: Exception value if exception occurred
+            exc_tb: Exception traceback if exception occurred
+        """
         pass
 
     @contextmanager
@@ -92,7 +111,7 @@ class TimingContext:
 # Convenience function for simple timing
 @contextmanager
 def timer(operation_name: str, logger=None):  # type: ignore
-    """Simple timing context manager with optional logging."""
+    """Time an operation with optional logging support."""
     start_time = time.perf_counter()
 
     if logger:
