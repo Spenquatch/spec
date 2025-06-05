@@ -3,6 +3,8 @@
 from pathlib import Path
 from typing import Any
 
+from spec_cli.file_system.path_utils import normalize_path_separators
+
 
 def create_workflow_result(
     files: list[Path], success: bool, workflow_id: str | None = None
@@ -27,8 +29,12 @@ def create_workflow_result(
     result: dict[str, Any] = {
         "success": success,
         "total_files": len(files),
-        "successful_files": [str(f) for f in files] if success else [],
-        "failed_files": [] if success else [str(f) for f in files],
+        "successful_files": [normalize_path_separators(f) for f in files]
+        if success
+        else [],
+        "failed_files": []
+        if success
+        else [normalize_path_separators(f) for f in files],
         "generated_files": {},
         "commit_info": None,
         "backup_info": None,
