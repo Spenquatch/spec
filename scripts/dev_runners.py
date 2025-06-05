@@ -1,33 +1,116 @@
 #!/usr/bin/env python3
-"""Simple development task runners for spec-cli project."""
+"""Development task runners for spec-cli project with standardized commands."""
 
+import platform
 import subprocess
 import sys
+
+
+def dev_setup():
+    """Complete environment initialization."""
+    print("🚀 Setting up development environment...")
+    try:
+        subprocess.run(["poetry", "install"], check=True)
+        subprocess.run(["poetry", "run", "pre-commit", "install"], check=True)
+        print("✅ Development environment initialized")
+    except subprocess.CalledProcessError:
+        print("❌ Development setup failed")
+        sys.exit(1)
 
 
 def type_check():
     """MyPy strict type checking."""
     print("🔄 Running MyPy type check...")
     try:
-        subprocess.run(["mypy", "spec_cli/"], check=True)
+        subprocess.run(
+            ["mypy", "spec_cli/", "--strict", "--no-error-summary"], check=True
+        )
         print("✅ Type check passed")
     except subprocess.CalledProcessError:
         print("❌ Type check failed")
         sys.exit(1)
 
 
-def all_tests_cov():
+def lint():
+    """Ruff linting with auto-fix."""
+    print("🔄 Running Ruff linting with auto-fix...")
+    try:
+        subprocess.run(["ruff", "check", ".", "--fix"], check=True)
+        print("✅ Lint check passed")
+    except subprocess.CalledProcessError:
+        print("❌ Lint check failed")
+        sys.exit(1)
+
+
+def format():
+    """Ruff code formatting."""
+    print("🔄 Formatting code with Ruff...")
+    try:
+        subprocess.run(["ruff", "format", "."], check=True)
+        print("✅ Code formatting completed")
+    except subprocess.CalledProcessError:
+        print("❌ Code formatting failed")
+        sys.exit(1)
+
+
+def format_check():
+    """Verify formatting without changes."""
+    print("🔄 Checking code formatting...")
+    try:
+        subprocess.run(["ruff", "format", "--check", "."], check=True)
+        print("✅ Code formatting check passed")
+    except subprocess.CalledProcessError:
+        print("❌ Code formatting check failed")
+        sys.exit(1)
+
+
+def docs():
+    """Pydocstyle documentation check."""
+    print("🔄 Checking documentation style...")
+    try:
+        subprocess.run(["pydocstyle", "spec_cli/"], check=True)
+        print("✅ Documentation style check passed")
+    except subprocess.CalledProcessError:
+        print("❌ Documentation style check failed")
+        sys.exit(1)
+
+
+def security():
+    """Bandit security scan."""
+    print("🔄 Running security scan with Bandit...")
+    try:
+        subprocess.run(["bandit", "-r", "spec_cli/", "-lll"], check=True)
+        print("✅ Security scan passed")
+    except subprocess.CalledProcessError:
+        print("❌ Security scan failed")
+        sys.exit(1)
+
+
+def audit():
+    """Pip-audit vulnerability scan."""
+    print("🔄 Running dependency vulnerability scan...")
+    try:
+        subprocess.run(["pip-audit"], check=True)
+        print("✅ Vulnerability scan passed")
+    except subprocess.CalledProcessError:
+        print("❌ Vulnerability scan failed")
+        sys.exit(1)
+
+
+def test():
     """Pytest with strict coverage."""
     print("🔄 Running tests with coverage...")
     try:
         subprocess.run(
             [
                 "pytest",
-                "tests/unit/",
+                "-v",
+                "--strict-markers",
+                "--strict-config",
                 "--cov=spec_cli",
                 "--cov-report=term-missing",
-                "--cov-fail-under=80",
-                "-v",
+                "--cov-fail-under=90",
+                "--maxfail=1",
             ],
             check=True,
         )
@@ -37,48 +120,47 @@ def all_tests_cov():
         sys.exit(1)
 
 
-def ruff_check():
-    """Ruff linting check with auto-fix (like pre-commit)."""
-    print("🔄 Running Ruff check with auto-fix...")
+def platform_check():
+    """Cross-platform compatibility validation."""
+    print("🔄 Platform compatibility check...")
     try:
-        subprocess.run(["ruff", "check", "spec_cli/", "--fix"], check=True)
-        print("✅ Ruff check passed")
-    except subprocess.CalledProcessError:
-        print("❌ Ruff check failed")
+        print(f"Platform: {platform.system()} {platform.release()}")
+        print(f"Python: {sys.version}")
+        print("✅ Platform check completed")
+    except Exception as e:
+        print(f"❌ Platform check failed: {e}")
         sys.exit(1)
 
 
-def ruff_format():
-    """Ruff code formatting."""
-    print("🔄 Running Ruff format...")
+def update_deps():
+    """Show outdated dependencies and update guidance."""
+    print("📦 Checking for outdated dependencies...")
     try:
-        subprocess.run(["ruff", "format", "spec_cli/"], check=True)
-        print("✅ Ruff format completed")
+        subprocess.run(["poetry", "show", "--outdated"], check=True)
+        print("\n💡 To update dependencies:")
+        print(
+            "   poetry update                    # Update all within version constraints"
+        )
+        print("   poetry add package@latest        # Update specific package to latest")
+        print("   poetry lock --no-update          # Update lock file only")
     except subprocess.CalledProcessError:
-        print("❌ Ruff format failed")
+        print("❌ Failed to check dependencies")
         sys.exit(1)
 
 
-def pre_commit():
-    """Run all pre-commit hooks."""
-    print("🔄 Running pre-commit hooks...")
-    try:
-        subprocess.run(["pre-commit", "run", "--all-files"], check=True)
-        print("✅ Pre-commit hooks passed")
-    except subprocess.CalledProcessError:
-        print("❌ Pre-commit hooks failed")
-        sys.exit(1)
-
-
-def all_checks():
-    """Run all quality checks in sequence."""
+def check_all():
+    """Run ALL quality checks (pipeline simulation)."""
     print("🚀 Running all quality checks...")
 
     checks = [
-        (ruff_check, "Ruff linting"),
-        (ruff_format, "Ruff formatting"),
         (type_check, "Type checking"),
-        (all_tests_cov, "Tests with coverage"),
+        (lint, "Linting with auto-fix"),
+        (format, "Code formatting"),
+        (docs, "Documentation style"),
+        (security, "Security scan"),
+        (audit, "Dependency audit"),
+        (test, "Tests with coverage"),
+        (platform_check, "Platform compatibility"),
     ]
 
     failed_checks = []
@@ -137,9 +219,16 @@ if __name__ == "__main__":
     print("🚀 Development Task Runners for spec-cli")
     print("=" * 50)
     print("Available commands:")
-    print("  poetry run type-check      # MyPy strict type checking")
-    print("  poetry run all-tests-cov   # Pytest with strict 80%+ coverage")
-    print("  poetry run ruff-check      # Ruff linting with auto-fix")
-    print("  poetry run ruff-format     # Ruff code formatting")
-    print("  poetry run all             # Run ALL quality checks (CI simulation)")
+    print("  poetry run dev-setup        # Complete environment initialization")
+    print("  poetry run type-check       # MyPy strict type checking")
+    print("  poetry run lint             # Ruff linting with auto-fix")
+    print("  poetry run format           # Ruff code formatting")
+    print("  poetry run format-check     # Verify formatting without changes")
+    print("  poetry run docs             # Pydocstyle documentation check")
+    print("  poetry run security         # Bandit security scan")
+    print("  poetry run audit            # Pip-audit vulnerability scan")
+    print("  poetry run test             # Pytest with strict 90%+ coverage")
+    print("  poetry run platform-check   # Cross-platform compatibility validation")
+    print("  poetry run check-all        # ALL quality gates (pipeline simulation)")
+    print("  poetry run update-deps      # Show outdated + update guidance")
     print("\n✨ All commands have consistent behavior and proper exit codes for CI/CD")

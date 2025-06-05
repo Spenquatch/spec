@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "spec"
-version = "0.1.55"
+version = "0.1.56"
 description = "A versioned documentation layer for AI-assisted development"
 authors = ["Spenser McConnell <spensermcconnell@gmail.com>"]
 readme = "README.md"
@@ -49,6 +49,9 @@ coverage = "^7.8.2"
 filelock = "^3.18.0"
 identify = "^2.6.12"
 pyyaml-env-tag = "^1.1"
+pydocstyle = "^6.3.0"
+bandit = "^1.7.8"
+pip-audit = "^2.7.3"
 
 [tool.poetry.group.docs.dependencies]
 mkdocs = "^1.6.1"
@@ -58,12 +61,19 @@ mkdocs-material = "^9.6.14"
 [tool.poetry.scripts]
 spec = "spec_cli.__main__:main"
 
-# Development task runners
+# Development task runners (standardized names)
+dev-setup = "scripts.dev_runners:dev_setup"
 type-check = "scripts.dev_runners:type_check"
-all-tests-cov = "scripts.dev_runners:all_tests_cov"
-ruff-check = "scripts.dev_runners:ruff_check"
-ruff-format = "scripts.dev_runners:ruff_format"
-all = "scripts.dev_runners:all_checks"
+lint = "scripts.dev_runners:lint"
+format = "scripts.dev_runners:format"
+format-check = "scripts.dev_runners:format_check"
+docs = "scripts.dev_runners:docs"
+security = "scripts.dev_runners:security"
+audit = "scripts.dev_runners:audit"
+test = "scripts.dev_runners:test"
+platform-check = "scripts.dev_runners:platform_check"
+check-all = "scripts.dev_runners:check_all"
+update-deps = "scripts.dev_runners:update_deps"
 
 [build-system]
 requires = ["poetry-core"]

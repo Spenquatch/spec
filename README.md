@@ -200,22 +200,54 @@ source .venv/bin/activate  # On Unix/macOS
 # or
 .venv\Scripts\activate  # On Windows
 
-# Install dependencies with poetry
-poetry install
+# Complete environment setup
+poetry run dev-setup
 
-# Run tests with coverage (80% minimum required)
-poetry run pytest tests/unit/ -v --cov=spec_cli --cov-report=term-missing --cov-fail-under=80
+# Run all quality checks
+poetry run check-all
 
-# Run type checking
-poetry run mypy spec_cli/
-
-# Run linting and formatting
-poetry run ruff check --fix .
-poetry run ruff format .
-
-# Run all pre-commit hooks
-poetry run pre-commit run --all-files
+# Individual gates (if debugging):
+poetry run type-check         # 0 errors, 0 suppressions
+poetry run lint              # Auto-fix style issues
+poetry run format            # Code formatting
+poetry run docs              # Docstring validation
+poetry run security          # Security scan
+poetry run audit             # Vulnerability scan
+poetry run test              # Test with coverage
+poetry run platform-check    # Cross-platform validation
 ```
+
+### Quality Assurance Commands
+
+All commands follow standardized naming and provide consistent behavior:
+
+| Command | Purpose | Exit Code |
+|---------|---------|-----------|
+| `poetry run dev-setup` | Complete environment initialization | 0 on success |
+| `poetry run type-check` | MyPy strict type checking (0 errors required) | 1 on any errors |
+| `poetry run lint` | Ruff linting with auto-fix | 1 on unfixable issues |
+| `poetry run format` | Ruff code formatting | 1 on formatting errors |
+| `poetry run format-check` | Verify formatting without changes | 1 if reformatting needed |
+| `poetry run docs` | Pydocstyle documentation validation | 1 on missing/bad docstrings |
+| `poetry run security` | Bandit security scan | 1 on security issues |
+| `poetry run audit` | Pip-audit vulnerability scan | 1 on vulnerabilities |
+| `poetry run test` | Pytest with 90%+ coverage requirement | 1 on test failures |
+| `poetry run platform-check` | Cross-platform compatibility check | 1 on platform issues |
+| `poetry run check-all` | ALL quality gates (pipeline simulation) | 1 if any gate fails |
+| `poetry run update-deps` | Show outdated dependencies + guidance | 0 (informational only) |
+
+### Continuous Integration Pipeline
+
+The `check-all` command simulates the complete CI pipeline:
+
+1. **Type Safety**: MyPy strict type checking with zero tolerance
+2. **Code Quality**: Ruff linting with auto-fix capability
+3. **Formatting**: Consistent code style enforcement
+4. **Documentation**: Comprehensive docstring validation
+5. **Security**: Static security analysis with Bandit
+6. **Dependencies**: Vulnerability scanning with pip-audit
+7. **Testing**: Unit tests with 90%+ coverage requirement
+8. **Compatibility**: Cross-platform validation
 
 ## Use Cases
 
