@@ -12,6 +12,7 @@ from .error_utils import (
     handle_os_error,
     handle_subprocess_error,
 )
+from .security_validators import sanitize_error_message
 
 F = TypeVar("F", bound=Callable[..., Any])
 
@@ -109,11 +110,16 @@ class ErrorHandler:
             formatted_message = str(exc)
             context["error_type"] = "generic_error"
 
-        # Log the error with full context
+        # Sanitize error message to prevent information disclosure
+        command_context = context.get("command_context")
+        sanitized_message = sanitize_error_message(formatted_message, command_context)
+
+        # Log the error with sanitized message and full context
         debug_logger.log(
             "ERROR",
-            f"Error in {operation}: {formatted_message}",
+            f"Error in {operation}: {sanitized_message}",
             exception_type=type(exc).__name__,
+            original_message=formatted_message,  # Keep original for debugging
             **context,
         )
 
@@ -158,7 +164,10 @@ class ErrorHandler:
             else:
                 message = str(exc)
 
-            raise reraise_as(f"Failed to {operation}: {message}") from exc
+            # Sanitize error message for user-facing exception
+            command_context = additional_context.get("command_context")
+            sanitized_message = sanitize_error_message(message, command_context)
+            raise reraise_as(f"Failed to {operation}: {sanitized_message}") from exc
         else:
             raise exc
 

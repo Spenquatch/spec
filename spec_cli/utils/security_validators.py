@@ -125,3 +125,156 @@ def _looks_like_file_path(arg: str) -> bool:
     # Consider simple names as potential file paths (but exclude common git refs)
     # This allows for files like "README", "Makefile" etc.
     return not arg.isupper() or "." in arg
+
+
+def sanitize_error_message(
+    error_message: str, command_context: str | None = None
+) -> str:
+    """Sanitize error messages to prevent information disclosure.
+
+    Removes absolute paths and potentially sensitive command arguments while
+    preserving actionable error information for debugging.
+
+    Args:
+        error_message: Original error message to sanitize
+        command_context: Optional command context for additional filtering
+
+    Returns:
+        Sanitized error message with sensitive information removed
+
+    Raises:
+        TypeError: If error_message is not a string
+
+    Example:
+        >>> sanitize_error_message("fatal: repository '/Users/secret/project/.git' does not exist")
+        "fatal: repository '<path>/.git' does not exist"
+        >>> sanitize_error_message("git add --password=secret123 file.txt", "git")
+        "git add <filtered> file.txt"
+    """
+    if not isinstance(error_message, str):
+        raise TypeError(f"error_message must be str, got {type(error_message)}")
+
+    sanitized = error_message
+
+    # Decision point 1: Check for environment variable disclosure (do this first)
+    if _contains_env_vars(sanitized):
+        sanitized = _sanitize_env_vars(sanitized)
+
+    # Decision point 2: Check for sensitive command arguments
+    if command_context and _contains_sensitive_args(sanitized):
+        sanitized = _sanitize_command_arguments(sanitized)
+
+    # Decision point 3: Check for potential credentials
+    if _contains_credentials(sanitized):
+        sanitized = _sanitize_credentials(sanitized)
+
+    # Decision point 4: Check for home directory paths
+    if _contains_home_paths(sanitized):
+        sanitized = _sanitize_home_paths(sanitized)
+
+    # Decision point 5: Check for absolute path patterns (do this last)
+    if _contains_absolute_paths(sanitized):
+        sanitized = _sanitize_absolute_paths(sanitized)
+
+    return sanitized
+
+
+def _contains_absolute_paths(message: str) -> bool:
+    """Check if message contains absolute file paths."""
+    import re
+
+    # Check for Unix absolute paths
+    if re.search(r"/[^/\s]+(?:/[^/\s]*)*", message):
+        return True
+    # Check for Windows absolute paths
+    if re.search(r"[A-Za-z]:[/\\][^\s]*", message):
+        return True
+    return False
+
+
+def _sanitize_absolute_paths(message: str) -> str:
+    """Replace absolute paths with sanitized placeholders."""
+    import re
+
+    # Replace Unix-style absolute paths (preserve surrounding quotes/delimiters)
+    # Exclude already sanitized paths starting with placeholders
+    message = re.sub(r"(?<!<home>)(/[^/\s<]+(?:/[^/\s'\"<]*)*)", r"<path>", message)
+    # Replace Windows-style absolute paths
+    message = re.sub(r"([A-Za-z]:[/\\][^\s'\"<]*)", r"<path>", message)
+    return message
+
+
+def _contains_sensitive_args(message: str) -> bool:
+    """Check if message contains potentially sensitive command arguments."""
+    sensitive_patterns = ["--password", "--token", "--key", "--secret", "--auth"]
+    return any(pattern in message.lower() for pattern in sensitive_patterns)
+
+
+def _sanitize_command_arguments(message: str) -> str:
+    """Remove sensitive command line arguments."""
+    import re
+
+    # Replace sensitive arguments and their values
+    sensitive_pattern = r"--(?:password|token|key|secret|auth)[=\s]+\S+"
+    return re.sub(sensitive_pattern, "<filtered>", message, flags=re.IGNORECASE)
+
+
+def _contains_credentials(message: str) -> bool:
+    """Check if message contains credential-like strings."""
+    import re
+
+    # Look for patterns like API keys, tokens, etc.
+    # Be more restrictive to avoid file path false positives
+    credential_patterns = [
+        r"\b[a-zA-Z0-9]{32,}\b",  # Long alphanumeric strings (word boundaries)
+        r"\b[A-Za-z0-9+/]{20,}={1,2}(?=\s|$)",  # Base64 strings with padding
+        r"\bsk-[a-zA-Z0-9]{32,}\b",  # API key format (e.g., OpenAI)
+        r"\b[0-9a-f]{40,}\b",  # Hex strings (SHA hashes, etc.)
+    ]
+    return any(re.search(pattern, message) for pattern in credential_patterns)
+
+
+def _sanitize_credentials(message: str) -> str:
+    """Replace potential credential strings with placeholders."""
+    import re
+
+    # Replace specific API key formats first
+    message = re.sub(r"\bsk-[a-zA-Z0-9]{32,}\b", "<api_key>", message)
+    # Replace base64 strings with padding (do this before general token pattern)
+    message = re.sub(r"\b[A-Za-z0-9+/]{20,}={1,2}(?=\s|$)", "<encoded>", message)
+    # Replace hex strings (hashes)
+    message = re.sub(r"\b[0-9a-f]{40,}\b", "<hash>", message)
+    # Replace long alphanumeric strings (potential API keys) - be careful not to match paths
+    message = re.sub(r"(?<!/)\b[a-zA-Z0-9]{32,}\b(?!/)", "<token>", message)
+    return message
+
+
+def _contains_env_vars(message: str) -> bool:
+    """Check if message contains environment variable references."""
+    return "${" in message or "$(" in message
+
+
+def _sanitize_env_vars(message: str) -> str:
+    """Replace environment variable references with placeholders."""
+    import re
+
+    # Replace ${VAR} and $(command) patterns
+    message = re.sub(r"\$\{[^}]+\}", "<env_var>", message)
+    message = re.sub(r"\$\([^)]+\)", "<command>", message)
+    return message
+
+
+def _contains_home_paths(message: str) -> bool:
+    """Check if message contains home directory paths."""
+    return "~/" in message or "/Users/" in message or "/home/" in message
+
+
+def _sanitize_home_paths(message: str) -> str:
+    """Replace home directory paths with generic placeholders."""
+    import re
+
+    # Replace home directory references
+    message = re.sub(r"~/([^\s'\"]*)", r"<home>/<path>", message)
+    message = re.sub(r"/Users/[^/\s'\"]+(/[^\s'\"]*)?", r"<home>\1", message)
+    message = re.sub(r"/home/[^/\s'\"]+(/[^\s'\"]*)?", r"<home>\1", message)
+    return message
