@@ -11,6 +11,8 @@ from subprocess import CompletedProcess
 
 from ..exceptions import SpecGitError
 from ..logging.debug import debug_logger
+from ..utils.error_utils import handle_subprocess_error
+from ..utils.security_validators import validate_git_command
 
 
 class GitOperations:
@@ -56,8 +58,19 @@ class GitOperations:
             CompletedProcess instance
 
         Raises:
-            SpecGitError: If Git command fails
+            SpecGitError: If Git command fails or validation fails
         """
+        # Validate command security before execution
+        is_valid, error_message = validate_git_command(args, self.specs_dir)
+        if not is_valid:
+            debug_logger.log(
+                "ERROR",
+                "Git command validation failed",
+                command=args,
+                error=error_message,
+            )
+            raise SpecGitError(f"Command validation failed: {error_message}")
+
         env = self._prepare_git_environment()
         cmd = self._prepare_git_command(args)
 
@@ -90,35 +103,42 @@ class GitOperations:
             return result
 
         except subprocess.CalledProcessError as e:
-            self.git_error_handler.log_and_raise(
-                e,
+            # Use secure error handling that doesn't expose sensitive information
+            secure_error_msg = handle_subprocess_error(e)
+            debug_logger.log(
+                "ERROR",
                 "Git command failed",
-                reraise_as=SpecGitError,
-                command=" ".join(cmd),
+                command=args[0],  # Log only the git command, not full args
                 return_code=e.returncode,
+                error_details=secure_error_msg,
             )
-            # This should never be reached due to exception being raised
-            raise  # pragma: no cover
+            raise SpecGitError(f"Git command failed: {secure_error_msg}") from e
 
         except FileNotFoundError as e:
             # Custom handling for Git not found
-            error_message = f"{e}. Please ensure Git is installed and in PATH"
-            self.git_error_handler.report(
-                e,
-                "git command execution (git not found)",
-                command=" ".join(cmd),
+            error_message = (
+                "Git command not found. Please ensure Git is installed and in PATH"
+            )
+            debug_logger.log(
+                "ERROR",
+                "Git executable not found",
+                command=args[0],
+                path_error=str(e),
             )
             raise SpecGitError(error_message) from e
 
         except Exception as e:
-            self.git_error_handler.log_and_raise(
-                e,
-                f"git command: {' '.join(cmd)}",
-                reraise_as=SpecGitError,
-                command=" ".join(cmd),
+            # Generic error handling for unexpected issues
+            debug_logger.log(
+                "ERROR",
+                "Unexpected error during git command execution",
+                command=args[0],
+                error_type=type(e).__name__,
+                error_message=str(e),
             )
-            # This should never be reached due to exception being raised
-            raise  # pragma: no cover
+            raise SpecGitError(
+                f"Unexpected error during git command execution: {str(e)}"
+            ) from e
 
     def _prepare_git_environment(self) -> dict[str, str]:
         """Prepare environment variables for Git command.

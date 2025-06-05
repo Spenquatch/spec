@@ -1,221 +1,206 @@
-Slice 1: Extract ErrorHandler to Utils Layer
+Security Vulnerability Fix - Slice Generation
 
-  Goal: Move ErrorHandler from core to utils to eliminate
-  circular dependencies between config and core layers
+  Slice 1a: Git Command Whitelist Validator
+
+  Goal: Implement secure git command validation to prevent command
+  injection attacks
 
   Slice Type: Infrastructure
 
   Helper Dependencies & Search Evidence:
-  - Helper search performed: find spec_cli/utils -name
-  "*.py" | grep error
-  Found: spec_cli/utils/error_utils.py
+  - Helper search performed: grep -r
+  "def.*validat.*input\|def.*sanitiz\|def.*whitelist" spec_cli/utils
+  No matches found for input validation/sanitization
 
+  - Helper search performed: grep -r
+  "def.*safe_relative_to\|def.*validate_path" spec_cli/
+  Found existing: spec_cli/utils/path_utils.py
+
+  - Existing helper: spec_cli/utils/path_utils.py → safe_relative_to()
+  for secure path validation
   - Existing helper: spec_cli/utils/error_utils.py →
-  Contains error formatting utilities
-  - New helper to create: None needed (ErrorHandler will
-  use existing error_utils)
+  handle_subprocess_error() for secure error formatting
+  - New helper to create: spec_cli/utils/security_validators.py →
+  validate_git_command(cmd: List[str]) -> bool
 
   Complexity Analysis:
-  - Decision points: 6/7 (if/elif chains in report method,
-  try/catch in wrapper, reraise logic)
-  - Helper calls: 3 (handle_os_error,
-  handle_subprocess_error, create_error_context)
-  - McCabe validation: Pass (6 ≤ 7, helper calls reduce
-  complexity)
+  - Decision points: 4/7 (command whitelist check, argument validation,
+  path validation, error handling)
+  - Helper calls: 2 (safe_relative_to, handle_subprocess_error)
+  - McCabe validation: Pass (4 ≤ 7 with helper abstraction)
 
   Inputs → Action → Outputs:
-  - Inputs: {exception: Exception, operation: str, context:
-   Dict[str, Any]}
+  - Inputs: {git_args: List[str], work_tree_path: Path}
   - Action:
-    a. Move ErrorHandler class from core/error_handler.py
-  to utils/error_handler.py
-    b. Update imports in config/loader.py and
-  config/validation.py
-    c. Update all other modules importing from
-  core.error_handler
-  - Outputs: {clean_architecture: bool} or {error_message:
-  str}
+    a. Create security_validators.py with whitelist of safe git commands
+    b. Validate git command against whitelist (add, commit, status, log,
+   diff, show, init)
+    c. Sanitize file path arguments using safe_relative_to() with
+  strict=True
+    d. Return validation result with specific error context
+  - Outputs: {is_valid: bool, error_message: Optional[str]}
 
   Files to Create/Modify:
-  - Move: spec_cli/core/error_handler.py →
-  spec_cli/utils/error_handler.py
-  - Modify: spec_cli/config/loader.py (update import from
-  ..utils.error_handler)
-  - Modify: spec_cli/config/validation.py (update import
-  from ..utils.error_handler)
-  - Test: test_slice_1.py
+  - Create: spec_cli/utils/security_validators.py (git command
+  validation)
+  - Test: test_slice_1a.py
 
   Test Requirements:
-  - Unit Tests: Test ErrorHandler functionality with new
-  import path (100% coverage)
-  - Integration Test: Verify config modules can instantiate
-   ErrorHandler successfully
-  - Idempotent Tests: All imports resolve correctly on
-  repeated test runs
-  - Mocks/Fixtures: Mock error_utils functions, create test
-   exception instances
+  - Unit Tests: Test whitelist validation with valid/invalid commands,
+  path injection attempts (100% coverage)
+  - Integration Test: Validate against actual git commands used in
+  GitOperations
+  - Idempotent Tests: Security validation results consistent across runs
+  - Mocks/Fixtures: Mock Path objects for controlled path validation
+  scenarios
 
   Quality Gate Validation:
-  - mypy --strict (zero errors for new import paths)
-  - ruff check --fix && ruff format
-  - pydocstyle (Google-style docstrings)
-  - pytest -v --cov=spec_cli --cov-fail-under=90
+  - poetry run mypy --strict (zero suppressions for security code)
+  - poetry run ruff check --fix && poetry run ruff format
+  - poetry run pydocstyle (Google-style docstrings)
+  - poetry run bandit -r spec_cli/utils/security_validators.py (zero
+  high-severity findings)
+  - poetry run pytest -v --cov=spec_cli --cov-fail-under=90
 
   Integration Validation:
-  End-to-end test: ConfigurationLoader.load_configuration()
-   handles file errors using ErrorHandler from utils
+  End-to-end test: validate_git_command() rejects malicious commands and
+   accepts only whitelisted operations
 
   AI Agent Execution Notes:
-  - Verify all imports of ErrorHandler are updated across
-  codebase
-  - Ensure no remaining references to core.error_handler
-  exist
-  - Test that error handling behavior remains identical
-  after move
+  - Focus on comprehensive command whitelist covering all legitimate
+  spec operations
+  - Ensure path validation prevents directory traversal attacks
+  - Use secure error messages that don't leak sensitive information
 
   ---
-  Slice 2: Decouple BatchProcessor from Core Orchestrator
+  Slice 1b: Secure Git Operations Integration
 
-  Goal: Remove dependency from
-  file_processing.batch_processor on
-  core.workflow_orchestrator to eliminate cross-layer
-  coupling
-
-  Slice Type: Component
-
-  Helper Dependencies & Search Evidence:
-  - Helper search performed: grep -r "workflow\|orchestrat"
-   spec_cli/utils/
-  No matches found for workflow orchestration helpers
-
-  - Create helper: spec_cli/utils/workflow_utils.py →
-  create_workflow_result(files: List[Path], success: bool)
-  -> Dict[str, Any]
-
-  Complexity Analysis:
-  - Decision points: 4/7 (error handling in
-  _handle_auto_commit, success evaluation, file
-  categorization)
-  - Helper calls: 2 (create_workflow_result,
-  handle_os_error from existing error_utils)
-  - McCabe validation: Pass (4 ≤ 7, helper calls simplify
-  logic)
-
-  Inputs → Action → Outputs:
-  - Inputs: {successful_files: List[Path], auto_commit:
-  bool, custom_variables: Dict[str, Any]}
-  - Action:
-    a. Create workflow_utils.py with workflow result
-  creation helper
-    b. Replace workflow_orchestrator calls in
-  batch_processor with direct git operations
-    c. Update auto-commit logic to use simple file
-  operations instead of orchestrator
-  - Outputs: {workflow_result: Dict[str, Any]} or
-  {error_message: str}
-
-  Files to Create/Modify:
-  - Create: spec_cli/utils/workflow_utils.py (workflow
-  result helpers)
-  - Modify: spec_cli/file_processing/batch_processor.py
-  (remove orchestrator import, simplify auto-commit)
-  - Test: test_slice_2.py
-
-  Test Requirements:
-  - Unit Tests: Test BatchProcessor without workflow
-  orchestrator dependency (100% coverage)
-  - Integration Test: Verify auto-commit functionality
-  works with simplified approach
-  - Idempotent Tests: Batch processing produces consistent
-  results on repeated runs
-  - Mocks/Fixtures: Mock git operations, create test file
-  processing scenarios
-
-  Quality Gate Validation:
-  - mypy --strict (verify no missing imports after
-  orchestrator removal)
-  - ruff check --fix && ruff format
-  - pydocstyle (Google-style docstrings)
-  - pytest -v --cov=spec_cli --cov-fail-under=90
-
-  Integration Validation:
-  End-to-end test: BatchFileProcessor.process_files() with
-  auto_commit=True creates commits without using workflow
-  orchestrator
-
-  AI Agent Execution Notes:
-  - Ensure auto-commit functionality is preserved but
-  simplified
-  - Remove all imports of workflow_orchestrator from
-  batch_processor
-  - Test that batch processing results remain consistent
-
-  ---
-  Slice 3: Validate Architecture Dependencies
-
-  Goal: Establish and validate clean architecture
-  dependency hierarchy: Utils → Config → Core → CLI
+  Goal: Integrate command validation into GitOperations to eliminate
+  injection vulnerability
 
   Slice Type: Integration
 
   Helper Dependencies & Search Evidence:
-  - Helper search performed: grep -r "import.*\.\."
-  spec_cli/ | grep -v test
-  Found multiple cross-layer imports to validate
+  - Helper search performed: grep -r "validate_git_command"
+  spec_cli/utils/
+  Will be available from Slice 1a
 
-  - Existing helper: spec_cli/utils/error_utils.py → Use
-  for consistent dependency validation error reporting
-  - New helper to create:
-  spec_cli/utils/dependency_validator.py →
-  validate_import_hierarchy() -> List[str]
+  - Existing helper: spec_cli/utils/security_validators.py →
+  validate_git_command() (from Slice 1a)
+  - Existing helper: spec_cli/utils/error_utils.py →
+  handle_subprocess_error() for safe error reporting
+  - Existing helper: spec_cli/utils/path_utils.py → safe_relative_to()
+  for path validation
 
   Complexity Analysis:
-  - Decision points: 5/7 (layer validation logic, import
-  parsing, error categorization)
-  - Helper calls: 2 (create_error_context, dependency
-  validation helper)
-  - McCabe validation: Pass (5 ≤ 7 with helper abstraction)
+  - Decision points: 3/7 (validation check, error handling, command
+  execution)
+  - Helper calls: 3 (validate_git_command, safe_relative_to,
+  handle_subprocess_error)
+  - McCabe validation: Pass (3 ≤ 7 with extensive helper usage)
 
   Inputs → Action → Outputs:
-  - Inputs: {codebase_path: Path, expected_hierarchy:
-  List[str]}
+  - Inputs: {git_args: List[str], capture_output: bool}
   - Action:
-    a. Create dependency_validator.py to check import
-  hierarchies
-    b. Scan all modules for import violations
-    c. Generate report of architecture compliance
-
-  - Outputs: {validation_report: Dict[str, Any]} or
-  {violations: List[str]}
+    a. Validate git command using
+  security_validators.validate_git_command()
+    b. Apply path validation to any file arguments
+    c. Execute command only if validation passes
+    d. Use secure error handling that doesn't expose sensitive
+  information
+  - Outputs: {CompletedProcess[str]} or {SpecGitError with sanitized
+  message}
 
   Files to Create/Modify:
-  - Create: spec_cli/utils/dependency_validator.py
-  (architecture validation)
-  - Test: test_slice_3.py
+  - Modify: spec_cli/git/operations.py (integrate validation into
+  run_git_command)
+  - Test: test_slice_1b.py
 
   Test Requirements:
-  - Unit Tests: Test dependency validation logic with
-  various import scenarios (100% coverage)
-  - Integration Test: Run validation against current
-  codebase after fixes
-  - Idempotent Tests: Validation results are consistent
-  across multiple runs
-  - Mocks/Fixtures: Mock file system for controlled import
+  - Unit Tests: Test command validation integration, error handling
+  paths (100% coverage)
+  - Integration Test: Execute safe git commands, verify malicious
+  commands are blocked
+  - Idempotent Tests: Git operations remain secure across multiple calls
+  - Mocks/Fixtures: Mock subprocess for testing command rejection
   scenarios
 
   Quality Gate Validation:
-  - mypy --strict (clean type checking for validation
-  logic)
-  - ruff check --fix && ruff format
-  - pydocstyle (Google-style docstrings)
-  - pytest -v --cov=spec_cli --cov-fail-under=90
+  - poetry run mypy --strict (clean integration with existing types)
+  - poetry run ruff check --fix && poetry run ruff format
+  - poetry run bandit -r spec_cli/git/operations.py (zero high-severity
+  findings)
+  - poetry run pytest tests/unit/git/test_slice_1b.py -v
 
   Integration Validation:
-  End-to-end test:
-  dependency_validator.validate_import_hierarchy() reports
-  zero violations after architecture fixes
+  End-to-end test: GitOperations.run_git_command() successfully blocks
+  injection attempts while allowing legitimate operations
 
   AI Agent Execution Notes:
-  - Focus on detecting remaining circular dependencies
-  - Provide clear reporting of architecture compliance
-  - Enable ongoing validation of dependency rules
+  - Preserve existing functionality while adding security layer
+  - Ensure error messages are informative but don't leak system
+  information
+  - Maintain backward compatibility with existing GitOperations callers
+
+  ---
+  Slice 1c: Error Message Sanitization
+
+  Goal: Sanitize error messages to prevent information disclosure
+  through git command failures
+
+  Slice Type: Component
+
+  Helper Dependencies & Search Evidence:
+  - Helper search performed: grep -r
+  "def.*sanitize.*error\|def.*safe.*message" spec_cli/utils/
+  No matches found for error sanitization
+
+  - Existing helper: spec_cli/utils/error_utils.py →
+  handle_subprocess_error() for error formatting
+  - New helper to create: spec_cli/utils/security_validators.py →
+  sanitize_error_message(msg: str) -> str
+
+  Complexity Analysis:
+  - Decision points: 5/7 (sensitive pattern detection, path
+  sanitization, command sanitization, context filtering)
+  - Helper calls: 1 (handle_subprocess_error)
+  - McCabe validation: Pass (5 ≤ 7 with helper usage)
+
+  Inputs → Action → Outputs:
+  - Inputs: {error_message: str, command_context: Optional[str]}
+  - Action:
+    a. Extend security_validators.py with error message sanitization
+    b. Remove absolute paths from error messages
+    c. Filter out potentially sensitive command arguments
+    d. Preserve actionable error information for debugging
+  - Outputs: {sanitized_message: str}
+
+  Files to Create/Modify:
+  - Modify: spec_cli/utils/security_validators.py (add
+  sanitize_error_message function)
+  - Modify: spec_cli/utils/error_handler.py (integrate sanitization)
+  - Test: test_slice_1c.py
+
+  Test Requirements:
+  - Unit Tests: Test sanitization with various error message patterns
+  (100% coverage)
+  - Integration Test: Verify sanitization works with actual git error
+  scenarios
+  - Idempotent Tests: Sanitization produces consistent results
+  - Mocks/Fixtures: Mock error scenarios with sensitive information
+
+  Quality Gate Validation:
+  - poetry run mypy --strict (complete type coverage for security
+  functions)
+  - poetry run ruff check --fix && poetry run ruff format
+  - poetry run bandit -r spec_cli/utils/ (zero high-severity findings)
+  - poetry run pytest tests/unit/utils/test_slice_1c.py -v
+
+  Integration Validation:
+  End-to-end test: Error messages from git operations contain no
+  absolute paths or sensitive command details
+
+  AI Agent Execution Notes:
+  - Balance between security and debuggability in error messages
+  - Focus on patterns that commonly appear in git error output
+  - Ensure sanitization doesn't break existing error handling workflows

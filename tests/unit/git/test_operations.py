@@ -130,7 +130,7 @@ class TestGitOperations:
         with pytest.raises(SpecGitError) as exc_info:
             git_ops.run_git_command(["status"])
 
-        assert "Git not found" in str(exc_info.value)
+        assert "Git command not found" in str(exc_info.value)
         assert "Please ensure Git is installed and in PATH" in str(exc_info.value)
 
     @patch("spec_cli.git.operations.subprocess.run")
