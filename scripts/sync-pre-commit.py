@@ -321,9 +321,7 @@ def main():
         # Show what tools were configured
         configured_tools = [pkg for pkg in poetry_deps.keys() if pkg in HOOK_MAPPINGS]
         if configured_tools and not args.quiet:
-            print(
-                f"\nConfigured pre-commit hooks for: {', '.join(configured_tools)}"
-            )
+            print(f"\nConfigured pre-commit hooks for: {', '.join(configured_tools)}")
 
         type_deps = get_type_dependencies(poetry_deps)
         if type_deps and not args.quiet:
