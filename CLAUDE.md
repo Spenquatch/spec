@@ -1,5 +1,8 @@
 # CLAUDE.md
 
+# ***IMPORTANT: DO NOT USE EMOJIS IN ANY FILES IN THIS REPO, NEVER USE THEM***
+
+
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Project Overview

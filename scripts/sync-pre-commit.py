@@ -253,11 +253,11 @@ def update_pre_commit_config(new_config: dict, dry_run: bool = False) -> bool:
 
     # Check if update is needed
     if existing_tools == new_tools:
-        print("✅ .pre-commit-config.yaml tool dependencies are already up to date!")
+        print(".pre-commit-config.yaml tool dependencies are already up to date!")
         return False
 
     if dry_run:
-        print("🔍 Dry run mode - would update .pre-commit-config.yaml")
+        print("Dry run mode - would update .pre-commit-config.yaml")
         return True
 
     # Preserve local hooks from existing config
@@ -273,13 +273,13 @@ def update_pre_commit_config(new_config: dict, dry_run: bool = False) -> bool:
         import shutil
 
         shutil.copy2(config_path, backup_path)
-        print(f"📦 Backed up existing config to {backup_path}")
+        print(f"Backed up existing config to {backup_path}")
 
     # Write new config
     with open(config_path, "w") as f:
         yaml.dump(new_config, f, default_flow_style=False, sort_keys=False)
 
-    print("✅ Updated .pre-commit-config.yaml from poetry dependencies!")
+    print("Updated .pre-commit-config.yaml from poetry dependencies!")
     return True
 
 
@@ -304,7 +304,7 @@ def main():
         # Load poetry dependencies
         poetry_deps = load_poetry_dependencies()
         if not args.quiet:
-            print(f"📖 Loaded {len(poetry_deps)} dependencies from pyproject.toml")
+            print(f"Loaded {len(poetry_deps)} dependencies from pyproject.toml")
 
         # Generate pre-commit config
         new_config = generate_pre_commit_config(poetry_deps)
@@ -313,7 +313,7 @@ def main():
         updated = update_pre_commit_config(new_config, dry_run=args.dry_run)
 
         if updated and not args.dry_run and not args.quiet:
-            print("\n🔧 Next steps:")
+            print("\nNext steps:")
             print("1. Review the generated .pre-commit-config.yaml")
             print("2. Run: pre-commit install")
             print("3. Test: pre-commit run --all-files")
@@ -322,15 +322,15 @@ def main():
         configured_tools = [pkg for pkg in poetry_deps.keys() if pkg in HOOK_MAPPINGS]
         if configured_tools and not args.quiet:
             print(
-                f"\n🛠️  Configured pre-commit hooks for: {', '.join(configured_tools)}"
+                f"\nConfigured pre-commit hooks for: {', '.join(configured_tools)}"
             )
 
         type_deps = get_type_dependencies(poetry_deps)
         if type_deps and not args.quiet:
-            print(f"📝 Added type dependencies: {', '.join(type_deps)}")
+            print(f"Added type dependencies: {', '.join(type_deps)}")
 
     except Exception as e:
-        print(f"❌ Error: {e}")
+        print(f"Error: {e}")
         return 1
 
     return 0
