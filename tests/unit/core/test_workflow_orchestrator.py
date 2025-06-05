@@ -30,6 +30,9 @@ class TestSpecWorkflowOrchestrator:
                 "spec_cli.core.workflow_orchestrator.RepositoryStateChecker"
             ) as mock_state_checker,
             patch(
+                "spec_cli.core.workflow_orchestrator.WorkflowValidator"
+            ) as mock_validator,
+            patch(
                 "spec_cli.core.workflow_orchestrator.SpecCommitManager"
             ) as mock_commit_manager,
             patch(
@@ -41,6 +44,7 @@ class TestSpecWorkflowOrchestrator:
         ):
             self.orchestrator = SpecWorkflowOrchestrator(self.mock_settings)
             self.mock_state_checker = mock_state_checker.return_value
+            self.mock_validator = mock_validator.return_value
             self.mock_commit_manager = mock_commit_manager.return_value
             self.mock_content_generator = _mock_content_gen.return_value
             self.mock_directory_manager = _mock_dir_manager.return_value
@@ -73,8 +77,10 @@ class TestSpecWorkflowOrchestrator:
         mock_load_template.return_value = mock_template
 
         # Setup validation to pass
-        self.mock_state_checker.is_safe_for_spec_operations.return_value = True
-        self.mock_state_checker.validate_pre_operation_state.return_value = []
+        self.mock_validator.validate_workflow_preconditions.return_value = {
+            "valid": True,
+            "issues": [],
+        }
 
         # Setup tag creation (backup)
         self.mock_commit_manager.create_tag.return_value = {
@@ -127,11 +133,13 @@ class TestSpecWorkflowOrchestrator:
         mock_wf_manager.create_workflow.return_value = mock_workflow
 
         # Setup validation to fail
-        self.mock_state_checker.is_safe_for_spec_operations.return_value = False
+        self.mock_validator.validate_workflow_preconditions.return_value = {
+            "valid": False,
+            "issues": ["Repository is not safe for spec operations"],
+        }
 
-        with patch.object(Path, "exists", return_value=True):
-            with pytest.raises(SpecWorkflowError, match="Repository is not safe"):
-                self.orchestrator.generate_spec_for_file(test_file)
+        with pytest.raises(SpecWorkflowError, match="Validation failed"):
+            self.orchestrator.generate_spec_for_file(test_file)
 
         # Verify workflow was failed
         mock_workflow.fail.assert_called_once()
@@ -150,13 +158,14 @@ class TestSpecWorkflowOrchestrator:
 
         mock_wf_manager.create_workflow.return_value = mock_workflow
 
-        # Setup validation to pass initially
-        self.mock_state_checker.is_safe_for_spec_operations.return_value = True
+        # Setup validation to fail for missing file
+        self.mock_validator.validate_workflow_preconditions.return_value = {
+            "valid": False,
+            "issues": ["Source file does not exist: /test/src/example.py"],
+        }
 
-        # Mock Path.exists to return False
-        with patch.object(Path, "exists", return_value=False):
-            with pytest.raises(SpecWorkflowError, match="Source file does not exist"):
-                self.orchestrator.generate_spec_for_file(test_file)
+        with pytest.raises(SpecWorkflowError, match="Validation failed"):
+            self.orchestrator.generate_spec_for_file(test_file)
 
     @patch("spec_cli.core.workflow_orchestrator.workflow_state_manager")
     @patch("spec_cli.core.workflow_orchestrator.load_template")
@@ -176,8 +185,10 @@ class TestSpecWorkflowOrchestrator:
         mock_load_template.return_value = mock_template
 
         # Setup validation to pass
-        self.mock_state_checker.is_safe_for_spec_operations.return_value = True
-        self.mock_state_checker.validate_pre_operation_state.return_value = []
+        self.mock_validator.validate_workflow_preconditions.return_value = {
+            "valid": True,
+            "issues": [],
+        }
 
         # Setup backup creation
         self.mock_commit_manager.create_tag.return_value = {
@@ -219,8 +230,19 @@ class TestSpecWorkflowOrchestrator:
         mock_wf_manager.create_workflow.return_value = mock_workflow
 
         # Setup validation to pass
-        self.mock_state_checker.is_safe_for_spec_operations.return_value = True
-        self.mock_state_checker.validate_pre_operation_state.return_value = []
+        self.mock_validator.validate_workflow_preconditions.return_value = {
+            "valid": True,
+            "issues": [],
+        }
+
+        # Setup batch validation to pass
+        self.mock_validator.validate_batch_operation.return_value = {
+            "valid": True,
+            "total_files": 2,
+            "valid_files": test_files,
+            "invalid_files": {},
+            "global_issues": [],
+        }
 
         # Mock file existence check
         with patch.object(Path, "exists", return_value=True):
@@ -271,8 +293,19 @@ class TestSpecWorkflowOrchestrator:
         mock_wf_manager.create_workflow.return_value = mock_workflow
 
         # Setup validation to pass
-        self.mock_state_checker.is_safe_for_spec_operations.return_value = True
-        self.mock_state_checker.validate_pre_operation_state.return_value = []
+        self.mock_validator.validate_workflow_preconditions.return_value = {
+            "valid": True,
+            "issues": [],
+        }
+
+        # Setup batch validation to pass
+        self.mock_validator.validate_batch_operation.return_value = {
+            "valid": True,
+            "total_files": 2,
+            "valid_files": test_files,
+            "invalid_files": {},
+            "global_issues": [],
+        }
 
         # Mock file existence check
         with patch.object(Path, "exists", return_value=True):
@@ -329,8 +362,19 @@ class TestSpecWorkflowOrchestrator:
         mock_wf_manager.create_workflow.return_value = mock_workflow
 
         # Setup validation to pass
-        self.mock_state_checker.is_safe_for_spec_operations.return_value = True
-        self.mock_state_checker.validate_pre_operation_state.return_value = []
+        self.mock_validator.validate_workflow_preconditions.return_value = {
+            "valid": True,
+            "issues": [],
+        }
+
+        # Setup batch validation to pass
+        self.mock_validator.validate_batch_operation.return_value = {
+            "valid": True,
+            "total_files": 3,
+            "valid_files": test_files,
+            "invalid_files": {},
+            "global_issues": [],
+        }
 
         # Mock progress callback
         progress_callback = Mock()
@@ -538,6 +582,9 @@ class TestWorkflowExecutionStages:
                 "spec_cli.core.workflow_orchestrator.RepositoryStateChecker"
             ) as mock_state_checker,
             patch(
+                "spec_cli.core.workflow_orchestrator.WorkflowValidator"
+            ) as mock_validator,
+            patch(
                 "spec_cli.core.workflow_orchestrator.SpecCommitManager"
             ) as mock_commit_manager,
             patch(
@@ -549,6 +596,7 @@ class TestWorkflowExecutionStages:
         ):
             self.orchestrator = SpecWorkflowOrchestrator(self.mock_settings)
             self.mock_state_checker = mock_state_checker.return_value
+            self.mock_validator = mock_validator.return_value
             self.mock_commit_manager = mock_commit_manager.return_value
 
     def test_execute_validation_stage_success(self) -> None:
@@ -559,18 +607,19 @@ class TestWorkflowExecutionStages:
         test_file = Path("/test/src/example.py")
 
         # Setup mocks for successful validation
-        self.mock_state_checker.is_safe_for_spec_operations.return_value = True
-        self.mock_state_checker.validate_pre_operation_state.return_value = []
+        self.mock_validator.validate_workflow_preconditions.return_value = {
+            "valid": True,
+            "issues": [],
+        }
 
-        with patch.object(Path, "exists", return_value=True):
-            self.orchestrator._execute_validation_stage(workflow, test_file)
+        self.orchestrator._execute_validation_stage(workflow, test_file)
 
         # Verify step was completed successfully
         assert len(workflow.steps) == 1
         step = workflow.steps[0]
         assert step.name == "Pre-flight validation"
         assert step.status == WorkflowStatus.COMPLETED
-        assert step.result == {"validated": True}
+        assert step.result == {"validated": True, "issues_checked": 0}
 
     def test_execute_validation_stage_unsafe_repo(self) -> None:
         """Test validation stage with unsafe repository."""
@@ -579,12 +628,14 @@ class TestWorkflowExecutionStages:
         workflow = WorkflowState("test-456", "spec_generation")
         test_file = Path("/test/src/example.py")
 
-        # Setup mock for unsafe repository
-        self.mock_state_checker.is_safe_for_spec_operations.return_value = False
+        # Setup mock for validation failure
+        self.mock_validator.validate_workflow_preconditions.return_value = {
+            "valid": False,
+            "issues": ["Repository is not safe for spec operations"],
+        }
 
-        with patch.object(Path, "exists", return_value=True):
-            with pytest.raises(SpecWorkflowError, match="Repository is not safe"):
-                self.orchestrator._execute_validation_stage(workflow, test_file)
+        with pytest.raises(SpecWorkflowError, match="Validation failed"):
+            self.orchestrator._execute_validation_stage(workflow, test_file)
 
         # Verify step was failed
         assert len(workflow.steps) == 1

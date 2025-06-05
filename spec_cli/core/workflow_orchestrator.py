@@ -25,6 +25,7 @@ from ..templates.generator import SpecContentGenerator
 from ..templates.loader import load_template
 from .commit_manager import SpecCommitManager
 from .repository_state import RepositoryStateChecker
+from .validators.workflow_validator import WorkflowValidator
 from .workflow_state import (
     WorkflowStage,
     WorkflowState,
@@ -45,12 +46,14 @@ class SpecWorkflowOrchestrator:
 
         The orchestrator sets up all required components for workflow execution:
         - State checker for repository health validation
+        - Workflow validator for operation precondition validation
         - Commit manager for Git operations and backup management
         - Content generator for spec document creation
         - Directory manager for file system operations
         """
         self.settings = settings or get_settings()
         self.state_checker = RepositoryStateChecker(self.settings)
+        self.workflow_validator = WorkflowValidator(self.settings, self.state_checker)
         self.commit_manager = SpecCommitManager(self.settings)
         self.content_generator = SpecContentGenerator(self.settings)
         self.directory_manager = DirectoryManager(self.settings)
@@ -172,24 +175,19 @@ class SpecWorkflowOrchestrator:
         step.start()
 
         try:
-            # Check repository health
-            if not self.state_checker.is_safe_for_spec_operations():
-                raise SpecWorkflowError("Repository is not safe for spec operations")
-
-            # Validate file exists
-            if not file_path.exists():
-                raise SpecWorkflowError(f"Source file does not exist: {file_path}")
-
-            # Check pre-operation state
-            validation_issues = self.state_checker.validate_pre_operation_state(
-                "generate"
+            # Use workflow validator for comprehensive validation
+            validation_result = self.workflow_validator.validate_workflow_preconditions(
+                file_path, "generate"
             )
-            if validation_issues:
+
+            if not validation_result["valid"]:
                 raise SpecWorkflowError(
-                    f"Validation failed: {'; '.join(validation_issues)}"
+                    f"Validation failed: {'; '.join(validation_result['issues'])}"
                 )
 
-            step.complete({"validated": True})
+            step.complete(
+                {"validated": True, "issues_checked": len(validation_result["issues"])}
+            )
 
         except Exception as e:
             step.fail(str(e))
@@ -421,21 +419,46 @@ class SpecWorkflowOrchestrator:
                     "backup_info": None,
                 }
 
-                # Global validation
-                self._execute_validation_stage(
-                    workflow, file_paths[0] if file_paths else Path(".")
+                # Global batch validation
+                batch_validation = self.workflow_validator.validate_batch_operation(
+                    file_paths, "generate"
                 )
+
+                if batch_validation["global_issues"]:
+                    error_msg = f"Batch validation failed: {'; '.join(batch_validation['global_issues'])}"
+                    raise SpecWorkflowError(error_msg)
+
+                # Store validation results for use during processing
+                workflow.metadata["batch_validation"] = batch_validation
 
                 # Global backup
                 if create_backup:
                     results["backup_info"] = self._execute_backup_stage(workflow)
 
-                # Process each file
+                # Process valid files only (skip files that failed validation)
+                valid_files = batch_validation["valid_files"]
+                invalid_files = batch_validation["invalid_files"]
+
+                # Add invalid files to failed results
+                for file_path, issues in invalid_files.items():
+                    results["failed_files"].append(
+                        {
+                            "file_path": str(file_path),
+                            "error": f"Validation failed: {'; '.join(issues)}",
+                        }
+                    )
+
+                # Process each file (valid ones only, but maintain original indices for progress)
+                valid_file_set = set(valid_files)
                 for i, file_path in enumerate(file_paths):
                     if progress_callback:
                         progress_callback(
                             i, len(file_paths), f"Processing {file_path.name}"
                         )
+
+                    # Skip invalid files (already added to failed_files above)
+                    if file_path not in valid_file_set:
+                        continue
 
                     try:
                         file_result = self.generate_spec_for_file(
