@@ -22,8 +22,8 @@ from ..exceptions import SpecWorkflowError
 from ..file_system.directory_manager import DirectoryManager
 from ..logging.debug import debug_logger
 from ..templates.generator import SpecContentGenerator
-from ..templates.loader import load_template
 from .commit_manager import SpecCommitManager
+from .executors.workflow_executor import WorkflowExecutor
 from .repository_state import RepositoryStateChecker
 from .validators.workflow_validator import WorkflowValidator
 from .workflow_state import (
@@ -57,6 +57,9 @@ class SpecWorkflowOrchestrator:
         self.commit_manager = SpecCommitManager(self.settings)
         self.content_generator = SpecContentGenerator(self.settings)
         self.directory_manager = DirectoryManager(self.settings)
+        self.workflow_executor = WorkflowExecutor(
+            self.content_generator, self.commit_manager, self.settings
+        )
 
         debug_logger.log("INFO", "SpecWorkflowOrchestrator initialized")
 
@@ -112,20 +115,17 @@ class SpecWorkflowOrchestrator:
                 if create_backup:
                     backup_info = self._execute_backup_stage(workflow)
 
-                # Step 3: Content Generation
-                generated_files = self._execute_generation_stage(
-                    workflow, file_path, custom_variables
+                # Step 3: Execute workflow using WorkflowExecutor
+                execution_result = self.workflow_executor.execute_workflow(
+                    workflow,
+                    file_path,
+                    {
+                        "auto_commit": auto_commit,
+                        "custom_variables": custom_variables,
+                    },
                 )
-
-                # Step 4: Commit (if requested)
-                commit_info = None
-                if auto_commit:
-                    commit_info = self._execute_commit_stage(
-                        workflow, file_path, generated_files
-                    )
-
-                # Step 5: Cleanup
-                self._execute_cleanup_stage(workflow)
+                generated_files = execution_result["generated_files"][str(file_path)]
+                commit_info = execution_result["commit_info"]
 
                 workflow.complete()
                 workflow_state_manager.complete_workflow(workflow.workflow_id)
@@ -226,115 +226,6 @@ class SpecWorkflowOrchestrator:
         except Exception as e:
             step.fail(str(e))
             raise
-
-    def _execute_generation_stage(
-        self,
-        workflow: WorkflowState,
-        file_path: Path,
-        custom_variables: dict[str, Any] | None,
-    ) -> dict[str, Path]:
-        """Execute content generation stage."""
-        step = workflow.add_step("Generate spec content", WorkflowStage.GENERATION)
-        step.start()
-
-        try:
-            # Load template
-            template = load_template()
-
-            # Generate content
-            generated_files = self.content_generator.generate_spec_content(
-                file_path=file_path,
-                template=template,
-                custom_variables=custom_variables,
-                backup_existing=True,
-            )
-
-            step.complete(
-                {
-                    "generated_files": {k: str(v) for k, v in generated_files.items()},
-                    "template_used": getattr(template, "description", None)
-                    or "default",
-                }
-            )
-
-            return generated_files
-
-        except Exception as e:
-            step.fail(str(e))
-            raise
-
-    def _execute_commit_stage(
-        self, workflow: WorkflowState, file_path: Path, generated_files: dict[str, Path]
-    ) -> dict[str, Any]:
-        """Execute commit stage."""
-        step = workflow.add_step("Commit generated content", WorkflowStage.COMMIT)
-        step.start()
-
-        try:
-            # Add generated files to staging
-            file_paths = []
-            for _file_type, full_path in generated_files.items():
-                # Convert to relative path from .specs
-                try:
-                    relative_path = full_path.relative_to(self.settings.specs_dir)
-                    file_paths.append(str(relative_path))
-                except ValueError:
-                    debug_logger.log(
-                        "WARNING",
-                        "Generated file outside .specs directory",
-                        file_path=str(full_path),
-                    )
-
-            if not file_paths:
-                raise SpecWorkflowError("No files to commit")
-
-            # Add files
-            add_result = self.commit_manager.add_files(file_paths)
-            if not add_result["success"]:
-                raise SpecWorkflowError(
-                    f"Failed to add files: {'; '.join(add_result['errors'])}"
-                )
-
-            # Commit changes
-            commit_message = (
-                f"Generate spec documentation for {file_path.name}\n\nFiles generated:\n"
-                + "\n".join(f"- {fp}" for fp in file_paths)
-            )
-
-            commit_result = self.commit_manager.commit_changes(commit_message)
-            if not commit_result["success"]:
-                raise SpecWorkflowError(
-                    f"Failed to commit: {'; '.join(commit_result['errors'])}"
-                )
-
-            commit_info = {
-                "commit_hash": commit_result["commit_hash"],
-                "files_committed": file_paths,
-                "commit_message": commit_message,
-            }
-
-            step.complete(commit_info)
-            return commit_info
-
-        except Exception as e:
-            step.fail(str(e))
-            raise
-
-    def _execute_cleanup_stage(self, workflow: WorkflowState) -> None:
-        """Execute cleanup stage."""
-        step = workflow.add_step("Cleanup temporary files", WorkflowStage.CLEANUP)
-        step.start()
-
-        try:
-            # Cleanup any temporary files or state
-            # Currently minimal, but provides extension point
-
-            step.complete({"cleaned_up": True})
-
-        except Exception as e:
-            # Cleanup failures are warnings, not errors
-            step.fail(str(e))
-            debug_logger.log("WARNING", "Cleanup stage failed", error=str(e))
 
     def _execute_rollback_stage(self, workflow: WorkflowState, error: str) -> None:
         """Execute rollback stage."""

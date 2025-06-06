@@ -58,7 +58,7 @@ class TestSpecWorkflowOrchestrator:
         assert self.orchestrator.directory_manager == self.mock_directory_manager
 
     @patch("spec_cli.core.workflow_orchestrator.workflow_state_manager")
-    @patch("spec_cli.core.workflow_orchestrator.load_template")
+    @patch("spec_cli.core.executors.workflow_executor.load_template")
     @patch("spec_cli.core.workflow_orchestrator.debug_logger")
     def test_generate_spec_for_file_success(
         self, mock_logger: Mock, mock_load_template: Mock, mock_wf_manager: Mock
@@ -88,22 +88,33 @@ class TestSpecWorkflowOrchestrator:
             "commit_hash": "abc123",
         }
 
-        # Setup content generation
+        # Setup WorkflowExecutor result (since execution is now handled by executor)
         generated_files = {
             "index": Path("/test/.specs/src/example.py/index.md"),
             "history": Path("/test/.specs/src/example.py/history.md"),
         }
-        self.mock_content_generator.generate_spec_content.return_value = generated_files
-
-        # Setup commit operations
-        self.mock_commit_manager.add_files.return_value = {"success": True}
-        self.mock_commit_manager.commit_changes.return_value = {
+        execution_result = {
             "success": True,
-            "commit_hash": "def456",
+            "workflow_id": "test-workflow-123",
+            "total_files": 1,
+            "successful_files": [str(test_file)],
+            "generated_files": {str(test_file): generated_files},
+            "commit_info": {
+                "commit_hash": "def456",
+                "files_committed": [
+                    "src/example.py/index.md",
+                    "src/example.py/history.md",
+                ],
+                "commit_message": "Generate spec documentation for example.py",
+            },
         }
 
-        # Mock Path.exists to return True
-        with patch.object(Path, "exists", return_value=True):
+        # Mock WorkflowExecutor.execute_workflow
+        with patch.object(
+            self.orchestrator.workflow_executor,
+            "execute_workflow",
+            return_value=execution_result,
+        ):
             result = self.orchestrator.generate_spec_for_file(test_file)
 
         # Verify result
@@ -168,7 +179,7 @@ class TestSpecWorkflowOrchestrator:
             self.orchestrator.generate_spec_for_file(test_file)
 
     @patch("spec_cli.core.workflow_orchestrator.workflow_state_manager")
-    @patch("spec_cli.core.workflow_orchestrator.load_template")
+    @patch("spec_cli.core.executors.workflow_executor.load_template")
     @patch("spec_cli.core.workflow_orchestrator.debug_logger")
     def test_generate_spec_for_file_with_rollback(
         self, mock_logger: Mock, mock_load_template: Mock, mock_wf_manager: Mock
@@ -196,15 +207,24 @@ class TestSpecWorkflowOrchestrator:
             "commit_hash": "backup123",
         }
 
-        # Setup content generation to fail
-        self.mock_content_generator.generate_spec_content.side_effect = Exception(
-            "Generation failed"
-        )
+        # Setup WorkflowExecutor to fail (simulating generation failure)
+        from spec_cli.exceptions import SpecWorkflowError as WorkflowError
 
         # Setup rollback
         self.mock_commit_manager.rollback_to_commit.return_value = {"success": True}
 
-        with patch.object(Path, "exists", return_value=True):
+        # Mock WorkflowExecutor.execute_workflow to fail
+        def mock_execute_workflow(*args, **kwargs):
+            raise WorkflowError("Generation failed")
+
+        with (
+            patch.object(
+                self.orchestrator.workflow_executor,
+                "execute_workflow",
+                side_effect=mock_execute_workflow,
+            ),
+            patch.object(Path, "exists", return_value=True),
+        ):
             with pytest.raises(
                 SpecWorkflowError, match="Spec generation workflow failed"
             ):
