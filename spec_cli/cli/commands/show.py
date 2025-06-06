@@ -8,6 +8,7 @@ import click
 from ...logging.debug import debug_logger
 from ...ui.console import get_console
 from ...ui.error_display import show_message
+from ...utils.path_utils import is_specs_path
 from ..options import files_argument, spec_command
 from ..utils import get_spec_repository, validate_file_paths
 from .history import display_file_content, display_spec_content
@@ -190,12 +191,8 @@ def _show_spec_file_content(
 
 def _is_spec_file(file_path: Path) -> bool:
     """Check if file is a spec file."""
-    try:
-        # Check if file is in .specs directory
-        file_path.relative_to(Path(".specs"))
-        return file_path.suffix == ".md"
-    except ValueError:
-        return False
+    # Check if file is in .specs directory and is a markdown file
+    return is_specs_path(file_path) and file_path.suffix == ".md"
 
 
 def _parse_spec_content(content: str) -> dict[str, Any] | None:

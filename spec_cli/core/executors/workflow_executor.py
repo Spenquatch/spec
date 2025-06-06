@@ -20,6 +20,7 @@ from ...logging.debug import debug_logger
 from ...templates.generator import SpecContentGenerator
 from ...templates.loader import load_template
 from ...utils.error_handler import ErrorHandler
+from ...utils.path_utils import safe_relative_to
 from ...utils.workflow_utils import create_workflow_result
 from ..commit_manager import SpecCommitManager
 from ..workflow_state import WorkflowStage, WorkflowState
@@ -209,10 +210,13 @@ class WorkflowExecutor:
             # Convert generated files to relative paths for Git
             file_paths = []
             for _file_type, full_path in generated_files.items():
-                try:
-                    relative_path = full_path.relative_to(self.settings.specs_dir)
+                relative_path = safe_relative_to(
+                    full_path, self.settings.specs_dir, strict=False
+                )
+                # safe_relative_to returns the original path if not strict and outside root
+                if Path(full_path) != relative_path:
                     file_paths.append(str(relative_path))
-                except ValueError:
+                else:
                     debug_logger.log(
                         "WARNING",
                         "Generated file outside .specs directory",

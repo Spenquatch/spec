@@ -22,6 +22,7 @@ from ..exceptions import SpecWorkflowError
 from ..file_system.directory_manager import DirectoryManager
 from ..logging.debug import debug_logger
 from ..templates.generator import SpecContentGenerator
+from ..utils.path_utils import safe_relative_to
 from .commit_manager import SpecCommitManager
 from .executors.workflow_executor import WorkflowExecutor
 from .managers.backup_manager import WorkflowBackupManager
@@ -415,12 +416,13 @@ class SpecWorkflowOrchestrator:
             all_file_paths = []
             for _file_path, generated_files in batch_results["generated_files"].items():
                 for _file_type, full_path in generated_files.items():
-                    try:
-                        relative_path = Path(full_path).relative_to(
-                            self.settings.specs_dir
-                        )
+                    relative_path = safe_relative_to(
+                        full_path, self.settings.specs_dir, strict=False
+                    )
+                    # safe_relative_to returns the original path if not strict and outside root
+                    if Path(full_path) != relative_path:
                         all_file_paths.append(str(relative_path))
-                    except ValueError:
+                    else:
                         debug_logger.log(
                             "WARNING",
                             "Generated file outside .specs directory",

@@ -15,6 +15,7 @@ from ..exceptions import SpecFileError
 from ..file_system.file_metadata import FileMetadataExtractor
 from ..file_system.ignore_patterns import IgnorePatternMatcher
 from ..logging.debug import debug_logger
+from ..utils.path_utils import safe_relative_to
 from .file_cache import FileCacheEntry, FileCacheManager
 
 
@@ -293,16 +294,20 @@ class FileChangeDetector:
 
                     # Check ignore patterns
                     try:
-                        # Try to get relative path to current working directory
+                        # Try to get relative path to current working directory first
                         try:
-                            relative_path = file_path.relative_to(Path.cwd())
-                        except ValueError:
+                            relative_path = safe_relative_to(
+                                file_path, Path.cwd(), strict=True
+                            )
+                        except Exception:
                             # If not relative to cwd, use relative to the directory being scanned
-                            relative_path = file_path.relative_to(directory)
+                            relative_path = safe_relative_to(
+                                file_path, directory, strict=True
+                            )
 
                         if self.ignore_matcher.should_ignore(relative_path):
                             continue
-                    except ValueError:
+                    except Exception:
                         continue
 
                     current_files.add(relative_path)
@@ -442,10 +447,13 @@ class FileChangeDetector:
             for file_path in Path.cwd().rglob("*"):
                 if file_path.is_file():
                     try:
-                        relative_path = file_path.relative_to(Path.cwd())
+                        relative_path = safe_relative_to(
+                            file_path, Path.cwd(), strict=True
+                        )
                         if not self.ignore_matcher.should_ignore(relative_path):
                             current_files.add(str(relative_path))
-                    except ValueError:
+                    except Exception:
+                        # File is outside current directory, skip it
                         continue
 
             # Cleanup cache

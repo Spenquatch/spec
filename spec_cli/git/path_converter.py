@@ -8,7 +8,11 @@ from pathlib import Path
 from typing import Any
 
 from ..logging.debug import debug_logger
-from ..utils.path_utils import normalize_path_separators, remove_specs_prefix
+from ..utils.path_utils import (
+    normalize_path_separators,
+    remove_specs_prefix,
+    safe_relative_to,
+)
 
 
 class GitPathConverter:
@@ -43,7 +47,7 @@ class GitPathConverter:
         if path_obj.is_absolute():
             try:
                 # Try to make it relative to .specs/ directory
-                relative_path = path_obj.relative_to(self.specs_dir)
+                relative_path = safe_relative_to(path_obj, self.specs_dir, strict=True)
                 result = normalize_path_separators(relative_path)
                 debug_logger.log(
                     "DEBUG",
@@ -52,7 +56,7 @@ class GitPathConverter:
                     relative=result,
                 )
                 return result
-            except ValueError:
+            except Exception:
                 # Path is not under .specs/, return as-is
                 debug_logger.log(
                     "DEBUG",
@@ -166,10 +170,10 @@ class GitPathConverter:
             test_path = path_obj
 
         try:
-            test_path.relative_to(self.specs_dir)
+            safe_relative_to(test_path, self.specs_dir, strict=True)
             debug_logger.log("DEBUG", "Path is under .specs/ directory", path=str(path))
             return True
-        except ValueError:
+        except Exception:
             debug_logger.log(
                 "DEBUG", "Path is not under .specs/ directory", path=str(path)
             )

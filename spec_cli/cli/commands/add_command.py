@@ -9,6 +9,7 @@ from ...git.repository import SpecGitRepository
 from ...logging.debug import debug_logger
 from ...ui.console import get_console
 from ...ui.error_display import show_message
+from ...utils.path_utils import safe_relative_to
 from ..base_command import BaseCommand
 from .generation import create_add_workflow
 
@@ -154,9 +155,9 @@ class AddCommand(BaseCommand):
         for file_path in file_paths:
             try:
                 # Check if file is in .specs directory
-                file_path.relative_to(specs_dir)
+                safe_relative_to(file_path, specs_dir, strict=True)
                 spec_files.append(file_path)
-            except ValueError:
+            except Exception:
                 # File is not in .specs directory
                 continue
 

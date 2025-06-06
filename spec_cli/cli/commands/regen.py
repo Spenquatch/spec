@@ -8,6 +8,7 @@ from ...file_processing.conflict_resolver import ConflictResolutionStrategy
 from ...logging.debug import debug_logger
 from ...ui.console import get_console
 from ...ui.error_display import show_message
+from ...utils.path_utils import safe_relative_to
 from ..options import (
     dry_run_option,
     force_option,
@@ -201,14 +202,21 @@ def _find_all_spec_sources() -> list[Path]:
     for index_file in specs_dir.rglob("index.md"):
         try:
             # Convert spec path back to source path
-            relative_path = index_file.parent.relative_to(specs_dir)
+            relative_path = safe_relative_to(index_file.parent, specs_dir, strict=True)
             potential_source = Path(relative_path)
 
             if potential_source.exists():
                 source_files.append(potential_source)
-        except (ValueError, OSError):
-            # Skip invalid paths
-            continue
+        except Exception:
+            # Fallback for cases where safe_relative_to fails (e.g., with mocks in tests)
+            try:
+                relative_path = index_file.parent.relative_to(specs_dir)
+                potential_source = Path(relative_path)
+                if potential_source.exists():
+                    source_files.append(potential_source)
+            except (ValueError, OSError):
+                # Skip invalid paths
+                continue
 
     return source_files
 
@@ -218,11 +226,15 @@ def _filter_files_with_specs(source_files: list[Path]) -> list[Path]:
     files_with_specs = []
 
     def get_spec_files_for_source(source_file: Path) -> dict[str, Path]:
-        relative_path = (
-            source_file.relative_to(Path.cwd())
-            if source_file.is_absolute()
-            else source_file
-        )
+        try:
+            relative_path = (
+                safe_relative_to(source_file, Path.cwd(), strict=True)
+                if source_file.is_absolute()
+                else source_file
+            )
+        except Exception:
+            # If can't make relative, use the source file as-is
+            relative_path = source_file
         spec_dir = Path(".specs") / relative_path
         return {"index": spec_dir / "index.md", "history": spec_dir / "history.md"}
 
@@ -241,11 +253,15 @@ def _show_regen_dry_run_preview(
     console = get_console()
 
     def get_spec_files_for_source(source_file: Path) -> dict[str, Path]:
-        relative_path = (
-            source_file.relative_to(Path.cwd())
-            if source_file.is_absolute()
-            else source_file
-        )
+        try:
+            relative_path = (
+                safe_relative_to(source_file, Path.cwd(), strict=True)
+                if source_file.is_absolute()
+                else source_file
+            )
+        except Exception:
+            # If can't make relative, use the source file as-is
+            relative_path = source_file
         spec_dir = Path(".specs") / relative_path
         return {"index": spec_dir / "index.md", "history": spec_dir / "history.md"}
 

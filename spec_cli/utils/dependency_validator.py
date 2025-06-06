@@ -9,6 +9,8 @@ import ast
 from pathlib import Path
 from typing import Any
 
+from .path_utils import safe_relative_to
+
 
 class LayerDefinition:
     """Defines a layer in the architecture hierarchy."""
@@ -99,8 +101,8 @@ class DependencyValidator:
         """
         # Get relative path from codebase root
         try:
-            relative_path = file_path.relative_to(self.codebase_path)
-        except ValueError:
+            relative_path = safe_relative_to(file_path, self.codebase_path, strict=True)
+        except Exception:
             return None
 
         # Check if it's in spec_cli directory
@@ -264,7 +266,12 @@ class DependencyValidator:
         # Format violations as messages
         messages = []
         for violation in violations:
-            relative_path = violation.file_path.relative_to(self.codebase_path)
+            try:
+                relative_path = safe_relative_to(
+                    violation.file_path, self.codebase_path, strict=True
+                )
+            except Exception:
+                relative_path = violation.file_path
             message = (
                 f"{relative_path}:{violation.line_number} - "
                 f"{violation.importing_layer} imports from {violation.imported_layer}"

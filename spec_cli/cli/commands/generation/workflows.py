@@ -13,6 +13,7 @@ from ....logging.debug import debug_logger
 from ....templates.generator import SpecContentGenerator
 from ....ui.console import get_console
 from ....ui.progress_manager import get_progress_manager
+from ....utils.path_utils import safe_relative_to
 
 
 @dataclass
@@ -473,9 +474,9 @@ class AddWorkflow:
     def _is_spec_file(self, file_path: Path) -> bool:
         """Check if file is in .specs directory."""
         try:
-            file_path.relative_to(self.settings.specs_dir)
+            safe_relative_to(file_path, self.settings.specs_dir, strict=True)
             return True
-        except ValueError:
+        except Exception:
             return False
 
 

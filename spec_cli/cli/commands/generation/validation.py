@@ -6,6 +6,7 @@ from typing import Any, cast
 from ....exceptions import SpecValidationError
 from ....file_processing.conflict_resolver import ConflictResolutionStrategy
 from ....logging.debug import debug_logger
+from ....utils.path_utils import safe_relative_to
 
 
 class GenerationValidator:
@@ -258,11 +259,15 @@ class GenerationValidator:
     def _get_existing_specs(self, source_file: Path) -> dict[str, Path]:
         """Get existing spec files for a source file."""
         # Create spec directory path based on source file
-        relative_path = (
-            source_file.relative_to(Path.cwd())
-            if source_file.is_absolute()
-            else source_file
-        )
+        try:
+            relative_path = (
+                safe_relative_to(source_file, Path.cwd(), strict=True)
+                if source_file.is_absolute()
+                else source_file
+            )
+        except Exception:
+            # If can't make relative, use the source file as-is
+            relative_path = source_file
         spec_dir = Path(".specs") / relative_path
 
         return {"index": spec_dir / "index.md", "history": spec_dir / "history.md"}
