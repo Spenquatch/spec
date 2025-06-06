@@ -13,11 +13,12 @@ from typing import Any, cast
 from ..config.settings import SpecSettings, get_settings
 from ..logging.debug import debug_logger
 from ..utils.error_utils import create_error_context, handle_os_error
-from ..utils.workflow_utils import create_workflow_result
+from .aggregators.result_aggregator import BatchResultAggregator
 from .change_detector import FileChangeDetector
 from .conflict_resolver import ConflictResolutionStrategy, ConflictResolver
 from .processing_pipeline import FileProcessingPipeline, FileProcessingResult
 from .progress_events import ProgressEventType, progress_reporter
+from .trackers.batch_progress_tracker import BatchProgressTracker
 
 
 class BatchProcessingOptions:
@@ -117,6 +118,7 @@ class BatchFileProcessor:
         self.change_detector = FileChangeDetector(self.settings)
         self.conflict_resolver = ConflictResolver(self.settings)
         self.progress_reporter = progress_reporter
+        self.result_aggregator = BatchResultAggregator()
 
         # Create processing pipeline
         from ..templates.generator import SpecContentGenerator
@@ -193,14 +195,25 @@ class BatchFileProcessor:
                         skipped_count=len(skipped),
                     )
 
-                # Emit batch started event
-                self.progress_reporter.emit_batch_started(
-                    len(files_to_process), f"Processing {len(files_to_process)} files"
+                # Create progress tracker for this batch
+                progress_tracker = BatchProgressTracker(
+                    len(files_to_process), self.progress_reporter
                 )
+                progress_tracker.start_batch(
+                    f"Processing {len(files_to_process)} files"
+                )
+
+                # Track skipped files with progress tracker
+                for skipped_file in result.skipped_files:
+                    progress_tracker.track_file_skipped(skipped_file)
 
                 # Process files
                 self._process_files_sequentially(
-                    files_to_process, options, result, progress_callback
+                    files_to_process,
+                    options,
+                    result,
+                    progress_callback,
+                    progress_tracker,
                 )
 
                 # Handle post-processing
@@ -211,13 +224,8 @@ class BatchFileProcessor:
                 result.success = len(result.errors) == 0
                 result.end_time = time.time()
 
-                # Emit batch completed event
-                self.progress_reporter.emit_batch_completed(
-                    result.total_files,
-                    len(result.successful_files),
-                    len(result.failed_files),
-                    result.duration,
-                )
+                # Complete batch tracking
+                progress_tracker.complete_batch(result.duration)
 
             debug_logger.log(
                 "INFO",
@@ -255,12 +263,13 @@ class BatchFileProcessor:
         options: BatchProcessingOptions,
         result: BatchProcessingResult,
         progress_callback: Callable[[int, int, str], None] | None,
+        progress_tracker: BatchProgressTracker,
     ) -> None:
         """Process files sequentially."""
         for i, file_path in enumerate(files):
             try:
-                # Emit file started event
-                self.progress_reporter.emit_file_started(file_path, i, len(files))
+                # Track file started with progress tracker
+                progress_tracker.track_file_started(file_path)
 
                 # Progress callback
                 if progress_callback:
@@ -280,21 +289,15 @@ class BatchFileProcessor:
                 # Categorize result
                 if file_result.success:
                     result.successful_files.append(file_path)
-
-                    # Emit file completed event
-                    self.progress_reporter.emit_file_completed(
-                        file_path, i, len(files), True
-                    )
+                    # Track file completion with progress tracker
+                    progress_tracker.track_file_completed(file_path, True)
                 else:
                     result.failed_files.append(file_path)
                     result.errors.extend(file_result.errors)
+                    # Track file completion with progress tracker
+                    progress_tracker.track_file_completed(file_path, False)
 
-                    # Emit file failed event
-                    self.progress_reporter.emit_file_completed(
-                        file_path, i, len(files), False
-                    )
-
-                    # Emit error event
+                    # Emit error event for additional context
                     error_msg = f"Processing failed for {file_path}: {'; '.join(file_result.errors)}"
                     self.progress_reporter.emit_error(error_msg, file_path)
 
@@ -324,6 +327,9 @@ class BatchFileProcessor:
 
                 result.failed_files.append(file_path)
                 result.errors.append(error_msg)
+
+                # Track file completion as failed with progress tracker
+                progress_tracker.track_file_completed(file_path, False)
 
                 # Emit error event
                 self.progress_reporter.emit_error(error_msg, file_path, e)
@@ -356,9 +362,10 @@ class BatchFileProcessor:
                 commit_msg = f"Process {len(result.successful_files)} spec files"
                 repo.commit(commit_msg)
 
-                # Create simplified workflow result
-                workflow_result = create_workflow_result(
-                    result.successful_files, True, f"batch-{int(time.time())}"
+                # Create workflow result using aggregator
+                workflow_id = f"batch-{int(time.time())}"
+                workflow_result = self.result_aggregator.create_workflow_summary(
+                    result.successful_files, workflow_id
                 )
                 result.workflow_id = workflow_result["workflow_id"]
 
@@ -436,80 +443,38 @@ class BatchFileProcessor:
             result: Batch processing result
 
         Returns:
-            Summary dictionary
+            Summary dictionary with additional batch-specific information
         """
-        summary: dict[str, Any] = {
-            "overview": {
-                "total_files": result.total_files,
-                "successful": len(result.successful_files),
-                "failed": len(result.failed_files),
-                "skipped": len(result.skipped_files),
-                "success_rate": (
-                    len(result.successful_files) / result.total_files * 100
-                    if result.total_files > 0
-                    else 0
-                ),
-                "duration": result.duration,
-            },
-            "conflicts": {
-                "files_with_conflicts": 0,
-                "conflict_types": {},
-                "resolution_strategies": {},
-            },
-            "errors": {
-                "total_errors": len(result.errors),
-                "error_types": {},
-            },
-            "warnings": {
-                "total_warnings": len(result.warnings),
-            },
+        # Use the aggregator to process file results
+        aggregated_summary = self.result_aggregator.aggregate_results(
+            result.file_results
+        )
+
+        # Enhance the aggregated summary with batch-specific information
+        enhanced_summary = aggregated_summary["summary"].copy()
+
+        # Override overview with actual batch result totals for backward compatibility
+        enhanced_summary["overview"] = {
+            "total_files": result.total_files,
+            "successful": len(result.successful_files),
+            "failed": len(result.failed_files),
+            "skipped": len(result.skipped_files),
+            "success_rate": (
+                len(result.successful_files) / result.total_files * 100
+                if result.total_files > 0
+                else 0
+            ),
+            "duration": result.duration,
         }
 
-        # Analyze file results for conflicts and errors
-        for file_result in result.file_results.values():
-            if file_result.conflict_info:
-                conflicts_dict = cast(dict[str, Any], summary["conflicts"])
-                conflicts_dict["files_with_conflicts"] = (
-                    cast(int, conflicts_dict["files_with_conflicts"]) + 1
-                )
+        # Use batch-level errors for total_errors to maintain backward compatibility
+        enhanced_summary["errors"]["total_errors"] = len(result.errors)
 
-                conflict_type = file_result.conflict_info.conflict_type.value
-                conflict_types = cast(
-                    dict[str, int],
-                    cast(dict[str, Any], summary["conflicts"])["conflict_types"],
-                )
-                conflict_types[conflict_type] = conflict_types.get(conflict_type, 0) + 1
+        enhanced_summary["warnings"] = {
+            "total_warnings": len(result.warnings),
+        }
 
-                if file_result.resolution_strategy:
-                    strategy = file_result.resolution_strategy.value
-                    resolution_strategies = cast(
-                        dict[str, int],
-                        cast(dict[str, Any], summary["conflicts"])[
-                            "resolution_strategies"
-                        ],
-                    )
-                    resolution_strategies[strategy] = (
-                        resolution_strategies.get(strategy, 0) + 1
-                    )
-
-            # Analyze errors (simplified)
-            for error in file_result.errors:
-                if "permission" in error.lower():
-                    error_type = "permission"
-                elif "conflict" in error.lower():
-                    error_type = "conflict"
-                elif "generation" in error.lower():
-                    error_type = "generation"
-                else:
-                    error_type = "other"
-
-                error_types = cast(
-                    dict[str, int],
-                    cast(dict[str, Any], summary["errors"])["error_types"],
-                )
-                error_types[error_type] = error_types.get(error_type, 0) + 1
-
-        return summary
+        return cast(dict[str, Any], enhanced_summary)
 
 
 # Convenience functions
