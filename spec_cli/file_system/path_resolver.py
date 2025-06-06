@@ -11,8 +11,7 @@ from pathlib import Path
 from ..config.settings import SpecSettings, get_settings
 from ..exceptions import SpecFileError, SpecValidationError
 from ..logging.debug import debug_logger
-from ..utils.path_utils import normalize_path, safe_relative_to
-from .path_utils import remove_specs_prefix
+from ..utils.path_utils import normalize_path, remove_specs_prefix, safe_relative_to
 
 
 class PathResolver:

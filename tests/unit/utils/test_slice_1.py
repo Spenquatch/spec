@@ -186,7 +186,7 @@ class TestErrorHandler:
                 kwargs = call_args[1]
 
                 # Should have fallback path context (normalize for cross-platform)
-                from spec_cli.file_system.path_utils import normalize_path_separators
+                from spec_cli.utils.path_utils import normalize_path_separators
 
                 expected_path = normalize_path_separators("/test/path")
                 actual_path = normalize_path_separators(kwargs["path_context_error"])

@@ -13,9 +13,12 @@ from ..config.settings import SpecSettings, get_settings
 from ..exceptions import SpecFileError, SpecTemplateError
 from ..file_system.directory_manager import DirectoryManager
 from ..file_system.file_metadata import FileMetadataExtractor
-from ..file_system.path_utils import normalize_path_separators
 from ..logging.debug import debug_logger
-from ..utils.path_utils import ensure_directory, normalize_path
+from ..utils.path_utils import (
+    ensure_directory,
+    normalize_path,
+    normalize_path_separators,
+)
 from .config import TemplateConfig
 from .substitution import TemplateSubstitution
 

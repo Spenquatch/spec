@@ -7,8 +7,8 @@ Git work tree relative paths for cross-platform compatibility.
 from pathlib import Path
 from typing import Any
 
-from ..file_system.path_utils import normalize_path_separators, remove_specs_prefix
 from ..logging.debug import debug_logger
+from ..utils.path_utils import normalize_path_separators, remove_specs_prefix
 
 
 class GitPathConverter:
