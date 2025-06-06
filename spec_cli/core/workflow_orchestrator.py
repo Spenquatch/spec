@@ -24,6 +24,7 @@ from ..logging.debug import debug_logger
 from ..templates.generator import SpecContentGenerator
 from .commit_manager import SpecCommitManager
 from .executors.workflow_executor import WorkflowExecutor
+from .managers.backup_manager import WorkflowBackupManager
 from .repository_state import RepositoryStateChecker
 from .validators.workflow_validator import WorkflowValidator
 from .workflow_state import (
@@ -60,6 +61,7 @@ class SpecWorkflowOrchestrator:
         self.workflow_executor = WorkflowExecutor(
             self.content_generator, self.commit_manager, self.settings
         )
+        self.backup_manager = WorkflowBackupManager(self.commit_manager)
 
         debug_logger.log("INFO", "SpecWorkflowOrchestrator initialized")
 
@@ -199,26 +201,12 @@ class SpecWorkflowOrchestrator:
         step.start()
 
         try:
-            # Create backup tag
-            backup_tag = f"backup-{workflow.workflow_id}"
-            tag_result = self.commit_manager.create_tag(
-                backup_tag,
-                f"Backup before spec generation workflow {workflow.workflow_id}",
-            )
-
-            if not tag_result["success"]:
-                raise SpecWorkflowError(
-                    f"Backup creation failed: {'; '.join(tag_result['errors'])}"
-                )
-
-            backup_info = {
-                "backup_tag": backup_tag,
-                "commit_hash": tag_result["commit_hash"],
-            }
+            # Use backup manager to create backup
+            backup_info = self.backup_manager.create_backup(workflow.workflow_id)
 
             # Store backup info in workflow metadata
-            workflow.metadata["backup_tag"] = backup_tag
-            workflow.metadata["backup_commit"] = tag_result["commit_hash"]
+            workflow.metadata["backup_tag"] = backup_info["backup_tag"]
+            workflow.metadata["backup_commit"] = backup_info["commit_hash"]
 
             step.complete(backup_info)
             return backup_info
@@ -233,25 +221,27 @@ class SpecWorkflowOrchestrator:
         step.start()
 
         try:
+            backup_tag = workflow.metadata.get("backup_tag")
             backup_commit = workflow.metadata.get("backup_commit")
-            if backup_commit:
-                rollback_result = self.commit_manager.rollback_to_commit(
-                    backup_commit, hard=True, create_backup=False
+
+            if backup_tag and backup_commit:
+                # Use backup manager to perform rollback
+                rollback_result = self.backup_manager.rollback_to_backup(
+                    backup_tag, backup_commit
                 )
 
                 if rollback_result["success"]:
                     step.complete(
                         {
                             "rolled_back_to": backup_commit,
+                            "backup_tag": backup_tag,
                             "reason": error,
                         }
                     )
                 else:
-                    step.fail(
-                        f"Rollback failed: {'; '.join(rollback_result['errors'])}"
-                    )
+                    step.fail("Rollback failed via backup manager")
             else:
-                step.fail("No backup commit available for rollback")
+                step.fail("No backup information available for rollback")
 
         except Exception as e:
             step.fail(str(e))

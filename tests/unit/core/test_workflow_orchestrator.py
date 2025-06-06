@@ -41,6 +41,9 @@ class TestSpecWorkflowOrchestrator:
             patch(
                 "spec_cli.core.workflow_orchestrator.DirectoryManager"
             ) as _mock_dir_manager,
+            patch(
+                "spec_cli.core.workflow_orchestrator.WorkflowBackupManager"
+            ) as mock_backup_manager,
         ):
             self.orchestrator = SpecWorkflowOrchestrator(self.mock_settings)
             self.mock_state_checker = mock_state_checker.return_value
@@ -48,6 +51,7 @@ class TestSpecWorkflowOrchestrator:
             self.mock_commit_manager = mock_commit_manager.return_value
             self.mock_content_generator = _mock_content_gen.return_value
             self.mock_directory_manager = _mock_dir_manager.return_value
+            self.mock_backup_manager = mock_backup_manager.return_value
 
     def test_orchestrator_initialization(self) -> None:
         """Test orchestrator initialization."""
@@ -56,6 +60,7 @@ class TestSpecWorkflowOrchestrator:
         assert self.orchestrator.commit_manager == self.mock_commit_manager
         assert self.orchestrator.content_generator == self.mock_content_generator
         assert self.orchestrator.directory_manager == self.mock_directory_manager
+        assert self.orchestrator.backup_manager == self.mock_backup_manager
 
     @patch("spec_cli.core.workflow_orchestrator.workflow_state_manager")
     @patch("spec_cli.core.executors.workflow_executor.load_template")
@@ -82,9 +87,9 @@ class TestSpecWorkflowOrchestrator:
             "issues": [],
         }
 
-        # Setup tag creation (backup)
-        self.mock_commit_manager.create_tag.return_value = {
-            "success": True,
+        # Setup backup creation via backup manager
+        self.mock_backup_manager.create_backup.return_value = {
+            "backup_tag": "backup-test-workflow-123",
             "commit_hash": "abc123",
         }
 
@@ -188,7 +193,10 @@ class TestSpecWorkflowOrchestrator:
         test_file = Path("/test/src/example.py")
         mock_workflow = Mock()
         mock_workflow.workflow_id = "test-workflow-rollback"
-        mock_workflow.metadata = {"backup_commit": "backup123"}
+        mock_workflow.metadata = {
+            "backup_tag": "backup-test-workflow-rollback",
+            "backup_commit": "backup123",
+        }
 
         mock_wf_manager.create_workflow.return_value = mock_workflow
         mock_template = Mock()
@@ -201,17 +209,17 @@ class TestSpecWorkflowOrchestrator:
             "issues": [],
         }
 
-        # Setup backup creation
-        self.mock_commit_manager.create_tag.return_value = {
-            "success": True,
+        # Setup backup creation via backup manager
+        self.mock_backup_manager.create_backup.return_value = {
+            "backup_tag": "backup-test-workflow-rollback",
             "commit_hash": "backup123",
         }
 
         # Setup WorkflowExecutor to fail (simulating generation failure)
         from spec_cli.exceptions import SpecWorkflowError as WorkflowError
 
-        # Setup rollback
-        self.mock_commit_manager.rollback_to_commit.return_value = {"success": True}
+        # Setup rollback via backup manager
+        self.mock_backup_manager.rollback_to_backup.return_value = {"success": True}
 
         # Mock WorkflowExecutor.execute_workflow to fail
         def mock_execute_workflow(*args, **kwargs):
@@ -230,9 +238,9 @@ class TestSpecWorkflowOrchestrator:
             ):
                 self.orchestrator.generate_spec_for_file(test_file, create_backup=True)
 
-        # Verify rollback was attempted
-        self.mock_commit_manager.rollback_to_commit.assert_called_once_with(
-            "backup123", hard=True, create_backup=False
+        # Verify rollback was attempted via backup manager
+        self.mock_backup_manager.rollback_to_backup.assert_called_once_with(
+            "backup-test-workflow-rollback", "backup123"
         )
 
     @patch("spec_cli.core.workflow_orchestrator.workflow_state_manager")
@@ -613,11 +621,15 @@ class TestWorkflowExecutionStages:
             patch(
                 "spec_cli.core.workflow_orchestrator.DirectoryManager"
             ) as _mock_dir_manager,
+            patch(
+                "spec_cli.core.workflow_orchestrator.WorkflowBackupManager"
+            ) as mock_backup_manager,
         ):
             self.orchestrator = SpecWorkflowOrchestrator(self.mock_settings)
             self.mock_state_checker = mock_state_checker.return_value
             self.mock_validator = mock_validator.return_value
             self.mock_commit_manager = mock_commit_manager.return_value
+            self.mock_backup_manager = mock_backup_manager.return_value
 
     def test_execute_validation_stage_success(self) -> None:
         """Test successful validation stage."""
@@ -668,19 +680,24 @@ class TestWorkflowExecutionStages:
 
         workflow = WorkflowState("test-backup", "spec_generation")
 
-        # Setup successful tag creation
-        self.mock_commit_manager.create_tag.return_value = {
-            "success": True,
+        # Setup successful backup creation via backup manager
+        self.mock_backup_manager.create_backup.return_value = {
+            "backup_tag": "backup-test-backup",
             "commit_hash": "backup123",
         }
 
         result = self.orchestrator._execute_backup_stage(workflow)
 
         # Verify backup was created
-        assert result["backup_tag"] == f"backup-{workflow.workflow_id}"
+        assert result["backup_tag"] == "backup-test-backup"
         assert result["commit_hash"] == "backup123"
-        assert workflow.metadata["backup_tag"] == f"backup-{workflow.workflow_id}"
+        assert workflow.metadata["backup_tag"] == "backup-test-backup"
         assert workflow.metadata["backup_commit"] == "backup123"
+
+        # Verify backup manager was called
+        self.mock_backup_manager.create_backup.assert_called_once_with(
+            workflow.workflow_id
+        )
 
         # Verify step was completed
         assert len(workflow.steps) == 1
@@ -694,14 +711,18 @@ class TestWorkflowExecutionStages:
 
         workflow = WorkflowState("test-backup-fail", "spec_generation")
 
-        # Setup failed tag creation
-        self.mock_commit_manager.create_tag.return_value = {
-            "success": False,
-            "errors": ["Tag creation failed"],
-        }
+        # Setup failed backup creation via backup manager
+        self.mock_backup_manager.create_backup.side_effect = SpecWorkflowError(
+            "Backup creation failed"
+        )
 
         with pytest.raises(SpecWorkflowError, match="Backup creation failed"):
             self.orchestrator._execute_backup_stage(workflow)
+
+        # Verify backup manager was called
+        self.mock_backup_manager.create_backup.assert_called_once_with(
+            workflow.workflow_id
+        )
 
         # Verify step was failed
         assert len(workflow.steps) == 1
