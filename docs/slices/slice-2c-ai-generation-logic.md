@@ -30,11 +30,14 @@ Implement the actual AI documentation generation logic for LocalAIProvider, incl
 ```python
 # spec_cli/ai/providers/generation.py
 import time
+import os
+import sys
 from typing import Dict, Any, Optional, Tuple
 import logging
 
 from .base import GenerationRequest, GenerationResult
 from ..config.settings import LocalModelConfig
+from ...utils.path_utils import normalize_path_separators
 
 # HuggingFace imports (availability checked by LocalAIProvider)
 try:
@@ -81,11 +84,14 @@ class DocumentationGenerator:
             logger.info(f"Loading model {model_name} on {device}...")
             start_time = time.time()
 
+            # Get cross-platform cache directory
+            cache_dir = self._get_cache_dir() if self.config.cache_enabled else None
+
             # Load tokenizer
             self.tokenizer = AutoTokenizer.from_pretrained(
                 model_name,
                 trust_remote_code=True,
-                cache_dir=self._get_cache_dir() if self.config.cache_enabled else None
+                cache_dir=cache_dir
             )
 
             # Configure model loading based on device and quantization settings
@@ -95,7 +101,7 @@ class DocumentationGenerator:
             self.model = AutoModelForCausalLM.from_pretrained(
                 model_name,
                 trust_remote_code=True,
-                cache_dir=self._get_cache_dir() if self.config.cache_enabled else None,
+                cache_dir=cache_dir,
                 **model_kwargs
             )
 
@@ -140,7 +146,9 @@ class DocumentationGenerator:
             processing_time = int((time.time() - start_time) * 1000)
             self._generation_count += 1
 
-            logger.info(f"Generated documentation for {request.source_file} in {processing_time}ms")
+            # Use normalized path for consistent logging across platforms
+            normalized_path = normalize_path_separators(str(request.source_file))
+            logger.info(f"Generated documentation for {normalized_path} in {processing_time}ms")
 
             return GenerationResult(
                 success=True,
@@ -150,7 +158,9 @@ class DocumentationGenerator:
                     "model": self.config.model_name,
                     "processing_time_ms": processing_time,
                     "generation_count": self._generation_count,
-                    "device": self.device
+                    "device": self.device,
+                    "platform": sys.platform,
+                    "source_file": normalized_path
                 }
             )
 
@@ -173,7 +183,9 @@ class DocumentationGenerator:
         Returns:
             str: Formatted prompt for AI model
         """
-        file_extension = request.source_file.suffix.lower()
+        # Use normalized path for consistent behavior across platforms
+        normalized_path = normalize_path_separators(str(request.source_file))
+        file_extension = request.get_file_extension()
         language = self._detect_language(file_extension)
 
         # Base prompt for comprehensive documentation
@@ -181,7 +193,7 @@ class DocumentationGenerator:
 
 Generate structured documentation that helps both human developers and AI agents understand this code.
 
-SOURCE FILE: {request.source_file}
+SOURCE FILE: {normalized_path}
 LANGUAGE: {language}
 
 CODE TO DOCUMENT:
@@ -191,7 +203,7 @@ CODE TO DOCUMENT:
 
 Generate documentation in this exact format:
 
-# {request.source_file.name}
+# {os.path.basename(normalized_path)}
 
 ## Purpose
 [Analyze the code and describe its main purpose and functionality]
@@ -266,17 +278,23 @@ Focus on accuracy and usefulness for both human developers and AI agents working
             "index.md": generated_text
         }
 
-        # Add minimal history entry
-        content["history.md"] = f"""# Documentation History for {request.source_file.name}
+        # Add minimal history entry with normalized path
+        normalized_path = normalize_path_separators(str(request.source_file))
+        filename = os.path.basename(normalized_path)
+
+        content["history.md"] = f"""# Documentation History for {filename}
 
 ## Latest Generation
 - **Date**: Generated automatically
 - **Method**: AI-powered analysis using {self.config.model_name}
+- **Platform**: {sys.platform}
+- **Source**: {normalized_path}
 - **Content**: Comprehensive documentation based on code analysis
 
 ## Notes
 - Documentation generated using local AI model
 - Content optimized for both human and AI consumption
+- Cross-platform compatible documentation format
 """
 
         return content
@@ -292,14 +310,18 @@ Focus on accuracy and usefulness for both human developers and AI agents working
         """
         kwargs = {}
 
-        # Device mapping
+        # Platform-specific device mapping
         if device == "cuda":
             kwargs["device_map"] = "auto"
+        elif device == "mps" and sys.platform == "darwin":
+            # Apple Silicon GPU handling
+            kwargs["device_map"] = {"": "mps"}
         elif device != "cpu":
             kwargs["device_map"] = device
 
-        # Quantization for memory efficiency
+        # Platform-aware quantization for memory efficiency
         if self.config.use_4bit and device == "cuda":
+            # 4-bit quantization only supported on CUDA
             kwargs["quantization_config"] = BitsAndBytesConfig(
                 load_in_4bit=True,
                 bnb_4bit_compute_dtype=torch.float16,
@@ -307,7 +329,14 @@ Focus on accuracy and usefulness for both human developers and AI agents working
                 bnb_4bit_quant_type="nf4"
             )
         else:
-            kwargs["torch_dtype"] = torch.float16 if device == "cuda" else torch.float32
+            # Platform-specific dtype selection
+            if device == "cuda":
+                kwargs["torch_dtype"] = torch.float16
+            elif device == "mps":
+                # MPS works better with float32 for compatibility
+                kwargs["torch_dtype"] = torch.float32
+            else:
+                kwargs["torch_dtype"] = torch.float32
 
         return kwargs
 
@@ -336,17 +365,54 @@ Focus on accuracy and usefulness for both human developers and AI agents working
         return language_map.get(file_extension.lower(), "text")
 
     def _get_cache_dir(self) -> Optional[str]:
-        """Get model cache directory."""
-        # Use default HuggingFace cache directory
-        return None
+        """Get cross-platform model cache directory.
+
+        Returns:
+            Optional[str]: Normalized cache directory path or None for default
+        """
+        if not self.config.cache_enabled:
+            return None
+
+        # Check if custom cache directory is configured
+        if hasattr(self.config, 'cache_dir') and self.config.cache_dir:
+            # Use configured cache directory with cross-platform normalization
+            return normalize_path_separators(self.config.cache_dir)
+
+        # Use HuggingFace default cache directory (cross-platform)
+        # HF_HOME or default ~/.cache/huggingface
+        cache_dir = os.environ.get('HF_HOME')
+        if cache_dir:
+            return normalize_path_separators(cache_dir)
+
+        # Platform-specific default cache directories
+        if sys.platform == "win32":
+            # Windows: %USERPROFILE%\.cache\huggingface
+            default_cache = os.path.join(os.path.expanduser('~'), '.cache', 'huggingface')
+        else:
+            # Unix-like (macOS, Linux): ~/.cache/huggingface
+            default_cache = os.path.join(os.path.expanduser('~'), '.cache', 'huggingface')
+
+        return normalize_path_separators(default_cache)
 
     def cleanup(self) -> None:
-        """Clean up loaded model resources."""
+        """Clean up loaded model resources with platform-specific optimizations."""
         self.model = None
         self.tokenizer = None
 
-        if torch is not None and torch.cuda.is_available():
-            torch.cuda.empty_cache()
+        # Platform-specific GPU memory cleanup
+        if torch is not None:
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+                logger.debug("Cleared CUDA cache")
+            elif sys.platform == "darwin" and hasattr(torch.backends, 'mps') and torch.backends.mps.is_available():
+                # Apple Silicon GPU cleanup if available
+                try:
+                    torch.mps.empty_cache()
+                    logger.debug("Cleared MPS cache")
+                except AttributeError:
+                    # Fallback for older PyTorch versions
+                    logger.debug("MPS cache clearing not available")
+                    pass
 ```
 
 ## Inputs - EXPLICIT
@@ -369,9 +435,10 @@ Focus on accuracy and usefulness for both human developers and AI agents working
 - **Error handling**: Clear error messages for model loading or generation failures
 
 ## Helper Dependencies
+- **Existing helpers**: `spec_cli.utils.path_utils.normalize_path_separators` for cross-platform path handling
 - **Slice dependencies**: LocalModelConfig (1a), GenerationRequest/Result (2a)
 - **External integration**: HuggingFace transformers for model loading and inference
-- **Standard library**: `time` for performance tracking, `typing` for type safety
+- **Standard library**: `time` for performance tracking, `os` and `sys` for platform detection, `typing` for type safety
 
 ## Individual Test Scenarios (100% coverage achievable)
 1. **test_generator_loads_model_successfully** - Test successful model loading
@@ -386,12 +453,37 @@ Focus on accuracy and usefulness for both human developers and AI agents working
 10. **test_generator_handles_quantization_settings** - Test 4-bit quantization configuration
 11. **test_generator_cleans_up_resources** - Test resource cleanup
 12. **test_generator_handles_missing_model** - Test generation without loaded model
+13. **test_generator_cross_platform_cache_handling** - Test cache directory handling across Windows/Unix
+14. **test_generator_platform_specific_model_loading** - Test device-specific model configuration (CUDA/MPS/CPU)
+15. **test_generator_cross_platform_path_normalization** - Test path handling in prompts and metadata
 
 ## Quality Assurance
 - **Poetry compliance**: Uses HuggingFace dependencies from AI group
 - **Type safety**: Complete type annotations for all AI operations
 - **Security clearance**: No sensitive data exposure, uses sanitized content from slice 2b
 - **Performance**: Optimized for Qwen2.5-Coder-0.5B with quantization support
+- **Cross-platform testing**: All tests use proper mock locations for Python < 3.11 compatibility
+
+## Cross-Platform Testing Requirements
+- **Mock patch locations**: Always patch at import location (`patch("module.imported_function")`) not source location
+- **Path normalization**: Use `normalize_path_separators()` in all test assertions for path comparisons
+- **Platform detection**: Mock `sys.platform` for testing platform-specific behavior
+- **Model loading**: Mock HuggingFace model loading for different platforms and devices
+- **Cache directories**: Mock cache directory resolution for Windows/Unix testing
+- **Example test pattern**:
+```python
+# CORRECT - patch at import location (Python < 3.11 compatible)
+@patch("spec_cli.ai.providers.generation.AutoModelForCausalLM.from_pretrained")
+@patch("spec_cli.ai.providers.generation.normalize_path_separators")
+def test_model_loads_with_normalized_cache(self, mock_normalize, mock_model):
+    mock_normalize.return_value = "normalized/cache/path"
+    # Test implementation
+
+# INCORRECT - source location patching (fails Python < 3.11)
+@patch("transformers.AutoModelForCausalLM.from_pretrained")
+def test_model_loading(self, mock_model):
+    # This will fail on Python < 3.11
+```
 
 ## Integration with Other Slices
 - **Depends on Slice 1a**: Uses LocalModelConfig for model settings

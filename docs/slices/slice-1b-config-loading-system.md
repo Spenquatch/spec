@@ -30,10 +30,12 @@ Implement AI configuration loading that integrates with existing spec config pat
 from typing import Optional, Dict, Any
 from pathlib import Path
 import os
+import sys
 import logging
 
 from .settings import AIConfig
 from ...config.loader import ConfigLoader  # Existing config loader patterns
+from ...utils.path_utils import normalize_path_separators, normalize_path
 
 logger = logging.getLogger(__name__)
 
@@ -48,7 +50,7 @@ class AIConfigLoader:
         """Load AI configuration from pyproject.toml and environment variables.
 
         Args:
-            config_path: Optional path to pyproject.toml file
+            config_path: Optional path to pyproject.toml file (normalized for cross-platform)
 
         Returns:
             AIConfig: Loaded and validated AI configuration
@@ -56,6 +58,10 @@ class AIConfigLoader:
         Raises:
             ConfigurationError: If configuration is invalid
         """
+        # Normalize config path for cross-platform compatibility
+        if config_path is not None:
+            config_path = Path(normalize_path_separators(str(config_path)))
+
         # Try pyproject.toml first, then environment variables, then defaults
         config_data = {}
 
@@ -100,13 +106,15 @@ class AIConfigLoader:
         """Load AI configuration from environment variables."""
         env_config = {}
 
-        # Map environment variables to config keys
+        # Map environment variables to config keys (cross-platform support)
         env_mappings = {
             'SPEC_AI_ENABLED': ('enabled', bool),
             'SPEC_AI_PROVIDER': ('provider', str),
             'SPEC_AI_MODEL_NAME': ('local.model_name', str),
             'SPEC_AI_MAX_TOKENS': ('local.max_tokens', int),
             'SPEC_AI_TEMPERATURE': ('local.temperature', float),
+            'SPEC_AI_CACHE_DIR': ('local.cache_dir', str),
+            'SPEC_AI_DEVICE': ('local.device', str),
         }
 
         for env_key, (config_key, value_type) in env_mappings.items():
@@ -122,6 +130,10 @@ class AIConfigLoader:
                         converted_value = float(env_value)
                     else:
                         converted_value = env_value
+
+                    # Normalize path values for cross-platform compatibility
+                    if config_key.endswith('_dir') or config_key.endswith('cache_dir'):
+                        converted_value = normalize_path_separators(converted_value)
 
                     # Handle nested config keys
                     self._set_nested_value(env_config, config_key, converted_value)
@@ -175,8 +187,9 @@ def load_ai_config(config_path: Optional[Path] = None) -> AIConfig:
 
 ## Helper Dependencies
 - **Existing helpers**: ConfigLoader from existing config system for pyproject.toml handling
+- **Existing helpers**: `spec_cli.utils.path_utils.normalize_path_separators` for cross-platform path handling
 - **Slice dependencies**: AIConfig models from slice 1a
-- **Standard library**: `os`, `pathlib`, `logging` for environment and file operations
+- **Standard library**: `os`, `pathlib`, `logging`, `sys` for environment and file operations
 
 ## Individual Test Scenarios (100% coverage achievable)
 1. **test_loads_from_pyproject_toml** - Test successful pyproject.toml loading
@@ -189,12 +202,36 @@ def load_ai_config(config_path: Optional[Path] = None) -> AIConfig:
 8. **test_nested_config_key_setting** - Test dot notation environment variable mapping
 9. **test_boolean_environment_conversion** - Test various boolean string formats
 10. **test_numeric_environment_conversion** - Test int/float environment variable conversion
+11. **test_cross_platform_path_normalization** - Test config path normalization across platforms
+12. **test_cross_platform_cache_dir_handling** - Test cache directory path handling on Windows/Unix
 
 ## Quality Assurance
 - **Poetry compliance**: Uses existing config loader patterns, no new dependencies
 - **Type safety**: Complete type annotations and error handling
 - **Security clearance**: No secrets in logs, secure fallback behavior
 - **Integration**: Follows existing spec config patterns for consistency
+- **Cross-platform testing**: All tests use proper mock locations for Python < 3.11 compatibility
+
+## Cross-Platform Testing Requirements
+- **Mock patch locations**: Always patch at import location (`patch("module.imported_function")`) not source location
+- **Path normalization**: Use `normalize_path_separators()` in all test assertions for path comparisons
+- **Environment variables**: Mock `os.getenv()` for testing environment variable loading
+- **File system operations**: Mock file operations for testing configuration loading
+- **Example test pattern**:
+```python
+# CORRECT - patch at import location (Python < 3.11 compatible)
+@patch("spec_cli.ai.config.loader.os.getenv")
+@patch("spec_cli.ai.config.loader.normalize_path_separators")
+def test_loads_normalized_cache_dir(self, mock_normalize, mock_getenv):
+    mock_getenv.return_value = "C:\\cache\\path"
+    mock_normalize.return_value = "C:/cache/path"
+    # Test implementation
+
+# INCORRECT - source location patching (fails Python < 3.11)
+@patch("os.getenv")
+def test_environment_loading(self, mock_getenv):
+    # This will fail on Python < 3.11
+```
 
 ## Integration with Other Slices
 - **Depends on Slice 1a**: Uses AIConfig models for validation and structure

@@ -29,10 +29,12 @@ Implement secure code sanitization for AI processing using configurable patterns
 # spec_cli/ai/analysis/sanitizer.py
 import re
 import logging
+import sys
 from typing import List, Dict, Any, Optional
 from pathlib import Path
 
 from ..config.settings import SecurityConfig
+from ...utils.path_utils import normalize_path_separators, is_subpath
 
 logger = logging.getLogger(__name__)
 
@@ -53,7 +55,7 @@ class CodeSanitizer:
 
         Args:
             content: Source code content to sanitize
-            file_path: Optional file path for logging and validation
+            file_path: Optional file path for logging and validation (normalized for cross-platform)
 
         Returns:
             str: Sanitized content safe for AI processing
@@ -65,17 +67,23 @@ class CodeSanitizer:
             logger.debug("Code sanitization disabled, returning content unchanged")
             return content
 
+        # Normalize file path for cross-platform compatibility
+        normalized_path = None
+        if file_path is not None:
+            normalized_path = Path(normalize_path_separators(str(file_path)))
+
         # Validate content before processing
-        self._validate_content(content, file_path)
+        self._validate_content(content, normalized_path)
 
         # Apply security pattern replacements
         sanitized_content = self._apply_security_patterns(content)
 
-        # Log sanitization results
+        # Log sanitization results with normalized path
+        display_path = normalized_path or 'content'
         if sanitized_content != content:
-            logger.info(f"Sanitized sensitive content in {file_path or 'content'}")
+            logger.info(f"Sanitized sensitive content in {display_path}")
         else:
-            logger.debug(f"No sensitive patterns found in {file_path or 'content'}")
+            logger.debug(f"No sensitive patterns found in {display_path}")
 
         return sanitized_content
 
@@ -148,10 +156,10 @@ class CodeSanitizer:
         return compiled_patterns
 
     def is_file_allowed(self, file_path: Path) -> bool:
-        """Check if file type is allowed for processing.
+        """Check if file type is allowed for processing (cross-platform).
 
         Args:
-            file_path: Path to check
+            file_path: Path to check (normalized for cross-platform compatibility)
 
         Returns:
             bool: True if file is allowed for AI processing
@@ -159,7 +167,9 @@ class CodeSanitizer:
         if not self.security_config.allowed_file_patterns:
             return True  # No restrictions if no patterns specified
 
-        file_name = file_path.name
+        # Normalize path for cross-platform compatibility
+        normalized_path = Path(normalize_path_separators(str(file_path)))
+        file_name = normalized_path.name
 
         for pattern in self.security_config.allowed_file_patterns:
             # Convert glob pattern to regex for matching
@@ -168,6 +178,34 @@ class CodeSanitizer:
                 return True
 
         return False
+
+    def validate_file_security(self, file_path: Path, project_root: Optional[Path] = None) -> bool:
+        """Validate file meets security requirements for processing.
+
+        Args:
+            file_path: Path to validate
+            project_root: Optional project root for path validation
+
+        Returns:
+            bool: True if file is safe for processing
+
+        Raises:
+            ValueError: If file fails security validation
+        """
+        # Normalize paths for cross-platform compatibility
+        normalized_file = Path(normalize_path_separators(str(file_path)))
+
+        # Validate file is within project boundaries if project_root provided
+        if project_root is not None:
+            normalized_root = Path(normalize_path_separators(str(project_root)))
+            if not is_subpath(normalized_file, normalized_root):
+                raise ValueError(f"File {normalized_file} is outside project root {normalized_root}")
+
+        # Check file type is allowed
+        if not self.is_file_allowed(normalized_file):
+            return False
+
+        return True
 
     def get_sanitization_summary(self) -> Dict[str, Any]:
         """Get summary of sanitization configuration.
@@ -203,9 +241,9 @@ class CodeSanitizer:
 - **Summary data**: Dictionary with sanitization configuration details
 
 ## Helper Dependencies
-- **Existing helpers**: None required (uses standard library for regex and file operations)
+- **Existing helpers**: `spec_cli.utils.path_utils.normalize_path_separators` and `is_subpath` for cross-platform path handling
 - **Slice dependencies**: SecurityConfig from slice 1a for configuration
-- **Standard library**: `re`, `logging`, `pathlib` for pattern matching and file handling
+- **Standard library**: `re`, `logging`, `pathlib`, `sys` for pattern matching and file handling
 
 ## Individual Test Scenarios (100% coverage achievable)
 1. **test_sanitizer_removes_api_keys** - Test API key pattern detection and removal
@@ -220,12 +258,36 @@ class CodeSanitizer:
 10. **test_sanitizer_handles_invalid_regex_patterns** - Test invalid pattern handling
 11. **test_sanitizer_provides_configuration_summary** - Test configuration reporting
 12. **test_sanitizer_logs_sanitization_activity** - Test security audit logging
+13. **test_sanitizer_cross_platform_path_handling** - Test path normalization across Windows/Unix
+14. **test_sanitizer_validates_project_boundaries** - Test file path security validation
 
 ## Quality Assurance
 - **Poetry compliance**: No new dependencies, uses standard library
 - **Type safety**: Complete type annotations for all functions
 - **Security clearance**: Designed specifically for security - removes sensitive content
 - **Performance**: Compiled regex patterns for efficient repeated use
+- **Cross-platform testing**: All tests use proper mock locations for Python < 3.11 compatibility
+
+## Cross-Platform Testing Requirements
+- **Mock patch locations**: Always patch at import location (`patch("module.imported_function")`) not source location
+- **Path normalization**: Use `normalize_path_separators()` in all test assertions for path comparisons
+- **File system operations**: Mock file operations for testing file validation
+- **Path utilities**: Mock path utility functions for testing cross-platform behavior
+- **Example test pattern**:
+```python
+# CORRECT - patch at import location (Python < 3.11 compatible)
+@patch("spec_cli.ai.analysis.sanitizer.normalize_path_separators")
+@patch("spec_cli.ai.analysis.sanitizer.is_subpath")
+def test_validates_file_security_cross_platform(self, mock_is_subpath, mock_normalize):
+    mock_normalize.return_value = "normalized/path"
+    mock_is_subpath.return_value = True
+    # Test implementation
+
+# INCORRECT - source location patching (fails Python < 3.11)
+@patch("spec_cli.utils.path_utils.normalize_path_separators")
+def test_path_validation(self, mock_normalize):
+    # This will fail on Python < 3.11
+```
 
 ## Integration with Other Slices
 - **Depends on Slice 1a**: Uses SecurityConfig for configuration

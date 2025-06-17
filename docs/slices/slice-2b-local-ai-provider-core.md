@@ -32,11 +32,13 @@ Implement core local AI provider with HuggingFace integration for documentation 
 from typing import Optional
 import logging
 import threading
+import sys
 from pathlib import Path
 
 from .base import AIProvider, GenerationRequest, GenerationResult
 from ..config.settings import LocalModelConfig
 from ..analysis.sanitizer import CodeSanitizer
+from ...utils.path_utils import normalize_path_separators
 
 # Optional HuggingFace imports with graceful fallback
 try:
@@ -124,13 +126,20 @@ class LocalAIProvider(AIProvider):
             return GenerationResult(success=False, error=f"Content sanitization failed: {e}")
 
         # This slice focuses on infrastructure - actual generation in slice 2c
-        self.logger.info(f"LocalAIProvider ready to process {request.source_file}")
+        # Use normalized path for consistent logging across platforms
+        normalized_path = normalize_path_separators(str(request.source_file))
+        self.logger.info(f"LocalAIProvider ready to process {normalized_path}")
 
         # Placeholder for actual generation (implemented in slice 2c)
         return GenerationResult(
             success=True,
             content={"index.md": "# Placeholder\nGeneration logic implemented in slice 2c"},
-            metadata={"provider": "local", "model": self.config.model_name}
+            metadata={
+                "provider": "local",
+                "model": self.config.model_name,
+                "source_file": normalized_path,
+                "platform": sys.platform
+            }
         )
 
     def cleanup(self) -> None:
@@ -143,14 +152,22 @@ class LocalAIProvider(AIProvider):
                     self._tokenizer = None
                     self._pipeline = None
 
-                    # Force garbage collection if torch is available
-                    if torch is not None and torch.cuda.is_available():
-                        torch.cuda.empty_cache()
+                    # Platform-specific GPU memory cleanup
+                    if torch is not None:
+                        if torch.cuda.is_available():
+                            torch.cuda.empty_cache()
+                        elif hasattr(torch.backends, 'mps') and torch.backends.mps.is_available():
+                            # Apple Silicon GPU cleanup if available
+                            try:
+                                torch.mps.empty_cache()
+                            except AttributeError:
+                                # Fallback for older PyTorch versions
+                                pass
 
                     self._resources_allocated = False
                     self._model_loaded = False
 
-                    self.logger.info("Local AI provider resources cleaned up")
+                    self.logger.info(f"Local AI provider resources cleaned up on {sys.platform}")
 
                 except Exception as e:
                     self.logger.error(f"Error during cleanup: {e}")
@@ -187,7 +204,7 @@ class LocalAIProvider(AIProvider):
             return False
 
     def _get_device(self) -> Optional[str]:
-        """Determine appropriate device for model loading.
+        """Determine appropriate device for model loading with platform-specific detection.
 
         Returns:
             Optional[str]: Device string or None if no suitable device
@@ -196,16 +213,43 @@ class LocalAIProvider(AIProvider):
             return None
 
         if self.config.device == "auto":
-            # Auto-detect best available device
-            if torch.cuda.is_available():
-                return "cuda"
-            elif hasattr(torch.backends, 'mps') and torch.backends.mps.is_available():
-                return "mps"  # Apple Silicon GPU
-            else:
-                return "cpu"
+            # Platform-aware auto-detection of best available device
+            try:
+                # CUDA detection (Windows/Linux)
+                if torch.cuda.is_available():
+                    # Test CUDA actually works
+                    torch.cuda.get_device_count()
+                    return "cuda"
+            except Exception as e:
+                self.logger.debug(f"CUDA detection failed: {e}")
+
+            try:
+                # Apple Silicon GPU detection (macOS only)
+                if sys.platform == "darwin" and hasattr(torch.backends, 'mps'):
+                    if torch.backends.mps.is_available() and torch.backends.mps.is_built():
+                        return "mps"
+            except Exception as e:
+                self.logger.debug(f"MPS detection failed: {e}")
+
+            # Fallback to CPU (available on all platforms)
+            return "cpu"
         else:
-            # Use configured device
-            return self.config.device
+            # Validate configured device is available on current platform
+            device = self.config.device
+
+            if device == "cuda":
+                if not torch.cuda.is_available():
+                    self.logger.warning(f"CUDA device requested but not available on {sys.platform}")
+                    return None
+            elif device == "mps":
+                if sys.platform != "darwin":
+                    self.logger.warning(f"MPS device requested but only available on macOS, current: {sys.platform}")
+                    return None
+                if not (hasattr(torch.backends, 'mps') and torch.backends.mps.is_available()):
+                    self.logger.warning("MPS device requested but not available")
+                    return None
+
+            return device
 
     def get_provider_info(self) -> dict:
         """Get detailed provider information.
@@ -224,7 +268,15 @@ class LocalAIProvider(AIProvider):
             "model_loaded": self._model_loaded,
             "resources_allocated": self._resources_allocated,
             "torch_available": torch is not None,
-            "cuda_available": torch.cuda.is_available() if torch else False
+            "platform": sys.platform,
+            "cuda_available": torch.cuda.is_available() if torch else False,
+            "mps_available": (
+                torch is not None and
+                sys.platform == "darwin" and
+                hasattr(torch.backends, 'mps') and
+                torch.backends.mps.is_available()
+            ),
+            "system_requirements_met": self._check_system_requirements()
         }
 
         return {**base_info, **local_info}
@@ -251,9 +303,10 @@ class LocalAIProvider(AIProvider):
 - **Error handling**: Clear error messages for dependency or system requirement failures
 
 ## Helper Dependencies
+- **Existing helpers**: `spec_cli.utils.path_utils.normalize_path_separators` for cross-platform path handling
 - **Slice dependencies**: LocalModelConfig (1a), CodeSanitizer (1c), AIProvider interface (2a)
 - **External integration**: HuggingFace transformers (with graceful fallback when missing)
-- **Standard library**: `threading`, `logging` for resource management and monitoring
+- **Standard library**: `threading`, `logging`, `sys` for resource management and platform detection
 
 ## Individual Test Scenarios (100% coverage achievable)
 1. **test_local_provider_checks_dependencies** - Test HuggingFace availability detection
@@ -262,18 +315,41 @@ class LocalAIProvider(AIProvider):
 4. **test_local_provider_initializes_with_config** - Test initialization with custom config
 5. **test_local_provider_initializes_with_defaults** - Test initialization with default config
 6. **test_local_provider_device_detection** - Test automatic device detection (CPU/CUDA/MPS)
-7. **test_local_provider_sanitizes_content** - Test content sanitization integration
-8. **test_local_provider_validates_requests** - Test request validation
-9. **test_local_provider_handles_invalid_requests** - Test invalid request error handling
-10. **test_local_provider_cleanup_resources** - Test resource cleanup
-11. **test_local_provider_thread_safety** - Test thread-safe model loading
-12. **test_local_provider_info_reporting** - Test provider information reporting
+7. **test_local_provider_platform_specific_device_detection** - Test device detection across Windows/macOS/Linux
+8. **test_local_provider_sanitizes_content** - Test content sanitization integration
+9. **test_local_provider_validates_requests** - Test request validation
+10. **test_local_provider_handles_invalid_requests** - Test invalid request error handling
+11. **test_local_provider_cleanup_resources** - Test resource cleanup
+12. **test_local_provider_platform_specific_cleanup** - Test GPU memory cleanup on different platforms
+13. **test_local_provider_thread_safety** - Test thread-safe model loading
+14. **test_local_provider_info_reporting** - Test provider information reporting
+15. **test_local_provider_cross_platform_path_handling** - Test path normalization in logs and metadata
 
 ## Quality Assurance
 - **Poetry compliance**: HuggingFace dependencies managed via Poetry AI group
 - **Type safety**: Complete type annotations with Optional handling for missing dependencies
 - **Security clearance**: Integrates with sanitizer for secure content processing
 - **Resource management**: Proper cleanup and memory management for AI models
+- **Cross-platform testing**: All tests use proper mock locations for Python < 3.11 compatibility
+
+## Cross-Platform Testing Requirements
+- **Mock patch locations**: Always patch at import location (`patch("module.imported_function")`) not source location
+- **Path normalization**: Use `normalize_path_separators()` in all test assertions for path comparisons
+- **Platform detection**: Mock `sys.platform` for testing platform-specific behavior
+- **Device detection**: Mock torch availability and device detection for different platforms
+- **Example test pattern**:
+```python
+# CORRECT - patch at import location (Python < 3.11 compatible)
+@patch("spec_cli.ai.providers.local.torch")
+def test_device_detection_cuda_available(self, mock_torch):
+    mock_torch.cuda.is_available.return_value = True
+    # Test implementation
+
+# INCORRECT - source location patching (fails Python < 3.11)
+@patch("torch.cuda.is_available")
+def test_device_detection_cuda_available(self, mock_cuda):
+    # This will fail on Python < 3.11
+```
 
 ## Integration with Other Slices
 - **Depends on Slice 1a**: Uses LocalModelConfig for configuration

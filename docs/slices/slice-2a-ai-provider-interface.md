@@ -34,6 +34,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 import logging
 
+from ...utils.path_utils import normalize_path_separators
+
 logger = logging.getLogger(__name__)
 
 @dataclass
@@ -46,7 +48,7 @@ class GenerationRequest:
     template_content: Optional[str] = None
 
     def __post_init__(self):
-        """Validate request after initialization."""
+        """Validate request after initialization with cross-platform path handling."""
         if not self.source_file:
             raise ValueError("source_file is required")
         if not self.content:
@@ -54,13 +56,22 @@ class GenerationRequest:
         if not isinstance(self.context, dict):
             raise ValueError("context must be a dictionary")
 
+        # Normalize source file path for cross-platform compatibility
+        self.source_file = Path(normalize_path_separators(str(self.source_file)))
+
     def get_file_extension(self) -> str:
-        """Get file extension for language-specific processing."""
-        return self.source_file.suffix.lower()
+        """Get file extension for language-specific processing (cross-platform)."""
+        # Use normalized path to ensure consistent behavior across platforms
+        normalized_path = Path(normalize_path_separators(str(self.source_file)))
+        return normalized_path.suffix.lower()
 
     def get_content_size(self) -> int:
         """Get content size in characters."""
         return len(self.content)
+
+    def get_normalized_path(self) -> str:
+        """Get normalized path string for cross-platform compatibility."""
+        return normalize_path_separators(str(self.source_file))
 
 @dataclass
 class GenerationResult:
@@ -139,7 +150,9 @@ class AIProvider(ABC):
             raise ValueError("request must be a GenerationRequest instance")
 
         # Additional validation can be added by subclasses
-        self.logger.debug(f"Validating request for {request.source_file}")
+        # Use normalized path for consistent logging across platforms
+        normalized_path = request.get_normalized_path()
+        self.logger.debug(f"Validating request for {normalized_path}")
 
     def get_provider_info(self) -> Dict[str, Any]:
         """Get provider information.
@@ -175,27 +188,51 @@ class AIProvider(ABC):
 - **Validation errors**: Clear ValueError messages for invalid requests/results
 
 ## Helper Dependencies
-- **Existing helpers**: None required (pure interface definitions)
+- **Existing helpers**: `spec_cli.utils.path_utils.normalize_path_separators` for cross-platform path handling
 - **Standard library**: `abc`, `dataclasses`, `typing`, `pathlib`, `logging`
 - **No external dependencies**: Pure Python standard library usage
 
 ## Individual Test Scenarios (100% coverage achievable)
 1. **test_generation_request_validation** - Test request validation in __post_init__
 2. **test_generation_request_utility_methods** - Test file extension and content size methods
-3. **test_generation_result_validation** - Test result validation for success/failure states
-4. **test_generation_result_utility_methods** - Test content retrieval methods
-5. **test_generation_result_complete_documentation_check** - Test completeness validation
-6. **test_ai_provider_abstract_methods** - Test that abstract methods cannot be instantiated
-7. **test_ai_provider_request_validation** - Test provider request validation
-8. **test_ai_provider_info_method** - Test provider info metadata
-9. **test_invalid_request_creation** - Test various invalid request scenarios
-10. **test_invalid_result_creation** - Test various invalid result scenarios
+3. **test_generation_request_cross_platform_paths** - Test path normalization on Windows/Unix
+4. **test_generation_result_validation** - Test result validation for success/failure states
+5. **test_generation_result_utility_methods** - Test content retrieval methods
+6. **test_generation_result_complete_documentation_check** - Test completeness validation
+7. **test_ai_provider_abstract_methods** - Test that abstract methods cannot be instantiated
+8. **test_ai_provider_request_validation** - Test provider request validation
+9. **test_ai_provider_info_method** - Test provider info metadata
+10. **test_invalid_request_creation** - Test various invalid request scenarios
+11. **test_invalid_result_creation** - Test various invalid result scenarios
+12. **test_request_path_normalization_consistency** - Test normalized path methods across platforms
 
 ## Quality Assurance
 - **Poetry compliance**: No external dependencies, pure Python standard library
 - **Type safety**: Complete type annotations for all methods and data structures
 - **Security clearance**: No sensitive data handling, pure interface definitions
 - **Documentation ready**: Comprehensive docstrings for all public methods
+- **Cross-platform testing**: All tests use proper mock locations for Python < 3.11 compatibility
+
+## Cross-Platform Testing Requirements
+- **Mock patch locations**: Always patch at import location (`patch("module.imported_function")`) not source location
+- **Path normalization**: Use `normalize_path_separators()` in all test assertions for path comparisons
+- **Abstract class testing**: Test abstract methods cannot be instantiated directly
+- **Data validation**: Test dataclass validation with normalized paths
+- **Example test pattern**:
+```python
+# CORRECT - patch at import location (Python < 3.11 compatible)
+@patch("spec_cli.ai.providers.base.normalize_path_separators")
+def test_request_normalizes_paths(self, mock_normalize):
+    mock_normalize.return_value = "normalized/path"
+    request = GenerationRequest(source_file=Path("test\\path"), content="code")
+    # Test implementation
+
+# Path comparison with normalization
+from spec_cli.utils.path_utils import normalize_path_separators
+expected = normalize_path_separators("/expected/path")
+actual = normalize_path_separators(str(result.source_file))
+assert actual == expected
+```
 
 ## Integration with Other Slices
 - **Used by Slice 2b**: Local AI provider will implement this interface

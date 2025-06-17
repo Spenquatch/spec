@@ -29,8 +29,11 @@ Implement AI configuration data models with validation using Pydantic, following
 ```python
 # spec_cli/ai/config/settings.py
 from typing import Optional, Dict, Any, List
+import sys
 from pydantic import BaseModel, Field, validator
 from pathlib import Path
+
+from ...utils.path_utils import normalize_path_separators, ensure_directory
 
 class SecurityConfig(BaseModel):
     """Security configuration for AI integration."""
@@ -60,6 +63,22 @@ class LocalModelConfig(BaseModel):
     use_4bit: bool = Field(default=True)
     device: str = Field(default="auto")
     cache_enabled: bool = Field(default=True)
+    cache_dir: Optional[str] = Field(default=None, description="Cross-platform cache directory")
+
+    @validator('cache_dir')
+    def validate_cache_dir(cls, v):
+        """Validate cache directory path and normalize for cross-platform use."""
+        if v is None:
+            return v
+
+        # Normalize path separators for cross-platform compatibility
+        normalized_path = normalize_path_separators(v)
+
+        # Validate that the path is reasonable
+        if len(normalized_path) > 255:
+            raise ValueError(f"Cache directory path too long: {len(normalized_path)} chars")
+
+        return normalized_path
 
 class AIConfig(BaseModel):
     """AI integration configuration - AI is the primary documentation engine."""
@@ -71,9 +90,18 @@ class AIConfig(BaseModel):
 
     @validator('provider')
     def validate_provider(cls, v):
-        """Validate provider type."""
-        if v not in ['local', 'disabled']:
-            raise ValueError(f"Unsupported provider: {v}")
+        """Validate provider type with platform-specific considerations."""
+        valid_providers = ['local', 'disabled']
+
+        if v not in valid_providers:
+            raise ValueError(f"Unsupported provider: {v}. Valid options: {valid_providers}")
+
+        # Platform-specific validation
+        if v == 'local':
+            # Validate that platform can support local models
+            if sys.platform not in ['darwin', 'linux', 'win32']:
+                raise ValueError(f"Local AI provider not supported on platform: {sys.platform}")
+
         return v
 ```
 
@@ -94,19 +122,21 @@ class AIConfig(BaseModel):
 - **Validation errors** - Clear Pydantic validation messages when invalid data provided
 
 ## Helper Dependencies
-- **Existing helpers**: None required (pure Pydantic models)
-- **Standard library**: `re` module for regex validation
+- **Existing helpers**: `spec_cli.utils.path_utils.normalize_path_separators` for cross-platform path handling
+- **Standard library**: `re` module for regex validation, `sys` for platform detection
 - **Third-party**: `pydantic` for model definitions
 
 ## Individual Test Scenarios (100% coverage achievable)
 1. **test_ai_config_uses_secure_defaults** - Verify all defaults are security-conscious
 2. **test_ai_config_validates_provider_types** - Test valid/invalid provider values
-3. **test_ai_config_validates_token_limits** - Test token bounds (50-2048)
-4. **test_ai_config_validates_temperature_bounds** - Test temperature bounds (0.0-1.0)
-5. **test_security_config_validates_patterns** - Test regex pattern compilation
-6. **test_security_config_validates_file_size_limits** - Test file size bounds
-7. **test_local_model_config_defaults** - Verify model configuration defaults
-8. **test_nested_config_validation** - Test nested model validation
+3. **test_ai_config_validates_platform_support** - Test platform-specific provider validation
+4. **test_ai_config_validates_token_limits** - Test token bounds (50-2048)
+5. **test_ai_config_validates_temperature_bounds** - Test temperature bounds (0.0-1.0)
+6. **test_security_config_validates_patterns** - Test regex pattern compilation
+7. **test_security_config_validates_file_size_limits** - Test file size bounds
+8. **test_local_model_config_defaults** - Verify model configuration defaults
+9. **test_local_model_config_cache_dir_normalization** - Test cross-platform cache path handling
+10. **test_nested_config_validation** - Test nested model validation
 
 ## Quality Assurance
 - **Poetry compliance**: Pydantic dependency managed via Poetry
