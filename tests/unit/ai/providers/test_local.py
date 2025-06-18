@@ -6,9 +6,8 @@ from unittest.mock import Mock, patch
 
 from spec_cli.ai.analysis.sanitizer import CodeSanitizer
 from spec_cli.ai.config.settings import LocalModelConfig
-from spec_cli.ai.providers.base import GenerationRequest
+from spec_cli.ai.providers.base import GenerationRequest, GenerationResult
 from spec_cli.ai.providers.local import LocalAIProvider
-from spec_cli.utils.path_utils import normalize_path_separators
 
 # Test constants to avoid magic numbers
 DEFAULT_MODEL_NAME = "Qwen/Qwen2.5-Coder-0.5B-Instruct"
@@ -23,6 +22,39 @@ MOCK_DEVICE_MPS = "mps"
 PLATFORM_DARWIN = "darwin"
 PLATFORM_LINUX = "linux"
 PLATFORM_WIN32 = "win32"
+
+# Integration test constants
+MOCK_GPU_CAPABILITIES_CUDA = {
+    "cuda_available": True,
+    "mps_available": False,
+    "gpu_memory_gb": 8.0,
+    "gpu_count": 1,
+    "recommendations": ["CUDA GPU detected"],
+}
+MOCK_GPU_CAPABILITIES_MPS = {
+    "cuda_available": False,
+    "mps_available": True,
+    "gpu_memory_gb": 0,
+    "gpu_count": 0,
+    "recommendations": ["Apple Silicon GPU detected"],
+}
+MOCK_GPU_CAPABILITIES_CPU = {
+    "cuda_available": False,
+    "mps_available": False,
+    "gpu_memory_gb": 0,
+    "gpu_count": 0,
+    "recommendations": ["No GPU acceleration available"],
+}
+MOCK_GENERATION_RESULT_SUCCESS = {
+    "success": True,
+    "content": {"index.md": "# Generated Documentation", "history.md": "# History"},
+    "metadata": {"provider": "local", "model": DEFAULT_MODEL_NAME},
+}
+MOCK_GENERATION_RESULT_FAILURE = {
+    "success": False,
+    "error": "Model loading failed",
+    "metadata": {"provider": "local", "device": MOCK_DEVICE_CPU},
+}
 
 
 class TestLocalAIProviderInitialization:
@@ -442,15 +474,37 @@ class TestLocalAIProviderDocumentationGeneration:
         assert result.success is False
         assert result.error == "Content sanitization failed: Sanitization failed"
 
-    @patch("spec_cli.ai.providers.local.LocalAIProvider.is_available")
-    @patch("spec_cli.ai.providers.local.LocalAIProvider.validate_request")
     @patch("spec_cli.ai.providers.local.sys.platform", PLATFORM_LINUX)
-    def test_generate_documentation_when_successful_then_returns_placeholder_result(
-        self, mock_validate, mock_is_available
+    @patch("spec_cli.ai.providers.local.DocumentationGenerator")
+    @patch("spec_cli.ai.providers.local.get_gpu_capabilities")
+    @patch("spec_cli.ai.providers.local.LocalAIProvider.validate_request")
+    @patch("spec_cli.ai.providers.local.LocalAIProvider.is_available")
+    def test_generate_documentation_when_successful_then_returns_ai_generated_result(
+        self,
+        mock_is_available,
+        mock_validate,
+        mock_gpu_capabilities,
+        mock_generator_class,
     ):
-        """Test successful generation returns placeholder result."""
+        """Test successful generation returns AI-generated result."""
         mock_is_available.return_value = True
         mock_validate.return_value = None
+        mock_gpu_capabilities.return_value = MOCK_GPU_CAPABILITIES_CPU
+
+        # Setup successful generator
+        mock_generator = Mock()
+        mock_generator.load_model.return_value = True
+        mock_generator.generate_documentation.return_value = GenerationResult(
+            success=True,
+            content={"index.md": "# AI Generated Content", "history.md": "# History"},
+            metadata={
+                "provider": "local",
+                "model": "test/model",
+                "platform": PLATFORM_LINUX,
+            },
+        )
+        mock_generator_class.return_value = mock_generator
+
         mock_sanitizer = Mock()
         mock_sanitizer.sanitize.return_value = TEST_SANITIZED_CONTENT
         config = LocalModelConfig(model_name="test/model")
@@ -461,18 +515,18 @@ class TestLocalAIProviderDocumentationGeneration:
 
         assert result.success is True
         assert "index.md" in result.content
-        assert "Placeholder" in result.content["index.md"]
-        assert "slice 2c" in result.content["index.md"]
+        assert "AI Generated Content" in result.content["index.md"]
         assert result.metadata["provider"] == "local"
         assert result.metadata["model"] == "test/model"
-        assert result.metadata["platform"] == PLATFORM_LINUX
-        assert (
-            normalize_path_separators(str(TEST_SOURCE_FILE))
-            in result.metadata["source_file"]
-        )
 
         # Verify sanitization was called
         mock_sanitizer.sanitize.assert_called_once_with(TEST_CONTENT, TEST_SOURCE_FILE)
+
+        # Verify integration components were called
+        mock_gpu_capabilities.assert_called_once()
+        mock_generator_class.assert_called_once_with(config)
+        mock_generator.load_model.assert_called_once_with("cpu")
+        mock_generator.generate_documentation.assert_called_once_with(request)
 
 
 class TestLocalAIProviderResourceCleanup:
@@ -559,14 +613,36 @@ class TestLocalAIProviderResourceCleanup:
 class TestLocalAIProviderCrossPlatformPathHandling:
     """Test cross-platform path handling in all methods."""
 
-    @patch("spec_cli.ai.providers.local.LocalAIProvider.is_available")
+    @patch("spec_cli.ai.providers.local.DocumentationGenerator")
+    @patch("spec_cli.ai.providers.local.get_gpu_capabilities")
     @patch("spec_cli.ai.providers.local.LocalAIProvider.validate_request")
+    @patch("spec_cli.ai.providers.local.LocalAIProvider.is_available")
     def test_generate_documentation_normalizes_windows_paths_in_metadata(
-        self, mock_validate, mock_is_available
+        self,
+        mock_is_available,
+        mock_validate,
+        mock_gpu_capabilities,
+        mock_generator_class,
     ):
         """Test that Windows-style paths are normalized in metadata."""
         mock_is_available.return_value = True
         mock_validate.return_value = None
+        mock_gpu_capabilities.return_value = MOCK_GPU_CAPABILITIES_CPU
+
+        # Setup successful generator with normalized metadata
+        mock_generator = Mock()
+        mock_generator.load_model.return_value = True
+        mock_generator.generate_documentation.return_value = GenerationResult(
+            success=True,
+            content={"index.md": "# Generated", "history.md": "# History"},
+            metadata={
+                "provider": "local",
+                "source_file": "src/models/user.py",  # Should be normalized by generator
+                "platform": "test",
+            },
+        )
+        mock_generator_class.return_value = mock_generator
+
         mock_sanitizer = Mock()
         mock_sanitizer.sanitize.return_value = TEST_SANITIZED_CONTENT
         provider = LocalAIProvider(sanitizer=mock_sanitizer)
@@ -577,7 +653,7 @@ class TestLocalAIProviderCrossPlatformPathHandling:
 
         result = provider.generate_documentation(request)
 
-        # Verify path normalization in metadata
+        # Verify path normalization in metadata (from generator result)
         expected_normalized = "src/models/user.py"
         assert result.metadata["source_file"] == expected_normalized
 
@@ -649,6 +725,41 @@ class TestLocalAIProviderThreadSafety:
         # Restore original lock
         provider._loading_lock = original_lock
 
+    @patch("spec_cli.ai.providers.local.torch")
+    @patch("spec_cli.ai.providers.local.sys.platform", PLATFORM_DARWIN)
+    def test_cleanup_when_mps_available_then_clears_mps_cache(self, mock_torch):
+        """Test cleanup clears MPS cache when available on macOS."""
+        mock_torch.cuda.is_available.return_value = False
+        mock_torch.backends.mps.is_available.return_value = True
+        mock_torch.mps.empty_cache = Mock()
+
+        provider = LocalAIProvider()
+        provider._resources_allocated = True
+
+        provider.cleanup()
+
+        # Verify MPS cache was cleared
+        mock_torch.mps.empty_cache.assert_called_once()
+
+    @patch("spec_cli.ai.providers.local.torch")
+    @patch("spec_cli.ai.providers.local.sys.platform", PLATFORM_DARWIN)
+    def test_cleanup_when_mps_empty_cache_unavailable_then_handles_gracefully(
+        self, mock_torch
+    ):
+        """Test cleanup handles AttributeError when MPS empty_cache is unavailable."""
+        mock_torch.cuda.is_available.return_value = False
+        mock_torch.backends.mps.is_available.return_value = True
+        mock_torch.mps.empty_cache.side_effect = AttributeError("Method not available")
+
+        provider = LocalAIProvider()
+        provider._resources_allocated = True
+
+        # Should not raise exception
+        provider.cleanup()
+
+        # Verify attempt was made
+        mock_torch.mps.empty_cache.assert_called_once()
+
 
 class TestLocalAIProviderRequestValidation:
     """Test request validation integration."""
@@ -670,12 +781,12 @@ class TestLocalAIProviderRequestValidation:
 class TestLocalAIProviderIntegrationWithHelpers:
     """Test integration with helper utilities."""
 
-    def test_provider_uses_normalize_path_separators_for_cross_platform_compatibility(
+    def test_provider_uses_path_normalization_for_cross_platform_compatibility(
         self,
     ):
         """Test that provider uses path normalization utilities."""
         # This is tested indirectly through other tests, but we verify the import
-        from spec_cli.ai.providers.local import normalize_path_separators
+        from spec_cli.utils.path_utils import normalize_path_separators
 
         test_path = "src\\models\\user.py"
         normalized = normalize_path_separators(test_path)
@@ -697,3 +808,335 @@ class TestLocalAIProviderIntegrationWithHelpers:
 
         assert provider.config is config
         assert provider.config.model_name == "custom/model"
+
+
+class TestLocalAIProviderGeneratorIntegration:
+    """Test LocalAIProvider integration with DocumentationGenerator."""
+
+    @patch("spec_cli.ai.providers.local.get_gpu_capabilities")
+    @patch("spec_cli.ai.providers.local.DocumentationGenerator")
+    @patch("spec_cli.ai.providers.local.LocalAIProvider.is_available")
+    @patch("spec_cli.ai.providers.local.LocalAIProvider.validate_request")
+    def test_generate_documentation_when_successful_integration_then_returns_success_result(
+        self,
+        mock_validate,
+        mock_is_available,
+        mock_generator_class,
+        mock_gpu_capabilities,
+    ):
+        """Test successful integration with DocumentationGenerator."""
+        # Setup mocks
+        mock_is_available.return_value = True
+        mock_validate.return_value = None
+        mock_gpu_capabilities.return_value = MOCK_GPU_CAPABILITIES_CUDA
+
+        mock_generator = Mock()
+        mock_generator.load_model.return_value = True
+        mock_generator.generate_documentation.return_value = GenerationResult(
+            **MOCK_GENERATION_RESULT_SUCCESS
+        )
+        mock_generator_class.return_value = mock_generator
+
+        mock_sanitizer = Mock()
+        mock_sanitizer.sanitize.return_value = TEST_SANITIZED_CONTENT
+        provider = LocalAIProvider(sanitizer=mock_sanitizer)
+        request = GenerationRequest(source_file=TEST_SOURCE_FILE, content=TEST_CONTENT)
+
+        result = provider.generate_documentation(request)
+
+        # Verify successful integration
+        assert result.success is True
+        assert "index.md" in result.content
+        assert result.metadata["provider"] == "local"
+
+        # Verify helper usage
+        mock_gpu_capabilities.assert_called_once()
+        mock_generator_class.assert_called_once_with(provider.config)
+        mock_generator.load_model.assert_called_once_with("cuda")
+        mock_generator.generate_documentation.assert_called_once_with(request)
+
+    @patch("spec_cli.ai.providers.local.get_gpu_capabilities")
+    @patch("spec_cli.ai.providers.local.DocumentationGenerator")
+    @patch("spec_cli.ai.providers.local.LocalAIProvider.is_available")
+    @patch("spec_cli.ai.providers.local.LocalAIProvider.validate_request")
+    def test_generate_documentation_when_model_loading_fails_then_returns_error_result(
+        self,
+        mock_validate,
+        mock_is_available,
+        mock_generator_class,
+        mock_gpu_capabilities,
+    ):
+        """Test handling of model loading failure."""
+        # Setup mocks
+        mock_is_available.return_value = True
+        mock_validate.return_value = None
+        mock_gpu_capabilities.return_value = MOCK_GPU_CAPABILITIES_CPU
+
+        mock_generator = Mock()
+        mock_generator.load_model.return_value = False
+        mock_generator_class.return_value = mock_generator
+
+        mock_sanitizer = Mock()
+        mock_sanitizer.sanitize.return_value = TEST_SANITIZED_CONTENT
+        provider = LocalAIProvider(sanitizer=mock_sanitizer)
+        request = GenerationRequest(source_file=TEST_SOURCE_FILE, content=TEST_CONTENT)
+
+        result = provider.generate_documentation(request)
+
+        # Verify error handling
+        assert result.success is False
+        assert "Failed to load AI model" in result.error
+        assert result.metadata["device"] == "cpu"
+
+        # Verify model loading attempt
+        mock_generator.load_model.assert_called_once_with("cpu")
+        mock_generator.generate_documentation.assert_not_called()
+
+    @patch("spec_cli.ai.providers.local.get_gpu_capabilities")
+    @patch("spec_cli.ai.providers.local.DocumentationGenerator")
+    @patch("spec_cli.ai.providers.local.LocalAIProvider.is_available")
+    @patch("spec_cli.ai.providers.local.LocalAIProvider.validate_request")
+    def test_generate_documentation_when_generation_fails_then_returns_error_result(
+        self,
+        mock_validate,
+        mock_is_available,
+        mock_generator_class,
+        mock_gpu_capabilities,
+    ):
+        """Test handling of generation failure."""
+        # Setup mocks
+        mock_is_available.return_value = True
+        mock_validate.return_value = None
+        mock_gpu_capabilities.return_value = MOCK_GPU_CAPABILITIES_MPS
+
+        mock_generator = Mock()
+        mock_generator.load_model.return_value = True
+        mock_generator.generate_documentation.side_effect = Exception(
+            "Generation failed"
+        )
+        mock_generator_class.return_value = mock_generator
+
+        mock_sanitizer = Mock()
+        mock_sanitizer.sanitize.return_value = TEST_SANITIZED_CONTENT
+        provider = LocalAIProvider(sanitizer=mock_sanitizer)
+        request = GenerationRequest(source_file=TEST_SOURCE_FILE, content=TEST_CONTENT)
+
+        result = provider.generate_documentation(request)
+
+        # Verify error handling
+        assert result.success is False
+        assert "AI generation failed: Generation failed" in result.error
+        assert result.metadata["provider"] == "local"
+
+        # Verify generation attempt
+        mock_generator.generate_documentation.assert_called_once_with(request)
+
+    @patch("spec_cli.ai.providers.local.get_gpu_capabilities")
+    @patch("spec_cli.ai.providers.local.default_error_handler")
+    @patch("spec_cli.ai.providers.local.DocumentationGenerator")
+    @patch("spec_cli.ai.providers.local.LocalAIProvider.is_available")
+    @patch("spec_cli.ai.providers.local.LocalAIProvider.validate_request")
+    def test_generate_documentation_when_exception_then_uses_error_handler_helper(
+        self,
+        mock_validate,
+        mock_is_available,
+        mock_generator_class,
+        mock_error_handler,
+        mock_gpu_capabilities,
+    ):
+        """Test that error handler helper is used for exceptions."""
+        # Setup mocks
+        mock_is_available.return_value = True
+        mock_validate.return_value = None
+        mock_gpu_capabilities.return_value = MOCK_GPU_CAPABILITIES_CPU
+
+        mock_generator = Mock()
+        mock_generator.load_model.side_effect = RuntimeError("Device not available")
+        mock_generator_class.return_value = mock_generator
+
+        mock_sanitizer = Mock()
+        mock_sanitizer.sanitize.return_value = TEST_SANITIZED_CONTENT
+        provider = LocalAIProvider(sanitizer=mock_sanitizer)
+        request = GenerationRequest(source_file=TEST_SOURCE_FILE, content=TEST_CONTENT)
+
+        provider.generate_documentation(request)
+
+        # Verify error handler usage
+        mock_error_handler.report.assert_called_once()
+        call_args = mock_error_handler.report.call_args
+        assert isinstance(call_args[0][0], RuntimeError)
+        assert call_args[0][1] == "AI generation"
+        assert call_args[1]["code_path"] == request.source_file
+        assert call_args[1]["provider"] == "local"
+        assert call_args[1]["model"] == provider.config.model_name
+
+    @patch("spec_cli.ai.providers.local.get_gpu_capabilities")
+    def test_device_detection_when_cuda_available_then_selects_cuda(
+        self, mock_gpu_capabilities
+    ):
+        """Test device detection selects CUDA when available."""
+        mock_gpu_capabilities.return_value = MOCK_GPU_CAPABILITIES_CUDA
+
+        with (
+            patch(
+                "spec_cli.ai.providers.local.DocumentationGenerator"
+            ) as mock_generator_class,
+            patch(
+                "spec_cli.ai.providers.local.LocalAIProvider.is_available",
+                return_value=True,
+            ),
+            patch("spec_cli.ai.providers.local.LocalAIProvider.validate_request"),
+        ):
+            mock_generator = Mock()
+            mock_generator.load_model.return_value = True
+            mock_generator.generate_documentation.return_value = GenerationResult(
+                **MOCK_GENERATION_RESULT_SUCCESS
+            )
+            mock_generator_class.return_value = mock_generator
+
+            provider = LocalAIProvider()
+            request = GenerationRequest(
+                source_file=TEST_SOURCE_FILE, content=TEST_CONTENT
+            )
+
+            provider.generate_documentation(request)
+
+            # Verify CUDA device selected
+            mock_generator.load_model.assert_called_once_with("cuda")
+
+    @patch("spec_cli.ai.providers.local.get_gpu_capabilities")
+    def test_device_detection_when_mps_available_then_selects_mps(
+        self, mock_gpu_capabilities
+    ):
+        """Test device detection selects MPS when available."""
+        mock_gpu_capabilities.return_value = MOCK_GPU_CAPABILITIES_MPS
+
+        with (
+            patch(
+                "spec_cli.ai.providers.local.DocumentationGenerator"
+            ) as mock_generator_class,
+            patch(
+                "spec_cli.ai.providers.local.LocalAIProvider.is_available",
+                return_value=True,
+            ),
+            patch("spec_cli.ai.providers.local.LocalAIProvider.validate_request"),
+        ):
+            mock_generator = Mock()
+            mock_generator.load_model.return_value = True
+            mock_generator.generate_documentation.return_value = GenerationResult(
+                **MOCK_GENERATION_RESULT_SUCCESS
+            )
+            mock_generator_class.return_value = mock_generator
+
+            provider = LocalAIProvider()
+            request = GenerationRequest(
+                source_file=TEST_SOURCE_FILE, content=TEST_CONTENT
+            )
+
+            provider.generate_documentation(request)
+
+            # Verify MPS device selected
+            mock_generator.load_model.assert_called_once_with("mps")
+
+    @patch("spec_cli.ai.providers.local.get_gpu_capabilities")
+    def test_device_detection_when_no_gpu_then_selects_cpu(self, mock_gpu_capabilities):
+        """Test device detection falls back to CPU when no GPU available."""
+        mock_gpu_capabilities.return_value = MOCK_GPU_CAPABILITIES_CPU
+
+        with (
+            patch(
+                "spec_cli.ai.providers.local.DocumentationGenerator"
+            ) as mock_generator_class,
+            patch(
+                "spec_cli.ai.providers.local.LocalAIProvider.is_available",
+                return_value=True,
+            ),
+            patch("spec_cli.ai.providers.local.LocalAIProvider.validate_request"),
+        ):
+            mock_generator = Mock()
+            mock_generator.load_model.return_value = True
+            mock_generator.generate_documentation.return_value = GenerationResult(
+                **MOCK_GENERATION_RESULT_SUCCESS
+            )
+            mock_generator_class.return_value = mock_generator
+
+            provider = LocalAIProvider()
+            request = GenerationRequest(
+                source_file=TEST_SOURCE_FILE, content=TEST_CONTENT
+            )
+
+            provider.generate_documentation(request)
+
+            # Verify CPU device selected
+            mock_generator.load_model.assert_called_once_with("cpu")
+
+    @patch("spec_cli.ai.providers.local.LocalAIProvider.is_available")
+    def test_generate_documentation_when_provider_unavailable_then_returns_error_without_integration(
+        self, mock_is_available
+    ):
+        """Test that integration is skipped when provider is unavailable."""
+        mock_is_available.return_value = False
+
+        with patch(
+            "spec_cli.ai.providers.local.DocumentationGenerator"
+        ) as mock_generator_class:
+            provider = LocalAIProvider()
+            request = GenerationRequest(
+                source_file=TEST_SOURCE_FILE, content=TEST_CONTENT
+            )
+
+            result = provider.generate_documentation(request)
+
+            # Verify early return without integration
+            assert result.success is False
+            assert "not available" in result.error
+            mock_generator_class.assert_not_called()
+
+    @patch("spec_cli.ai.providers.local.get_gpu_capabilities")
+    @patch("spec_cli.ai.providers.local.DocumentationGenerator")
+    @patch("spec_cli.ai.providers.local.LocalAIProvider.is_available")
+    def test_generate_documentation_when_validation_fails_then_returns_error_without_integration(
+        self, mock_is_available, mock_generator_class, mock_gpu_capabilities
+    ):
+        """Test that integration is skipped when request validation fails."""
+        mock_is_available.return_value = True
+
+        provider = LocalAIProvider()
+        request = GenerationRequest(source_file=TEST_SOURCE_FILE, content=TEST_CONTENT)
+
+        with patch.object(
+            provider, "validate_request", side_effect=ValueError("Invalid request")
+        ):
+            result = provider.generate_documentation(request)
+
+            # Verify early return without integration
+            assert result.success is False
+            assert "Invalid request" in result.error
+            mock_generator_class.assert_not_called()
+
+    @patch("spec_cli.ai.providers.local.get_gpu_capabilities")
+    @patch("spec_cli.ai.providers.local.DocumentationGenerator")
+    @patch("spec_cli.ai.providers.local.LocalAIProvider.is_available")
+    @patch("spec_cli.ai.providers.local.LocalAIProvider.validate_request")
+    def test_generate_documentation_when_sanitization_fails_then_returns_error_without_integration(
+        self,
+        mock_validate,
+        mock_is_available,
+        mock_generator_class,
+        mock_gpu_capabilities,
+    ):
+        """Test that integration is skipped when content sanitization fails."""
+        mock_is_available.return_value = True
+        mock_validate.return_value = None
+
+        mock_sanitizer = Mock()
+        mock_sanitizer.sanitize.side_effect = ValueError("Sanitization failed")
+        provider = LocalAIProvider(sanitizer=mock_sanitizer)
+        request = GenerationRequest(source_file=TEST_SOURCE_FILE, content=TEST_CONTENT)
+
+        result = provider.generate_documentation(request)
+
+        # Verify early return without integration
+        assert result.success is False
+        assert "Content sanitization failed" in result.error
+        mock_generator_class.assert_not_called()

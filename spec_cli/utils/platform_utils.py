@@ -202,7 +202,7 @@ def get_gpu_capabilities() -> GPUCapabilitiesResult:
     }
 
     try:
-        import torch  # type: ignore[import-not-found]
+        import torch
 
         # CUDA detection (Windows/Linux)
         if torch.cuda.is_available():

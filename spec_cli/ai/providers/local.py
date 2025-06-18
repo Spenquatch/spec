@@ -4,15 +4,17 @@ import logging
 import sys
 import threading
 
-from ...utils.path_utils import normalize_path_separators
+from ...utils.error_handler import default_error_handler
+from ...utils.platform_utils import get_gpu_capabilities
 from ..analysis.sanitizer import CodeSanitizer
 from ..config.settings import LocalModelConfig
 from .base import AIProvider, GenerationRequest, GenerationResult
+from .generation import DocumentationGenerator
 
 # Optional HuggingFace imports with graceful fallback
 try:
-    import torch  # type: ignore[import-not-found]
-    from transformers import (  # type: ignore[import-not-found]
+    import torch
+    from transformers import (
         AutoModelForCausalLM,
         AutoTokenizer,
         pipeline,
@@ -80,7 +82,7 @@ class LocalAIProvider(AIProvider):
         return True
 
     def generate_documentation(self, request: GenerationRequest) -> GenerationResult:
-        """Generate documentation using local AI model.
+        """Generate documentation using AI model.
 
         Args:
             request: Documentation generation request
@@ -108,24 +110,41 @@ class LocalAIProvider(AIProvider):
                 success=False, error=f"Content sanitization failed: {e}"
             )
 
-        # This slice focuses on infrastructure - actual generation in slice 2c
-        # Use normalized path for consistent logging across platforms
-        normalized_path = normalize_path_separators(str(request.source_file))
-        self.logger.info("LocalAIProvider ready to process %s", normalized_path)
+        try:
+            # Use helper for device detection
+            gpu_capabilities = get_gpu_capabilities()
+            if gpu_capabilities["cuda_available"]:
+                device = "cuda"
+            elif gpu_capabilities["mps_available"]:
+                device = "mps"
+            else:
+                device = "cpu"
 
-        # Placeholder for actual generation (implemented in slice 2c)
-        return GenerationResult(
-            success=True,
-            content={
-                "index.md": "# Placeholder\nGeneration logic implemented in slice 2c"
-            },
-            metadata={
-                "provider": "local",
-                "model": self.config.model_name,
-                "source_file": normalized_path,
-                "platform": sys.platform,
-            },
-        )
+            # Initialize generator (helper call)
+            generator = DocumentationGenerator(self.config)
+
+            # Load model with error handling
+            if not generator.load_model(device):
+                return GenerationResult(
+                    success=False,
+                    error="Failed to load AI model",
+                    metadata={"provider": "local", "device": device},
+                )
+
+            # Generate documentation
+            return generator.generate_documentation(request)
+
+        except Exception as e:
+            # Use error handler helper
+            error_context = {"provider": "local", "model": self.config.model_name}
+            default_error_handler.report(
+                e, "AI generation", code_path=request.source_file, **error_context
+            )
+            return GenerationResult(
+                success=False,
+                error=f"AI generation failed: {str(e)}",
+                metadata=error_context,
+            )
 
     def cleanup(self) -> None:
         """Clean up model resources and release memory."""
