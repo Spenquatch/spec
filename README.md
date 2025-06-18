@@ -19,8 +19,22 @@
 
 ## Installation
 
+### Installation Options
 ```bash
+# Recommended installation (with AI - full functionality)
+pip install spec-cli[ai]
+
+# Full AI with quantization (Linux/Windows with CUDA)
+pip install spec-cli[ai-full]
+
+# Minimal installation (template fallback only)
 pip install spec-cli
+
+# Development installation with AI
+poetry install --extras ai
+
+# Development with full AI (requires compatible platform)
+poetry install --extras ai-full
 ```
 
 ## Quick Start
