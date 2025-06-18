@@ -19,7 +19,12 @@ from .base import GenerationRequest, GenerationResult
 # HuggingFace imports (availability checked by LocalAIProvider)
 try:
     import torch
-    from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
+
+    # Import BitsAndBytesConfig separately to avoid mypy attr-defined error
+    import transformers
+    from transformers import AutoModelForCausalLM, AutoTokenizer
+
+    BitsAndBytesConfig = transformers.BitsAndBytesConfig  # type: ignore[attr-defined]
 
     HF_AVAILABLE = True
 except ImportError:
@@ -27,8 +32,11 @@ except ImportError:
     from typing import TYPE_CHECKING
 
     if TYPE_CHECKING:
+        from typing import Any
+
         import torch
-        from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
+        from transformers import AutoModelForCausalLM, AutoTokenizer
+        # BitsAndBytesConfig already defined above
     else:
         torch = None  # type: ignore[assignment]
         AutoTokenizer = None  # type: ignore[assignment]
@@ -87,7 +95,7 @@ class DocumentationGenerator:
             model_kwargs = self._get_model_kwargs(device)
 
             # Load model with appropriate configuration
-            self.model = AutoModelForCausalLM.from_pretrained(
+            self.model = AutoModelForCausalLM.from_pretrained(  # type: ignore[no-untyped-call]
                 model_name, trust_remote_code=True, cache_dir=cache_dir, **model_kwargs
             )
 
@@ -318,7 +326,7 @@ Focus on accuracy and usefulness for both human developers and AI agents working
         # Platform-aware quantization for memory efficiency
         if self.config.use_4bit and device == "cuda" and BitsAndBytesConfig is not None:
             # 4-bit quantization only supported on CUDA
-            kwargs["quantization_config"] = BitsAndBytesConfig(
+            kwargs["quantization_config"] = BitsAndBytesConfig(  # type: ignore[no-untyped-call]
                 load_in_4bit=True,
                 bnb_4bit_compute_dtype=torch.float16,
                 bnb_4bit_use_double_quant=True,

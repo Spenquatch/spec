@@ -114,7 +114,9 @@ class TestPromptGenerator:
 
     def test_convert_template_to_prompt_invalid_input_type(self):
         """Test convert_template_to_prompt with invalid input type."""
-        with pytest.raises(SpecTemplateError, match="template_content must be a string"):
+        with pytest.raises(
+            SpecTemplateError, match="template_content must be a string"
+        ):
             self.generator.convert_template_to_prompt(123)  # type: ignore
 
     def test_convert_template_to_prompt_empty_content(self):
@@ -206,12 +208,17 @@ More detailed information."""
         """Test generating AI instructions with empty inputs."""
         instructions = self.generator._generate_ai_instructions([], {})
 
-        assert "Generate documentation based on the following template structure:" in instructions
+        assert (
+            "Generate documentation based on the following template structure:"
+            in instructions
+        )
         assert "Guidelines:" in instructions
 
     def test_get_variable_description_known_variables(self):
         """Test getting descriptions for known variables."""
-        assert "Source file name" in self.generator._get_variable_description("filename")
+        assert "Source file name" in self.generator._get_variable_description(
+            "filename"
+        )
         assert "Primary purpose" in self.generator._get_variable_description("purpose")
         assert "Author" in self.generator._get_variable_description("author")
 
@@ -232,7 +239,7 @@ More detailed information."""
         """Test variable substitution in prompt structure."""
         prompt_structure = PromptStructure(
             template_content="Hello {{name}}, your {{item}} is ready!",
-            placeholders=["name", "item"]
+            placeholders=["name", "item"],
         )
         variables = {"name": "John", "item": "order"}
 
@@ -244,7 +251,7 @@ More detailed information."""
         """Test variable substitution with missing variables."""
         prompt_structure = PromptStructure(
             template_content="Hello {{name}}, your {{item}} is ready!",
-            placeholders=["name", "item"]
+            placeholders=["name", "item"],
         )
         variables = {"name": "John"}  # Missing 'item'
 
@@ -256,8 +263,7 @@ More detailed information."""
     def test_substitute_variables_invalid_variables_type(self):
         """Test variable substitution with invalid variables type."""
         prompt_structure = PromptStructure(
-            template_content="{{name}}",
-            placeholders=["name"]
+            template_content="{{name}}", placeholders=["name"]
         )
 
         with pytest.raises(SpecTemplateError, match="variables must be a dictionary"):
@@ -267,7 +273,7 @@ More detailed information."""
         """Test variable substitution with non-string values."""
         prompt_structure = PromptStructure(
             template_content="Count: {{count}}, Active: {{active}}",
-            placeholders=["count", "active"]
+            placeholders=["count", "active"],
         )
         variables = {"count": 42, "active": True}
 
@@ -405,13 +411,9 @@ class TestPromptGeneratorEdgeCases:
         """Test variable substitution with overlapping names."""
         prompt_structure = PromptStructure(
             template_content="{{name}} and {{name_full}} and {{name_short}}",
-            placeholders=["name", "name_full", "name_short"]
+            placeholders=["name", "name_full", "name_short"],
         )
-        variables = {
-            "name": "John",
-            "name_full": "John Doe",
-            "name_short": "J"
-        }
+        variables = {"name": "John", "name_full": "John Doe", "name_short": "J"}
 
         result = self.generator.substitute_variables(prompt_structure, variables)
 

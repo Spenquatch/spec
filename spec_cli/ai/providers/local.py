@@ -4,6 +4,9 @@ import logging
 import sys
 import threading
 
+# Optional HuggingFace imports with graceful fallback
+from typing import TYPE_CHECKING
+
 from ...utils.error_handler import default_error_handler
 from ...utils.platform_utils import get_gpu_capabilities
 from ..analysis.sanitizer import CodeSanitizer
@@ -11,22 +14,25 @@ from ..config.settings import LocalModelConfig
 from .base import AIProvider, GenerationRequest, GenerationResult
 from .generation import DocumentationGenerator
 
-# Optional HuggingFace imports with graceful fallback
 try:
     import torch
-    from transformers import (
-        AutoModelForCausalLM,
-        AutoTokenizer,
-        pipeline,
-    )
+    from transformers import AutoModelForCausalLM, AutoTokenizer
+    from transformers.pipelines import pipeline
 
     HF_AVAILABLE = True
 except ImportError:
     HF_AVAILABLE = False
-    torch = None
-    AutoTokenizer = None
-    AutoModelForCausalLM = None
-    pipeline = None
+
+    if TYPE_CHECKING:
+        import torch
+        from transformers import AutoModelForCausalLM, AutoTokenizer
+        from transformers.pipelines import pipeline
+    else:
+        # Set module-level variables to None when imports fail
+        torch = None
+        AutoTokenizer = None
+        AutoModelForCausalLM = None
+        pipeline = None
 
 logger = logging.getLogger(__name__)
 
@@ -187,18 +193,12 @@ class LocalAIProvider(AIProvider):
         Returns:
             bool: True if system requirements are met
         """
-        if not HF_AVAILABLE:
+        if not HF_AVAILABLE or torch is None:
             return False
 
         try:
-            # Check if torch is working
-            if torch is None:
-                return False
-
             # Basic torch functionality test
-            test_tensor = torch.tensor([1.0])
-            if test_tensor is None:
-                return False
+            _ = torch.tensor([1.0])
 
             # Check available device
             device = self._get_device()
@@ -218,8 +218,8 @@ class LocalAIProvider(AIProvider):
         Returns:
             Optional[str]: Device string or None if no suitable device
         """
-        if torch is None:
-            return None
+        # torch availability already checked by caller
+        assert torch is not None
 
         if self.config.device == "auto":
             # Platform-aware auto-detection of best available device
@@ -227,7 +227,7 @@ class LocalAIProvider(AIProvider):
                 # CUDA detection (Windows/Linux)
                 if torch.cuda.is_available():
                     # Test CUDA actually works
-                    torch.cuda.get_device_count()
+                    torch.cuda.device_count()
                     return "cuda"
             except Exception as e:
                 self.logger.debug("CUDA detection failed: %s", e)

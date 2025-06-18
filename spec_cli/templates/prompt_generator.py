@@ -366,7 +366,7 @@ class PromptGenerator:
 
 
 def convert_template_to_prompt(template_content: str) -> PromptStructure:
-    """Convenience function to convert template content to prompt structure.
+    """Convert template content to prompt structure.
 
     Args:
         template_content: Template content to convert

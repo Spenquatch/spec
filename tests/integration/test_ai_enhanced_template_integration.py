@@ -7,12 +7,11 @@ with AI enhancement, and generating documentation requests.
 import tempfile
 from pathlib import Path
 
-import pytest
-
 from spec_cli.ai.providers.base import GenerationRequest
-from spec_cli.templates.ai_enhanced import AIEnhancedTemplate, create_ai_enhanced_template
-from spec_cli.templates.config import TemplateConfig
-from spec_cli.templates.loader import TemplateLoader
+from spec_cli.templates.ai_enhanced import (
+    AIEnhancedTemplate,
+    create_ai_enhanced_template,
+)
 
 
 class TestAIEnhancedTemplateIntegration:
@@ -44,6 +43,7 @@ class TestClass:
     def teardown_method(self):
         """Clean up temporary files."""
         import shutil
+
         if self.temp_dir.exists():
             shutil.rmtree(self.temp_dir)
 
@@ -148,10 +148,7 @@ class TestClass:
         # Create generation request
         source_content = self.test_source_file.read_text()
         generation_request = template.create_generation_request(
-            self.test_source_file,
-            source_content,
-            result,
-            doc_type="comprehensive"
+            self.test_source_file, source_content, result, doc_type="comprehensive"
         )
 
         # Verify generation request
@@ -190,7 +187,9 @@ Date: {{date}}"""
 
         # Process with AI enhancement disabled
         template = AIEnhancedTemplate()
-        result = template.process_template(traditional_template, variables, ai_enabled=False)
+        result = template.process_template(
+            traditional_template, variables, ai_enabled=False
+        )
 
         # Verify traditional processing works
         assert result.success is True
@@ -207,16 +206,22 @@ Date: {{date}}"""
     def test_template_validation_and_compatibility_check(self):
         """Test template validation and compatibility checking."""
         # Create template with some potential issues
-        problematic_template = """# {{title}}
+        problematic_template = (
+            """# {{title}}
 
 {{'malformed'}}  <!-- This should be flagged -->
 
 {{}}  <!-- Empty placeholder -->
 
-""" + "x" * 5000 + """  <!-- Very long content -->
-
-""" + " ".join([f"{{{{var{i}}}}}" for i in range(15)]) + """  <!-- Many variables -->
 """
+            + "x" * 5000
+            + """  <!-- Very long content -->
+
+"""
+            + " ".join([f"{{{{var{i}}}}}" for i in range(15)])
+            + """  <!-- Many variables -->
+"""
+        )
 
         template = AIEnhancedTemplate()
 
@@ -378,13 +383,13 @@ This is useful for templates that provide structure but no dynamic content.
     def test_template_processing_performance(self):
         """Test that template processing completes within reasonable time."""
         # Create moderately complex template
-        template_content = "# {{title}}\n" + "\n".join([
-            f"## Section {i}\n{{{{content_{i}}}}}" for i in range(10)
-        ])
+        template_content = "# {{title}}\n" + "\n".join(
+            [f"## Section {i}\n{{{{content_{i}}}}}" for i in range(10)]
+        )
 
         variables = {
             "title": "Performance Test",
-            **{f"content_{i}": f"Content for section {i}" for i in range(10)}
+            **{f"content_{i}": f"Content for section {i}" for i in range(10)},
         }
 
         template = AIEnhancedTemplate()

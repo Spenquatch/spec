@@ -174,7 +174,11 @@ def audit():
     """Pip-audit vulnerability scan."""
     print("🔄 Running dependency vulnerability scan...")
     try:
-        subprocess.run(["pip-audit"], check=True)
+        # Ignore GHSA-887c-mr87-cxwp - false positive for torch 2.7.1
+        # See SECURITY.md for detailed analysis
+        subprocess.run(
+            ["pip-audit", "--ignore-vuln", "GHSA-887c-mr87-cxwp"], check=True
+        )
         print("✅ Vulnerability scan passed")
     except subprocess.CalledProcessError:
         print("❌ Vulnerability scan failed")

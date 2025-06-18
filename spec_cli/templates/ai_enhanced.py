@@ -408,7 +408,7 @@ class AIEnhancedTemplate:
 def create_ai_enhanced_template(
     template_path: Path | None = None,
 ) -> AIEnhancedTemplate:
-    """Factory function to create AI-enhanced template processor.
+    """Create AI-enhanced template processor.
 
     Args:
         template_path: Optional path to specific template file

@@ -4,6 +4,8 @@ import logging
 from pathlib import Path
 from unittest.mock import Mock, patch
 
+import pytest
+
 from spec_cli.ai.analysis.sanitizer import CodeSanitizer
 from spec_cli.ai.config.settings import LocalModelConfig
 from spec_cli.ai.providers.base import GenerationRequest, GenerationResult
@@ -220,11 +222,11 @@ class TestLocalAIProviderSystemRequirements:
 
     @patch("spec_cli.ai.providers.local.HF_AVAILABLE", True)
     @patch("spec_cli.ai.providers.local.torch")
-    def test_check_system_requirements_when_tensor_is_none_then_returns_false(
+    def test_check_system_requirements_when_tensor_creation_fails_then_returns_false(
         self, mock_torch
     ):
-        """Test system requirements check when tensor creation returns None."""
-        mock_torch.tensor.return_value = None
+        """Test system requirements check when tensor creation raises exception."""
+        mock_torch.tensor.side_effect = RuntimeError("Torch not properly installed")
         provider = LocalAIProvider()
 
         result = provider._check_system_requirements()
@@ -251,13 +253,16 @@ class TestLocalAIProviderDeviceDetection:
     """Test device detection and platform-specific behavior."""
 
     @patch("spec_cli.ai.providers.local.torch", None)
-    def test_get_device_when_torch_none_then_returns_none(self):
-        """Test device detection when torch is None."""
+    def test_get_device_when_torch_none_then_raises_assertion_error(self):
+        """Test device detection raises assertion error when torch is None.
+
+        _get_device is only called after torch availability is confirmed,
+        so it correctly asserts torch is not None.
+        """
         provider = LocalAIProvider()
 
-        result = provider._get_device()
-
-        assert result is None
+        with pytest.raises(AssertionError):
+            provider._get_device()
 
     @patch("spec_cli.ai.providers.local.torch")
     @patch("spec_cli.ai.providers.local.sys.platform", PLATFORM_LINUX)
@@ -266,7 +271,7 @@ class TestLocalAIProviderDeviceDetection:
     ):
         """Test device detection with auto config and CUDA available."""
         mock_torch.cuda.is_available.return_value = True
-        mock_torch.cuda.get_device_count.return_value = 1
+        mock_torch.cuda.device_count.return_value = 1
         config = LocalModelConfig(device="auto")
         provider = LocalAIProvider(config=config)
 
@@ -274,7 +279,7 @@ class TestLocalAIProviderDeviceDetection:
 
         assert result == MOCK_DEVICE_CUDA
         mock_torch.cuda.is_available.assert_called_once()
-        mock_torch.cuda.get_device_count.assert_called_once()
+        mock_torch.cuda.device_count.assert_called_once()
 
     @patch("spec_cli.ai.providers.local.torch")
     @patch("spec_cli.ai.providers.local.sys.platform", PLATFORM_DARWIN)
@@ -317,7 +322,7 @@ class TestLocalAIProviderDeviceDetection:
     ):
         """Test device detection handling CUDA detection exceptions."""
         mock_torch.cuda.is_available.return_value = True
-        mock_torch.cuda.get_device_count.side_effect = Exception("CUDA error")
+        mock_torch.cuda.device_count.side_effect = Exception("CUDA error")
         config = LocalModelConfig(device="auto")
         provider = LocalAIProvider(config=config)
 

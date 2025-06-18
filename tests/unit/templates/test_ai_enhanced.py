@@ -62,7 +62,9 @@ class TestTemplateResult:
 
     def test_template_result_validation_successful_without_content(self):
         """Test TemplateResult validation for successful result without content."""
-        with pytest.raises(ValueError, match="Successful result must have traditional_content"):
+        with pytest.raises(
+            ValueError, match="Successful result must have traditional_content"
+        ):
             TemplateResult(success=True, traditional_content="")
 
     def test_template_result_validation_failed_without_error(self):
@@ -153,7 +155,9 @@ class TestAIEnhancedTemplate:
 
     def test_process_template_invalid_content_type(self):
         """Test processing template with invalid content type."""
-        with pytest.raises(SpecTemplateError, match="template_content must be a string"):
+        with pytest.raises(
+            SpecTemplateError, match="template_content must be a string"
+        ):
             self.template.process_template(123, {})  # type: ignore
 
     def test_process_template_invalid_variables_type(self):
@@ -165,7 +169,9 @@ class TestAIEnhancedTemplate:
     def test_process_traditional_template_error_handling(self, mock_substitution_class):
         """Test traditional template processing error handling."""
         mock_substitution = Mock()
-        mock_substitution.substitute_variables.side_effect = Exception("Substitution error")
+        mock_substitution.substitute_variables.side_effect = Exception(
+            "Substitution error"
+        )
         mock_substitution_class.return_value = mock_substitution
 
         template = AIEnhancedTemplate()
@@ -188,7 +194,9 @@ class TestAIEnhancedTemplate:
         template = AIEnhancedTemplate()
         template.prompt_generator = mock_generator
 
-        result = template.process_template("{{title}}", {"title": "Test"}, ai_enabled=True)
+        result = template.process_template(
+            "{{title}}", {"title": "Test"}, ai_enabled=True
+        )
 
         assert result.success is False
         assert "AI error" in result.error
@@ -330,8 +338,12 @@ class TestAIEnhancedTemplate:
         source_file = Path("/test/source.py")
         content = "def hello(): pass"
 
-        with pytest.raises(SpecTemplateError, match="Cannot create request from failed template"):
-            self.template.create_generation_request(source_file, content, template_result)
+        with pytest.raises(
+            SpecTemplateError, match="Cannot create request from failed template"
+        ):
+            self.template.create_generation_request(
+                source_file, content, template_result
+            )
 
     def test_get_enhanced_template_info_default(self):
         """Test getting enhanced template information with defaults."""
@@ -429,7 +441,9 @@ class TestAIEnhancedTemplateEdgeCases:
             "features": "- Feature 1\n- Feature 2",
         }
 
-        result = self.template.process_template(template_content, variables, ai_enabled=True)
+        result = self.template.process_template(
+            template_content, variables, ai_enabled=True
+        )
 
         assert result.success is True
         assert "# Test Project Documentation" in result.traditional_content
@@ -468,7 +482,9 @@ class TestAIEnhancedTemplateEdgeCases:
         # Create template with multiple issues
         large_content = "x" * 5000
         many_variables = [f"{{{{var{i}}}}}" for i in range(15)]
-        template_content = f"# Title\n{large_content}\n" + " ".join(many_variables) + "\n{{}}"
+        template_content = (
+            f"# Title\n{large_content}\n" + " ".join(many_variables) + "\n{{}}"
+        )
 
         issues = self.template.validate_template_compatibility(template_content)
 
