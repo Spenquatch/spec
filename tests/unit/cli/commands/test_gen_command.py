@@ -316,7 +316,7 @@ class TestGenCommand:
         command: GenCommand,
         tmp_path: Path,
     ):
-        """Test successful generation execution."""
+        """Test successful generation execution with AI-first approach."""
         # Setup
         test_file = tmp_path / "test.py"
         test_file.touch()
@@ -326,38 +326,24 @@ class TestGenCommand:
                 "spec_cli.cli.commands.generation.validate_generation_input"
             ) as mock_validate:
                 with patch(
-                    "spec_cli.cli.commands.generation.create_generation_workflow"
-                ) as mock_create_workflow:
-                    # Force reload to ensure fresh import with patched functions
-                    import importlib
-                    import sys
-
-                    if "spec_cli.cli.commands.gen_command" in sys.modules:
-                        importlib.reload(
-                            sys.modules["spec_cli.cli.commands.gen_command"]
-                        )
-
-                    from spec_cli.cli.commands.gen_command import GenCommand
-
-                    # Create command inside patch context
-                    command = GenCommand(settings=command.settings)
+                    "spec_cli.cli.commands.gen_command.generate_with_ai"
+                ) as mock_ai_gen:
                     mock_validate.return_value = {
                         "valid": True,
                         "errors": [],
                         "warnings": [],
                     }
 
-                    mock_result = Mock()
-                    mock_result.success = True
-                    mock_result.generated_files = ["file1.md", "file2.md"]
-                    mock_result.skipped_files = []
-                    mock_result.failed_files = []
-                    mock_result.conflicts_resolved = []
-                    mock_result.total_processing_time = 1.5
-
-                    mock_workflow = Mock()
-                    mock_workflow.generate.return_value = mock_result
-                    mock_create_workflow.return_value = mock_workflow
+                    # Mock successful AI generation
+                    ai_success_result = {
+                        "success": True,
+                        "data": {
+                            "generated_docs": {str(test_file): "AI content"},
+                            "generation_metadata": {"files_generated": 1},
+                        },
+                        "message": "AI generation successful",
+                    }
+                    mock_ai_gen.return_value = ai_success_result
 
                     with patch.object(
                         command, "_expand_source_files", return_value=[test_file]
@@ -365,13 +351,13 @@ class TestGenCommand:
                         # Execute
                         result = command.execute(files=[test_file])
 
-                        # Verify
+                        # Verify AI-first generation succeeded
                         assert result["success"] is True
                         assert (
-                            "Generated documentation for 2 files" in result["message"]
+                            "Generated documentation for 1 files" in result["message"]
                         )
-                        assert result["data"]["generated"] == ["file1.md", "file2.md"]
-                        assert result["data"]["processing_time"] == 1.5
+                        assert result["data"]["successful_files"] == 1
+                        assert result["data"]["failed_files"] == 0
 
     def test_safe_execute_integration_when_valid_files_then_succeeds(
         self, mock_settings: Mock, tmp_path: Path
