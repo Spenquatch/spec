@@ -1,6 +1,6 @@
 # Slice 4.1b: Semantic Embeddings & Search
 
-**Goal**: Implement AI-powered semantic search using embeddings and vector similarity
+**Goal**: Implement AI-powered semantic search using Qwen3-Emb-0.6B embeddings and vector similarity
 
 **Slice Type**: AI/ML Search Engine
 
@@ -9,8 +9,8 @@
 - spec_cli/utils/platform_utils.py → get_gpu_capabilities() for embedding computation device selection
 - spec_cli/utils/workflow_utils.py → create_workflow_result() for result handling
 - spec_cli/ai/config/loader.py → ConfigLoader (existing, from slice 1b)
-- Results from Slice 4.1a for file index and discovered documentation
-- Create helper: spec_cli/ai/context/embeddings.py → generate_embeddings(text: str) → "Generate vector embeddings using AI model"
+- Results from Slice 4.1a for file index and discovered documentation (FileIndexManager, DocumentationDiscovery)
+- Create helper: spec_cli/ai/context/embeddings.py → generate_embeddings(text: str) → "Generate vector embeddings using Qwen3-Emb-0.6B model"
 
 **Complexity Analysis:**
 - Decision points: 6/7 (embeddings_available, gpu_available, similarity_threshold, result_filtering, error handling)
@@ -33,12 +33,13 @@
 - spec_cli/ai/context/semantic_search.py (new - semantic search engine using embeddings)
 
 **Dependencies**:
-- Receives file index and discovered files from Slice 4.1a
+- Receives file index and discovered files from Slice 4.1a (FileIndexManager, DocumentationDiscovery)
 - Uses existing AI configuration from slice 1b
-- No additional external integrations beyond AI model (handled by existing provider)
+- Leverages search index core from Slice 4.1a (.spec/search_index.json)
+- Qwen3-Emb-0.6B model for embedding generation (complements existing Qwen2.5-Coder)
 
 **Classes**: 2 (EmbeddingGenerator, SemanticSearchEngine)
-**External Integrations**: 1 (AI model for embedding generation - via existing AI provider)
+**External Integrations**: 1 (Qwen3-Emb-0.6B embedding model via HuggingFace transformers)
 
 **Test Requirements:**
 - **Unit Tests**: Embedding generation, vector similarity calculation, search ranking, threshold filtering, GPU/CPU fallback
@@ -58,16 +59,19 @@
 - Performance: Semantic search completes within 5 seconds for typical documentation sets
 
 **Integration Validation:**
-Use file index from Slice 4.1a, generate embeddings for documents and queries, perform semantic similarity search, and return ranked results that demonstrate semantic understanding beyond keyword matching.
+Use FileIndexManager and DocumentationDiscovery from Slice 4.1a, extend search index with Qwen3-Emb-0.6B embeddings, perform semantic similarity search, and return ranked results that demonstrate semantic understanding beyond keyword matching. Results should integrate seamlessly with existing file index structure.
 
 **Expected Implementation Pattern:**
 ```python
 class EmbeddingGenerator:
-    """Generate text embeddings using AI models."""
+    """Generate text embeddings using Qwen3-Emb-0.6B model."""
 
     def __init__(self, ai_config: AIConfig):
         self.ai_config = ai_config
         self.device = self._select_device()
+        self.model_name = "Qwen/Qwen3-Emb-0.6B"
+        self.model = None
+        self.tokenizer = None
 
     def _select_device(self) -> str:
         """Select best available device for embedding generation."""
@@ -80,8 +84,26 @@ class EmbeddingGenerator:
         else:
             return "cpu"
 
+    def _load_model(self) -> bool:
+        """Load Qwen3-Emb-0.6B model if not already loaded."""
+        try:
+            if self.model is None:
+                from transformers import AutoModel, AutoTokenizer
+                self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
+                self.model = AutoModel.from_pretrained(
+                    self.model_name,
+                    trust_remote_code=True,
+                    device_map=self.device if self.device != "cpu" else None
+                )
+                if self.device == "cpu":
+                    self.model = self.model.to("cpu")
+            return True
+        except Exception as e:
+            logger.error(f"Failed to load embedding model: {e}")
+            return False
+
     def generate_embeddings(self, text: str) -> WorkflowResult:
-        """Generate vector embeddings for text content."""
+        """Generate vector embeddings for text content using Qwen3-Emb-0.6B."""
         try:
             # Validate AI configuration (decision point 2)
             if not self.ai_config.enabled:
@@ -90,29 +112,34 @@ class EmbeddingGenerator:
                     error="AI embeddings disabled in configuration"
                 )
 
-            # Generate embeddings using AI provider (decision point 3 + try/except)
-            # Use existing AI provider infrastructure
-            embedding_provider = self._get_embedding_provider()
-            if not embedding_provider:
+            # Load model if needed (decision point 3 + try/except)
+            if not self._load_model():
                 return create_workflow_result(
                     success=False,
-                    error="No embedding provider available"
+                    error="Failed to load Qwen3-Emb-0.6B embedding model"
                 )
 
-            embeddings = embedding_provider.generate_embeddings(
-                text=text,
-                device=self.device
-            )
+            # Generate embeddings using Qwen3-Emb-0.6B
+            inputs = self.tokenizer(text, return_tensors="pt", truncation=True, max_length=512)
+            if self.device != "cpu":
+                inputs = {k: v.to(self.device) for k, v in inputs.items()}
+
+            with torch.no_grad():
+                outputs = self.model(**inputs)
+                # Use mean pooling of last hidden states for sentence embedding
+                embeddings = outputs.last_hidden_state.mean(dim=1).squeeze().cpu().numpy()
 
             return create_workflow_result(
                 success=True,
                 data={
-                    "embeddings": embeddings,
+                    "embeddings": embeddings.tolist(),
                     "text_length": len(text),
                     "device_used": self.device,
+                    "model_name": self.model_name,
+                    "embedding_dimension": len(embeddings),
                     "generation_time": datetime.now().isoformat()
                 },
-                message=f"Generated embeddings on {self.device}"
+                message=f"Generated embeddings on {self.device} using {self.model_name}"
             )
 
         except Exception as e:  # try/except block
@@ -192,7 +219,11 @@ class SemanticSearchEngine:
 
     def _get_document_embedding(self, file_path: str, file_info: Dict) -> Optional[List[float]]:
         """Get cached or generate document embedding."""
-        # Check cache first
+        # Check if embedding exists in file_info from index (persistent storage)
+        if "embeddings" in file_info:
+            return file_info["embeddings"]
+
+        # Check runtime cache
         if file_path in self.embeddings_cache:
             return self.embeddings_cache[file_path]
 
@@ -200,11 +231,14 @@ class SemanticSearchEngine:
             # Read full document content
             content = Path(file_path).read_text(encoding='utf-8')
 
-            # Generate embedding
+            # Generate embedding using Qwen3-Emb-0.6B
             embedding_result = self.embedder.generate_embeddings(content)
             if embedding_result.success:
                 embedding = embedding_result.data["embeddings"]
                 self.embeddings_cache[file_path] = embedding
+
+                # Note: In production, embeddings should be persisted back to the search index
+                # This would be handled by extending FileIndexManager to store embeddings
                 return embedding
 
         except Exception as e:
@@ -232,14 +266,13 @@ class SemanticSearchEngine:
 
 def perform_semantic_search(query: str, max_results: int = 10,
                            similarity_threshold: float = 0.7) -> WorkflowResult:
-    """Main semantic search function combining file index and embedding search."""
+    """Main semantic search function combining file index from 4.1a and Qwen3-Emb embeddings."""
     try:
         # Load AI configuration (decision point + try/except)
         config_loader = ConfigLoader()
         ai_config = config_loader.load_ai_config()
 
-        # Get file index from Slice 4.1a
-        # This would be passed in from the calling context
+        # Use FileIndexManager and DocumentationDiscovery from Slice 4.1a
         file_discovery = DocumentationDiscovery()
         discovery_result = file_discovery.discover_documentation()
 
@@ -248,17 +281,18 @@ def perform_semantic_search(query: str, max_results: int = 10,
 
         file_index_manager = FileIndexManager()
         if file_index_manager.needs_rebuild():
+            # Build fresh index including files for embedding generation
             index_result = file_index_manager.build_file_index(
-                discovery_result.data["discovered_files"]
+                discovery_result["successful_files"]
             )
             if not index_result.success:
                 return index_result
-            file_index_data = index_result.data
+            file_index_data = json.loads(file_index_manager.index_path.read_text())
         else:
-            # Load existing index
+            # Load existing search index from .spec/search_index.json
             file_index_data = json.loads(file_index_manager.index_path.read_text())
 
-        # Perform semantic search
+        # Perform semantic search with Qwen3-Emb-0.6B embeddings
         search_engine = SemanticSearchEngine(ai_config)
         return search_engine.search(query, file_index_data, max_results, similarity_threshold)
 
@@ -269,4 +303,4 @@ def perform_semantic_search(query: str, max_results: int = 10,
         )
 ```
 
-This sub-slice focuses on the AI/ML complexity of embedding generation and semantic similarity search while leveraging the clean file index foundation from slice 4.1a.
+This sub-slice focuses on the AI/ML complexity of Qwen3-Emb-0.6B embedding generation and semantic similarity search while leveraging and extending the clean file index foundation from slice 4.1a. The design maintains compatibility with existing search index structure while adding semantic capabilities through embeddings stored alongside traditional file metadata.

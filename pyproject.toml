@@ -147,8 +147,14 @@ warn_unused_ignores = false
 
 # Optional AI dependencies
 [[tool.mypy.overrides]]
-module = ["torch", "transformers", "transformers.*"]
+module = ["torch", "transformers", "transformers.*", "numpy"]
 ignore_missing_imports = true
+
+# AI context modules with optional dependencies
+[[tool.mypy.overrides]]
+module = ["spec_cli.ai.context.embeddings", "spec_cli.ai.context.semantic_search"]
+ignore_missing_imports = true
+warn_unused_ignores = false
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]

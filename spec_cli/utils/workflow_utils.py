@@ -3,6 +3,9 @@
 from pathlib import Path
 from typing import Any
 
+# Type alias for workflow results
+WorkflowResult = dict[str, Any]
+
 # Direct implementation to avoid cross-layer dependency
 
 

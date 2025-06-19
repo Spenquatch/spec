@@ -19,11 +19,12 @@ def dev_setup():
 
 
 def type_check():
-    """MyPy strict type checking."""
+    """MyPy type checking (aligned with pre-commit configuration)."""
     print("🔄 Running MyPy type check...")
     try:
         subprocess.run(
-            ["mypy", "spec_cli/", "--strict", "--no-error-summary"], check=True
+            ["mypy", "spec_cli/", "--python-version=3.10", "--no-error-summary"],
+            check=True,
         )
         print("✅ Type check passed")
     except subprocess.CalledProcessError:
