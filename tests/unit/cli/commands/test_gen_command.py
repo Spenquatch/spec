@@ -273,43 +273,29 @@ class TestGenCommand:
         test_file.touch()
 
         with patch("spec_cli.ui.error_display.show_message"):
-            with patch("spec_cli.cli.utils.get_user_confirmation") as mock_confirm:
+            with patch(
+                "spec_cli.cli.commands.gen_command.get_user_confirmation"
+            ) as mock_confirm:
                 with patch(
-                    "spec_cli.cli.commands.generation.validate_generation_input"
+                    "spec_cli.cli.commands.gen_command.validate_generation_input"
                 ) as mock_validate:
-                    with patch(
-                        "spec_cli.cli.commands.generation.create_generation_workflow"
+                    mock_validate.return_value = {
+                        "valid": True,
+                        "errors": [],
+                        "warnings": ["Large file detected"],
+                    }
+                    mock_confirm.return_value = False  # User cancels
+
+                    with patch.object(
+                        command, "_expand_source_files", return_value=[test_file]
                     ):
-                        # Force reload to ensure fresh import with patched functions
-                        import importlib
-                        import sys
+                        # Execute
+                        result = command.execute(files=[test_file], force=False)
 
-                        if "spec_cli.cli.commands.gen_command" in sys.modules:
-                            importlib.reload(
-                                sys.modules["spec_cli.cli.commands.gen_command"]
-                            )
-
-                        from spec_cli.cli.commands.gen_command import GenCommand
-
-                        # Create command inside patch context
-                        command = GenCommand(settings=command.settings)
-                        mock_validate.return_value = {
-                            "valid": True,
-                            "errors": [],
-                            "warnings": ["Large file detected"],
-                        }
-                        mock_confirm.return_value = False  # User cancels
-
-                        with patch.object(
-                            command, "_expand_source_files", return_value=[test_file]
-                        ):
-                            # Execute
-                            result = command.execute(files=[test_file], force=False)
-
-                            # Verify
-                            assert result["success"] is False
-                            assert "cancelled due to warnings" in result["message"]
-                            mock_confirm.assert_called_once()
+                        # Verify
+                        assert result["success"] is False
+                        assert "cancelled due to warnings" in result["message"]
+                        mock_confirm.assert_called_once()
 
     def test_execute_when_successful_then_returns_success_result(
         self,
@@ -323,7 +309,7 @@ class TestGenCommand:
 
         with patch("spec_cli.ui.error_display.show_message"):
             with patch(
-                "spec_cli.cli.commands.generation.validate_generation_input"
+                "spec_cli.cli.commands.gen_command.validate_generation_input"
             ) as mock_validate:
                 with patch(
                     "spec_cli.cli.commands.gen_command.generate_with_ai"
@@ -362,50 +348,41 @@ class TestGenCommand:
     def test_safe_execute_integration_when_valid_files_then_succeeds(
         self, mock_settings: Mock, tmp_path: Path
     ):
-        """Test full safe_execute integration."""
+        """Test full safe_execute integration with AI-first approach."""
         # Setup
         test_file = tmp_path / "test.py"
         test_file.touch()
 
-        with patch(
-            "spec_cli.cli.commands.generation.create_generation_workflow"
-        ) as mock_create:
+        with patch("spec_cli.ui.error_display.show_message"):
             with patch(
-                "spec_cli.cli.commands.generation.validate_generation_input"
+                "spec_cli.cli.commands.gen_command.validate_generation_input"
             ) as mock_validate:
-                # Force reload to ensure fresh import with patched functions
-                import importlib
-                import sys
+                with patch(
+                    "spec_cli.cli.commands.gen_command.generate_with_ai"
+                ) as mock_ai_gen:
+                    mock_validate.return_value = {
+                        "valid": True,
+                        "errors": [],
+                        "warnings": [],
+                    }
 
-                if "spec_cli.cli.commands.gen_command" in sys.modules:
-                    importlib.reload(sys.modules["spec_cli.cli.commands.gen_command"])
+                    # Mock successful AI generation
+                    ai_success_result = {
+                        "success": True,
+                        "data": {
+                            "generated_docs": {str(test_file): "AI content"},
+                            "generation_metadata": {"files_generated": 1},
+                        },
+                        "message": "AI generation successful",
+                    }
+                    mock_ai_gen.return_value = ai_success_result
 
-                from spec_cli.cli.commands.gen_command import GenCommand
+                    command = GenCommand(settings=mock_settings)
 
-                mock_validate.return_value = {
-                    "valid": True,
-                    "errors": [],
-                    "warnings": [],
-                }
+                    with patch.object(
+                        command, "_expand_source_files", return_value=[test_file]
+                    ):
+                        result = command.safe_execute(files=[test_file])
 
-                mock_result = Mock()
-                mock_result.success = True
-                mock_result.generated_files = ["file1.md"]
-                mock_result.skipped_files = []
-                mock_result.failed_files = []
-                mock_result.conflicts_resolved = []
-                mock_result.total_processing_time = 1.0
-
-                mock_workflow = Mock()
-                mock_workflow.generate.return_value = mock_result
-                mock_create.return_value = mock_workflow
-
-                command = GenCommand(settings=mock_settings)
-
-                with patch.object(
-                    command, "_expand_source_files", return_value=[test_file]
-                ):
-                    result = command.safe_execute(files=[test_file])
-
-                    assert result["success"] is True
-                    assert result["command"] == "gen"
+                        assert result["success"] is True
+                        assert result["command"] == "gen"
