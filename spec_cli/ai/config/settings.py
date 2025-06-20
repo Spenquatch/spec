@@ -64,6 +64,15 @@ class LocalModelConfig(BaseModel):
         return normalized_path
 
 
+class MonitoringConfig(BaseModel):
+    """Configuration for AI performance monitoring."""
+
+    enabled: bool = Field(default=False, description="Enable performance monitoring")
+    overhead_limit_percent: float = Field(
+        default=5.0, ge=0.0, le=20.0, description="Maximum overhead percentage"
+    )
+
+
 class AIConfig(BaseModel):
     """AI integration configuration - AI is the primary documentation engine."""
 
@@ -76,6 +85,7 @@ class AIConfig(BaseModel):
     )
     local: LocalModelConfig = Field(default_factory=LocalModelConfig)
     security: SecurityConfig = Field(default_factory=SecurityConfig)
+    monitoring: MonitoringConfig = Field(default_factory=MonitoringConfig)
     fallback_to_templates: bool = Field(
         default=True, description="Use template fallback when AI unavailable"
     )
