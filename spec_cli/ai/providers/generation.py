@@ -72,13 +72,25 @@ class DocumentationGenerator:
         Returns:
             bool: True if model loaded successfully
         """
+        print(
+            f"PRINT TRACE: DocumentationGenerator.load_model called with device={device}"
+        )
         if not HF_AVAILABLE:
+            print("PRINT TRACE: HF_AVAILABLE is False, returning False")
             logger.error("HuggingFace dependencies not available")
             return False
 
+        print("PRINT TRACE: HF_AVAILABLE is True, proceeding with model loading")
+        print(
+            f"PRINT TRACE: Current model state: self.model={self.model is not None}, self.tokenizer={self.tokenizer is not None}"
+        )
+
+        logger.info(f"ATTEMPTING TO LOAD AI MODEL - HF_AVAILABLE: {HF_AVAILABLE}")
+        print("PRINT TRACE: Starting actual model loading process")
         try:
             self.device = device
             model_name = self.config.model_name
+            print(f"PRINT TRACE: Loading model {model_name} on {device}")
 
             logger.info(f"Loading model {model_name} on {device}...")
             start_time = time.time()
@@ -100,11 +112,16 @@ class DocumentationGenerator:
             )
 
             load_time = time.time() - start_time
+            print(f"PRINT TRACE: Model loading completed in {load_time:.1f}s")
             logger.info(f"Model loaded successfully in {load_time:.1f}s")
+            print(
+                f"PRINT TRACE: Final model state: self.model={self.model is not None}, self.tokenizer={self.tokenizer is not None}"
+            )
 
             return True
 
         except Exception as e:
+            print(f"PRINT TRACE: Exception during model loading: {e}")
             logger.error(f"Failed to load model: {e}")
             self.model = None
             self.tokenizer = None
@@ -119,28 +136,44 @@ class DocumentationGenerator:
         Returns:
             GenerationResult: Generated documentation result
         """
+        print("PRINT TRACE: DocumentationGenerator.generate_documentation called")
         if self.model is None or self.tokenizer is None:
+            print("PRINT TRACE: Model not loaded, returning error")
+            logger.error("Model not loaded - call load_model() first")
             return GenerationResult(
                 success=False, error="Model not loaded - call load_model() first"
             )
 
+        print("PRINT TRACE: Model is loaded, proceeding with generation")
         start_time = time.time()
 
         try:
             # Create documentation prompt
+            normalized_path = normalize_path_separators(str(request.source_file))
+            print(f"PRINT TRACE: Starting AI generation for {normalized_path}")
+            logger.info(f"Starting AI generation for {normalized_path}")
             prompt = self._create_documentation_prompt(request)
+            print(f"PRINT TRACE: Created prompt with length: {len(prompt)}")
+            print(f"PRINT TRACE: Prompt preview (first 500 chars): {prompt[:500]}")
+            print(f"PRINT TRACE: Prompt ending (last 200 chars): {prompt[-200:]}")
+            logger.info(f"Created prompt with length: {len(prompt)}")
 
             # Generate content using AI model
+            print("PRINT TRACE: Calling _generate_with_model")
             generated_text = self._generate_with_model(prompt)
+            print(f"PRINT TRACE: Generated text length: {len(generated_text)}")
 
             # Parse and structure the output
+            print("PRINT TRACE: Parsing generated content")
             structured_content = self._parse_generated_content(generated_text, request)
+            print(
+                f"PRINT TRACE: Structured content keys: {list(structured_content.keys())}"
+            )
 
             processing_time = int((time.time() - start_time) * 1000)
             self._generation_count += 1
 
             # Use normalized path for consistent logging across platforms
-            normalized_path = normalize_path_separators(str(request.source_file))
             logger.info(
                 f"Generated documentation for {normalized_path} in {processing_time}ms"
             )
@@ -173,7 +206,7 @@ class DocumentationGenerator:
         """Create prompt for documentation generation.
 
         Args:
-            request: Generation request with code content
+            request: Generation request with code content and optional template
 
         Returns:
             str: Formatted prompt for AI model
@@ -183,7 +216,35 @@ class DocumentationGenerator:
         file_extension = request.get_file_extension()
         language = self._detect_language(file_extension)
 
-        # Base prompt for comprehensive documentation
+        # If template content is provided, use it as the primary prompt structure
+        if request.template_content and request.template_content.strip():
+            # Use simplified prompt format better suited for Qwen2.5-Coder
+            print(
+                "PRINT TRACE: Using simplified prompt format for better compatibility"
+            )
+
+            # Simple, direct instruction without complex template
+            prompt = f"""Analyze this Python code and write documentation:
+
+```python
+{request.content[:1000]}
+```
+
+Write a markdown documentation that includes:
+- Purpose and main functionality
+- Key functions and classes
+- Usage examples
+
+Documentation:"""
+
+            logger.info(f"Using template-driven prompt for {normalized_path}")
+            logger.debug(
+                f"Template content (first 500 chars): {request.template_content[:500]}"
+            )
+            logger.debug(f"Source content (first 200 chars): {request.content[:200]}")
+            return prompt
+
+        # Fallback to default prompt if no template provided
         prompt = f"""You are an expert technical writer creating comprehensive documentation for {language} code.
 
 Generate structured documentation that helps both human developers and AI agents understand this code.
@@ -217,6 +278,7 @@ Generate documentation in this exact format:
 
 Focus on accuracy and usefulness for both human developers and AI agents working with this codebase."""
 
+        logger.info(f"Using default prompt for {normalized_path}")
         return prompt
 
     def _generate_with_model(self, prompt: str) -> str:
@@ -228,21 +290,29 @@ Focus on accuracy and usefulness for both human developers and AI agents working
         Returns:
             str: Generated text from model
         """
+        print("PRINT TRACE: _generate_with_model called")
         # Tokenize input
         if self.tokenizer is None:
+            print("PRINT TRACE: Tokenizer not loaded!")
             raise RuntimeError("Tokenizer not loaded")
 
+        print(f"PRINT TRACE: Tokenizing prompt (length={len(prompt)})")
         inputs = self.tokenizer(
             prompt,
             return_tensors="pt",
             truncation=True,
             max_length=2048,  # Leave room for generation
         )
+        print(f"PRINT TRACE: Tokenized input shape: {inputs['input_ids'].shape}")
 
         if self.device != "cpu":
+            print(f"PRINT TRACE: Moving inputs to device: {self.device}")
             inputs = {k: v.to(self.device) for k, v in inputs.items()}
 
         # Generate with model
+        print(
+            f"PRINT TRACE: Starting model generation (max_tokens={self.config.max_tokens}, temp={self.config.temperature})"
+        )
         if torch is not None and self.model is not None:
             with torch.no_grad():
                 outputs = self.model.generate(
@@ -253,16 +323,35 @@ Focus on accuracy and usefulness for both human developers and AI agents working
                     pad_token_id=self.tokenizer.eos_token_id,
                     eos_token_id=self.tokenizer.eos_token_id,
                 )
+                print(
+                    f"PRINT TRACE: Model generation completed, output shape: {outputs.shape}"
+                )
         else:
             # This should not happen in normal operation since model loading checks HF_AVAILABLE
+            print("PRINT TRACE: PyTorch or model not available!")
             raise RuntimeError("PyTorch not available for model generation")
 
         # Decode output (remove input prompt)
         input_length = inputs["input_ids"].shape[1]
         generated_tokens = outputs[0][input_length:]
+        print(
+            f"PRINT TRACE: Input length: {input_length}, generated tokens length: {len(generated_tokens)}"
+        )
+        print(f"PRINT TRACE: Generated token IDs: {generated_tokens.tolist()}")
+        print(f"PRINT TRACE: EOS token ID: {self.tokenizer.eos_token_id}")
+
+        # Decode with and without special tokens to see what's happening
+        generated_text_with_special = self.tokenizer.decode(
+            generated_tokens, skip_special_tokens=False
+        )
         generated_text = self.tokenizer.decode(
             generated_tokens, skip_special_tokens=True
         )
+        print(
+            f"PRINT TRACE: Generated text with special tokens: '{generated_text_with_special}'"
+        )
+        print(f"PRINT TRACE: Generated text without special tokens: '{generated_text}'")
+        print(f"PRINT TRACE: Decoded text length: {len(generated_text)}")
 
         return generated_text.strip()
 
@@ -280,6 +369,8 @@ Focus on accuracy and usefulness for both human developers and AI agents working
         """
         # For now, put all content in index.md
         # Future enhancement could parse sections into separate files
+        logger.info(f"Generated text length: {len(generated_text)}")
+        logger.info(f"Generated text (first 200 chars): {generated_text[:200]}")
         content = {"index.md": generated_text}
 
         # Add minimal history entry with normalized path

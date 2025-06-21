@@ -9,6 +9,7 @@ import click
 from ..ui.console import get_console
 from .commands import help_command, init_command, status_command
 from .commands.add import add_command
+from .commands.agent_scope import agent_scope_command
 from .commands.commit import commit_command
 from .commands.diff import diff_command
 from .commands.gen import gen_command
@@ -63,6 +64,7 @@ app.add_command(help_command, name="help")
 app.add_command(gen_command, name="gen")
 app.add_command(regen_command, name="regen")
 app.add_command(add_command, name="add")
+app.add_command(agent_scope_command, name="agent-scope")
 app.add_command(diff_command, name="diff")
 app.add_command(log_command, name="log")
 app.add_command(show_command, name="show")

@@ -165,7 +165,10 @@ class PlaceholderAIProvider(AIContentProvider):
             "architecture",
             "patterns",
         ]
-        debug_logger.log("INFO", "PlaceholderAIProvider initialized")
+        debug_logger.log(
+            "INFO",
+            "PlaceholderAIProvider initialized (DEPRECATED - should use new AI system)",
+        )
 
     def generate_content(
         self,
@@ -328,11 +331,16 @@ class AIContentManager:
         """
         self.settings = settings or get_settings()
         self.providers: dict[str, AIContentProvider] = {}
-        self.default_provider = PlaceholderAIProvider()
-        self.enabled = False
+        # DISABLED: Use new AI system in spec_cli/ai/ instead
+        self.default_provider = None  # Disable PlaceholderAIProvider
+        self.enabled = False  # Force disabled - use new AI system
         self.preferred_provider: str | None = None
 
-        debug_logger.log("INFO", "AIContentManager initialized", enabled=self.enabled)
+        debug_logger.log(
+            "INFO",
+            "OLD AIContentManager initialized (DISABLED - using new AI system)",
+            enabled=self.enabled,
+        )
 
     def register_provider(self, name: str, provider: AIContentProvider) -> None:
         """Register an AI content provider.

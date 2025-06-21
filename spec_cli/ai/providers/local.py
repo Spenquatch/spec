@@ -96,22 +96,32 @@ class LocalAIProvider(AIProvider):
         Returns:
             GenerationResult: Documentation generation result
         """
+        self.logger.debug("TRACE: LocalAIProvider.generate_documentation() called")
+        print("PRINT TRACE: LocalAIProvider.generate_documentation() ACTUALLY CALLED")
+
         if not self.is_available():
+            self.logger.debug("TRACE: Provider not available, returning error")
             return GenerationResult(
                 success=False,
                 error="Local AI provider is not available - missing dependencies or insufficient resources",
             )
 
+        self.logger.debug("TRACE: Provider is available, proceeding with validation")
+
         # Validate request
         try:
             self.validate_request(request)
+            self.logger.debug("TRACE: Request validation passed")
         except ValueError as e:
+            self.logger.debug(f"TRACE: Request validation failed: {e}")
             return GenerationResult(success=False, error=f"Invalid request: {e}")
 
         # Sanitize content for security
         try:
             self.sanitizer.sanitize(request.content, request.source_file)
+            self.logger.debug("TRACE: Content sanitization passed")
         except ValueError as e:
+            self.logger.debug(f"TRACE: Content sanitization failed: {e}")
             return GenerationResult(
                 success=False, error=f"Content sanitization failed: {e}"
             )
@@ -126,22 +136,43 @@ class LocalAIProvider(AIProvider):
             else:
                 device = "cpu"
 
+            self.logger.debug(f"TRACE: Device selected: {device}")
+
             # Initialize generator (helper call)
             generator = DocumentationGenerator(self.config)
+            self.logger.debug("TRACE: DocumentationGenerator created")
 
             # Load model with error handling
-            if not generator.load_model(device):
+            self.logger.debug("TRACE: About to call generator.load_model()")
+            print(f"PRINT TRACE: About to call generator.load_model({device})")
+            load_result = generator.load_model(device)
+            print(f"PRINT TRACE: generator.load_model returned: {load_result}")
+            if not load_result:
+                self.logger.debug("TRACE: Model loading failed")
+                print("PRINT TRACE: Model loading failed, returning error")
                 return GenerationResult(
                     success=False,
                     error="Failed to load AI model",
                     metadata={"provider": "local", "device": device},
                 )
 
+            self.logger.debug(
+                "TRACE: Model loading succeeded, calling generate_documentation()"
+            )
+            print(
+                "PRINT TRACE: Model loading succeeded, calling generator.generate_documentation()"
+            )
             # Generate documentation
-            return generator.generate_documentation(request)
+            result = generator.generate_documentation(request)
+            print(f"PRINT TRACE: Generator returned result: success={result.success}")
+            self.logger.debug(
+                f"TRACE: Generator returned result: success={result.success}"
+            )
+            return result
 
         except Exception as e:
             # Use error handler helper
+            self.logger.debug(f"TRACE: Exception in generate_documentation: {e}")
             error_context = {"provider": "local", "model": self.config.model_name}
             default_error_handler.report(
                 e, "AI generation", code_path=request.source_file, **error_context
@@ -284,7 +315,7 @@ class LocalAIProvider(AIProvider):
             "max_tokens": self.config.max_tokens,
             "temperature": self.config.temperature,
             "use_4bit": self.config.use_4bit,
-            "device": self._get_device(),
+            "device": self._get_device() if torch is not None else "unavailable",
             "model_loaded": self._model_loaded,
             "resources_allocated": self._resources_allocated,
             "torch_available": torch is not None,

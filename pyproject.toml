@@ -37,15 +37,11 @@ typing-extensions = "^4.14.0"
 platformdirs = "^4.3.8"
 pluggy = "^1.6.0"
 
-# Optional AI dependencies
-torch = {version = "^2.0.0", optional = true}
-transformers = {version = "^4.40.0", optional = true}
-bitsandbytes = {version = "^0.43.0", optional = true}
-accelerate = {version = "^0.30.0", optional = true}
-
-[tool.poetry.extras]
-ai = ["torch", "transformers", "accelerate"]
-ai-full = ["torch", "transformers", "bitsandbytes", "accelerate"]
+# Core AI dependencies - automatically selected based on platform
+torch = "^2.0.0"
+transformers = "^4.40.0"
+accelerate = "^0.30.0"
+# bitsandbytes excluded - not available on macOS ARM64, will use alternative quantization
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.4.0"

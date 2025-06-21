@@ -4,7 +4,6 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from ...ai.generation.ai_generator import generate_with_ai
 from ...ai.providers.manager import create_workflow_result
 from ...config.settings import SpecSettings
 from ...exceptions import SpecError
@@ -233,11 +232,25 @@ class GenCommand(BaseCommand):
                     reason="AI disabled by user",
                 )
 
-            # Attempt AI generation first (from Slice 3.1a)
-            ai_result = generate_with_ai(target_path, doc_type)
+            # Attempt AI generation first using templates as prompts (from Slice 3.1a)
+            debug_logger.log(
+                "INFO",
+                "Attempting AI generation with templates",
+                target_path=str(target_path),
+            )
+            ai_result = self._generate_with_ai_templates(
+                target_path, doc_type, template_path
+            )
+            debug_logger.log(
+                "INFO",
+                "AI generation result",
+                success=ai_result["success"],
+                error=ai_result.get("error", "None"),
+            )
 
             # Check if AI succeeded (decision point 2)
             if ai_result["success"]:
+                debug_logger.log("INFO", "AI generation successful, finalizing results")
                 return self._finalize_ai_results(ai_result, target_path)
 
             # Check if fallback is needed (decision point 3)
@@ -353,31 +366,226 @@ class GenCommand(BaseCommand):
                 success=False, error=f"Template generation failed: {str(e)}"
             )
 
+    def _generate_with_ai_templates(
+        self, target_path: Path, doc_type: str, template_path: Path | None
+    ) -> dict[str, Any]:
+        """Generate documentation using AI with templates as prompts.
+
+        Args:
+            target_path: Path to the source file
+            doc_type: Type of documentation to generate
+            template_path: Optional path to specific template
+
+        Returns:
+            Workflow result with AI-generated content using template prompts
+        """
+        try:
+            # Load and process template first
+            from ...templates.ai_enhanced import AIEnhancedTemplate
+
+            ai_template = AIEnhancedTemplate(template_path)
+            variables = self._create_template_variables(target_path)
+
+            # Process template to get AI prompt structure
+            template_result = ai_template.load_and_process_template(
+                variables=variables, ai_enabled=True
+            )
+
+            if not template_result.success:
+                debug_logger.log(
+                    "WARNING",
+                    "Template processing failed, falling back to direct AI generation",
+                    target_path=str(target_path),
+                    error=template_result.error,
+                )
+                # Fall back to direct AI generation without templates
+                from ...ai.generation.ai_generator import generate_with_ai
+
+                return generate_with_ai(target_path, doc_type)
+
+            # Read source file content
+            try:
+                source_content = target_path.read_text(encoding="utf-8")
+            except UnicodeDecodeError:
+                try:
+                    source_content = target_path.read_text(encoding="latin-1")
+                except Exception as e:
+                    return create_workflow_result(
+                        success=False,
+                        error=f"Failed to read source file: {e}",
+                        data={"fallback_needed": True},
+                    )
+
+            # Create AI generation request with template content as prompt
+            generation_request = ai_template.create_generation_request(
+                source_file=target_path,
+                content=source_content,
+                template_result=template_result,
+                doc_type=doc_type,
+            )
+
+            debug_logger.log(
+                "INFO",
+                "Using template-based AI generation",
+                target_path=str(target_path),
+                template_size=len(generation_request.template_content or ""),
+                has_ai_enhancement=template_result.has_ai_enhancement(),
+            )
+
+            # Generate using AI with template prompts
+            debug_logger.log(
+                "INFO",
+                "Calling generate_with_ai_request",
+                template_size=len(generation_request.template_content or ""),
+            )
+            from ...ai.generation.ai_generator import generate_with_ai_request
+
+            result = generate_with_ai_request(generation_request)
+            debug_logger.log(
+                "INFO",
+                "generate_with_ai_request completed",
+                success=result.get("success", False),
+            )
+            return result
+
+        except Exception as e:
+            debug_logger.log(
+                "ERROR",
+                "Template-based AI generation failed",
+                target_path=str(target_path),
+                error=str(e),
+            )
+            return create_workflow_result(
+                success=False,
+                error=f"Template-based AI generation failed: {str(e)}",
+                data={"fallback_needed": True},
+            )
+
     def _finalize_ai_results(
         self, ai_result: dict[str, Any], target_path: Path
     ) -> dict[str, Any]:
-        """Finalize successful AI generation results.
+        """Finalize successful AI generation results by writing files to disk.
 
         Args:
-            ai_result: AI generation result
+            ai_result: AI generation result with content
             target_path: Path to the source file
 
         Returns:
-            Finalized workflow result
+            Finalized workflow result with generated file paths
         """
-        # Add command-level metadata to AI results
-        ai_data = ai_result.get("data", {})
-        if "metadata" not in ai_data:
-            ai_data["metadata"] = {}
+        try:
+            # Extract generated content from AI result
+            ai_data = ai_result.get("data", {})
+            generated_docs = ai_data.get("generated_docs", {})
 
-        ai_data["metadata"]["command_execution_time"] = datetime.now().isoformat()
-        ai_data["metadata"]["target_path"] = str(target_path)
+            debug_logger.log(
+                "INFO",
+                "AI result data inspection",
+                ai_result_keys=list(ai_result.keys()),
+                ai_data_keys=list(ai_data.keys()),
+                generated_docs_count=len(generated_docs),
+                generated_docs_keys=list(generated_docs.keys())
+                if generated_docs
+                else [],
+            )
 
-        return create_workflow_result(
-            success=True,
-            data=ai_data,
-            message=f"Generated documentation using AI: {ai_result.get('message', 'Success')}",
-        )
+            if not generated_docs:
+                debug_logger.log(
+                    "WARNING",
+                    "AI generation returned no content to write",
+                    ai_result=ai_result,
+                )
+                return create_workflow_result(
+                    success=False, error="AI generation returned no content to write"
+                )
+
+            # Get the spec directory for this file
+            from ...file_system.path_resolver import PathResolver
+
+            path_resolver = PathResolver(self.settings)
+            spec_files = path_resolver.get_spec_files_for_source(target_path)
+
+            # Ensure spec directory exists
+            from ...file_system.directory_manager import DirectoryManager
+
+            directory_manager = DirectoryManager(self.settings)
+            directory_manager.ensure_specs_directory()
+            spec_dir = directory_manager.create_spec_directory(target_path)
+
+            # Write generated content to files
+            generated_file_paths = []
+
+            # Main content goes to index.md
+            main_content = next(iter(generated_docs.values()), "")
+            debug_logger.log(
+                "INFO",
+                "Main content inspection",
+                content_length=len(main_content),
+                content_preview=main_content[:100] if main_content else "EMPTY",
+                has_content=bool(main_content.strip()),
+            )
+            if main_content.strip():
+                index_file = spec_files.get("index") or spec_dir / "index.md"
+                index_file.write_text(main_content, encoding="utf-8")
+                generated_file_paths.append(index_file)
+
+                debug_logger.log(
+                    "INFO",
+                    "AI-generated index.md written",
+                    file_path=str(index_file),
+                    content_length=len(main_content),
+                )
+
+            # Create a basic history.md file
+            history_content = f"""# History
+
+## Generated on {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+
+- Created using AI generation
+- Source file: {target_path.name}
+- Method: AI-powered documentation generation
+
+## Changes
+
+Initial AI-generated documentation.
+"""
+
+            history_file = spec_files.get("history") or spec_dir / "history.md"
+            history_file.write_text(history_content, encoding="utf-8")
+            generated_file_paths.append(history_file)
+
+            debug_logger.log(
+                "INFO",
+                "AI-generated history.md written",
+                file_path=str(history_file),
+                content_length=len(history_content),
+            )
+
+            # Update metadata
+            if "metadata" not in ai_data:
+                ai_data["metadata"] = {}
+
+            ai_data["metadata"]["command_execution_time"] = datetime.now().isoformat()
+            ai_data["metadata"]["target_path"] = str(target_path)
+            ai_data["metadata"]["files_written"] = len(generated_file_paths)
+            ai_data["generated_files"] = [str(f) for f in generated_file_paths]
+
+            return create_workflow_result(
+                success=True,
+                data=ai_data,
+                message=f"Generated and wrote {len(generated_file_paths)} files using AI",
+            )
+
+        except Exception as e:
+            debug_logger.log(
+                "ERROR",
+                "Failed to write AI-generated content to files",
+                target_path=str(target_path),
+                error=str(e),
+            )
+            return create_workflow_result(
+                success=False, error=f"Failed to write AI-generated files: {str(e)}"
+            )
 
     def _traditional_template_generation(
         self, target_path: Path, template_path: Path | None
@@ -393,15 +601,47 @@ class GenCommand(BaseCommand):
 
         This maintains 100% backward compatibility with existing gen command functionality.
         """
-        # For now, return a simple implementation that indicates file would be generated
-        # In a full implementation, this would call the existing template generation workflow
         debug_logger.log(
             "INFO",
             "Traditional template generation",
             target_path=str(target_path),
             template_path=str(template_path) if template_path else "default",
         )
-        return [target_path]  # Simplified implementation
+
+        try:
+            # Use the working SpecContentGenerator to actually write files
+            from ...templates.generator import SpecContentGenerator
+            from ...templates.loader import load_template
+
+            generator = SpecContentGenerator(self.settings)
+            template_config = load_template()
+
+            # Generate and write spec content files
+            generated_files_dict = generator.generate_spec_content(
+                target_path, template_config
+            )
+
+            # Return list of generated file paths
+            generated_files = list(generated_files_dict.values())
+
+            debug_logger.log(
+                "INFO",
+                "Traditional template generation completed",
+                target_path=str(target_path),
+                files_generated=len(generated_files),
+            )
+
+            return generated_files
+
+        except Exception as e:
+            debug_logger.log(
+                "ERROR",
+                "Traditional template generation failed",
+                target_path=str(target_path),
+                error=str(e),
+            )
+            # Re-raise to let the caller handle the error
+            raise
 
     def _create_template_variables(self, target_path: Path) -> dict[str, Any]:
         """Create template variables for processing.

@@ -81,6 +81,12 @@ class ProviderManager:
             # Check provider availability (decision point 2)
             if self.ai_config.provider == "local":
                 provider = LocalAIProvider(self.ai_config.local)
+                self.logger.debug(
+                    f"TRACE: Created provider instance: {provider.__class__.__module__}.{provider.__class__.__name__}"
+                )
+                self.logger.debug(
+                    f"TRACE: Provider methods: {[m for m in dir(provider) if not m.startswith('_')]}"
+                )
                 if provider.is_available():
                     self.logger.info(
                         "Local AI provider available with model: %s",
