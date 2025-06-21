@@ -65,6 +65,10 @@ class LocalAIProvider(AIProvider):
         # Resource tracking
         self._resources_allocated = False
 
+        # Cached DocumentationGenerator for model reuse
+        self._generator: DocumentationGenerator | None = None
+        self._current_device: str | None = None
+
         self.logger.info(
             "Initialized LocalAIProvider with model: %s", self.config.model_name
         )
@@ -96,83 +100,51 @@ class LocalAIProvider(AIProvider):
         Returns:
             GenerationResult: Documentation generation result
         """
-        self.logger.debug("TRACE: LocalAIProvider.generate_documentation() called")
-        print("PRINT TRACE: LocalAIProvider.generate_documentation() ACTUALLY CALLED")
 
         if not self.is_available():
-            self.logger.debug("TRACE: Provider not available, returning error")
             return GenerationResult(
                 success=False,
                 error="Local AI provider is not available - missing dependencies or insufficient resources",
             )
 
-        self.logger.debug("TRACE: Provider is available, proceeding with validation")
-
         # Validate request
         try:
             self.validate_request(request)
-            self.logger.debug("TRACE: Request validation passed")
         except ValueError as e:
-            self.logger.debug(f"TRACE: Request validation failed: {e}")
             return GenerationResult(success=False, error=f"Invalid request: {e}")
 
         # Sanitize content for security
         try:
             self.sanitizer.sanitize(request.content, request.source_file)
-            self.logger.debug("TRACE: Content sanitization passed")
         except ValueError as e:
-            self.logger.debug(f"TRACE: Content sanitization failed: {e}")
             return GenerationResult(
                 success=False, error=f"Content sanitization failed: {e}"
             )
 
         try:
-            # Use helper for device detection
+            # Use helper for device detection - CPU is faster than MPS for small models
             gpu_capabilities = get_gpu_capabilities()
             if gpu_capabilities["cuda_available"]:
-                device = "cuda"
-            elif gpu_capabilities["mps_available"]:
-                device = "mps"
+                device = "cuda"  # CUDA should be fastest
             else:
-                device = "cpu"
+                device = "cpu"  # CPU faster than MPS for 0.5B models
+                logger.info("Using CPU (faster than MPS for small models)")
 
-            self.logger.debug(f"TRACE: Device selected: {device}")
-
-            # Initialize generator (helper call)
-            generator = DocumentationGenerator(self.config)
-            self.logger.debug("TRACE: DocumentationGenerator created")
-
-            # Load model with error handling
-            self.logger.debug("TRACE: About to call generator.load_model()")
-            print(f"PRINT TRACE: About to call generator.load_model({device})")
-            load_result = generator.load_model(device)
-            print(f"PRINT TRACE: generator.load_model returned: {load_result}")
-            if not load_result:
-                self.logger.debug("TRACE: Model loading failed")
-                print("PRINT TRACE: Model loading failed, returning error")
+            # Get or create cached generator with model loading optimization
+            generator = self._get_or_create_generator(device)
+            if generator is None:
                 return GenerationResult(
                     success=False,
                     error="Failed to load AI model",
                     metadata={"provider": "local", "device": device},
                 )
 
-            self.logger.debug(
-                "TRACE: Model loading succeeded, calling generate_documentation()"
-            )
-            print(
-                "PRINT TRACE: Model loading succeeded, calling generator.generate_documentation()"
-            )
-            # Generate documentation
+            # Generate documentation using cached model
             result = generator.generate_documentation(request)
-            print(f"PRINT TRACE: Generator returned result: success={result.success}")
-            self.logger.debug(
-                f"TRACE: Generator returned result: success={result.success}"
-            )
             return result
 
         except Exception as e:
             # Use error handler helper
-            self.logger.debug(f"TRACE: Exception in generate_documentation: {e}")
             error_context = {"provider": "local", "model": self.config.model_name}
             default_error_handler.report(
                 e, "AI generation", code_path=request.source_file, **error_context
@@ -188,10 +160,16 @@ class LocalAIProvider(AIProvider):
         with self._loading_lock:
             if self._resources_allocated:
                 try:
+                    # Clean up cached generator
+                    if self._generator is not None:
+                        self._generator.cleanup()
+                        self._generator = None
+
                     # Clear model references
                     self._model = None
                     self._tokenizer = None
                     self._pipeline = None
+                    self._current_device = None
 
                     # Platform-specific GPU memory cleanup
                     if torch is not None:
@@ -331,3 +309,48 @@ class LocalAIProvider(AIProvider):
         }
 
         return {**base_info, **local_info}
+
+    def _get_or_create_generator(self, device: str) -> DocumentationGenerator | None:
+        """Get cached generator or create new one with model loading optimization.
+
+        Args:
+            device: Target device for model loading
+
+        Returns:
+            DocumentationGenerator instance with loaded model, or None if loading failed
+        """
+        with self._loading_lock:
+            # Check if we need to create or recreate generator
+            if (
+                self._generator is None
+                or self._current_device != device
+                or not self._model_loaded
+            ):
+                self.logger.info(
+                    "Loading AI model (device: %s, model: %s)",
+                    device,
+                    self.config.model_name,
+                )
+
+                # Create new generator
+                self._generator = DocumentationGenerator(self.config)
+
+                # Load model with error handling
+                load_result = self._generator.load_model(device)
+                if not load_result:
+                    self.logger.error("Failed to load AI model on device: %s", device)
+                    self._generator = None
+                    self._current_device = None
+                    self._model_loaded = False
+                    return None
+
+                # Update state tracking
+                self._current_device = device
+                self._model_loaded = True
+                self._resources_allocated = True
+
+                self.logger.info("AI model loaded successfully on %s", device)
+            else:
+                self.logger.debug("Reusing cached AI model on %s", device)
+
+            return self._generator

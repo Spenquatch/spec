@@ -39,7 +39,6 @@ class AIDocumentationGenerator:
         allowing templates to directly control the AI generation process.
         """
         try:
-            print("DEBUG: generate_documentation_from_request called")
             # Validate request has required content
             if not request.source_file.exists():
                 return create_workflow_result(
@@ -51,16 +50,7 @@ class AIDocumentationGenerator:
             # Use template content as prompt if available, otherwise create default
             if request.template_content and request.template_content.strip():
                 # Template-driven AI generation
-                print(
-                    "DEBUG: Using template-driven generation, calling provider.generate_documentation"
-                )
-                print(
-                    f"DEBUG: About to call: {self.provider.__class__.__module__}.{self.provider.__class__.__name__}.generate_documentation"
-                )
                 generation_result = self.provider.generate_documentation(request)
-                print(
-                    f"DEBUG: Provider result: success={generation_result.success}, error={generation_result.error}"
-                )
             else:
                 # Fall back to default AI generation
                 self.logger.warning(
@@ -243,12 +233,8 @@ def generate_with_ai_request(
     """
     try:
         # Load configuration (decision point + try/except)
-        print("DEBUG: Loading AI configuration...")
         config_loader = AIConfigLoader()
         ai_config = config_loader.load_ai_config()
-        print(
-            f"DEBUG: AI config loaded: enabled={ai_config.enabled}, provider={ai_config.provider}"
-        )
 
         if ai_config_override:
             # Apply overrides to configuration
@@ -257,13 +243,8 @@ def generate_with_ai_request(
                     setattr(ai_config, key, value)
 
         # Get available provider (decision point)
-        print("DEBUG: Creating ProviderManager...")
         provider_manager = ProviderManager(ai_config)
-        print("DEBUG: Getting available provider...")
         provider = provider_manager.get_available_provider()
-        print(
-            f"DEBUG: Selected AI provider: {provider.__class__.__name__ if provider else 'None'}"
-        )
 
         if not provider:
             return create_workflow_result(
@@ -273,14 +254,8 @@ def generate_with_ai_request(
             )
 
         # Generate documentation using the request (decision point + try/except)
-        print("DEBUG: Creating AIDocumentationGenerator...")
-        print(
-            f"DEBUG: Provider details: {provider.__class__.__module__}.{provider.__class__.__name__}"
-        )
         generator = AIDocumentationGenerator(provider)
-        print("DEBUG: Calling generate_documentation_from_request...")
         result = generator.generate_documentation_from_request(request)
-        print(f"DEBUG: Generation result: success={result.get('success', False)}")
 
         # Log successful generation
         if result["success"]:
