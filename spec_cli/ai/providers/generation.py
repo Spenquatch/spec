@@ -76,6 +76,18 @@ class DocumentationGenerator:
             logger.error("HuggingFace dependencies not available")
             return False
 
+        # Optimize PyTorch threading for CPU performance on Apple Silicon
+        if device == "cpu" and torch is not None:
+            # Set optimal thread count for Apple Silicon (fewer fat cores)
+            optimal_threads = min(os.cpu_count() or 4, 6)
+            torch.set_num_threads(optimal_threads)
+
+            # Set environment variables for MKL/OpenMP
+            os.environ["OMP_NUM_THREADS"] = str(optimal_threads)
+            os.environ["MKL_NUM_THREADS"] = str(optimal_threads)
+
+            logger.info(f"Optimized CPU threading: {optimal_threads} threads")
+
         logger.info(f"Loading model {self.config.model_name} on {device}...")
         try:
             self.device = device
@@ -201,24 +213,23 @@ class DocumentationGenerator:
             max_code_chars = 14000
             code_content = request.content[:max_code_chars]
 
-            prompt = f"""Analyze this Python code and write documentation:
+            # Balanced prompt for quality and speed
+            prompt = f"""Generate comprehensive documentation for this Python code:
 
 ```python
 {code_content}
 ```
 
-Write a markdown documentation that includes:
-- Purpose and main functionality
-- Key functions and classes
-- Usage examples
+Create a well-structured markdown documentation including:
+- Purpose and functionality
+- Key components (classes, functions, important variables)
+- Usage examples if relevant
 
 Documentation:"""
 
-            logger.info(f"Using template-driven prompt for {normalized_path}")
-            logger.debug(
-                f"Template content (first 500 chars): {request.template_content[:500]}"
-            )
-            logger.debug(f"Source content (first 200 chars): {request.content[:200]}")
+            # Reduce debug logging for speed
+            if logger.isEnabledFor(logging.DEBUG):
+                logger.debug(f"Using optimized prompt for {normalized_path}")
             return prompt
 
         # Fallback to default prompt if no template provided
@@ -284,9 +295,6 @@ Focus on accuracy and usefulness for both human developers and AI agents working
         # Generate with model
         if torch is not None and self.model is not None:
             inference_start = time.time()
-            logger.debug(
-                f"Starting inference with {inputs['input_ids'].shape[1]} input tokens"
-            )
 
             with torch.no_grad():
                 # Use optimized generation for speed
@@ -301,9 +309,12 @@ Focus on accuracy and usefulness for both human developers and AI agents working
 
             inference_time = time.time() - inference_start
             output_tokens = outputs[0].shape[0] - inputs["input_ids"].shape[1]
-            logger.info(
-                f"Inference complete - {inference_time:.1f}s for {output_tokens} tokens ({output_tokens / inference_time:.1f} tokens/sec)"
-            )
+
+            # Reduce logging for speed
+            if logger.isEnabledFor(logging.INFO):
+                logger.info(
+                    f"Generated {output_tokens} tokens in {inference_time:.1f}s ({output_tokens / inference_time:.1f} tok/s)"
+                )
         else:
             # This should not happen in normal operation since model loading checks HF_AVAILABLE
             raise RuntimeError("PyTorch not available for model generation")
@@ -333,8 +344,6 @@ Focus on accuracy and usefulness for both human developers and AI agents working
         """
         # For now, put all content in index.md
         # Future enhancement could parse sections into separate files
-        logger.info(f"Generated text length: {len(generated_text)}")
-        logger.info(f"Generated text (first 200 chars): {generated_text[:200]}")
         content = {"index.md": generated_text}
 
         # Add minimal history entry with normalized path

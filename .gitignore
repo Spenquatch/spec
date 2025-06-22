@@ -63,6 +63,8 @@ Thumbs.db
 
 # Project specific
 test_area/
+new_test/
+new_test/*
 .spec/
 .specs/
 .specignore
@@ -76,8 +78,12 @@ poetry.lock
 .dmypy.json
 dmypy.json
 
+
 # ruff
 .ruff_cache/
 
 # Backup files
 *.backup
+
+# model files
+models/

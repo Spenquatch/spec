@@ -41,6 +41,7 @@ pluggy = "^1.6.0"
 torch = "^2.0.0"
 transformers = "^4.40.0"
 accelerate = "^0.30.0"
+llama-cpp-python = "^0.3.9"
 # bitsandbytes excluded - not available on macOS ARM64, will use alternative quantization
 
 [tool.poetry.group.dev.dependencies]

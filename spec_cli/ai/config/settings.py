@@ -64,6 +64,25 @@ class LocalModelConfig(BaseModel):
         return normalized_path
 
 
+class LlamaCppConfig(BaseModel):
+    """Configuration for llama.cpp models."""
+
+    model_path: str = Field(default="models/Qwen2.5-Coder-0.5B-Instruct-Q4_K_M.gguf")
+    max_tokens: int = Field(default=2048, ge=50, le=4096)
+    temperature: float = Field(default=0.1, ge=0.0, le=1.0)
+    n_ctx: int = Field(default=16384, description="Context window size")
+    n_threads: int = Field(default=1, description="Number of threads to use")
+    n_gpu_layers: int = Field(
+        default=-1,
+        description="Number of layers to offload to GPU (-1 = all layers for Metal)",
+    )
+    n_batch: int = Field(default=512, description="Batch size for prompt processing")
+    use_mlock: bool = Field(
+        default=True, description="Force system to keep model in RAM"
+    )
+    verbose: bool = Field(default=False, description="Print verbose output")
+
+
 class MonitoringConfig(BaseModel):
     """Configuration for AI performance monitoring."""
 
@@ -84,6 +103,7 @@ class AIConfig(BaseModel):
         default="local", description="Primary provider for AI documentation generation"
     )
     local: LocalModelConfig = Field(default_factory=LocalModelConfig)
+    llamacpp: LlamaCppConfig = Field(default_factory=LlamaCppConfig)
     security: SecurityConfig = Field(default_factory=SecurityConfig)
     monitoring: MonitoringConfig = Field(default_factory=MonitoringConfig)
     fallback_to_templates: bool = Field(
@@ -94,7 +114,7 @@ class AIConfig(BaseModel):
     @classmethod
     def validate_provider(cls, v: str) -> str:
         """Validate provider type with platform-specific considerations."""
-        valid_providers = ["local", "disabled"]
+        valid_providers = ["local", "llamacpp", "disabled"]
 
         if v not in valid_providers:
             raise ValueError(

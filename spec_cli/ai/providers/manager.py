@@ -6,6 +6,7 @@ from typing import Any
 
 from ..config.settings import AIConfig
 from .base import AIProvider
+from .llamacpp import LlamaCppProvider
 from .local import LocalAIProvider
 
 logger = logging.getLogger(__name__)
@@ -89,6 +90,17 @@ class ProviderManager:
                     return provider
                 else:
                     self.logger.warning("Local AI provider not available")
+
+            elif self.ai_config.provider == "llamacpp":
+                provider = LlamaCppProvider(self.ai_config.llamacpp)
+                if provider.is_available():
+                    self.logger.info(
+                        "LlamaCpp provider available with model: %s",
+                        provider.config.model_path,
+                    )
+                    return provider
+                else:
+                    self.logger.warning("LlamaCpp provider not available")
 
             return None
 
