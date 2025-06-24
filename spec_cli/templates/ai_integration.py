@@ -139,9 +139,6 @@ class AIContentProvider(ABC):
         return []
 
 
-# DEPRECATED: PlaceholderAIProvider removed - using new AI system in spec_cli/ai/
-
-
 class MockAIProvider(AIContentProvider):
     """Mock AI provider for testing that can be configured with responses."""
 
