@@ -5,8 +5,28 @@ from unittest.mock import MagicMock, Mock, patch
 
 from click.testing import CliRunner
 
-from spec_cli.cli.commands.status import status_command
+from spec_cli.cli.commands.status import _get_real_ai_status, status_command
 from spec_cli.exceptions import SpecRepositoryError
+
+# Test constants
+MOCK_AI_ENABLED_CONFIG = {
+    "ai_enabled": True,
+    "configured_provider": "llamacpp",
+    "provider_available": True,
+    "provider_details": {"model": "test-model", "device": "cpu"},
+}
+MOCK_AI_DISABLED_CONFIG = {
+    "ai_enabled": False,
+    "configured_provider": "none",
+    "provider_available": False,
+    "provider_details": {},
+}
+MOCK_AI_UNAVAILABLE_CONFIG = {
+    "ai_enabled": True,
+    "configured_provider": "llamacpp",
+    "provider_available": False,
+    "provider_details": {},
+}
 
 
 class TestStatusCommand:
@@ -174,15 +194,28 @@ class TestStatusHelperFunctions:
         assert "git" in result
         assert result["repository"]["initialized"] is True
 
-    def test_get_processing_summary(self) -> None:
+    @patch("spec_cli.cli.commands.status._get_real_ai_status")
+    def test_get_processing_summary(self, mock_ai_status: Mock) -> None:
         """Test _get_processing_summary function."""
         from spec_cli.cli.commands.status import _get_processing_summary
+
+        # Mock AI status response
+        mock_ai_status.return_value = {
+            "enabled": True,
+            "providers": [{"name": "test-provider", "status": "available"}],
+            "fallback_chain": ["test-provider", "template_generation"],
+        }
 
         result = _get_processing_summary()
 
         assert "template_system" in result
         assert "file_processing" in result
         assert "ai_integration" in result
+
+        # Verify AI integration uses real status
+        assert result["ai_integration"]["enabled"] is True
+        assert len(result["ai_integration"]["providers"]) == 1
+        mock_ai_status.assert_called_once()
 
     def test_get_git_status_data_success(self) -> None:
         """Test _get_git_status_data function with successful repo operations."""
@@ -334,3 +367,138 @@ class TestStatusHelperFunctions:
         with patch("spec_cli.ui.error_display.format_data") as mock_format:
             _display_processing_summary(summary_info)
             mock_format.assert_called_once_with(summary_info, "Processing Capabilities")
+
+
+class TestRealAIStatusIntegration:
+    """Test cases for real AI provider status integration."""
+
+    @patch("spec_cli.cli.commands.status.ProviderManager")
+    @patch("spec_cli.cli.commands.status.load_ai_config")
+    def test_status_shows_real_ai_provider_info(
+        self, mock_load_config: Mock, mock_provider_manager: Mock
+    ) -> None:
+        """Test status command shows real AI provider information."""
+        # Setup mocks
+        mock_config = MagicMock()
+        mock_load_config.return_value = mock_config
+
+        mock_manager = MagicMock()
+        mock_manager.get_provider_info.return_value = MOCK_AI_ENABLED_CONFIG
+        mock_provider_manager.return_value = mock_manager
+
+        # Call the function
+        result = _get_real_ai_status()
+
+        # Assertions
+        assert result["enabled"] is True
+        assert len(result["providers"]) == 1
+        assert result["providers"][0]["name"] == "llamacpp"
+        assert result["providers"][0]["status"] == "available"
+        assert result["providers"][0]["details"]["model"] == "test-model"
+        assert "llamacpp" in result["fallback_chain"]
+        assert "template_generation" in result["fallback_chain"]
+
+        # Verify mocks were called
+        mock_load_config.assert_called_once()
+        mock_provider_manager.assert_called_once_with(mock_config)
+        mock_manager.get_provider_info.assert_called_once()
+
+    @patch("spec_cli.cli.commands.status.ProviderManager")
+    @patch("spec_cli.cli.commands.status.load_ai_config")
+    def test_status_shows_provider_fallback_chain(
+        self, mock_load_config: Mock, mock_provider_manager: Mock
+    ) -> None:
+        """Test status command shows provider fallback chain."""
+        # Setup mocks with unavailable provider
+        mock_config = MagicMock()
+        mock_load_config.return_value = mock_config
+
+        mock_manager = MagicMock()
+        mock_manager.get_provider_info.return_value = MOCK_AI_UNAVAILABLE_CONFIG
+        mock_provider_manager.return_value = mock_manager
+
+        # Call the function
+        result = _get_real_ai_status()
+
+        # Assertions for fallback scenario
+        assert result["enabled"] is True
+        assert len(result["providers"]) == 1
+        assert result["providers"][0]["status"] == "unavailable"
+        assert result["fallback_chain"] == ["llamacpp", "template_generation"]
+
+    @patch("spec_cli.cli.commands.status.ProviderManager")
+    @patch("spec_cli.cli.commands.status.load_ai_config")
+    def test_status_handles_disabled_ai_gracefully(
+        self, mock_load_config: Mock, mock_provider_manager: Mock
+    ) -> None:
+        """Test status command handles disabled AI gracefully."""
+        # Setup mocks with disabled AI
+        mock_config = MagicMock()
+        mock_load_config.return_value = mock_config
+
+        mock_manager = MagicMock()
+        mock_manager.get_provider_info.return_value = MOCK_AI_DISABLED_CONFIG
+        mock_provider_manager.return_value = mock_manager
+
+        # Call the function
+        result = _get_real_ai_status()
+
+        # Assertions for disabled AI
+        assert result["enabled"] is False
+        assert result["providers"] == []
+        assert result["fallback_chain"] == ["disabled", "template_generation"]
+
+    @patch("spec_cli.cli.commands.status.ProviderManager")
+    @patch("spec_cli.cli.commands.status.load_ai_config")
+    def test_status_shows_performance_metrics(
+        self, mock_load_config: Mock, mock_provider_manager: Mock
+    ) -> None:
+        """Test status command shows performance metrics."""
+        # Setup mocks with detailed provider info
+        detailed_config = MOCK_AI_ENABLED_CONFIG.copy()
+        detailed_config["provider_details"].update(
+            {"performance": {"startup_time": "2.3s", "memory_usage": "512MB"}}
+        )
+
+        mock_config = MagicMock()
+        mock_load_config.return_value = mock_config
+
+        mock_manager = MagicMock()
+        mock_manager.get_provider_info.return_value = detailed_config
+        mock_provider_manager.return_value = mock_manager
+
+        # Call the function
+        result = _get_real_ai_status()
+
+        # Assertions for performance metrics
+        assert result["enabled"] is True
+        provider_details = result["providers"][0]["details"]
+        assert "performance" in provider_details
+        assert provider_details["performance"]["startup_time"] == "2.3s"
+
+    @patch("spec_cli.cli.commands.status.debug_logger")
+    @patch("spec_cli.cli.commands.status.load_ai_config")
+    def test_status_error_handling_when_providers_unavailable(
+        self, mock_load_config: Mock, mock_logger: Mock
+    ) -> None:
+        """Test status command error handling when providers unavailable."""
+        # Setup mock to raise exception
+        mock_load_config.side_effect = Exception("Config loading failed")
+
+        # Call the function
+        result = _get_real_ai_status()
+
+        # Assertions for error handling
+        assert result["enabled"] is False
+        assert result["providers"] == []
+        assert result["fallback_chain"] == ["template_generation"]
+        assert "error" in result
+        assert result["error"] == "AI system unavailable"
+
+        # Verify error was logged
+        mock_logger.log.assert_called_with(
+            "ERROR",
+            "Failed to get AI provider status",
+            error="Config loading failed",
+            error_type="Exception",
+        )

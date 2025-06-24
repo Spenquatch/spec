@@ -5,6 +5,8 @@ from typing import Any
 
 import click
 
+from ...ai.config.loader import load_ai_config
+from ...ai.providers.manager import ProviderManager
 from ...exceptions import SpecRepositoryError
 from ...logging.debug import debug_logger
 from ...ui.console import get_console
@@ -173,6 +175,75 @@ def _get_repository_health(repo: Any) -> dict[str, Any]:
     return health
 
 
+def _get_real_ai_status() -> dict[str, Any]:
+    """Get real AI provider status information.
+
+    Returns:
+        Dictionary containing actual AI provider status and configuration
+    """
+    try:
+        # Load AI configuration (decision point 1)
+        ai_config = load_ai_config()
+        provider_manager = ProviderManager(ai_config)
+
+        # Get provider information (decision point 2)
+        provider_info = provider_manager.get_provider_info()
+
+        # Format provider chain status (decision point 3)
+        providers_status = []
+        if provider_info["ai_enabled"]:
+            if provider_info["provider_available"]:
+                providers_status.append(
+                    {
+                        "name": provider_info["configured_provider"],
+                        "status": "available",
+                        "details": provider_info["provider_details"],
+                    }
+                )
+            else:
+                providers_status.append(
+                    {
+                        "name": provider_info["configured_provider"],
+                        "status": "unavailable",
+                        "details": {},
+                    }
+                )
+
+        debug_logger.log(
+            "DEBUG",
+            "AI status retrieved successfully",
+            ai_enabled=provider_info["ai_enabled"],
+            provider_available=provider_info["provider_available"],
+        )
+
+        return {
+            "enabled": provider_info["ai_enabled"],
+            "providers": providers_status,
+            "fallback_chain": [
+                provider_info["configured_provider"]
+                if provider_info["ai_enabled"]
+                else "disabled",
+                "template_generation",
+            ],
+        }
+
+    except Exception as e:  # decision point 4
+        debug_logger.log(
+            "ERROR",
+            "Failed to get AI provider status",
+            error=str(e),
+            error_type=type(e).__name__,
+        )
+
+        # Return graceful fallback information
+        return {
+            "enabled": False,
+            "providers": [],
+            "fallback_chain": ["template_generation"],
+            "error": "AI system unavailable",
+        }
+
+
 def _get_processing_summary() -> dict[str, Any]:
     """Get processing capabilities summary."""
     return {
@@ -185,10 +256,7 @@ def _get_processing_summary() -> dict[str, Any]:
             "batch_processing": True,
             "conflict_resolution": True,
         },
-        "ai_integration": {
-            "enabled": False,  # Extension point
-            "providers": [],
-        },
+        "ai_integration": _get_real_ai_status(),
     }
 
 
