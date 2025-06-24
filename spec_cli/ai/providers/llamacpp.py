@@ -8,21 +8,25 @@ import warnings
 from contextlib import redirect_stderr
 from io import StringIO
 from pathlib import Path
+from typing import TYPE_CHECKING, Any
 
 from ...utils.error_handler import default_error_handler
-from ...utils.path_utils import normalize_path_separators
 from ..analysis.sanitizer import CodeSanitizer
 from ..config.settings import LlamaCppConfig
 from .base import AIProvider, GenerationRequest, GenerationResult
 
 # Optional llama-cpp-python import with graceful fallback
+if TYPE_CHECKING:
+    from llama_cpp import Llama
+
 try:
     from llama_cpp import Llama
 
     LLAMA_CPP_AVAILABLE = True
 except ImportError:
     LLAMA_CPP_AVAILABLE = False
-    Llama = None
+    if not TYPE_CHECKING:
+        Llama = Any  # Type placeholder when llama-cpp-python is not available
 
 logger = logging.getLogger(__name__)
 
@@ -78,9 +82,13 @@ class LlamaCppProvider(AIProvider):
         try:
             import torch.distributed.elastic.multiprocessing.redirects
 
-            torch.distributed.elastic.multiprocessing.redirects._redirect_logger.setLevel(
-                logging.CRITICAL
+            redirect_logger = getattr(
+                torch.distributed.elastic.multiprocessing.redirects,
+                "_redirect_logger",
+                None,
             )
+            if redirect_logger:
+                redirect_logger.setLevel(logging.CRITICAL)
         except (ImportError, AttributeError):
             pass
 
@@ -88,7 +96,8 @@ class LlamaCppProvider(AIProvider):
         try:
             import torch
 
-            torch._C._set_print_handler(lambda x: None)  # Suppress C++ prints
+            if hasattr(torch, "_C") and hasattr(torch._C, "_set_print_handler"):
+                torch._C._set_print_handler(lambda x: None)  # Suppress C++ prints
         except (ImportError, AttributeError):
             pass  # PyTorch not available or different version
 
@@ -159,6 +168,12 @@ class LlamaCppProvider(AIProvider):
             # Generate with llama.cpp
             self.logger.info(f"Generating documentation for {request.source_file}")
 
+            if self._model is None:
+                return GenerationResult(
+                    success=False,
+                    error="Model not loaded",
+                )
+
             response = self._model(
                 prompt,
                 max_tokens=self.config.max_tokens,
@@ -167,12 +182,57 @@ class LlamaCppProvider(AIProvider):
                 echo=False,  # Don't include prompt in response
             )
 
-            generated_text = response["choices"][0]["text"].strip()
+            # Safely extract response text
+            if hasattr(response, "__iter__") and not isinstance(response, dict):
+                # Handle streaming response (iterator)
+                response_text = ""
+                for chunk in response:
+                    if (
+                        isinstance(chunk, dict)
+                        and "choices" in chunk
+                        and chunk["choices"]
+                    ):
+                        choice = chunk["choices"][0]
+                        if isinstance(choice, dict):
+                            delta = choice.get("delta", {})
+                            if isinstance(delta, dict) and "content" in delta:
+                                response_text += str(delta["content"])
+                            elif "text" in choice:
+                                response_text += str(choice["text"])
+                generated_text = response_text.strip()
+            elif (
+                isinstance(response, dict)
+                and "choices" in response
+                and response["choices"]
+            ):
+                # Handle non-streaming response
+                choice = response["choices"][0]
+                if "text" in choice:
+                    generated_text = choice["text"].strip()
+                elif "message" in choice and "content" in choice["message"]:
+                    generated_text = choice["message"]["content"].strip()
+                else:
+                    return GenerationResult(
+                        success=False,
+                        error="No text content in response",
+                    )
+            else:
+                return GenerationResult(
+                    success=False,
+                    error="Invalid response format from model",
+                )
 
             # Structure the output
             structured_content = self._parse_generated_content(generated_text, request)
 
             processing_time = int((time.time() - start_time) * 1000)
+
+            # Extract usage information safely
+            tokens_generated = 0
+            if isinstance(response, dict) and "usage" in response:
+                usage = response["usage"]
+                if isinstance(usage, dict) and "completion_tokens" in usage:
+                    tokens_generated = usage["completion_tokens"]
 
             return GenerationResult(
                 success=True,
@@ -181,9 +241,10 @@ class LlamaCppProvider(AIProvider):
                     "provider": "llamacpp",
                     "model": self.config.model_path,
                     "processing_time_ms": processing_time,
-                    "tokens_generated": response["usage"]["completion_tokens"],
-                    "tokens_per_sec": response["usage"]["completion_tokens"]
-                    / (processing_time / 1000),
+                    "tokens_generated": tokens_generated,
+                    "tokens_per_sec": tokens_generated / (processing_time / 1000)
+                    if processing_time > 0 and tokens_generated > 0
+                    else 0,
                     "platform": sys.platform,
                 },
             )
@@ -254,7 +315,6 @@ class LlamaCppProvider(AIProvider):
         Returns:
             str: Formatted prompt for llama.cpp model
         """
-        normalized_path = normalize_path_separators(str(request.source_file))
         file_extension = request.get_file_extension()
         language = self._detect_language(file_extension)
 
@@ -296,8 +356,7 @@ Documentation:<|im_end|>
         content = {"index.md": generated_text}
 
         # Add minimal history entry
-        normalized_path = normalize_path_separators(str(request.source_file))
-        filename = os.path.basename(normalized_path)
+        filename = os.path.basename(str(request.source_file))
 
         content["history.md"] = f"""# Documentation History for {filename}
 

@@ -17,7 +17,7 @@ Now that llama.cpp provider is implemented and benchmarked, these tasks need com
   - Test CPU fallback performance vs PyTorch
   - Document Windows-specific installation steps
 
-#### **Linux Support** 
+#### **Linux Support**
 - [ ] **Test llama.cpp on Linux distributions**
   - Verify installation on Ubuntu/Debian/RHEL
   - Test CUDA acceleration (should be excellent)
@@ -629,7 +629,7 @@ The dual AI system issue has been **RESOLVED**. LocalAIProvider is now correctly
 
 ## **[NEW] PERFORMANCE OPTIMIZATION SESSION (2025-06-21 16:00)**
 
-### **Problem Statement**: 
+### **Problem Statement**:
 AI generation taking **30+ seconds per file** (expected: 2-3 seconds for 0.5B model)
 
 ### **Performance Investigation Results**
@@ -669,7 +669,7 @@ AI generation taking **30+ seconds per file** (expected: 2-3 seconds for 0.5B mo
 - **After Optimizations**: ~34s per file
 - **Improvement**: 43% faster, but still **11x slower than expected**
 
-### **Root Cause Analysis**: 
+### **Root Cause Analysis**:
 **The 30+ second timing is consistent across different models**, indicating a **systemic infrastructure bottleneck** rather than model-specific performance.
 
 #### **Likely Infrastructure Issues**:
@@ -705,7 +705,7 @@ The AI system performance bottleneck has been **RESOLVED** through systematic op
 
 **Investigation Results**:
 1. **Model Loading**: 0.9s ✅ (optimal)
-2. **Prompt Creation**: ~0.00s ✅ (optimal)  
+2. **Prompt Creation**: ~0.00s ✅ (optimal)
 3. **Inference**: 9.8s ❌ (99% of time - identified bottleneck)
 4. **Post-processing**: ~0.1s ✅ (optimal)
 
@@ -748,7 +748,7 @@ kwargs["torch_dtype"] = torch.float16
 
 **Final System Test (3 runs average)**:
 - **Average**: 24.8s per file
-- **Best**: 24.5s per file  
+- **Best**: 24.5s per file
 - **Consistency**: ±0.3s variance
 - **Overall Improvement**: **28% faster** than baseline
 
@@ -851,7 +851,7 @@ max_tokens: int = Field(default=200, ge=50, le=2048)
 **Impact**: Shorter generation time with maintained quality
 
 #### **5. llama.cpp Investigation** ✅
-**Research Results**: 
+**Research Results**:
 - llama.cpp potential: **~90% faster** than current PyTorch
 - Estimated performance: ~1.6s per file vs current 14.2s
 - Requires model conversion to GGUF format
@@ -895,7 +895,7 @@ The current **14.2s per file** represents excellent performance for the PyTorch-
 
 ## **[FINAL BREAKTHROUGH] LLAMA.CPP IMPLEMENTATION (2025-06-21 18:30-19:00)**
 
-### **🏆 PERFORMANCE TARGET ACHIEVED** 
+### **🏆 PERFORMANCE TARGET ACHIEVED**
 
 Implemented llama.cpp provider with **Metal GPU acceleration** achieving the target **sub-2s performance**!
 
@@ -924,7 +924,7 @@ Implemented llama.cpp provider with **Metal GPU acceleration** achieving the tar
 LlamaCppConfig(
     model_path="models/Qwen2.5-Coder-0.5B-Instruct-Q4_K_M.gguf",
     n_gpu_layers=-1,    # ALL layers to Metal GPU
-    n_threads=1,        # GPU mode only needs 1 thread  
+    n_threads=1,        # GPU mode only needs 1 thread
     n_batch=512,        # Optimal batch size
     n_ctx=16384,        # Full context window
     max_tokens=512      # Quality documentation length
@@ -996,7 +996,7 @@ poetry run python -m spec_cli.cli.app gen new_test/validation.py
 ai:
   provider: llamacpp
   local:
-    model_path: "models/Qwen2.5-Coder-0.5B-Instruct-Q4_K_M.gguf" 
+    model_path: "models/Qwen2.5-Coder-0.5B-Instruct-Q4_K_M.gguf"
     n_gpu_layers: -1  # Enable Metal GPU
     max_tokens: 512   # Quality documentation
 ```
@@ -1020,7 +1020,7 @@ poetry run python -m spec_cli.cli.app gen new_test/validation.py
 # Expected: ~11s
 
 # llama.cpp (optimized) - requires .specconfig.yaml setup
-poetry run python -m spec_cli.cli.app gen new_test/validation.py  
+poetry run python -m spec_cli.cli.app gen new_test/validation.py
 # Expected: ~1.3s
 ```
 

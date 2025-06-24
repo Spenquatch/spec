@@ -5,14 +5,6 @@ import sys
 import types
 import warnings
 
-# Suppress noisy logs early in the application startup
-os.environ["TORCH_DISTRIBUTED_DETAIL"] = "ERROR"
-warnings.filterwarnings("ignore", category=RuntimeWarning, module="runpy")
-warnings.filterwarnings(
-    "ignore", message=".*found in sys.modules.*", category=RuntimeWarning
-)
-
-# Configure rich-click for beautiful help
 import click
 
 from ..ui.console import get_console
@@ -26,6 +18,13 @@ from .commands.log import log_command
 from .commands.regen import regen_command
 from .commands.show import show_command
 from .utils import handle_cli_error
+
+# Suppress noisy logs early in the application startup
+os.environ["TORCH_DISTRIBUTED_DETAIL"] = "ERROR"
+warnings.filterwarnings("ignore", category=RuntimeWarning, module="runpy")
+warnings.filterwarnings(
+    "ignore", message=".*found in sys.modules.*", category=RuntimeWarning
+)
 
 try:
     import rich_click

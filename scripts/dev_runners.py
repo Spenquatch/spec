@@ -199,7 +199,7 @@ def test():
                 "--cov=spec_cli",
                 "--cov-report=term-missing",
                 "--cov-fail-under=80",
-                "--maxfail=1",
+                "--maxfail=0",
             ],
             check=True,
         )

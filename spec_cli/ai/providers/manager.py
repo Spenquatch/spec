@@ -81,24 +81,24 @@ class ProviderManager:
 
             # Check provider availability (decision point 2)
             if self.ai_config.provider == "local":
-                provider = LocalAIProvider(self.ai_config.local)
-                if provider.is_available():
+                local_provider = LocalAIProvider(self.ai_config.local)
+                if local_provider.is_available():
                     self.logger.info(
                         "Local AI provider available with model: %s",
                         self.ai_config.local.model_name,
                     )
-                    return provider
+                    return local_provider
                 else:
                     self.logger.warning("Local AI provider not available")
 
             elif self.ai_config.provider == "llamacpp":
-                provider = LlamaCppProvider(self.ai_config.llamacpp)
-                if provider.is_available():
+                llamacpp_provider = LlamaCppProvider(self.ai_config.llamacpp)
+                if llamacpp_provider.is_available():
                     self.logger.info(
                         "LlamaCpp provider available with model: %s",
-                        provider.config.model_path,
+                        llamacpp_provider.config.model_path,
                     )
-                    return provider
+                    return llamacpp_provider
                 else:
                     self.logger.warning("LlamaCpp provider not available")
 

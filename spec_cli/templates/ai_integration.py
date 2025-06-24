@@ -12,6 +12,10 @@ from functools import wraps
 from pathlib import Path
 from typing import Any
 
+from ..ai.config.loader import AIConfigLoader
+from ..ai.providers.base import GenerationRequest
+from ..ai.providers.manager import ProviderManager
+from ..config.loader import ConfigurationLoader
 from ..config.settings import SpecSettings, get_settings
 from ..exceptions import SpecTemplateError
 from ..logging.debug import debug_logger
@@ -243,15 +247,41 @@ class AIContentManager:
         """
         self.settings = settings or get_settings()
         self.providers: dict[str, AIContentProvider] = {}
-        # DISABLED: Use new AI system in spec_cli/ai/ instead
-        self.default_provider = None  # Disable PlaceholderAIProvider
-        self.enabled = False  # Force disabled - use new AI system
+
+        # Load AI configuration
+        try:
+            # Use current working directory as root_path
+            root_path = Path.cwd()
+            config_loader = ConfigurationLoader(root_path)
+            ai_config_loader = AIConfigLoader(config_loader)
+            self.ai_config = ai_config_loader.load_ai_config()
+
+            # Initialize ProviderManager
+            self.provider_manager = ProviderManager(self.ai_config)
+
+            # Enable AI if configured
+            self.enabled = self.ai_config.enabled
+        except Exception as e:
+            # Fallback if AI config loading fails
+            debug_logger.log(
+                "WARNING",
+                "Failed to load AI configuration, using defaults",
+                error=str(e),
+            )
+            # Create minimal AI config
+            from ..ai.config.settings import AIConfig
+
+            self.ai_config = AIConfig(enabled=False, provider="disabled")
+            self.provider_manager = ProviderManager(self.ai_config)
+            self.enabled = False
+
         self.preferred_provider: str | None = None
 
         debug_logger.log(
             "INFO",
-            "OLD AIContentManager initialized (DISABLED - using new AI system)",
+            "AIContentManager initialized with new AI system",
             enabled=self.enabled,
+            provider=self.ai_config.provider if self.enabled else "disabled",
         )
 
     def register_provider(self, name: str, provider: AIContentProvider) -> None:
@@ -339,42 +369,104 @@ class AIContentManager:
                 for content_type in content_requests
             }
 
-        # Find available provider
-        provider = self._get_available_provider()
+        # Get available provider from ProviderManager
+        provider = self.provider_manager.get_available_provider()
         if not provider:
-            debug_logger.log("WARNING", "No AI providers available, using placeholder")
-            provider = self.default_provider
+            debug_logger.log(
+                "WARNING", "No AI providers available, using template fallback"
+            )
+            return {
+                content_type: f"[{content_type.replace('_', ' ').title()} - No AI provider available]"
+                for content_type in content_requests
+            }
 
         results = {}
 
         with debug_logger.timer("ai_content_generation"):
-            for content_type in content_requests:
-                try:
-                    content = provider.generate_content(
-                        file_path, context, content_type, max_tokens_per_request
-                    )
-                    results[content_type] = content
+            # Read file content for the request
+            try:
+                file_content = file_path.read_text()
+            except Exception as e:
+                debug_logger.log(
+                    "ERROR",
+                    "Failed to read file content",
+                    file_path=str(file_path),
+                    error=str(e),
+                )
+                file_content = ""
+
+            # Create GenerationRequest
+            request = GenerationRequest(
+                source_file=file_path,
+                content=file_content,
+                context=context,
+                doc_type="comprehensive",
+                template_content=None,
+            )
+
+            # Generate documentation using new provider
+            try:
+                result = provider.generate_documentation(request)
+
+                if result.success:
+                    # Convert GenerationResult to expected format
+                    for content_type in content_requests:
+                        if content_type == "purpose":
+                            # Extract purpose from main content
+                            main_content = result.get_main_content()
+                            # Simple heuristic: first paragraph after overview
+                            lines = main_content.split("\n")
+                            purpose = ""
+                            for i, line in enumerate(lines):
+                                if line.strip().startswith("## Overview"):
+                                    # Get next non-empty line
+                                    for j in range(i + 1, len(lines)):
+                                        if lines[j].strip():
+                                            purpose = lines[j].strip()
+                                            break
+                                    break
+                            results[content_type] = (
+                                purpose or "Documentation generated by AI"
+                            )
+                        elif content_type == "overview":
+                            # Extract overview section
+                            main_content = result.get_main_content()
+                            results[content_type] = (
+                                self._extract_section(main_content, "## Overview")
+                                or "## Overview\n\nAI-generated documentation"
+                            )
+                        else:
+                            # For other content types, use main content
+                            results[content_type] = result.get_main_content()
 
                     debug_logger.log(
                         "DEBUG",
-                        "AI content generated",
-                        content_type=content_type,
-                        content_length=len(content),
+                        "AI content generated successfully",
+                        content_types_generated=len(results),
                     )
-
-                except Exception as e:
-                    # Fallback to placeholder for failed generation
-                    fallback_content = self.default_provider.generate_content(
-                        file_path, context, content_type, max_tokens_per_request
-                    )
-                    results[content_type] = fallback_content
-
+                else:
+                    # Fallback for failed generation
                     debug_logger.log(
                         "WARNING",
-                        "AI content generation failed, using fallback",
-                        content_type=content_type,
-                        error=str(e),
+                        "AI generation failed, using template fallback",
+                        error=result.error,
                     )
+                    results = {
+                        content_type: f"[{content_type.replace('_', ' ').title()} - Generation failed: {result.error}]"
+                        for content_type in content_requests
+                    }
+
+            except Exception as e:
+                # Fallback to template for any errors
+                debug_logger.log(
+                    "WARNING",
+                    "AI content generation failed with exception",
+                    error=str(e),
+                )
+                results = {
+                    content_type: f"[{content_type.replace('_', ' ').title()} - Error: {str(e)}]"
+                    for content_type in content_requests
+                }
 
         debug_logger.log(
             "INFO",
@@ -383,6 +475,32 @@ class AIContentManager:
         )
 
         return results
+
+    def _extract_section(self, content: str, section_header: str) -> str:
+        """Extract a section from markdown content.
+
+        Args:
+            content: The full markdown content
+            section_header: The section header to find (e.g., "## Overview")
+
+        Returns:
+            The section content or empty string if not found
+        """
+        lines = content.split("\n")
+        section_lines = []
+        in_section = False
+
+        for line in lines:
+            if line.strip() == section_header:
+                in_section = True
+                section_lines.append(line)
+            elif in_section and line.strip().startswith("#"):
+                # Stop at next section
+                break
+            elif in_section:
+                section_lines.append(line)
+
+        return "\n".join(section_lines) if section_lines else ""
 
     def _get_available_provider(self) -> AIContentProvider | None:
         """Get the best available AI provider."""
@@ -412,20 +530,37 @@ class AIContentManager:
         """Get status of all registered providers."""
         status: dict[str, Any] = {
             "enabled": self.enabled,
-            "preferred_provider": self.preferred_provider,
+            "ai_provider": self.ai_config.provider if self.enabled else "disabled",
             "providers": {},
         }
 
-        for name, provider in self.providers.items():
+        # Get status from new provider system
+        current_provider = self.provider_manager.get_available_provider()
+        if current_provider:
+            status["providers"]["current"] = {
+                "available": True,
+                "type": self.ai_config.provider,
+                "name": current_provider.__class__.__name__,
+            }
+        else:
+            status["providers"]["current"] = {
+                "available": False,
+                "type": self.ai_config.provider if self.enabled else "none",
+            }
+
+        # Legacy providers if any registered
+        for name, legacy_provider in self.providers.items():
             try:
-                provider_info = provider.get_provider_info()
-                status["providers"][name] = {
-                    "available": provider.is_available(),
+                provider_info = legacy_provider.get_provider_info()
+                status["providers"][f"legacy_{name}"] = {
+                    "available": legacy_provider.is_available(),
                     "info": provider_info,
-                    "supported_types": len(provider.get_supported_content_types()),
+                    "supported_types": len(
+                        legacy_provider.get_supported_content_types()
+                    ),
                 }
             except Exception as e:
-                status["providers"][name] = {
+                status["providers"][f"legacy_{name}"] = {
                     "available": False,
                     "error": str(e),
                 }
@@ -436,32 +571,34 @@ class AIContentManager:
         """Validate AI configuration and providers."""
         issues = []
 
-        if not self.providers:
-            issues.append("No AI providers registered")
+        # Check new provider system
+        if self.enabled:
+            provider = self.provider_manager.get_available_provider()
+            if not provider:
+                issues.append(
+                    f"AI enabled but no provider available (configured: {self.ai_config.provider})"
+                )
 
-        available_providers = []
-        for name, provider in self.providers.items():
-            try:
-                if provider.is_available():
-                    available_providers.append(name)
-                else:
-                    # Check for configuration issues
-                    provider_issues = provider.validate_configuration()
-                    if provider_issues:
-                        issues.extend([f"{name}: {issue}" for issue in provider_issues])
-            except Exception as e:
-                issues.append(f"{name}: Error checking availability - {e}")
-
-        if not available_providers and self.enabled:
-            issues.append("AI enabled but no providers are available")
-
-        if (
-            self.preferred_provider
-            and self.preferred_provider not in available_providers
-        ):
-            issues.append(
-                f"Preferred provider '{self.preferred_provider}' is not available"
-            )
+        # Check legacy providers if any
+        if self.providers:
+            available_providers = []
+            for name, legacy_provider in self.providers.items():
+                try:
+                    if legacy_provider.is_available():
+                        available_providers.append(name)
+                    else:
+                        # Check for configuration issues
+                        if hasattr(legacy_provider, "validate_configuration"):
+                            provider_issues = legacy_provider.validate_configuration()
+                            if provider_issues:
+                                issues.extend(
+                                    [
+                                        f"legacy_{name}: {issue}"
+                                        for issue in provider_issues
+                                    ]
+                                )
+                except Exception as e:
+                    issues.append(f"legacy_{name}: Error checking availability - {e}")
 
         return issues
 
@@ -484,11 +621,10 @@ def ask_llm(
     max_tokens: int = 1000,
     provider_name: str | None = None,
 ) -> str:
-    """Ask LLM a question with retry logic (currently returns placeholder).
+    """Ask LLM a question with retry logic using new AI system.
 
-    This function provides the interface for future LLM integration.
-    Currently returns placeholder content but includes the retry logic
-    and error handling that will be needed for real AI calls.
+    This function provides backwards compatibility for the ask_llm pattern
+    while using the new provider system under the hood.
 
     Args:
         prompt: The prompt/question to send to the LLM
@@ -511,24 +647,34 @@ def ask_llm(
     )
 
     try:
-        # In the future, this would dispatch to actual LLM providers
-        # For now, we provide a structured placeholder response
-
         if not ai_content_manager.enabled:
             return "[LLM query disabled - enable AI to get generated responses]"
 
-        # Simulate processing time for realistic testing
-        time.sleep(0.1)
+        # Get provider from new system
+        provider = ai_content_manager.provider_manager.get_available_provider()
+        if not provider:
+            return "[No AI provider available - check configuration]"
 
-        # Generate structured placeholder based on prompt content
-        if "purpose" in prompt.lower():
-            return "The purpose of this component is to [AI would analyze and provide detailed purpose based on code analysis]."
-        elif "overview" in prompt.lower():
-            return "## Overview\n\nThis provides [AI would generate comprehensive overview based on code structure and patterns identified]."
-        elif "how" in prompt.lower():
-            return "This works by [AI would explain the mechanism and flow based on code analysis]."
+        # Create a minimal GenerationRequest for the prompt
+        # We'll use a dummy file path since this is a general query
+        dummy_path = Path("query.txt")
+        request = GenerationRequest(
+            source_file=dummy_path,
+            content=prompt,
+            context=context or {},
+            doc_type="query",
+            template_content=None,
+        )
+
+        # Generate response using the provider
+        result = provider.generate_documentation(request)
+
+        if result.success:
+            # Return the main content as the response
+            return result.get_main_content() or "[AI generated empty response]"
         else:
-            return f"[AI response to: {prompt[:50]}{'...' if len(prompt) > 50 else ''}]"
+            # Return error as placeholder
+            return f"[AI query failed: {result.error}]"
 
     except Exception as e:
         error_msg = f"LLM query failed: {e}"

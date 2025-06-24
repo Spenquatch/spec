@@ -100,7 +100,6 @@ class LocalAIProvider(AIProvider):
         Returns:
             GenerationResult: Documentation generation result
         """
-
         if not self.is_available():
             return GenerationResult(
                 success=False,
