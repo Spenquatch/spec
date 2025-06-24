@@ -369,9 +369,40 @@ class AIContentManager:
                 for content_type in content_requests
             }
 
-        # Get available provider from ProviderManager
+        # Get available provider from ProviderManager or legacy providers
         provider = self.provider_manager.get_available_provider()
+        legacy_provider = None
+
+        debug_logger.log(
+            "DEBUG",
+            "Generate AI content start",
+            enabled=self.enabled,
+            provider_manager_result=bool(provider),
+            legacy_provider_count=len(self.providers),
+        )
+
+        # Fall back to legacy providers if new system unavailable
         if not provider:
+            legacy_provider = self._get_available_provider()
+            debug_logger.log(
+                "DEBUG",
+                "Provider fallback check",
+                has_new_provider=bool(provider),
+                has_legacy_provider=bool(legacy_provider),
+                legacy_provider_count=len(self.providers),
+            )
+
+            # If no available legacy providers but we have registered providers,
+            # try them anyway and let them fail gracefully with fallback content
+            if not legacy_provider and self.providers:
+                legacy_provider = next(iter(self.providers.values()), None)
+                debug_logger.log(
+                    "DEBUG",
+                    "Trying unavailable provider for fallback",
+                    provider_count=len(self.providers),
+                )
+
+        if not provider and not legacy_provider:
             debug_logger.log(
                 "WARNING", "No AI providers available, using template fallback"
             )
@@ -404,8 +435,31 @@ class AIContentManager:
                 template_content=None,
             )
 
-            # Generate documentation using new provider
+            # Generate documentation using available provider
             try:
+                if legacy_provider:
+                    # Use legacy provider system
+                    for content_type in content_requests:
+                        try:
+                            content = legacy_provider.generate_content(
+                                file_path, context, content_type, max_tokens_per_request
+                            )
+                            results[content_type] = content
+                        except Exception as e:
+                            debug_logger.log(
+                                "WARNING",
+                                "Legacy AI content generation failed",
+                                content_type=content_type,
+                                error=str(e),
+                            )
+                            # Fallback to template placeholder content
+                            results[content_type] = (
+                                f"[{content_type.replace('_', ' ').title()} - AI-generated fallback content]"
+                            )
+                    return results
+
+                # Use new provider system (provider is guaranteed to be non-None here)
+                assert provider is not None  # For type checking
                 result = provider.generate_documentation(request)
 
                 if result.success:
@@ -531,6 +585,7 @@ class AIContentManager:
         status: dict[str, Any] = {
             "enabled": self.enabled,
             "ai_provider": self.ai_config.provider if self.enabled else "disabled",
+            "preferred_provider": self.preferred_provider,
             "providers": {},
         }
 
@@ -574,10 +629,18 @@ class AIContentManager:
         # Check new provider system
         if self.enabled:
             provider = self.provider_manager.get_available_provider()
-            if not provider:
-                issues.append(
-                    f"AI enabled but no provider available (configured: {self.ai_config.provider})"
-                )
+            legacy_provider_available = any(
+                p.is_available() for p in self.providers.values()
+            )
+
+            # Only report issues if neither new nor legacy providers are available
+            if not provider and not legacy_provider_available:
+                if not self.providers:
+                    issues.append("No AI providers registered")
+                else:
+                    issues.append(
+                        f"AI enabled but no provider available (configured: {self.ai_config.provider})"
+                    )
 
         # Check legacy providers if any
         if self.providers:
@@ -599,6 +662,15 @@ class AIContentManager:
                                 )
                 except Exception as e:
                     issues.append(f"legacy_{name}: Error checking availability - {e}")
+
+        # Check preferred provider specifically
+        if self.enabled and self.preferred_provider:
+            if self.preferred_provider in self.providers:
+                preferred_provider = self.providers[self.preferred_provider]
+                if not preferred_provider.is_available():
+                    issues.append(
+                        f"Preferred provider '{self.preferred_provider}' is not available"
+                    )
 
         return issues
 

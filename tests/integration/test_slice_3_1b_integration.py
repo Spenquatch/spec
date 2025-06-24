@@ -114,7 +114,7 @@ class TestSlice3_1bGenCommandIntegration:
             total_files=1,
             successful_files=1,
             failed_files=0,
-            generated_files=0,  # No files in generated_files list for this test
+            generated_files=1,  # AI generation creates and tracks generated files
         )
 
     def test_integration_ai_first_when_ai_unavailable_then_falls_back_to_enhanced_templates(
@@ -277,13 +277,18 @@ class TestSlice3_1bGenCommandIntegration:
         test_file_1.write_text(INTEGRATION_TEST_CONTENT)
         test_file_2.write_text("# This file will fail processing")
 
-        def mock_ai_generation_side_effect(target_path, doc_type):
+        def mock_ai_generation_side_effect(target_path, doc_type, template_path=None):
             """Mock AI generation with different results per file."""
             if "success_file" in str(target_path):
+                # Return result that _finalize_ai_results expects
                 return {
                     "success": True,
-                    "data": {"generated_docs": {str(target_path): "AI content"}},
-                    "message": "AI success",
+                    "data": {
+                        "generated_docs": {
+                            str(target_path): "AI-generated content for success file"
+                        }
+                    },
+                    "message": "AI generation successful",
                 }
             else:
                 return {
@@ -293,13 +298,11 @@ class TestSlice3_1bGenCommandIntegration:
                 }
 
         with (
-            patch(
-                "spec_cli.cli.commands.gen_command.generate_with_ai",
+            patch.object(
+                command,
+                "_generate_with_ai_templates",
                 side_effect=mock_ai_generation_side_effect,
             ),
-            patch(
-                "spec_cli.cli.commands.gen_command.create_workflow_result"
-            ) as mock_create_result,
             patch.object(command, "validate_repository_state"),
             patch.object(
                 command, "_expand_source_files", return_value=[test_file_1, test_file_2]
@@ -310,21 +313,26 @@ class TestSlice3_1bGenCommandIntegration:
             ),
             patch("spec_cli.cli.commands.gen_command.show_message"),
             patch("spec_cli.cli.commands.gen_command.debug_logger"),
+            patch(
+                "spec_cli.file_system.path_resolver.PathResolver"
+            ) as mock_path_resolver,
+            patch(
+                "spec_cli.file_system.directory_manager.DirectoryManager"
+            ) as mock_dir_manager,
         ):
-            # Setup mock results for finalization
-            def mock_create_result_side_effect(
-                success, data=None, error=None, message=None
-            ):
-                if success:
-                    return {
-                        "success": True,
-                        "data": data or {},
-                        "message": message or "Success",
-                    }
-                else:
-                    return {"success": False, "error": error or "Error"}
+            # Setup file system mocks
+            mock_resolver_instance = Mock()
+            mock_resolver_instance.get_spec_files_for_source.return_value = {
+                "index": test_file_1.parent / "index.md",
+                "history": test_file_1.parent / "history.md",
+            }
+            mock_path_resolver.return_value = mock_resolver_instance
 
-            mock_create_result.side_effect = mock_create_result_side_effect
+            mock_manager_instance = Mock()
+            mock_manager_instance.create_spec_directory.return_value = (
+                test_file_1.parent
+            )
+            mock_dir_manager.return_value = mock_manager_instance
 
             result = command.execute(
                 files=[test_file_1, test_file_2],

@@ -58,7 +58,7 @@ class TestSlice3_1bExecuteSingleFileAIFirst:
     def mock_command(self):
         """Create mock GenCommand with all dependencies mocked."""
         with (
-            patch("spec_cli.cli.commands.gen_command.generate_with_ai") as mock_ai_gen,
+            patch.object(GenCommand, "_generate_with_ai_templates") as mock_ai_gen,
             patch(
                 "spec_cli.cli.commands.gen_command.AIEnhancedTemplate"
             ) as mock_template,
@@ -134,7 +134,7 @@ class TestSlice3_1bExecuteSingleFileAIFirst:
 
         # Verify AI generation was attempted
         mock_command["mock_ai_gen"].assert_called_once_with(
-            DEFAULT_TARGET_PATH, DEFAULT_DOC_TYPE
+            DEFAULT_TARGET_PATH, DEFAULT_DOC_TYPE, DEFAULT_TEMPLATE_PATH
         )
 
         # Verify AI results were finalized
@@ -176,7 +176,7 @@ class TestSlice3_1bExecuteSingleFileAIFirst:
 
         # Verify AI generation was attempted
         mock_command["mock_ai_gen"].assert_called_once_with(
-            DEFAULT_TARGET_PATH, DEFAULT_DOC_TYPE
+            DEFAULT_TARGET_PATH, DEFAULT_DOC_TYPE, DEFAULT_TEMPLATE_PATH
         )
 
         # Verify enhanced template generation was called as fallback
@@ -218,7 +218,7 @@ class TestSlice3_1bExecuteSingleFileAIFirst:
 
         # Verify AI generation was attempted
         mock_command["mock_ai_gen"].assert_called_once_with(
-            DEFAULT_TARGET_PATH, DEFAULT_DOC_TYPE
+            DEFAULT_TARGET_PATH, DEFAULT_DOC_TYPE, DEFAULT_TEMPLATE_PATH
         )
 
         # Verify template fallback was not called
@@ -531,7 +531,7 @@ class TestSlice3_1bFinalizeAIResults:
         finalized_result = {
             "success": EXPECTED_SUCCESS_RESULT,
             "data": ai_result["data"],
-            "message": "Generated documentation using AI: AI generation successful",
+            "message": "Generated and wrote 2 files using AI",
         }
         mock_command_finalize["mock_result"].return_value = finalized_result
 
@@ -547,7 +547,7 @@ class TestSlice3_1bFinalizeAIResults:
         mock_command_finalize["mock_result"].assert_called_once_with(
             success=EXPECTED_SUCCESS_RESULT,
             data=expected_data,
-            message="Generated documentation using AI: AI generation successful",
+            message="Generated and wrote 2 files using AI",
         )
 
         assert result == finalized_result
@@ -575,12 +575,13 @@ class TestSlice3_1bFinalizeAIResults:
         expected_data["metadata"] = {
             "command_execution_time": "2024-01-01T12:00:00",
             "target_path": str(DEFAULT_TARGET_PATH),
+            "files_written": 2,
         }
 
         mock_command_finalize["mock_result"].assert_called_once_with(
             success=EXPECTED_SUCCESS_RESULT,
             data=expected_data,
-            message="Generated documentation using AI: Success",
+            message="Generated and wrote 2 files using AI",
         )
 
         assert result == finalized_result
@@ -737,16 +738,19 @@ class TestSlice3_1bTraditionalTemplateGeneration:
                 target_path=DEFAULT_TARGET_PATH, template_path=DEFAULT_TEMPLATE_PATH
             )
 
-        # Verify logging occurred
-        mock_logger.log.assert_called_once_with(
+        # Verify both start and completion logs occurred
+        assert mock_logger.log.call_count == 2
+        mock_logger.log.assert_any_call(
             "INFO",
             "Traditional template generation",
             target_path=str(DEFAULT_TARGET_PATH),
             template_path="default",
         )
 
-        # Verify simplified implementation returns target path
-        assert result == [DEFAULT_TARGET_PATH]
+        # Verify returns generated spec files
+        assert len(result) == 2
+        assert any("index.md" in str(f) for f in result)
+        assert any("history.md" in str(f) for f in result)
 
     def test_traditional_template_generation_when_custom_template_then_logs_template_path(
         self,
@@ -760,15 +764,19 @@ class TestSlice3_1bTraditionalTemplateGeneration:
                 target_path=DEFAULT_TARGET_PATH, template_path=custom_template
             )
 
-        # Verify custom template path was logged
-        mock_logger.log.assert_called_once_with(
+        # Verify both start and completion logs occurred
+        assert mock_logger.log.call_count == 2
+        mock_logger.log.assert_any_call(
             "INFO",
             "Traditional template generation",
             target_path=str(DEFAULT_TARGET_PATH),
             template_path=str(custom_template),
         )
 
-        assert result == [DEFAULT_TARGET_PATH]
+        # Verify returns generated spec files
+        assert len(result) == 2
+        assert any("index.md" in str(f) for f in result)
+        assert any("history.md" in str(f) for f in result)
 
 
 class TestSlice3_1bBackwardCompatibility:

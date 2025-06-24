@@ -7,88 +7,6 @@ repos:
     language: system
     pass_filenames: false
     files: ^pyproject\.toml$
-- repo: local
-  hooks:
-  - id: auto-stage-formatted
-    name: Auto-stage formatted files
-    entry: python scripts/auto-stage-formatted.py
-    language: system
-    pass_filenames: false
-    always_run: true
-    stages:
-    - pre-commit
-- repo: local
-  hooks:
-  - id: auto-stage-formatted
-    name: Auto-stage formatted files
-    entry: python scripts/auto-stage-formatted.py
-    language: system
-    pass_filenames: false
-    always_run: true
-    stages:
-    - pre-commit
-- repo: local
-  hooks:
-  - id: auto-stage-formatted
-    name: Auto-stage formatted files
-    entry: python scripts/auto-stage-formatted.py
-    language: system
-    pass_filenames: false
-    always_run: true
-    stages:
-    - pre-commit
-- repo: local
-  hooks:
-  - id: auto-stage-formatted
-    name: Auto-stage formatted files
-    entry: python scripts/auto-stage-formatted.py
-    language: system
-    pass_filenames: false
-    always_run: true
-    stages:
-    - pre-commit
-- repo: local
-  hooks:
-  - id: auto-stage-formatted
-    name: Auto-stage formatted files
-    entry: python scripts/auto-stage-formatted.py
-    language: system
-    pass_filenames: false
-    always_run: true
-    stages:
-    - pre-commit
-- repo: local
-  hooks:
-  - id: auto-stage-formatted
-    name: Auto-stage formatted files
-    entry: python scripts/auto-stage-formatted.py
-    language: system
-    pass_filenames: false
-    always_run: true
-    stages:
-    - pre-commit
-- repo: local
-  hooks:
-  - id: auto-stage-formatted
-    name: Auto-stage formatted files
-    entry: python scripts/auto-stage-formatted.py
-    language: system
-    pass_filenames: false
-    always_run: true
-    stages:
-    - pre-commit
-- repo: local
-  hooks:
-  - id: auto-stage-formatted
-    name: Auto-stage formatted files
-    entry: python scripts/auto-stage-formatted.py
-    language: system
-    pass_filenames: false
-    always_run: true
-    stages:
-    - pre-commit
-- repo: local
-  hooks:
   - id: auto-stage-formatted
     name: Auto-stage formatted files
     entry: python scripts/auto-stage-formatted.py
@@ -126,6 +44,8 @@ repos:
     - rich
     - rich-click
     - types-psutil
+    - torch
+    - llama-cpp-python
     args:
     - --python-version=3.10
     files: ^spec_cli/
@@ -137,13 +57,3 @@ repos:
     - -lll
     - --exclude
     - tests,scripts
-- repo: local
-  hooks:
-  - id: auto-stage-formatted
-    name: Auto-stage formatted files
-    entry: python scripts/auto-stage-formatted.py
-    language: system
-    pass_filenames: false
-    always_run: true
-    stages:
-    - pre-commit

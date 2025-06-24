@@ -58,8 +58,8 @@ class LlamaCppProvider(AIProvider):
         self._model: Llama | None = None
         self._model_loaded = False
 
-        # Auto-detect optimal thread count if not specified
-        if self.config.n_threads is None:
+        # Auto-detect optimal thread count if set to default value
+        if self.config.n_threads == 1:
             self.config.n_threads = min(os.cpu_count() or 4, 6)
 
         self.logger.info(
@@ -183,6 +183,7 @@ class LlamaCppProvider(AIProvider):
             )
 
             # Safely extract response text
+            generated_text = ""
             if hasattr(response, "__iter__") and not isinstance(response, dict):
                 # Handle streaming response (iterator)
                 response_text = ""
@@ -207,15 +208,23 @@ class LlamaCppProvider(AIProvider):
             ):
                 # Handle non-streaming response
                 choice = response["choices"][0]
-                if "text" in choice:
-                    generated_text = choice["text"].strip()
-                elif "message" in choice and "content" in choice["message"]:
-                    generated_text = choice["message"]["content"].strip()
+                # Try to extract text from various response formats
+                # Try text field first
+                text_value = choice.get("text") if isinstance(choice, dict) else None
+                if text_value is not None:
+                    generated_text = str(text_value).strip()
                 else:
-                    return GenerationResult(
-                        success=False,
-                        error="No text content in response",
+                    # Try message.content format
+                    message = (
+                        choice.get("message") if isinstance(choice, dict) else None
                     )
+                    if isinstance(message, dict) and "content" in message:
+                        generated_text = str(message["content"]).strip()
+                    else:
+                        return GenerationResult(
+                            success=False,
+                            error="No text content in response",
+                        )
             else:
                 return GenerationResult(
                     success=False,

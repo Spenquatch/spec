@@ -1010,10 +1010,10 @@ class TestLocalAIProviderGeneratorIntegration:
             mock_generator.load_model.assert_called_once_with("cuda")
 
     @patch("spec_cli.ai.providers.local.get_gpu_capabilities")
-    def test_device_detection_when_mps_available_then_selects_mps(
+    def test_device_detection_when_mps_available_then_selects_cpu(
         self, mock_gpu_capabilities
     ):
-        """Test device detection selects MPS when available."""
+        """Test device detection selects CPU over MPS for performance (small models)."""
         mock_gpu_capabilities.return_value = MOCK_GPU_CAPABILITIES_MPS
 
         with (
@@ -1040,8 +1040,8 @@ class TestLocalAIProviderGeneratorIntegration:
 
             provider.generate_documentation(request)
 
-            # Verify MPS device selected
-            mock_generator.load_model.assert_called_once_with("mps")
+            # Verify CPU device selected (CPU is faster than MPS for small models)
+            mock_generator.load_model.assert_called_once_with("cpu")
 
     @patch("spec_cli.ai.providers.local.get_gpu_capabilities")
     def test_device_detection_when_no_gpu_then_selects_cpu(self, mock_gpu_capabilities):

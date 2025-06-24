@@ -23,6 +23,25 @@ from .generation import (
 from .generation.workflows import GenerationResult
 
 
+def generate_with_ai(
+    target_path: Path, doc_type: str, template_path: Path | None = None
+) -> dict[str, Any]:
+    """Generate documentation using AI.
+
+    This is a placeholder function for AI generation functionality.
+
+    Args:
+        target_path: Path to the source file
+        doc_type: Type of documentation to generate
+        template_path: Optional template path
+
+    Returns:
+        Dictionary with generation results
+    """
+    # Placeholder implementation - will be fully implemented later
+    return {"success": False, "error": "AI generation not yet implemented", "data": {}}
+
+
 class GenCommand(BaseCommand):
     """Command to generate documentation for source files."""
 

@@ -193,6 +193,9 @@ class TestAIConfig:
         config = AIConfig(provider="local")
         assert config.provider == "local"
 
+        config = AIConfig(provider="llamacpp")
+        assert config.provider == "llamacpp"
+
         config = AIConfig(provider="disabled")
         assert config.provider == "disabled"
 
@@ -203,7 +206,7 @@ class TestAIConfig:
 
         error_msg = str(exc_info.value)
         assert "Unsupported provider: openai" in error_msg
-        assert "Valid options: ['local', 'disabled']" in error_msg
+        assert "Valid options: ['local', 'llamacpp', 'disabled']" in error_msg
 
     def test_ai_config_validates_platform_support_supported_platforms(self) -> None:
         """Test platform-specific provider validation - supported platforms."""

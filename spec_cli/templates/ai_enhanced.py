@@ -44,6 +44,9 @@ class TemplateResult:
     def get_content_for_ai(self) -> str:
         """Get content formatted for AI processing."""
         if self.ai_prompt:
+            # Combine AI instructions with template content
+            if self.ai_prompt.ai_instructions:
+                return f"{self.ai_prompt.ai_instructions}\n\n{self.traditional_content}"
             # Return the original template with placeholders, not the substituted version
             return self.ai_prompt.template_content
         return self.traditional_content
