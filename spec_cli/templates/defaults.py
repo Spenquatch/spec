@@ -73,67 +73,61 @@ DEFAULT_INDEX_TEMPLATE = """# {{filename}}
 
 DEFAULT_HISTORY_TEMPLATE = """# History for {{filename}}
 
-This file tracks the evolution, changes, and lessons learned for `{{filepath}}`.
+**Location**: {{filepath}}
 
 ## {{date}} - Initial Creation
 
-**Context**: {{context}}
-
 **Purpose**: {{initial_purpose}}
-
-**Key Decisions**: {{decisions}}
-
+**Context**: {{context}}
 **Implementation Notes**: {{implementation_notes}}
+**Decisions**: {{decisions}}
 
 ## Change Log
 
-### Format
-Each entry should include:
-- **Date**: When the change occurred
-- **Type**: [Feature|Bugfix|Refactor|Documentation|Performance|Security]
-- **Description**: What changed and why
-- **Impact**: How this affects the codebase
-- **Lessons Learned**: What we learned from this change
+*Changes will be documented here as the file evolves.*
 
----
+### Feature Addition
+
+**Date**: {{date}}
+**Change**: Describe the new feature
+**Rationale**: Why was this feature needed?
+**Impact**: How does this affect existing functionality?
+
+### Bug Fix
+
+**Date**: {{date}}
+**Issue**: Describe the bug that was fixed
+**Solution**: How was the issue resolved?
+**Prevention**: Steps taken to prevent recurrence
+
+### Refactoring
+
+**Date**: {{date}}
+**Scope**: What was refactored?
+**Goal**: What was the objective?
+**Outcome**: What was achieved?
 
 ## Templates for Future Entries
 
-### Feature Addition
-```
-## YYYY-MM-DD - Feature: [Brief Description]
+Use these templates when documenting changes:
 
-**Type**: Feature
-**Description**: [Detailed description of the feature]
-**Motivation**: [Why this feature was needed]
-**Implementation**: [How it was implemented]
-**Impact**: [Effects on the codebase, performance, etc.]
-**Lessons Learned**: [What we learned during implementation]
-```
+**Feature Addition**:
+- Date: [YYYY-MM-DD]
+- Change: [Brief description]
+- Rationale: [Why needed]
+- Impact: [Effect on system]
 
-### Bug Fix
-```
-## YYYY-MM-DD - Bugfix: [Brief Description]
+**Bug Fix**:
+- Date: [YYYY-MM-DD]
+- Issue: [Problem description]
+- Solution: [How fixed]
+- Prevention: [Future prevention]
 
-**Type**: Bugfix
-**Description**: [What bug was fixed]
-**Root Cause**: [What caused the bug]
-**Solution**: [How the bug was fixed]
-**Prevention**: [How to prevent similar bugs]
-**Lessons Learned**: [What we learned from this bug]
-```
-
-### Refactoring
-```
-## YYYY-MM-DD - Refactor: [Brief Description]
-
-**Type**: Refactor
-**Description**: [What was refactored]
-**Motivation**: [Why the refactor was needed]
-**Changes**: [What specifically changed]
-**Benefits**: [Improvements gained]
-**Lessons Learned**: [What we learned during refactoring]
-```
+**Refactoring**:
+- Date: [YYYY-MM-DD]
+- Scope: [What changed]
+- Goal: [Objective]
+- Outcome: [Result]
 
 ---
 *History maintained by spec-cli*
@@ -183,7 +177,7 @@ def get_minimal_template_config() -> TemplateConfig:
 
 ## {{date}} - Initial Creation
 
-**Purpose**: {{initial_purpose}}
+**Purpose**: {{purpose}}
 **Context**: {{context}}
 """
 

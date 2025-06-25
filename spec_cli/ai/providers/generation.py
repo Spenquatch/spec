@@ -10,6 +10,7 @@ import logging
 import os
 import sys
 import time
+from datetime import datetime
 from typing import Any
 
 from ...utils.path_utils import normalize_path_separators
@@ -384,23 +385,21 @@ Focus on accuracy and usefulness for both human developers and AI agents working
         # Future enhancement could parse sections into separate files
         content = {"index.md": generated_text}
 
-        # Add minimal history entry with normalized path
+        # Generate history.md using template system
         normalized_path = normalize_path_separators(str(request.source_file))
         filename = os.path.basename(normalized_path)
 
+        # Create simple history content for basic tracking
         content["history.md"] = f"""# Documentation History for {filename}
 
-## Latest Generation
-- **Date**: Generated automatically
-- **Method**: AI-powered analysis using {self.config.model_name}
-- **Platform**: {sys.platform}
-- **Source**: {normalized_path}
-- **Content**: Comprehensive documentation based on code analysis
+**Location**: {normalized_path}
 
-## Notes
-- Documentation generated using local AI model
-- Content optimized for both human and AI consumption
-- Cross-platform compatible documentation format
+## {datetime.now().strftime("%Y-%m-%d")} - Initial Creation
+
+**Purpose**: AI-powered analysis using local model
+**Context**: File documented with spec-cli
+**Model**: {self.config.model_name}
+**Platform**: {sys.platform}
 """
 
         return content
