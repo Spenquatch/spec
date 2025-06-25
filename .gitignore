@@ -23,7 +23,7 @@ share/python-wheels/
 *.egg
 MANIFEST
 bin/
-.devcontainer
+
 
 # Unit test / coverage reports
 htmlcov/
@@ -39,6 +39,7 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 cover/
+CLAUDE.md
 
 # Environments
 .env
@@ -71,7 +72,8 @@ new_test/*
 .spec-index
 
 # Poetry
-poetry.lock
+# Note: poetry.lock should be committed for applications
+# but ignored for libraries. spec-cli is an application.
 
 # mypy
 .mypy_cache/
@@ -85,5 +87,11 @@ dmypy.json
 # Backup files
 *.backup
 
-# model files
+# Development slices (internal development methodology)
+docs/slices/
+
+# Model files (too large for git)
 models/
+
+# Private business planning (internal strategy only)
+private/

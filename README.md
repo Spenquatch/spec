@@ -4,18 +4,19 @@
 [![PyPI version](https://badge.fury.io/py/spec-ai.svg)](https://badge.fury.io/py/spec-ai)[![Python Support](https://img.shields.io/pypi/pyversions/spec-ai.svg)](https://pypi.org/project/spec-ai/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)[![Code style: ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)[![Type checked: mypy](https://img.shields.io/badge/type%20checked-mypy-blue.svg)](https://mypy-lang.org/)
 
-**A production-ready versioned documentation layer for AI-assisted development.**
+**The first AI-powered automated codebase maintenance platform.**
 
-`spec` maintains a separate Git repository of contextual documentation that helps AI agents understand your codebase without polluting your main Git history. Built with enterprise-grade architecture, comprehensive testing (1,661 tests, 85%+ coverage), and strict type safety.
+`spec` maintains a separate Git repository of contextual documentation that auto-updates when your code changes, using local AI models. Built with enterprise-grade architecture, comprehensive testing (2,426 tests, 85%+ coverage), and revolutionary self-healing capabilities coming soon.
 
 ## Why spec?
 
-- **AI-Optimized Context**: Structured documentation designed for LLM consumption
-- **Version-Controlled Memory**: AI agents can learn from past attempts and decisions
+- **Automated Documentation**: Self-updating docs that regenerate when your code changes significantly
+- **Local AI Models**: Save expensive API token costs with built-in Qwen3-Emb-0.6B model
+- **Self-Healing Codebase**: Automatically fix quality issues (ruff, mypy) during regeneration (coming soon)
 - **Isolated Git History**: Documentation changes don't clutter your main repository
-- **Scoped Context Windows**: Load only relevant documentation to fit within token limits
+- **Semantic Search**: Find relevant documentation instantly with local AI search (95% complete)
 - **Rich Terminal UI**: Beautiful, colorful interface with progress indicators
-- **Modular Architecture**: Clean, testable codebase built for extensibility
+- **Version-Controlled Memory**: Track documentation evolution and learn from past decisions
 
 ## Installation
 
@@ -64,8 +65,9 @@ spec diff
 ### ✅ Core Features
 
 - **Project Initialization**: `spec init` creates isolated Git repository structure
-- **AI Documentation Generation**: `spec gen` AI-generated documentation based on user specified templates
+- **AI Documentation Generation**: `spec gen` creates documentation using local AI models (Qwen3-Emb-0.6B)
 - **Version Control**: Full Git workflow (`add`, `commit`, `status`, `log`, `diff`)
+- **Local AI Embedding**: 95% complete semantic search system with JSON storage
 - **Template System**: Customizable documentation templates via `.spectemplate`
 - **File Filtering**: Smart filtering with `.specignore` patterns
 - **Rich Terminal UI**: Beautiful interface with colors, progress bars, and styling
@@ -73,12 +75,22 @@ spec diff
 - **File Type Detection**: Support for 20+ programming languages and file types
 - **Conflict Resolution**: Interactive handling of existing documentation
 - **Debug Mode**: Comprehensive debugging with `SPEC_DEBUG=1`
-- **Modular Architecture**: Clean, maintainable codebase with 80%+ test coverage
+- **Cross-Platform**: Windows, macOS, and Linux compatibility
+- **Modular Architecture**: Clean, maintainable codebase with 85%+ test coverage
 
-### 🔮 Future Features
+### 🚧 In Development
 
-- **Git Hook Integration**: Auto-generate documentation on code changes
-- **Enhanced CLI**: Advanced options and configuration management
+- **Semantic Search CLI**: Expose local AI search capabilities (`spec search "query"`)
+- **Auto-Documentation Updates**: Automatically regenerate docs when files change significantly
+- **Self-Healing Code Quality**: Automatic fixing of common quality issues during regeneration
+
+### 🔮 Planned Features
+
+- **Automated Documentation Maintenance**: Monitor git changes and auto-regenerate documentation
+- **Quality Gates Integration**: `spec quality` command orchestrating mypy, ruff, and other tools
+- **Self-Healing Codebase**: Automatic code quality improvements with `spec add --heal`
+- **Git Hook Integration**: Seamless integration with development workflow
+- **Web UI & SaaS Features**: Team collaboration, webhooks, and hosted documentation
 
 ## How It Works
 
@@ -130,121 +142,12 @@ Each source file gets a documentation directory with:
 - `spec diff [path]` - Show uncommitted changes
 - `spec show <path>` - Display documentation for a file (coming soon)
 
-### Future Commands
+### Coming Soon
 
+- `spec search "query"` - Semantic search through documentation using local AI
 - `spec regen <path>` - Regenerate documentation (preserves history)
-- `spec agent-scope [options]` - Export scoped context for AI agents
-
-## Advanced Usage
-
-### Dependency Synchronization
-
-`spec` automatically keeps your pre-commit configuration synchronized with your Poetry dependencies. This ensures consistency between your development tools (mypy, ruff, bandit, etc.) and their versions across both environments.
-
-#### How It Works
-
-The project includes an automatic sync script that:
-
-- Reads your `pyproject.toml` Poetry dependencies
-- Maps development tools to their corresponding pre-commit repositories
-- Automatically includes type stub dependencies (like `types-click`, `types-PyYAML`)
-- Updates `.pre-commit-config.yaml` with the correct versions
-
-#### Automatic Synchronization
-
-The sync runs automatically whenever you modify `pyproject.toml`:
-
-```bash
-# This automatically triggers sync when you commit changes to pyproject.toml
-poetry add --group dev types-requests
-git add pyproject.toml
-git commit -m "Add types-requests"
-# → Pre-commit hook updates .pre-commit-config.yaml automatically
-```
-
-#### Manual Synchronization
-
-You can also run the sync manually:
-
-```bash
-# Generate/update pre-commit config from poetry dependencies
-python scripts/sync-pre-commit.py
-
-# Show what would change without making changes
-python scripts/sync-pre-commit.py --dry-run
-
-# Quiet mode (used by pre-commit hook)
-python scripts/sync-pre-commit.py --quiet
-```
-
-#### Supported Tools
-
-The sync script automatically configures pre-commit hooks for:
-
-- **mypy** - Type checking with automatic type stub dependencies
-- **ruff** - Linting and formatting (both `ruff` and `ruff-format` hooks)
-- **black** - Code formatting
-- **isort** - Import sorting
-- **bandit** - Security analysis
-
-Type dependencies (`types-*` packages) are automatically detected and added to the mypy hook configuration.
-
-#### Automatic File Staging
-
-When formatting tools (like ruff-format) modify files during a commit, those changes are automatically staged so the commit can proceed without manual intervention. This prevents the common issue where:
-
-1. You run `git commit`
-2. Pre-commit hooks format your files
-3. The commit fails because formatted files aren't staged
-4. You have to run `git add` and commit again
-
-With automatic staging enabled, formatted files are immediately re-staged and the commit proceeds smoothly. This is especially useful for AI agents that may force commits without checking for formatting changes.
-
-### Custom Templates
-
-Create a `.spectemplate` file to customize documentation format:
-
-```yaml
-index:
-  template: |
-    # {{filename}}
-
-    **Location**: {{filepath}}
-    **Purpose**: {{purpose}}
-    **Responsibilities**: {{responsibilities}}
-    **Requirements**: {{requirements}}
-    **Example Usage**: {{example_usage}}
-    **Notes**: {{notes}}
-
-history:
-  template: |
-    ## {{date}} - Initial Creation
-
-    **Purpose**: Created initial specification for {{filename}}
-    **Context**: {{context}}
-    **Decisions**: {{decisions}}
-    **Lessons Learned**: {{lessons}}
-```
-
-### Environment Variables
-
-Control spec behavior with environment variables:
-
-- `SPEC_DEBUG=1` - Enable debug output for troubleshooting
-- `SPEC_DEBUG_LEVEL=INFO|DEBUG|WARNING|ERROR` - Set debug level
-- `SPEC_DEBUG_TIMING=1` - Enable operation timing
-
-### File Filtering
-
-Use `.specignore` to exclude files from documentation generation:
-
-```
-# Ignore patterns
-*.log
-node_modules/
-build/
-*.min.js
-```
+- `spec quality` - Run comprehensive quality checks (mypy, ruff, etc.)
+- `spec add --heal` - Track files with automatic quality improvements
 
 ## Architecture
 
@@ -279,7 +182,7 @@ spec_cli/
 - **Layered Architecture**: Clear separation of concerns with dependency direction rules
 - **Component Extraction**: Recent refactoring eliminated 121+ lines of duplicate code
 - **Type Safety**: MyPy strict mode with 100% coverage across all modules
-- **Testability**: 1,661 comprehensive tests with 85%+ coverage
+- **Testability**: 2,426 comprehensive tests with 85%+ coverage
 - **Rich UX**: Beautiful terminal interface with progress tracking and error handling
 - **Cross-Platform**: Robust Windows/macOS/Linux compatibility
 
@@ -289,10 +192,6 @@ This project uses modern Python tooling for optimal developer experience:
 
 ```bash
 # Environment setup
-uv venv                        # Create virtual environment
-source .venv/bin/activate      # Activate (Unix/macOS)
-# .venv\Scripts\activate       # Activate (Windows)
-
 poetry install                 # Install dependencies
 poetry run dev-setup          # Complete initialization
 
@@ -325,31 +224,6 @@ The project maintains enterprise-grade quality through automated enforcement:
 - **Security**: Bandit static analysis with dependency vulnerability scanning
 - **Cross-Platform**: Automated testing on Python 3.10-3.12 across Windows/macOS/Linux
 - **Documentation**: Google-style docstrings with automated validation
-
-### Recent Architecture Improvements
-
-The codebase has undergone systematic refactoring to achieve production readiness:
-
-#### **Component Extraction** ✅
-
-- **WorkflowExecutor**: Separated workflow execution logic (147 lines, complexity 5/7)
-- **WorkflowBackupManager**: Isolated backup operations (208 lines) with Git tag management
-- **BatchResultAggregator**: Centralized result analysis and statistics
-- **BatchProgressTracker**: Extracted progress tracking with rich UI integration
-
-#### **Code Deduplication** ✅
-
-- **Eliminated 121+ lines** of duplicate path handling code
-- **Consolidated utilities** into centralized `utils/` module
-- **Zero duplicate patterns** remaining across 9+ updated files
-- **Consistent error handling** with structured context
-
-#### **Testing Excellence** ✅
-
-- **1,661 comprehensive tests** covering all code paths
-- **85.26% overall coverage** (exceeding 80% requirement)
-- **100% coverage** for newly refactored components
-- **Cross-platform test compatibility** with proper mocking patterns
 
 ## Use Cases
 
