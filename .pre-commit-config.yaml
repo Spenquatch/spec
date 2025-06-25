@@ -15,6 +15,18 @@ repos:
     always_run: true
     stages:
     - pre-commit
+  - id: mypy
+    name: mypy
+    entry: poetry run mypy
+    language: system
+    types:
+    - python
+    args:
+    - spec_cli/
+    - --python-version=3.10
+    - --no-error-summary
+    files: ^spec_cli/
+    pass_filenames: false
 - repo: https://github.com/pre-commit/pre-commit-hooks
   rev: v4.5.0
   hooks:
@@ -32,23 +44,6 @@ repos:
     files: ^spec_cli/
   - id: ruff-format
     files: ^spec_cli/
-- repo: https://github.com/pre-commit/mirrors-mypy
-  rev: v1.16.0
-  hooks:
-  - id: mypy
-    additional_dependencies:
-    - types-PyYAML
-    - types-click
-    - pydantic
-    - tomli
-    - rich
-    - rich-click
-    - types-psutil
-    - torch
-    - llama-cpp-python
-    args:
-    - --python-version=3.10
-    files: ^spec_cli/
 - repo: https://github.com/pycqa/bandit
   rev: 1.7.8
   hooks:
@@ -57,3 +52,13 @@ repos:
     - -lll
     - --exclude
     - tests,scripts
+- repo: local
+  hooks:
+  - id: auto-stage-formatted
+    name: Auto-stage formatted files
+    entry: python scripts/auto-stage-formatted.py
+    language: system
+    pass_filenames: false
+    always_run: true
+    stages:
+    - pre-commit

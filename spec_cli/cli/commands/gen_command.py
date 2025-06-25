@@ -555,8 +555,51 @@ class GenCommand(BaseCommand):
                     content_length=len(main_content),
                 )
 
-            # Create a basic history.md file
-            history_content = f"""# History
+            # Create history.md file using template
+            try:
+                from ...templates.loader import load_template
+                from ...templates.substitution import TemplateSubstitution
+
+                template_config = load_template(self.settings)
+                history_template = template_config.history
+
+                # Create variables for history template
+                history_variables = {
+                    "filename": target_path.name,
+                    "filepath": str(target_path),
+                    "date": datetime.now().strftime("%Y-%m-%d"),
+                    "context": "AI-powered documentation generation",
+                    "initial_purpose": "Generated comprehensive documentation using AI",
+                    "decisions": "Used AI template-guided generation approach",
+                    "implementation_notes": "Automatically generated using spec-cli AI integration",
+                }
+
+                # Substitute template variables
+                substitution = TemplateSubstitution()
+                history_content = substitution.substitute(
+                    history_template, history_variables
+                )
+
+                history_file = spec_files.get("history") or spec_dir / "history.md"
+                history_file.write_text(history_content, encoding="utf-8")
+                generated_file_paths.append(history_file)
+
+                debug_logger.log(
+                    "INFO",
+                    "Template-based history.md written",
+                    file_path=str(history_file),
+                    content_length=len(history_content),
+                    template_used=True,
+                )
+
+            except Exception as e:
+                # Fallback to basic history if template processing fails
+                debug_logger.log(
+                    "WARNING",
+                    "Template-based history generation failed, using fallback",
+                    error=str(e),
+                )
+                history_content = f"""# History
 
 ## Generated on {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 
@@ -568,17 +611,9 @@ class GenCommand(BaseCommand):
 
 Initial AI-generated documentation.
 """
-
-            history_file = spec_files.get("history") or spec_dir / "history.md"
-            history_file.write_text(history_content, encoding="utf-8")
-            generated_file_paths.append(history_file)
-
-            debug_logger.log(
-                "INFO",
-                "AI-generated history.md written",
-                file_path=str(history_file),
-                content_length=len(history_content),
-            )
+                history_file = spec_files.get("history") or spec_dir / "history.md"
+                history_file.write_text(history_content, encoding="utf-8")
+                generated_file_paths.append(history_file)
 
             # Update metadata
             if "metadata" not in ai_data:

@@ -157,6 +157,24 @@ class DocumentationGenerator:
             # Parse and structure the output
             structured_content = self._parse_generated_content(generated_text, request)
 
+            # Validate template completion if template was provided
+            template_validation_warnings = []
+            if request.template_content and request.template_content.strip():
+                main_content = structured_content.get("index.md", "")
+                is_valid, missing_placeholders = self._validate_template_completion(
+                    request.template_content, main_content
+                )
+
+                if not is_valid:
+                    template_validation_warnings = [
+                        f"Template placeholders not filled: {', '.join(missing_placeholders)}"
+                    ]
+                    logger.warning(
+                        f"Template validation failed for {normalized_path}: missing {missing_placeholders}"
+                    )
+                else:
+                    logger.info(f"Template validation passed for {normalized_path}")
+
             processing_time = int((time.time() - start_time) * 1000)
             self._generation_count += 1
 
@@ -165,18 +183,24 @@ class DocumentationGenerator:
                 f"Generated documentation for {normalized_path} in {processing_time}ms"
             )
 
+            metadata = {
+                "provider": "local",
+                "model": self.config.model_name,
+                "processing_time_ms": processing_time,
+                "generation_count": self._generation_count,
+                "device": self.device,
+                "platform": sys.platform,
+                "source_file": normalized_path,
+            }
+
+            # Add validation warnings if any
+            if template_validation_warnings:
+                metadata["template_validation_warnings"] = template_validation_warnings
+
             return GenerationResult(
                 success=True,
                 content=structured_content,
-                metadata={
-                    "provider": "local",
-                    "model": self.config.model_name,
-                    "processing_time_ms": processing_time,
-                    "generation_count": self._generation_count,
-                    "device": self.device,
-                    "platform": sys.platform,
-                    "source_file": normalized_path,
-                },
+                metadata=metadata,
             )
 
         except Exception as e:
@@ -205,31 +229,45 @@ class DocumentationGenerator:
 
         # If template content is provided, use it as the primary prompt structure
         if request.template_content and request.template_content.strip():
-            # Use simplified prompt format better suited for Qwen2.5-Coder
+            # Extract placeholders from template
+            import re
 
-            # Simple, direct instruction without complex template
+            placeholders = re.findall(r"\{\{(\w+)\}\}", request.template_content)
+
             # Use much more content - Qwen2.5-Coder supports 32k context
-            # Reserve ~1000 tokens for prompt and output, use ~14k chars for code
+            # Reserve ~2000 tokens for prompt and output, use ~14k chars for code
             max_code_chars = 14000
             code_content = request.content[:max_code_chars]
 
-            # Balanced prompt for quality and speed
-            prompt = f"""Generate comprehensive documentation for this Python code:
+            # Create prompt with template structure
+            prompt = f"""You are a technical documentation expert. Your task is to fill in a documentation template by replacing placeholder variables with appropriate content.
 
+CODE TO ANALYZE:
 ```python
 {code_content}
 ```
 
-Create a well-structured markdown documentation including:
-- Purpose and functionality
-- Key components (classes, functions, important variables)
-- Usage examples if relevant
+DOCUMENTATION TEMPLATE (COPY THIS EXACTLY AND FILL IN THE PLACEHOLDERS):
+{request.template_content}
 
-Documentation:"""
+CRITICAL INSTRUCTIONS:
+1. COPY the template structure exactly as shown above
+2. Replace ONLY the placeholder variables {{{{variable_name}}}} with appropriate content
+3. Do NOT change the markdown structure, headers, or formatting
+4. Do NOT add new sections or remove existing ones
+5. Do NOT use your own documentation format - use ONLY the template provided
+6. Analyze the code to generate accurate content for each placeholder
+
+Placeholder meanings:
+{chr(10).join(f"- {{{{{p}}}}}: {self._get_field_description(p)}" for p in placeholders)}
+
+IMPORTANT: Your response must be the completed template with all {{{{placeholders}}}} replaced by actual content. Do not include any other text or explanations."""
 
             # Reduce debug logging for speed
             if logger.isEnabledFor(logging.DEBUG):
-                logger.debug(f"Using optimized prompt for {normalized_path}")
+                logger.debug(
+                    f"Using template-based prompt for {normalized_path} with {len(placeholders)} placeholders"
+                )
             return prompt
 
         # Fallback to default prompt if no template provided
@@ -433,6 +471,89 @@ Focus on accuracy and usefulness for both human developers and AI agents working
         }
 
         return language_map.get(file_extension.lower(), "text")
+
+    def _get_field_description(self, placeholder: str) -> str:
+        """Get descriptive text for a template placeholder.
+
+        Args:
+            placeholder: Variable name from template
+
+        Returns:
+            Human-readable description of the variable
+        """
+        # Common variable descriptions
+        descriptions = {
+            "filename": "Source file name",
+            "filepath": "File path location",
+            "purpose": "Primary purpose or function of the code",
+            "overview": "High-level overview of functionality",
+            "description": "Detailed description",
+            "author": "Author or creator name",
+            "date": "Creation or modification date",
+            "version": "Version or revision number",
+            "content": "Main content or body",
+            "summary": "Brief summary",
+            "details": "Additional details",
+            "notes": "Important notes or comments",
+            "examples": "Usage examples",
+            "example_usage": "Code usage examples",
+            "references": "Related references or links",
+            "related_docs": "Related documentation",
+            "responsibilities": "Key responsibilities and capabilities",
+            "dependencies": "Required dependencies and imports",
+            "api_interface": "Public API and interface details",
+            "configuration": "Configuration options and settings",
+            "error_handling": "Error handling and exception management",
+            "testing_notes": "Testing approaches and considerations",
+            "performance_notes": "Performance characteristics and optimizations",
+            "security_notes": "Security considerations and requirements",
+            "future_enhancements": "Planned improvements and future features",
+            "file_type": "Type of file or component",
+            "file_extension": "File extension for code blocks",
+        }
+
+        # Try exact match first
+        if placeholder in descriptions:
+            return descriptions[placeholder]
+
+        # Try partial matches for common patterns
+        placeholder_lower = placeholder.lower()
+        for key, desc in descriptions.items():
+            if key in placeholder_lower or placeholder_lower in key:
+                return desc
+
+        # Generic description for unknown variables
+        return f"Content for {placeholder.replace('_', ' ')}"
+
+    def _validate_template_completion(
+        self, template_content: str, generated_content: str
+    ) -> tuple[bool, list[str]]:
+        """Validate that AI output properly filled template placeholders.
+
+        Args:
+            template_content: Original template with placeholders
+            generated_content: AI-generated content
+
+        Returns:
+            Tuple of (is_valid, list_of_missing_placeholders)
+        """
+        import re
+
+        # Extract placeholders from original template
+        template_placeholders = set(re.findall(r"\{\{(\w+)\}\}", template_content))
+
+        # Find any remaining placeholders in generated content
+        remaining_placeholders = set(re.findall(r"\{\{(\w+)\}\}", generated_content))
+
+        # Check if all placeholders were filled
+        unfilled_placeholders = template_placeholders.intersection(
+            remaining_placeholders
+        )
+
+        is_valid = len(unfilled_placeholders) == 0
+        missing_list = list(unfilled_placeholders)
+
+        return is_valid, missing_list
 
     def _get_cache_dir(self) -> str | None:
         """Get cross-platform model cache directory.

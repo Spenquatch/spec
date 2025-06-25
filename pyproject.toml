@@ -137,7 +137,7 @@ disallow_untyped_decorators = false
 
 # AI modules with optional dependencies
 [[tool.mypy.overrides]]
-module = "spec_cli.ai.providers.generation"
+module = ["spec_cli.ai.providers.generation", "spec_cli.ai.providers.llamacpp"]
 ignore_missing_imports = true
 warn_unreachable = false
 warn_unused_ignores = false

@@ -91,21 +91,21 @@ class AIEnhancedTemplate:
         Raises:
             SpecTemplateError: If template processing fails
         """
-        if not isinstance(template_content, str):
-            raise SpecTemplateError("template_content must be a string")
-
-        if not isinstance(variables, dict):
-            raise SpecTemplateError("variables must be a dictionary")
-
-        debug_logger.log(
-            "INFO",
-            "Processing template",
-            content_length=len(template_content),
-            variables_count=len(variables),
-            ai_enabled=ai_enabled,
-        )
-
         try:
+            # Validate inputs
+            if not isinstance(template_content, str):
+                raise SpecTemplateError("template_content must be a string")
+
+            if not isinstance(variables, dict):
+                raise SpecTemplateError("variables must be a dictionary")
+
+            debug_logger.log(
+                "INFO",
+                "Processing template",
+                content_length=len(template_content),
+                variables_count=len(variables),
+                ai_enabled=ai_enabled,
+            )
             # Start timing
             import time
 
@@ -142,13 +142,18 @@ class AIEnhancedTemplate:
 
             return result
 
+        except SpecTemplateError:
+            # Re-raise template errors for proper validation
+            raise
         except Exception as e:
             error_msg = f"Template processing failed: {e}"
             debug_logger.log("ERROR", error_msg)
+            # Handle case where variables might not be a dict
+            safe_variables = variables.copy() if isinstance(variables, dict) else {}
             return TemplateResult(
                 success=False,
                 error=error_msg,
-                variables=variables.copy(),
+                variables=safe_variables,
             )
 
     @default_error_handler.wrap
@@ -271,10 +276,12 @@ class AIEnhancedTemplate:
         except Exception as e:
             error_msg = f"Failed to load and process template: {e}"
             debug_logger.log("ERROR", error_msg)
+            # Handle case where variables might not be a dict
+            safe_variables = variables.copy() if isinstance(variables, dict) else {}
             return TemplateResult(
                 success=False,
                 error=error_msg,
-                variables=variables.copy(),
+                variables=safe_variables,
             )
 
     def validate_template_compatibility(self, template_content: str) -> list[str]:

@@ -28,22 +28,9 @@ class HookConfig:
 
 
 # Mapping of poetry packages to pre-commit hook configurations
+# Note: mypy excluded - using local hook that runs through poetry for proper environment
 HOOK_MAPPINGS = {
-    "mypy": HookConfig(
-        repo="https://github.com/pre-commit/mirrors-mypy",
-        rev_pattern="v{version}",
-        hook_id="mypy",
-        additional_deps=[
-            "types-PyYAML",
-            "types-click",
-            "pydantic",
-            "tomli",
-            "rich",
-            "rich-click",
-        ],
-        args=["--python-version=3.10"],
-        files="^spec_cli/",
-    ),
+    # "mypy" - Disabled: using local hook for proper poetry environment access
     "ruff": HookConfig(
         repo="https://github.com/astral-sh/ruff-pre-commit",
         rev_pattern="v{version}",

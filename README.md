@@ -20,6 +20,7 @@
 ## Installation
 
 ### Installation Options
+
 ```bash
 # Recommended installation (with AI - full functionality)
 pip install spec-cli[ai]
@@ -61,8 +62,9 @@ spec diff
 ## Features
 
 ### ✅ Core Features
+
 - **Project Initialization**: `spec init` creates isolated Git repository structure
-- **Documentation Generation**: `spec gen` creates structured documentation with templates
+- **AI Documentation Generation**: `spec gen` AI-generated documentation based on user specified templates
 - **Version Control**: Full Git workflow (`add`, `commit`, `status`, `log`, `diff`)
 - **Template System**: Customizable documentation templates via `.spectemplate`
 - **File Filtering**: Smart filtering with `.specignore` patterns
@@ -74,13 +76,14 @@ spec diff
 - **Modular Architecture**: Clean, maintainable codebase with 80%+ test coverage
 
 ### 🔮 Future Features
-- **AI Documentation Generation**: Replace placeholder content with AI-generated documentation
+
 - **Git Hook Integration**: Auto-generate documentation on code changes
 - **Enhanced CLI**: Advanced options and configuration management
 
 ## How It Works
 
 `spec` creates two directories:
+
 - `.spec/` - A bare Git repository (like `.git`)
 - `.specs/` - Working tree containing documentation
 
@@ -107,25 +110,28 @@ project/
 ```
 
 Each source file gets a documentation directory with:
+
 - `index.md`: Current understanding and specifications
 - `history.md`: Evolution, decisions, and lessons learned
-
 
 ## Commands
 
 ### Core Commands
+
 - `spec init` - Initialize spec in current directory
 - `spec gen <path>` - Generate documentation for file(s) or directory
 - `spec add <path>` - Stage documentation changes
 - `spec commit -m "message"` - Commit documentation changes
 
 ### View Documentation
+
 - `spec status` - Show documentation status
 - `spec log [path]` - Show documentation history
 - `spec diff [path]` - Show uncommitted changes
 - `spec show <path>` - Display documentation for a file (coming soon)
 
 ### Future Commands
+
 - `spec regen <path>` - Regenerate documentation (preserves history)
 - `spec agent-scope [options]` - Export scoped context for AI agents
 
@@ -138,6 +144,7 @@ Each source file gets a documentation directory with:
 #### How It Works
 
 The project includes an automatic sync script that:
+
 - Reads your `pyproject.toml` Poetry dependencies
 - Maps development tools to their corresponding pre-commit repositories
 - Automatically includes type stub dependencies (like `types-click`, `types-PyYAML`)
@@ -173,6 +180,7 @@ python scripts/sync-pre-commit.py --quiet
 #### Supported Tools
 
 The sync script automatically configures pre-commit hooks for:
+
 - **mypy** - Type checking with automatic type stub dependencies
 - **ruff** - Linting and formatting (both `ruff` and `ruff-format` hooks)
 - **black** - Code formatting
@@ -243,6 +251,7 @@ build/
 `spec` follows a mature, enterprise-grade architecture built through systematic refactoring:
 
 ### Directory Structure
+
 ```
 spec_cli/
 ├── cli/                     # Command-line interface layer
@@ -266,6 +275,7 @@ spec_cli/
 ```
 
 ### Key Design Principles
+
 - **Layered Architecture**: Clear separation of concerns with dependency direction rules
 - **Component Extraction**: Recent refactoring eliminated 121+ lines of duplicate code
 - **Type Safety**: MyPy strict mode with 100% coverage across all modules
@@ -292,18 +302,18 @@ poetry run check-all          # Run all quality gates
 
 ### Development Commands
 
-| Command | Purpose | Quality Gate |
-|---------|---------|--------------|
-| `poetry run dev-setup` | Complete environment initialization | Setup |
-| `poetry run type-check` | MyPy strict type checking (zero errors) | Type Safety |
-| `poetry run lint` | Ruff linting with auto-fix | Code Quality |
-| `poetry run format` | Ruff code formatting | Style |
-| `poetry run docs` | Pydocstyle documentation validation | Documentation |
-| `poetry run security` | Bandit security scanning | Security |
-| `poetry run audit` | Vulnerability scanning | Dependencies |
-| `poetry run test` | Pytest with 85%+ coverage | Testing |
-| `poetry run platform-check` | Cross-platform compatibility | Portability |
-| `poetry run check-all` | **All quality gates** (CI simulation) | Complete |
+| Command                     | Purpose                                 | Quality Gate  |
+| --------------------------- | --------------------------------------- | ------------- |
+| `poetry run dev-setup`      | Complete environment initialization     | Setup         |
+| `poetry run type-check`     | MyPy strict type checking (zero errors) | Type Safety   |
+| `poetry run lint`           | Ruff linting with auto-fix              | Code Quality  |
+| `poetry run format`         | Ruff code formatting                    | Style         |
+| `poetry run docs`           | Pydocstyle documentation validation     | Documentation |
+| `poetry run security`       | Bandit security scanning                | Security      |
+| `poetry run audit`          | Vulnerability scanning                  | Dependencies  |
+| `poetry run test`           | Pytest with 85%+ coverage               | Testing       |
+| `poetry run platform-check` | Cross-platform compatibility            | Portability   |
+| `poetry run check-all`      | **All quality gates** (CI simulation)   | Complete      |
 
 ### Quality Standards
 
@@ -321,18 +331,21 @@ The project maintains enterprise-grade quality through automated enforcement:
 The codebase has undergone systematic refactoring to achieve production readiness:
 
 #### **Component Extraction** ✅
+
 - **WorkflowExecutor**: Separated workflow execution logic (147 lines, complexity 5/7)
 - **WorkflowBackupManager**: Isolated backup operations (208 lines) with Git tag management
 - **BatchResultAggregator**: Centralized result analysis and statistics
 - **BatchProgressTracker**: Extracted progress tracking with rich UI integration
 
 #### **Code Deduplication** ✅
+
 - **Eliminated 121+ lines** of duplicate path handling code
 - **Consolidated utilities** into centralized `utils/` module
 - **Zero duplicate patterns** remaining across 9+ updated files
 - **Consistent error handling** with structured context
 
 #### **Testing Excellence** ✅
+
 - **1,661 comprehensive tests** covering all code paths
 - **85.26% overall coverage** (exceeding 80% requirement)
 - **100% coverage** for newly refactored components
@@ -341,18 +354,21 @@ The codebase has undergone systematic refactoring to achieve production readines
 ## Use Cases
 
 ### For AI Development
+
 - Provide rich context to AI coding assistants
 - Track why certain approaches failed
 - Maintain institutional knowledge across AI sessions
 - Export scoped documentation for specific tasks
 
 ### For Teams
+
 - Onboard new developers with comprehensive docs
 - Document architectural decisions and trade-offs
 - Track technical debt and future improvements
 - Maintain living documentation that evolves with code
 
 ### For Code Review
+
 - Understand the "why" behind implementations
 - Review documentation changes alongside code
 - Ensure specs stay synchronized with reality
@@ -382,6 +398,7 @@ pip install -i https://test.pypi.org/simple/ --extra-index-url https://pypi.org/
 `spec` is designed to work consistently across all platforms (Windows, macOS, Linux). We handle cross-platform differences systematically:
 
 ### Path Handling
+
 - **Problem**: Windows uses backslashes (`\`) while Unix systems use forward slashes (`/`)
 - **Solution**: We use dedicated path utilities in `spec_cli.file_system.path_utils`:
   - `normalize_path_separators()` - Converts all paths to forward slashes
@@ -389,6 +406,7 @@ pip install -i https://test.pypi.org/simple/ --extra-index-url https://pypi.org/
   - All `.specs/` path operations use normalized separators
 
 ### Testing Compatibility
+
 - **Problem**: Mock behavior and path assertions differ between Python versions
 - **Solution**:
   - Tests use cross-platform path normalization for assertions
@@ -396,7 +414,9 @@ pip install -i https://test.pypi.org/simple/ --extra-index-url https://pypi.org/
   - CI tests on Python 3.8-3.12 across Windows, macOS, and Linux
 
 ### Mock Patching Guidelines
+
 When writing tests, always patch imported functions at their import location:
+
 ```python
 # ✅ Correct - patch where function is imported
 with patch("spec_cli.cli.commands.my_command.imported_function"):
@@ -406,7 +426,9 @@ with patch("spec_cli.original.module.imported_function"):
 ```
 
 ### Path Testing Guidelines
+
 Use path utilities for cross-platform test assertions:
+
 ```python
 # ✅ Correct - normalize paths for comparison
 from spec_cli.file_system.path_utils import normalize_path_separators
