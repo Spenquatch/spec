@@ -39,6 +39,7 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 cover/
+tests_backup_*
 CLAUDE.md
 
 # Environments
