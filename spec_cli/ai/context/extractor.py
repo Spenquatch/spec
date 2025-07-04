@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Any
 
 try:
-    import structlog  # type: ignore
+    import structlog
 except ImportError:
     structlog = None
 

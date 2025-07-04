@@ -227,7 +227,8 @@ class LocalAIProvider(AIProvider):
             Optional[str]: Device string or None if no suitable device
         """
         # torch availability already checked by caller
-        assert torch is not None
+        if torch is None:
+            raise RuntimeError("torch module is None, but was expected to be available")
 
         if self.config.device == "auto":
             # Platform-aware auto-detection of best available device

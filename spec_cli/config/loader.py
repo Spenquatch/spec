@@ -129,7 +129,8 @@ class ConfigurationLoader:
             )
             return {}
 
-        assert tomllib is not None  # For mypy
+        if tomllib is None:  # For mypy
+            raise ImportError("tomllib module is not available")
 
         try:
             with file_path.open("rb") as f:

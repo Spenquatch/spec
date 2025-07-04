@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Any, cast
 
 try:
-    import structlog  # type: ignore
+    import structlog
 except ImportError:
     structlog = None
 

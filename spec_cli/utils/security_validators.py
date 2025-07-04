@@ -14,6 +14,7 @@ ALLOWED_GIT_COMMANDS = {
     "diff",
     "show",
     "init",
+    "--version",  # For checking git availability and version
 }
 
 
@@ -62,7 +63,8 @@ def validate_git_command(
         return False, f"Git command '{git_command}' not allowed"
 
     # Validate file path arguments if work_tree_path is provided
-    if work_tree_path is not None:
+    # Skip path validation for init command as it creates new repositories
+    if work_tree_path is not None and git_command != "init":
         validation_result = _validate_git_file_paths(git_args[1:], work_tree_path)
         if validation_result is not None:
             return False, validation_result
@@ -113,9 +115,18 @@ def _looks_like_file_path(arg: str) -> bool:
     if "=" in arg:  # Likely a flag like --author=name
         return False
 
+    # Skip numeric values (like -n 1)
+    if arg.isdigit():
+        return False
+
     # Skip common Git references that aren't file paths
     git_refs = {"HEAD", "HEAD~1", "HEAD^", "origin", "main", "master", "@"}
     if arg in git_refs or arg.startswith("origin/") or arg.startswith("refs/"):
+        return False
+
+    # Skip common git command values
+    git_values = {"--bare", "--oneline", "origin", "upstream"}
+    if arg in git_values:
         return False
 
     # Consider it a file path if it contains path separators

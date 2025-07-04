@@ -455,8 +455,19 @@ class AIContentManager:
                             )
                     return results
 
-                # Use new provider system (provider is guaranteed to be non-None here)
-                assert provider is not None  # For type checking
+                # Use new provider system
+                if provider is None:
+                    debug_logger.log(
+                        "ERROR",
+                        "Provider is None when expected to be available",
+                        has_legacy_provider=bool(legacy_provider),
+                    )
+                    # Fallback to template content
+                    return {
+                        content_type: f"[{content_type.replace('_', ' ').title()} - Provider error]"
+                        for content_type in content_requests
+                    }
+
                 result = provider.generate_documentation(request)
 
                 if result.success:
@@ -676,6 +687,303 @@ class AIContentManager:
         self.providers.clear()
         self.preferred_provider = None
         debug_logger.log("INFO", "All AI providers cleared")
+
+
+class AITemplateIntegrator:
+    """Integrates AI-enhanced content into template generation.
+
+    Provides enhanced template processing with AI-generated content insertion,
+    variable processing, and template validation for improved documentation.
+    """
+
+    def __init__(self, ai_manager: AIContentManager | None = None):
+        """Initialize the AI template integrator.
+
+        Args:
+            ai_manager: Optional AI content manager (uses global if None)
+        """
+        self.ai_manager = ai_manager or ai_content_manager
+        debug_logger.log("INFO", "AITemplateIntegrator initialized")
+
+    def enhance_template(
+        self,
+        template_content: str,
+        file_path: Path,
+        context: dict[str, Any],
+        enhancement_level: str = "standard",
+    ) -> str:
+        """Enhance template content with AI-generated sections.
+
+        Args:
+            template_content: Base template content to enhance
+            file_path: Path to the file being documented
+            context: Context information for enhancement
+            enhancement_level: Level of enhancement (basic, standard, comprehensive)
+
+        Returns:
+            Enhanced template content with AI-generated sections
+
+        Raises:
+            SpecTemplateError: If template enhancement fails
+        """
+        debug_logger.log(
+            "INFO",
+            "Enhancing template with AI content",
+            file_path=str(file_path),
+            enhancement_level=enhancement_level,
+            template_length=len(template_content),
+        )
+
+        try:
+            # Validate inputs
+            if not template_content.strip():
+                raise SpecTemplateError("Template content cannot be empty")
+
+            if not file_path.exists():
+                raise SpecTemplateError(f"Source file does not exist: {file_path}")
+
+            # Process AI variables in the template
+            processed_template = self._process_template_variables(
+                template_content, file_path, context
+            )
+
+            # Generate AI content based on enhancement level
+            ai_content_requests = self._get_content_requests_for_level(
+                enhancement_level
+            )
+
+            if ai_content_requests and self.ai_manager.enabled:
+                ai_content = self.ai_manager.generate_ai_content(
+                    file_path, context, ai_content_requests
+                )
+
+                # Insert AI content into template
+                enhanced_template = self._insert_ai_content(
+                    processed_template, ai_content
+                )
+            else:
+                enhanced_template = processed_template
+
+            # Validate the enhanced template
+            validation_result = validate_enhancement(enhanced_template, context)
+            if not validation_result["valid"]:
+                debug_logger.log(
+                    "WARNING",
+                    "Template enhancement validation failed",
+                    issues=validation_result["issues"],
+                )
+
+            debug_logger.log(
+                "INFO",
+                "Template enhancement completed",
+                original_length=len(template_content),
+                enhanced_length=len(enhanced_template),
+            )
+
+            return enhanced_template
+
+        except Exception as e:
+            error_msg = f"Template enhancement failed: {e}"
+            debug_logger.log("ERROR", error_msg, file_path=str(file_path))
+            raise SpecTemplateError(error_msg) from e
+
+    def _process_template_variables(
+        self, template_content: str, file_path: Path, context: dict[str, Any]
+    ) -> str:
+        """Process template variables and placeholders."""
+        # Get AI variables
+        ai_variables = process_ai_variables(file_path, context)
+
+        # Replace variables in template
+        processed_content = template_content
+        for key, value in ai_variables.items():
+            placeholder = f"{{{{{key}}}}}"
+            processed_content = processed_content.replace(placeholder, str(value))
+
+        return processed_content
+
+    def _get_content_requests_for_level(self, level: str) -> list[str]:
+        """Get AI content requests based on enhancement level."""
+        if level == "basic":
+            return ["purpose"]
+        elif level == "standard":
+            return ["purpose", "overview"]
+        elif level == "comprehensive":
+            return ["purpose", "overview", "architecture", "examples"]
+        else:
+            debug_logger.log(
+                "WARNING", "Unknown enhancement level", enhancement_level=level
+            )
+            return ["purpose"]
+
+    def _insert_ai_content(
+        self, template_content: str, ai_content: dict[str, str]
+    ) -> str:
+        """Insert AI-generated content into template."""
+        enhanced_content = template_content
+
+        for content_type, content in ai_content.items():
+            # Replace AI content placeholders
+            ai_placeholder = f"{{{{ai_{content_type}}}}}"
+            if ai_placeholder in enhanced_content:
+                enhanced_content = enhanced_content.replace(ai_placeholder, content)
+
+        return enhanced_content
+
+
+def process_ai_variables(file_path: Path, context: dict[str, Any]) -> dict[str, Any]:
+    """Process and generate AI-specific template variables.
+
+    Args:
+        file_path: Path to the source file
+        context: Context information for variable generation
+
+    Returns:
+        Dictionary of AI-enhanced variables for template substitution
+
+    Raises:
+        SpecTemplateError: If variable processing fails
+    """
+    debug_logger.log(
+        "DEBUG",
+        "Processing AI variables",
+        file_path=str(file_path),
+        context_keys=list(context.keys()),
+    )
+
+    try:
+        ai_variables = {}
+
+        # File-based variables
+        ai_variables["filename"] = file_path.name
+        ai_variables["file_stem"] = file_path.stem
+        ai_variables["file_extension"] = file_path.suffix
+        # Handle relative path safely for testing
+        try:
+            ai_variables["relative_path"] = str(file_path.relative_to(Path.cwd()))
+        except ValueError:
+            # Fallback for temp files or files outside project directory
+            ai_variables["relative_path"] = str(file_path.name)
+
+        # Context-based variables
+        ai_variables["file_size"] = context.get("file_size", "unknown")
+        ai_variables["line_count"] = context.get("line_count", 0)
+        ai_variables["complexity"] = context.get("complexity", "unknown")
+
+        # AI enhancement metadata
+        ai_variables["ai_enhanced"] = "true"
+        ai_variables["enhancement_timestamp"] = context.get(
+            "timestamp", time.strftime("%Y-%m-%d %H:%M:%S")
+        )
+
+        # Code analysis variables
+        if "functions" in context:
+            functions = context["functions"]
+            if functions is not None and isinstance(functions, list):
+                ai_variables["function_count"] = str(len(functions))
+                ai_variables["main_functions"] = ", ".join(functions[:3])
+
+        if "classes" in context:
+            classes = context["classes"]
+            if classes is not None and isinstance(classes, list):
+                ai_variables["class_count"] = str(len(classes))
+                ai_variables["main_classes"] = ", ".join(classes[:3])
+
+        debug_logger.log(
+            "DEBUG",
+            "AI variables processed",
+            variable_count=len(ai_variables),
+            variables=list(ai_variables.keys()),
+        )
+
+        return ai_variables
+
+    except Exception as e:
+        error_msg = f"AI variable processing failed: {e}"
+        debug_logger.log("ERROR", error_msg, file_path=str(file_path))
+        raise SpecTemplateError(error_msg) from e
+
+
+def validate_enhancement(
+    enhanced_content: str, context: dict[str, Any]
+) -> dict[str, Any]:
+    """Validate AI-enhanced template content.
+
+    Args:
+        enhanced_content: The enhanced template content to validate
+        context: Context information for validation
+
+    Returns:
+        Dictionary with validation results including 'valid' boolean and 'issues' list
+
+    Raises:
+        SpecTemplateError: If validation process fails
+    """
+    debug_logger.log(
+        "DEBUG",
+        "Validating enhanced template",
+        content_length=len(enhanced_content),
+        context_keys=list(context.keys()),
+    )
+
+    try:
+        validation_result: dict[str, Any] = {"valid": True, "issues": []}
+
+        # Check for empty content
+        if not enhanced_content.strip():
+            validation_result["valid"] = False
+            validation_result["issues"].append("Enhanced content is empty")
+
+        # Check for unresolved placeholders
+        import re
+
+        unresolved_placeholders = re.findall(r"\{\{[^}]+\}\}", enhanced_content)
+        if unresolved_placeholders:
+            validation_result["valid"] = False
+            validation_result["issues"].append(
+                f"Unresolved placeholders found: {unresolved_placeholders}"
+            )
+
+        # Check minimum content length
+        min_length = context.get("min_content_length", 50)
+        if len(enhanced_content.strip()) < min_length:
+            validation_result["issues"].append(
+                f"Content length ({len(enhanced_content)}) below minimum ({min_length})"
+            )
+
+        # Check for AI content markers
+        ai_markers = ["[AI-generated", "[Purpose", "[Overview"]
+        has_ai_content = any(marker in enhanced_content for marker in ai_markers)
+        if not has_ai_content and context.get("require_ai_content", False):
+            validation_result["issues"].append("No AI-generated content detected")
+
+        # Check for valid markdown structure
+        if enhanced_content.count("#") == 0:
+            validation_result["issues"].append("No markdown headers found")
+
+        # Determine overall validity
+        if validation_result["issues"]:
+            # Mark as invalid only for critical issues
+            critical_issues = [
+                issue
+                for issue in validation_result["issues"]
+                if "empty" in issue.lower() or "unresolved" in issue.lower()
+            ]
+            validation_result["valid"] = len(critical_issues) == 0
+
+        debug_logger.log(
+            "DEBUG",
+            "Template validation completed",
+            valid=validation_result["valid"],
+            issue_count=len(validation_result["issues"]),
+        )
+
+        return validation_result
+
+    except Exception as e:
+        error_msg = f"Template validation failed: {e}"
+        debug_logger.log("ERROR", error_msg)
+        raise SpecTemplateError(error_msg) from e
 
 
 # Global AI content manager instance

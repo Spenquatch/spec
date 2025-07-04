@@ -8,8 +8,13 @@ from ...ai.providers.manager import create_workflow_result
 from ...config.settings import SpecSettings
 from ...exceptions import SpecError
 from ...file_processing.conflict_resolver import ConflictResolutionStrategy
+from ...file_system.directory_manager import DirectoryManager
+from ...file_system.path_resolver import PathResolver
 from ...logging.debug import debug_logger
 from ...templates.ai_enhanced import AIEnhancedTemplate
+from ...templates.generator import SpecContentGenerator
+from ...templates.loader import load_template
+from ...templates.substitution import TemplateSubstitution
 from ...ui.console import get_console
 from ...ui.error_display import show_message
 from ...utils.path_utils import normalize_path
@@ -400,8 +405,6 @@ class GenCommand(BaseCommand):
         """
         try:
             # Load and process template first
-            from ...templates.ai_enhanced import AIEnhancedTemplate
-
             ai_template = AIEnhancedTemplate(template_path)
             variables = self._create_template_variables(target_path)
 
@@ -418,8 +421,6 @@ class GenCommand(BaseCommand):
                     error=template_result.error,
                 )
                 # Fall back to direct AI generation without templates
-                from ...ai.generation.ai_generator import generate_with_ai
-
                 return generate_with_ai(target_path, doc_type)
 
             # Read source file content
@@ -434,6 +435,12 @@ class GenCommand(BaseCommand):
                         error=f"Failed to read source file: {e}",
                         data={"fallback_needed": True},
                     )
+            except Exception as e:
+                return create_workflow_result(
+                    success=False,
+                    error=f"Failed to read source file: {e}",
+                    data={"fallback_needed": True},
+                )
 
             # Create AI generation request with template content as prompt
             generation_request = ai_template.create_generation_request(
@@ -519,14 +526,10 @@ class GenCommand(BaseCommand):
                 )
 
             # Get the spec directory for this file
-            from ...file_system.path_resolver import PathResolver
-
             path_resolver = PathResolver(self.settings)
             spec_files = path_resolver.get_spec_files_for_source(target_path)
 
             # Ensure spec directory exists
-            from ...file_system.directory_manager import DirectoryManager
-
             directory_manager = DirectoryManager(self.settings)
             directory_manager.ensure_specs_directory()
             spec_dir = directory_manager.create_spec_directory(target_path)
@@ -557,9 +560,6 @@ class GenCommand(BaseCommand):
 
             # Create history.md file using template
             try:
-                from ...templates.loader import load_template
-                from ...templates.substitution import TemplateSubstitution
-
                 template_config = load_template(self.settings)
                 history_template = template_config.history
 
@@ -664,9 +664,6 @@ Initial AI-generated documentation.
 
         try:
             # Use the working SpecContentGenerator to actually write files
-            from ...templates.generator import SpecContentGenerator
-            from ...templates.loader import load_template
-
             generator = SpecContentGenerator(self.settings)
             template_config = load_template()
 
@@ -706,7 +703,7 @@ Initial AI-generated documentation.
         Returns:
             Dictionary of template variables
         """
-        normalized_path = normalize_path(target_path)
+        normalized_path = normalize_path(target_path, resolve_symlinks=False)
 
         return {
             "filename": target_path.name,
@@ -801,8 +798,6 @@ Initial AI-generated documentation.
 
         # Helper to get spec files using centralized method
         def get_spec_files_for_source(source_file: Path) -> dict[str, Path]:
-            from ...file_system.path_resolver import PathResolver
-
             path_resolver = PathResolver(self.settings)
             return path_resolver.get_spec_files_for_source(source_file)
 

@@ -91,7 +91,7 @@ class EmbeddingGenerator:
                     return False
 
                 self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
-                self.model = AutoModel.from_pretrained(
+                self.model = AutoModel.from_pretrained(  # type: ignore[no-untyped-call]
                     self.model_name,
                     trust_remote_code=True,
                     device_map=self.device if self.device != "cpu" else None,

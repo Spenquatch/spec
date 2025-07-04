@@ -201,12 +201,8 @@ class GitOperations:
             # Ensure spec directory exists
             self.spec_dir.mkdir(parents=True, exist_ok=True)
 
-            # Initialize bare repository
-            init_cmd = ["git", "init", "--bare", str(self.spec_dir)]
-
-            result = subprocess.run(
-                init_cmd, check=True, capture_output=True, text=True
-            )
+            # Initialize bare repository using run_git_command for proper environment
+            result = self.run_git_command(["init", "--bare", str(self.spec_dir)])
 
             debug_logger.log(
                 "INFO",
@@ -215,12 +211,9 @@ class GitOperations:
                 stdout=result.stdout,
             )
 
-        except subprocess.CalledProcessError as e:
-            error_msg = f"Failed to initialize Git repository: {e}"
-            if e.stderr:
-                error_msg += f"\nStderr: {e.stderr}"
-            debug_logger.log("ERROR", error_msg)
-            raise SpecGitError(error_msg) from e
+        except SpecGitError:
+            # Re-raise SpecGitError as-is
+            raise
 
         except Exception as e:
             error_msg = f"Unexpected error initializing repository: {e}"
@@ -234,16 +227,13 @@ class GitOperations:
             True if Git is available
         """
         try:
-            result = subprocess.run(
-                ["git", "--version"], check=True, capture_output=True, text=True
-            )
-
+            result = self.run_git_command(["--version"])
             debug_logger.log(
                 "DEBUG", "Git availability check passed", version=result.stdout.strip()
             )
             return True
 
-        except (subprocess.CalledProcessError, FileNotFoundError):
+        except SpecGitError:
             debug_logger.log("WARNING", "Git is not available")
             return False
 
@@ -254,14 +244,11 @@ class GitOperations:
             Git version string or None if Git is not available
         """
         try:
-            result = subprocess.run(
-                ["git", "--version"], check=True, capture_output=True, text=True
-            )
-
+            result = self.run_git_command(["--version"])
             version = result.stdout.strip()
             debug_logger.log("DEBUG", "Git version obtained", version=version)
             return version
 
-        except (subprocess.CalledProcessError, FileNotFoundError):
+        except SpecGitError:
             debug_logger.log("WARNING", "Could not get Git version")
             return None
