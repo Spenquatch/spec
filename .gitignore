@@ -41,6 +41,8 @@ coverage.xml
 cover/
 tests_backup_*
 CLAUDE.md
+.testing_analysis
+.testing_progress
 
 # Environments
 .env

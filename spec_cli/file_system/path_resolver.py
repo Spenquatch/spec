@@ -128,8 +128,11 @@ class PathResolver:
             "INFO", "Converting to spec directory path", source_file=str(file_path)
         )
 
-        # Convert absolute paths to relative to project root
-        if file_path.is_absolute():
+        # Handle both Unix absolute paths and Windows-style paths (even on Unix)
+        file_path_str = str(file_path)
+        is_windows_style = ":" in file_path_str and "\\" in file_path_str
+
+        if file_path.is_absolute() or is_windows_style:
             try:
                 file_path = safe_relative_to(
                     file_path, self.settings.root_path, strict=False

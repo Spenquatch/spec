@@ -81,7 +81,7 @@ class TestGitOperationsEnvironment:
     def test_prepare_git_environment_when_called_then_preserves_existing_env(self, tmp_path):
         """Test that existing environment variables are preserved."""
         original_path = os.environ.get("PATH", "")
-        
+
         spec_dir = tmp_path / ".spec"
         specs_dir = tmp_path / ".specs"
         index_file = tmp_path / ".spec-index"
@@ -475,7 +475,7 @@ class TestGitOperationsUtilityMethods:
         index_file = tmp_path / ".spec-index"
 
         git_ops = GitOperations(spec_dir, specs_dir, index_file)
-        
+
         # Test check_git_available logging
         git_ops.check_git_available()
         mock_logger.log.assert_any_call(
