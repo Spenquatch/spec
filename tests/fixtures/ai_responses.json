@@ -1,0 +1,37 @@
+{
+  "documentation_generation": {
+    "prompt": "Generate documentation for function",
+    "response": "# Function Documentation\n\nThis function performs core operations with proper error handling and validation.",
+    "tokens": 45
+  },
+  "code_explanation": {
+    "prompt": "Explain this code",
+    "response": "This code implements a method that processes input data and returns structured results.",
+    "tokens": 38
+  },
+  "error_response": {
+    "prompt": "Generate error content",
+    "response": null,
+    "error": "Generation failed"
+  },
+  "template_completion": {
+    "prompt": "Fill template with {{placeholder}}",
+    "response": "Template content with actual value replacing placeholder",
+    "tokens": 25
+  },
+  "large_response": {
+    "prompt": "Generate comprehensive documentation",
+    "response": "# Comprehensive Documentation\n\nContent section with detailed analysis. Content section with detailed analysis. Content section with detailed analysis. Content section with detailed analysis. Content section with detailed analysis.",
+    "tokens": 250
+  },
+  "llamacpp_generation": {
+    "prompt": "Generate using LLaMA model",
+    "response": "# LLaMA Generated Documentation\n\nThis content was generated using the LLaMA C++ provider for high-performance inference.",
+    "tokens": 60
+  },
+  "huggingface_generation": {
+    "prompt": "Generate using HuggingFace model",
+    "response": "# HuggingFace Generated Content\n\nThis documentation was created using the HuggingFace transformers library.",
+    "tokens": 55
+  }
+}
