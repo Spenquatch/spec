@@ -33,27 +33,27 @@
 **Problem Statement**: The spec-cli codebase contains critical architectural flaws in the form of global singleton pattern usage that creates production reliability issues, systematic test contamination, and threatens long-term maintainability.
 
 **Problem Context**:
-- **Who experiences this problem**: 
+- **Who experiences this problem**:
   - Development team facing 58 systematic test failures
   - End users experiencing state contamination between CLI operations
   - QA team dealing with unreliable test results
   - Future developers inheriting technical debt
-- **When does this problem occur**: 
+- **When does this problem occur**:
   - During test suite execution (58 consistent failures)
   - When running multiple CLI operations in sequence
   - During concurrent CLI process execution
   - In production environments with persistent processes
-- **Where does this problem manifest**: 
+- **Where does this problem manifest**:
   - Singleton infrastructure in `spec_cli/utils/singleton.py`
   - Global state management in SettingsManager, ConsoleManager, ProgressManagerSingleton
   - Test execution environment with state bleeding
   - CLI operation sequences with configuration contamination
-- **Why is this a problem**: 
+- **Why is this a problem**:
   - Violates principles of isolation and predictability
   - Creates hidden dependencies throughout the codebase
   - Threatens production reliability and user experience
   - Blocks effective testing and quality assurance
-- **How is this currently handled**: 
+- **How is this currently handled**:
   - Manual singleton state resets (unreliable)
   - Test isolation workarounds (incomplete)
   - No systematic solution for production state contamination
@@ -61,16 +61,16 @@
 **Problem Quantification**:
 - **Frequency**: 58 out of 1851 tests fail systematically (3.1% failure rate)
 - **Impact Scope**: Entire development team, all CLI users, production reliability
-- **Cost of Problem**: 
+- **Cost of Problem**:
   - Development velocity reduced by unreliable tests
   - QA confidence undermined by systematic failures
   - Production risk from state contamination
   - Technical debt accumulation threatening maintainability
-- **Productivity Impact**: 
+- **Productivity Impact**:
   - Test suite reliability issues slow development cycles
   - Debugging contamination issues wastes development time
   - Architectural complexity blocks new feature development
-- **Customer Impact**: 
+- **Customer Impact**:
   - CLI operations may interfere with each other
   - Unexpected behavior from persisted state
   - Potential data corruption from shared mutable state
@@ -86,15 +86,15 @@
 **Primary Business Value**: Eliminate production reliability risks and achieve 100% test reliability through architectural modernization
 
 **Value Metrics**:
-- **Revenue Impact**: 
+- **Revenue Impact**:
   - **Direct Revenue**: Improved product reliability increases user retention
   - **Revenue Enablement**: Reliable testing enables faster feature development
   - **Cost Avoidance**: Prevents production incidents from state contamination
-- **Cost Savings**: 
+- **Cost Savings**:
   - **Process Efficiency**: Reliable tests reduce debugging and rework time
   - **Resource Optimization**: Eliminates memory leaks and state accumulation
   - **Error Reduction**: Prevents entire class of state-related bugs
-- **User Experience Value**: 
+- **User Experience Value**:
   - **Time Savings**: Developers save time with reliable test suite
   - **Effort Reduction**: Simplified debugging without global state concerns
   - **Capability Enhancement**: Enables concurrent CLI operations and advanced features
@@ -106,15 +106,15 @@
 - **Differentiation**: Clean dependency injection architecture vs ad-hoc singleton patterns
 
 **Success Metrics**:
-- **Business KPIs**: 
+- **Business KPIs**:
   - Test success rate: 100% (from 96.9%)
   - Development velocity: 25% improvement in feature delivery
   - Production incidents: 0 state-related bugs
-- **User Metrics**: 
+- **User Metrics**:
   - CLI operation reliability: 100% consistent behavior
   - Memory usage: 30% reduction in accumulated state
   - Concurrent operation support: Multiple processes without interference
-- **Technical Metrics**: 
+- **Technical Metrics**:
   - Code complexity: Reduced cyclomatic complexity
   - Test execution time: Improved test isolation and speed
   - Architecture quality: Clean dependency graphs
@@ -492,13 +492,13 @@ class SpecContext:
     settings: SpecSettings
     console: SpecConsole
     progress_manager: ProgressManager
-    
+
     @classmethod
     def create_for_cli(cls, root_path: Path | None = None) -> 'SpecContext'
-    
+
     @classmethod
     def create_for_testing(cls, **overrides: Any) -> 'SpecContext'
-    
+
     def create_repository(self) -> 'SpecGitRepository'
 ```
 
@@ -756,7 +756,7 @@ This comprehensive feature specification provides a complete blueprint for migra
 
 **Implementation Strategy**: Three-phase migration (6.5 days total) with backward compatibility and comprehensive testing
 
-**Success Metrics**: 
+**Success Metrics**:
 - 100% test success rate (from 96.9%)
 - Zero state contamination issues
 - Support for concurrent CLI operations

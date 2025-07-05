@@ -15,7 +15,7 @@ The spec-cli codebase contains a **critical architectural flaw** in the form of 
 The codebase relies on 4 major singleton classes that maintain persistent global state:
 
 1. **`SettingsManager`** (`spec_cli/config/settings.py`) - Stores global settings and console instances
-2. **`ConsoleManager`** (`spec_cli/ui/console.py`) - Manages global console instances  
+2. **`ConsoleManager`** (`spec_cli/ui/console.py`) - Manages global console instances
 3. **`ProgressManagerSingleton`** (`spec_cli/ui/progress_manager.py`) - Tracks progress state globally
 4. **Singleton Infrastructure** (`spec_cli/utils/singleton.py`) - Global dictionaries storing all singleton instances
 
@@ -84,21 +84,21 @@ from ..ui.progress_manager import ProgressManager
 @dataclass(frozen=True)
 class SpecContext:
     """Immutable context containing all application dependencies.
-    
+
     This replaces the singleton pattern with explicit dependency injection.
     Each CLI operation receives a fresh context with all required dependencies.
     """
     settings: SpecSettings
     console: SpecConsole
     progress_manager: ProgressManager
-    
+
     @classmethod
     def create_for_cli(cls, root_path: Path | None = None) -> 'SpecContext':
         """Factory method for CLI usage.
-        
+
         Args:
             root_path: Optional root path for spec operations
-            
+
         Returns:
             Fresh context with production dependencies
         """
@@ -109,23 +109,23 @@ class SpecContext:
             force_terminal=settings.use_color
         )
         progress_manager = ProgressManager(auto_display=True)
-        
+
         return cls(
             settings=settings,
             console=console,
             progress_manager=progress_manager
         )
-    
+
     @classmethod
     def create_for_testing(cls, **overrides: Any) -> 'SpecContext':
         """Factory for testing with mock dependencies.
-        
+
         Args:
             **overrides: Override specific dependencies with mocks
-            
+
         Returns:
             Context with mock dependencies for testing
-            
+
         Example:
             ctx = SpecContext.create_for_testing(
                 console=Mock(spec=SpecConsole),
@@ -139,10 +139,10 @@ class SpecContext:
         }
         defaults.update(overrides)
         return cls(**defaults)
-    
+
     def create_repository(self) -> 'SpecGitRepository':
         """Create a Git repository with this context's settings.
-        
+
         Returns:
             Configured SpecGitRepository instance
         """
@@ -226,7 +226,7 @@ from .commands import help_command, init_command, status_command
     context_settings={"help_option_names": ["-h", "--help"]},
 )
 @click.option("--version", is_flag=True, help="Show version information")
-@click.option("--root-path", type=click.Path(exists=True, path_type=Path), 
+@click.option("--root-path", type=click.Path(exists=True, path_type=Path),
               help="Root path for spec operations")
 @click.pass_context
 def app(ctx: click.Context, version: bool, root_path: Path | None) -> None:
@@ -237,7 +237,7 @@ def app(ctx: click.Context, version: bool, root_path: Path | None) -> None:
     # Initialize context for dependency injection
     ctx.ensure_object(dict)
     ctx.obj['spec_context'] = SpecContext.create_for_cli(root_path)
-    
+
     if version:
         click.echo("Spec CLI v0.1.0")
         return
@@ -267,10 +267,10 @@ from ...core.context import SpecContext
 
 def spec_command_with_context(name: str | None = None):
     """Decorator for spec commands that receive SpecContext.
-    
+
     Args:
         name: Optional command name
-        
+
     Returns:
         Decorated command function with SpecContext injection
     """
@@ -282,7 +282,7 @@ def spec_command_with_context(name: str | None = None):
             # Inject SpecContext as first argument
             spec_ctx: SpecContext = ctx.obj['spec_context']
             return func(spec_ctx, *args, **kwargs)
-        
+
         return wrapper
     return decorator
 ```
@@ -371,7 +371,7 @@ def init_command(ctx: SpecContext, force: bool) -> None:
 # spec_cli/config/settings.py - Remove singleton, make regular class
 class SpecSettings:
     """Configuration settings (no longer singleton)."""
-    
+
     def __init__(self, root_path: Path | None = None):
         # Same initialization logic, but no singleton behavior
         pass
@@ -438,7 +438,7 @@ def test_init_command_success(spec_context: SpecContext):
     """Test successful repository initialization."""
     # Test uses explicit context instead of global singletons
     repo = spec_context.create_repository()
-    
+
     # Test implementation with no global state dependencies
     assert not repo.is_initialized()
     repo.initialize()
@@ -453,7 +453,7 @@ def test_init_command_success(spec_context: SpecContext):
 - [ ] Add comprehensive tests for context factories
 - [ ] Document context usage patterns
 
-### Phase 2 Deliverables  
+### Phase 2 Deliverables
 - [ ] Update CLI entry point with Click context injection
 - [ ] Create new command decorator with context injection
 - [ ] Migrate 3-5 core commands to context pattern
