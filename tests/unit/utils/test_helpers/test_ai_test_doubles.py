@@ -382,6 +382,7 @@ class TestAIResponseFixtures:
     def test_save_fixtures(self, tmp_path):
         """Test saving fixtures to file."""
         fixtures_path = tmp_path / "test_fixtures.json"
+        fixtures_path.parent.mkdir(parents=True, exist_ok=True)
         fixtures = AIResponseFixtures(fixtures_path)
 
         fixtures.add_fixture("test", "prompt", "response", 10)
@@ -398,6 +399,7 @@ class TestAIResponseFixtures:
     def test_load_fixtures_from_file(self, tmp_path):
         """Test loading fixtures from existing file."""
         fixtures_path = tmp_path / "existing_fixtures.json"
+        fixtures_path.parent.mkdir(parents=True, exist_ok=True)
         test_data = {
             "custom_fixture": {
                 "prompt": "Custom prompt",
@@ -416,6 +418,7 @@ class TestAIResponseFixtures:
     def test_load_fixtures_corrupted_file(self, tmp_path):
         """Test loading fixtures from corrupted file falls back to defaults."""
         fixtures_path = tmp_path / "corrupted.json"
+        fixtures_path.parent.mkdir(parents=True, exist_ok=True)
 
         with open(fixtures_path, "w") as f:
             f.write("invalid json content")
@@ -684,6 +687,7 @@ class TestIntegrationScenarios:
     def test_fixture_management(self, tmp_path):
         """Test fixture file management."""
         fixtures_path = tmp_path / "test_fixtures.json"
+        fixtures_path.parent.mkdir(parents=True, exist_ok=True)
         fixtures = AIResponseFixtures(fixtures_path)
 
         # Add custom fixture

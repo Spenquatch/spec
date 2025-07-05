@@ -16,7 +16,9 @@ from spec_cli.core.factory_interface import (
 class TestFactoryInterfaceError:
     """Test factory interface error handling."""
 
-    def test_factory_interface_error_when_invalid_interface_then_raises_specific_error(self):
+    def test_factory_interface_error_when_invalid_interface_then_raises_specific_error(
+        self,
+    ):
         """Test error handling for invalid factory interface usage."""
         context = {"factory_type": "invalid", "reason": "missing_method"}
         error = FactoryInterfaceError("Factory interface validation failed", context)
@@ -52,7 +54,7 @@ class TestFactoryConfig:
             environment="testing",
             debug_mode=True,
             timeout=60,
-            factory_config=factory_config
+            factory_config=factory_config,
         )
 
         assert config.factory_type == "test_context"
@@ -82,6 +84,7 @@ class TestAbstractContextFactory:
 
     def test_abstract_context_factory_when_valid_type_then_initializes(self):
         """Test abstract factory initialization with valid type."""
+
         # Create concrete implementation for testing
         class TestFactory(AbstractContextFactory):
             def create_context(self, config):
@@ -93,8 +96,11 @@ class TestAbstractContextFactory:
         factory = TestFactory("test_factory")
         assert factory.factory_type == "test_factory"
 
-    def test_abstract_context_factory_when_type_normalization_then_strips_and_lowers(self):
+    def test_abstract_context_factory_when_type_normalization_then_strips_and_lowers(
+        self,
+    ):
         """Test factory type normalization strips whitespace and converts to lowercase."""
+
         class TestFactory(AbstractContextFactory):
             def create_context(self, config):
                 return {"context": "test"}
@@ -107,6 +113,7 @@ class TestAbstractContextFactory:
 
     def test_abstract_context_factory_when_invalid_type_then_raises_error(self):
         """Test abstract factory raises error for invalid factory type."""
+
         class TestFactory(AbstractContextFactory):
             def create_context(self, config):
                 return {"context": "test"}
@@ -114,17 +121,26 @@ class TestAbstractContextFactory:
             def validate_config(self, config):
                 return True
 
-        with pytest.raises(FactoryInterfaceError, match="Factory type must be non-empty string"):
+        with pytest.raises(
+            FactoryInterfaceError, match="Factory type must be non-empty string"
+        ):
             TestFactory("")
 
-        with pytest.raises(FactoryInterfaceError, match="Factory type must be non-empty string"):
+        with pytest.raises(
+            FactoryInterfaceError, match="Factory type must be non-empty string"
+        ):
             TestFactory("   ")
 
-        with pytest.raises(FactoryInterfaceError, match="Factory type must be non-empty string"):
+        with pytest.raises(
+            FactoryInterfaceError, match="Factory type must be non-empty string"
+        ):
             TestFactory(123)
 
-    def test_abstract_context_factory_when_environment_support_then_returns_true_by_default(self):
+    def test_abstract_context_factory_when_environment_support_then_returns_true_by_default(
+        self,
+    ):
         """Test default environment support returns True."""
+
         class TestFactory(AbstractContextFactory):
             def create_context(self, config):
                 return {"context": "test"}
@@ -137,8 +153,11 @@ class TestAbstractContextFactory:
         assert factory.supports_environment("testing") is True
         assert factory.supports_environment("unknown") is True
 
-    def test_abstract_context_factory_when_common_config_validation_then_validates_correctly(self):
+    def test_abstract_context_factory_when_common_config_validation_then_validates_correctly(
+        self,
+    ):
         """Test common configuration validation helper."""
+
         class TestFactory(AbstractContextFactory):
             def create_context(self, config):
                 return {"context": "test"}
@@ -153,8 +172,11 @@ class TestAbstractContextFactory:
         # Should not raise exception
         assert factory.validate_config(valid_config) is True
 
-    def test_abstract_context_factory_when_invalid_common_config_then_raises_error(self):
+    def test_abstract_context_factory_when_invalid_common_config_then_raises_error(
+        self,
+    ):
         """Test common configuration validation with invalid config."""
+
         class TestFactory(AbstractContextFactory):
             def create_context(self, config):
                 return {"context": "test"}
@@ -166,7 +188,9 @@ class TestAbstractContextFactory:
         factory = TestFactory("test")
 
         # Test invalid config type
-        with pytest.raises(FactoryInterfaceError, match="Config must be FactoryConfig instance"):
+        with pytest.raises(
+            FactoryInterfaceError, match="Config must be FactoryConfig instance"
+        ):
             factory.validate_config({"not": "config"})
 
         # Test invalid timeout
@@ -181,7 +205,9 @@ class TestAbstractContextFactory:
         with pytest.raises(FactoryInterfaceError, match="Factory config must be dict"):
             factory.validate_config(config)
 
-    def test_abstract_context_factory_when_abstract_methods_then_defines_complete_contract(self):
+    def test_abstract_context_factory_when_abstract_methods_then_defines_complete_contract(
+        self,
+    ):
         """Test abstract factory interface defines all required methods."""
         # Test that abstract methods are properly defined
         assert hasattr(AbstractContextFactory, "create_context")
@@ -189,6 +215,7 @@ class TestAbstractContextFactory:
 
         # Test that incomplete implementation raises TypeError
         with pytest.raises(TypeError):
+
             class IncompleteFactory(AbstractContextFactory):
                 pass  # Missing abstract method implementations
 
@@ -231,17 +258,25 @@ class TestFactoryRegistry:
         registry = FactoryRegistry()
         mock_factory = MagicMock(spec=ContextFactory)
 
-        with pytest.raises(FactoryInterfaceError, match="Factory type and environment must be non-empty"):
+        with pytest.raises(
+            FactoryInterfaceError,
+            match="Factory type and environment must be non-empty",
+        ):
             registry.register_factory("", "cli", mock_factory)
 
-        with pytest.raises(FactoryInterfaceError, match="Factory type and environment must be non-empty"):
+        with pytest.raises(
+            FactoryInterfaceError,
+            match="Factory type and environment must be non-empty",
+        ):
             registry.register_factory("context", "", mock_factory)
 
     def test_factory_registry_when_get_nonexistent_type_then_raises_error(self):
         """Test getting non-existent factory type raises error."""
         registry = FactoryRegistry()
 
-        with pytest.raises(FactoryInterfaceError, match="No factories registered for type: nonexistent"):
+        with pytest.raises(
+            FactoryInterfaceError, match="No factories registered for type: nonexistent"
+        ):
             registry.get_factory("nonexistent", "cli")
 
     def test_factory_registry_when_get_nonexistent_environment_then_raises_error(self):
@@ -250,7 +285,9 @@ class TestFactoryRegistry:
         mock_factory = MagicMock(spec=ContextFactory)
         registry.register_factory("context", "cli", mock_factory)
 
-        with pytest.raises(FactoryInterfaceError, match="No factory for environment: nonexistent"):
+        with pytest.raises(
+            FactoryInterfaceError, match="No factory for environment: nonexistent"
+        ):
             registry.get_factory("context", "nonexistent")
 
     def test_factory_registry_when_list_available_then_returns_complete_mapping(self):
@@ -266,10 +303,7 @@ class TestFactoryRegistry:
 
         available = registry.list_available_factories()
 
-        expected = {
-            "context": ["cli", "testing"],
-            "config": ["cli"]
-        }
+        expected = {"context": ["cli", "testing"], "config": ["cli"]}
 
         assert available == expected
 

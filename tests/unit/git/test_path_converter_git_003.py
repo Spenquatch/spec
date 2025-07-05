@@ -59,7 +59,7 @@ class TestConvertToGitPath:
         """Test absolute path that is under .specs/ directory."""
         specs_dir = tmp_path / ".specs"
         test_file = specs_dir / "src" / "main.py"
-        test_file.parent.mkdir(parents=True)
+        test_file.parent.mkdir(parents=True, exist_ok=True)
         test_file.write_text("# test file")
 
         with patch("spec_cli.git.path_converter.debug_logger") as mock_logger:
@@ -79,6 +79,7 @@ class TestConvertToGitPath:
     def test_absolute_path_outside_specs(self, converter, tmp_path):
         """Test absolute path that is outside .specs/ directory."""
         outside_file = tmp_path / "outside.py"
+        outside_file.parent.mkdir(parents=True, exist_ok=True)
         outside_file.write_text("# outside file")
 
         with patch("spec_cli.git.path_converter.debug_logger") as mock_logger:
@@ -286,7 +287,7 @@ class TestIsUnderSpecsDir:
         """Test absolute path under .specs/ directory."""
         specs_dir = tmp_path / ".specs"
         test_file = specs_dir / "src" / "main.py"
-        test_file.parent.mkdir(parents=True)
+        test_file.parent.mkdir(parents=True, exist_ok=True)
         test_file.write_text("# test")
 
         with patch("spec_cli.git.path_converter.debug_logger") as mock_logger:
@@ -300,6 +301,7 @@ class TestIsUnderSpecsDir:
     def test_absolute_path_outside_specs(self, converter, tmp_path):
         """Test absolute path outside .specs/ directory."""
         outside_file = tmp_path / "outside.py"
+        outside_file.parent.mkdir(parents=True, exist_ok=True)
         outside_file.write_text("# outside")
 
         with patch("spec_cli.git.path_converter.debug_logger") as mock_logger:
@@ -324,6 +326,7 @@ class TestIsUnderSpecsDir:
         """Test Path object as input."""
         specs_dir = tmp_path / ".specs"
         test_file = specs_dir / "test.py"
+        test_file.parent.mkdir(parents=True, exist_ok=True)
         test_file.write_text("# test")
 
         result = converter.is_under_specs_dir(test_file)
@@ -441,7 +444,7 @@ class TestGetConversionInfo:
         """Test conversion info for absolute path."""
         specs_dir = tmp_path / ".specs"
         test_file = specs_dir / "src" / "main.py"
-        test_file.parent.mkdir(parents=True)
+        test_file.parent.mkdir(parents=True, exist_ok=True)
         test_file.write_text("# test")
 
         result = converter.get_conversion_info(str(test_file))
@@ -572,7 +575,7 @@ class TestErrorHandling:
     def test_safe_relative_to_error_handling(self, converter, tmp_path):
         """Test error handling when safe_relative_to fails."""
         outside_path = tmp_path / "outside" / "file.py"
-        outside_path.parent.mkdir()
+        outside_path.parent.mkdir(parents=True, exist_ok=True)
         outside_path.write_text("# outside")
 
         # This should not raise an exception, should return path as-is
@@ -638,7 +641,7 @@ class TestIntegrationWithUtilities:
         """Test integration with safe_relative_to utility."""
         specs_dir = tmp_path / ".specs"
         test_file = specs_dir / "src" / "main.py"
-        test_file.parent.mkdir(parents=True)
+        test_file.parent.mkdir(parents=True, exist_ok=True)
         test_file.write_text("# test")
 
         # Converter should use safe_relative_to internally

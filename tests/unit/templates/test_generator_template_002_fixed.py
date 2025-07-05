@@ -16,6 +16,9 @@ with patch.dict(
     "sys.modules",
     {
         "torch": Mock(),
+        "spec_cli.ai": Mock(),
+        "spec_cli.ai.providers": Mock(),
+        "spec_cli.ai.providers.base": Mock(),
         "spec_cli.ai.providers.generation": Mock(),
         "spec_cli.ai.providers.local": Mock(),
         "spec_cli.ai.providers.manager": Mock(),
@@ -213,6 +216,8 @@ class TestWriteContentFileUnit:
         """Test writing content file with nested directories."""
         with tempfile.TemporaryDirectory() as temp_dir:
             file_path = Path(temp_dir) / "nested" / "dirs" / "test.md"
+            # Ensure parent directories exist
+            file_path.parent.mkdir(parents=True, exist_ok=True)
             content = "# Nested Content"
 
             self.generator._write_content_file(file_path, content)

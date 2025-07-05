@@ -49,11 +49,7 @@ class MockSpecContextFactory:
             if hasattr(settings, key):
                 setattr(settings, key, value)
 
-        return SpecContext(
-            settings=settings,
-            console=console,
-            progress=progress
-        )
+        return SpecContext(settings=settings, console=console, progress=progress)
 
     def create_dev_context(self) -> SpecContext:
         """Create development context with debug settings."""
@@ -64,7 +60,7 @@ class MockSpecContextFactory:
         return SpecContext(
             settings=settings,
             console=SpecConsoleInterface(),
-            progress=SpecProgressInterface()
+            progress=SpecProgressInterface(),
         )
 
     def create_test_context(self) -> SpecContext:
@@ -76,7 +72,7 @@ class MockSpecContextFactory:
         return SpecContext(
             settings=settings,
             console=SpecConsoleInterface(),
-            progress=SpecProgressInterface()
+            progress=SpecProgressInterface(),
         )
 
 
@@ -99,15 +95,15 @@ class TestSpecContextFactoryCompatibility:
         assert context.console is not None
         assert context.progress is not None
 
-    def test_spec_context_factory_when_dependency_injection_then_applies_overrides(self):
+    def test_spec_context_factory_when_dependency_injection_then_applies_overrides(
+        self,
+    ):
         """Test SpecContext supports dependency injection via factory."""
         factory = MockSpecContextFactory()
 
         # Test dependency injection with overrides
         context = factory.create_context(
-            debug_enabled=True,
-            console_width=100,
-            use_color=False
+            debug_enabled=True, console_width=100, use_color=False
         )
 
         assert context.settings.debug_enabled is True
@@ -134,7 +130,9 @@ class TestSpecContextFactoryCompatibility:
         assert test_context.settings.debug_enabled is False
         assert test_context.settings.root_path == Path("/test")
 
-    def test_spec_context_factory_when_immutability_then_preserves_frozen_behavior(self):
+    def test_spec_context_factory_when_immutability_then_preserves_frozen_behavior(
+        self,
+    ):
         """Test factory-created SpecContext maintains immutability."""
         factory = MockSpecContextFactory()
 
@@ -147,7 +145,9 @@ class TestSpecContextFactoryCompatibility:
         with pytest.raises(AttributeError):
             context.console = SpecConsoleInterface()  # type: ignore
 
-    def test_spec_context_factory_when_modification_methods_then_works_with_factory_patterns(self):
+    def test_spec_context_factory_when_modification_methods_then_works_with_factory_patterns(
+        self,
+    ):
         """Test SpecContext modification methods work with factory patterns."""
         factory = MockSpecContextFactory()
 
@@ -177,15 +177,11 @@ class TestSpecContextFactoryCompatibility:
         shared_progress = SpecProgressInterface()
 
         context1 = SpecContext(
-            settings=shared_settings,
-            console=shared_console,
-            progress=shared_progress
+            settings=shared_settings, console=shared_console, progress=shared_progress
         )
 
         context2 = SpecContext(
-            settings=shared_settings,
-            console=shared_console,
-            progress=shared_progress
+            settings=shared_settings, console=shared_console, progress=shared_progress
         )
 
         # Test equality for identical shared dependencies

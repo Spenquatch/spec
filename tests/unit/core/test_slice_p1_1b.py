@@ -113,7 +113,9 @@ class TestSpecContextImmutability:
 class TestSpecContextValidation:
     """Test SpecContext dependency validation."""
 
-    def test_spec_context_validation_when_valid_dependencies_then_passes_validation(self):
+    def test_spec_context_validation_when_valid_dependencies_then_passes_validation(
+        self,
+    ):
         """Test that valid dependencies pass validation."""
         settings = SpecSettingsInterface()
         console = SpecConsoleInterface()

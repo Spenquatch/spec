@@ -80,8 +80,9 @@ class TestSecurityValidatorsInputValidation:
     ):
         """Test successful validation with work tree path and valid file."""
         work_tree = tmp_path / "work_tree"
-        work_tree.mkdir()
+        work_tree.mkdir(parents=True, exist_ok=True)
         test_file = work_tree / "test.txt"
+        test_file.parent.mkdir(parents=True, exist_ok=True)
         test_file.touch()
 
         git_args = ["add", "test.txt"]
@@ -225,8 +226,9 @@ class TestSecurityValidatorsInputValidation:
     def test_validate_git_command_edge_case_single_character_file(self, tmp_path):
         """Test validation with single character filename."""
         work_tree = tmp_path / "work_tree"
-        work_tree.mkdir()
+        work_tree.mkdir(parents=True, exist_ok=True)
         test_file = work_tree / "a"
+        test_file.parent.mkdir(parents=True, exist_ok=True)
         test_file.touch()
 
         git_args = ["add", "a"]
@@ -574,9 +576,10 @@ class TestSecurityValidatorsPrivateFunctions:
     def test_validate_git_file_paths_success_valid_files(self, tmp_path):
         """Test _validate_git_file_paths with valid files."""
         work_tree = tmp_path / "work_tree"
-        work_tree.mkdir()
+        work_tree.mkdir(parents=True, exist_ok=True)
 
         test_file = work_tree / "test.txt"
+        test_file.parent.mkdir(parents=True, exist_ok=True)
         test_file.touch()
 
         file_args = ["test.txt", "-m", "commit message"]

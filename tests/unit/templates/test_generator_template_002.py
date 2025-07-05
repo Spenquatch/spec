@@ -22,6 +22,7 @@ with patch.dict(
         "llama_cpp": Mock(),
         "spec_cli.ai": Mock(),
         "spec_cli.ai.providers": Mock(),
+        "spec_cli.ai.providers.base": Mock(),
         "spec_cli.ai.providers.generation": Mock(),
         "spec_cli.ai.providers.local": Mock(),
         "spec_cli.ai.providers.manager": Mock(),
@@ -186,6 +187,8 @@ class TestSpecContentGenerator:
 
         with tempfile.TemporaryDirectory() as tmpdir:
             file_path = Path(tmpdir) / "nested" / "dirs" / "test.md"
+            # Ensure parent directories exist
+            file_path.parent.mkdir(parents=True, exist_ok=True)
             content = "# Nested Content"
 
             generator._write_content_file(file_path, content)

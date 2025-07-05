@@ -159,6 +159,22 @@ class SpecGenerationError(SpecError):
         return f"Generation failed: {self.message}"
 
 
+class PatternAnalysisError(SpecError):
+    """Raised when code pattern analysis fails."""
+
+    def get_user_message(self) -> str:
+        """Get user-friendly error message for PatternAnalysisError."""
+        return f"Pattern analysis failed: {self.message}"
+
+
+class CompatibilityError(SpecError):
+    """Raised when compatibility wrapper operations fail."""
+
+    def get_user_message(self) -> str:
+        """Get user-friendly error message for CompatibilityError."""
+        return f"Compatibility wrapper failed: {self.message}"
+
+
 # Convenience function for creating errors with context
 def create_spec_error(
     error_type: type, message: str, **context_kwargs: Any

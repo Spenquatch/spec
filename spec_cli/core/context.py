@@ -9,8 +9,12 @@ from contextlib import AbstractContextManager
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
+from unittest.mock import Mock
 
+from ..logging.debug import debug_logger
 from ..utils.context_utils import create_context_hash, validate_context_immutability
+from ..utils.error_utils import create_error_context
+from ..utils.factory_utils import validate_factory_inputs
 
 
 class SpecContextError(Exception):
@@ -25,6 +29,25 @@ class SpecContextError(Exception):
         """
         super().__init__(message)
         self.context = context or {}
+
+
+class SpecFactoryError(SpecContextError):
+    """Exception raised when SpecContext factory operations fail."""
+
+    def __init__(self, message: str, context: dict[str, Any] | None = None):
+        """Initialize SpecFactoryError with message and context.
+
+        Args:
+            message: Error message describing the factory operation failure
+            context: Optional context dictionary with additional error details
+        """
+        super().__init__(message, context)
+        debug_logger.log(
+            "ERROR",
+            "SpecContext factory error raised",
+            error_message=message,
+            factory_context=self.context,
+        )
 
 
 class SpecSettingsInterface:
@@ -62,6 +85,32 @@ class SpecSettingsInterface:
             Dictionary of validation results (empty if valid)
         """
         return {}
+
+    def __eq__(self, other: object) -> bool:
+        """Check equality based on configuration values."""
+        if not isinstance(other, SpecSettingsInterface):
+            return False
+        return (
+            self.debug_enabled == other.debug_enabled
+            and self.console_width == other.console_width
+            and self.use_color == other.use_color
+            and self.root_path == other.root_path
+            and self.spec_dir == other.spec_dir
+            and self.specs_dir == other.specs_dir
+        )
+
+    def __hash__(self) -> int:
+        """Make settings hashable for use in dataclass."""
+        return hash(
+            (
+                self.debug_enabled,
+                self.console_width,
+                self.use_color,
+                str(self.root_path),
+                str(self.spec_dir),
+                str(self.specs_dir),
+            )
+        )
 
 
 class SpecConsoleInterface:
@@ -137,6 +186,14 @@ class SpecConsoleInterface:
 
         return MockCapture()
 
+    def __eq__(self, other: object) -> bool:
+        """Check equality for console interfaces."""
+        return isinstance(other, SpecConsoleInterface)
+
+    def __hash__(self) -> int:
+        """Make console interface hashable."""
+        return hash("SpecConsoleInterface")
+
 
 class SpecProgressInterface:
     """Interface specification for progress dependency in SpecContext.
@@ -203,6 +260,14 @@ class SpecProgressInterface:
 
         return MockSpinner()
 
+    def __eq__(self, other: object) -> bool:
+        """Check equality for progress interfaces."""
+        return isinstance(other, SpecProgressInterface)
+
+    def __hash__(self) -> int:
+        """Make progress interface hashable."""
+        return hash("SpecProgressInterface")
+
 
 @dataclass(frozen=True)
 class SpecContext:
@@ -226,15 +291,20 @@ class SpecContext:
         Raises:
             SpecContextError: If context validation fails
         """
+        # Validate dependencies are not None
+        if self.settings is None:
+            raise SpecContextError("SpecContext requires settings dependency")
+        if self.console is None:
+            raise SpecContextError("SpecContext requires console dependency")
+        if self.progress is None:
+            raise SpecContextError("SpecContext requires progress dependency")
+
         # Validate immutability using helper
         if not validate_context_immutability(self):
             error_context = {"context_type": type(self).__name__}
             raise SpecContextError(
                 "SpecContext must be immutable (frozen dataclass)", error_context
             )
-
-        # All dependencies are guaranteed by type annotations
-        # SpecContext requires non-None dependencies for proper initialization
 
     def with_settings(self, **overrides: Any) -> "SpecContext":
         """Create new context with settings overrides.
@@ -291,7 +361,8 @@ class SpecContext:
         Raises:
             SpecContextError: If console replacement fails
         """
-        # Type annotations guarantee console is not None
+        if console is None:
+            raise SpecContextError("Console replacement cannot be None")
 
         return SpecContext(
             settings=self.settings, console=console, progress=self.progress
@@ -309,7 +380,8 @@ class SpecContext:
         Raises:
             SpecContextError: If progress replacement fails
         """
-        # Type annotations guarantee progress is not None
+        if progress is None:
+            raise SpecContextError("Progress replacement cannot be None")
 
         return SpecContext(
             settings=self.settings, console=self.console, progress=progress
@@ -332,19 +404,202 @@ class SpecContext:
                 f"Failed to generate context hash: {e}", error_context
             ) from e
 
-    def __eq__(self, other: Any) -> bool:
-        """Check equality using context hash.
+    @classmethod
+    def create_for_cli(
+        cls, root_path: Path | None = None, **overrides: Any
+    ) -> "SpecContext":
+        """Create SpecContext for CLI environment with real dependencies.
+
+        Factory method for creating production SpecContext instances in CLI
+        environments with real dependency implementations.
 
         Args:
-            other: Other context to compare
+            root_path: Root path for spec operations (defaults to current directory)
+            **overrides: Optional configuration overrides
 
         Returns:
-            True if contexts are equal, False otherwise
-        """
-        if not isinstance(other, SpecContext):
-            return False
+            SpecContext instance configured for CLI environment
 
+        Raises:
+            SpecFactoryError: If CLI context creation fails
+
+        Example:
+            context = SpecContext.create_for_cli(Path("/project"))
+            # Use context.settings, context.console, context.progress
+        """
         try:
-            return self.get_context_hash() == other.get_context_hash()
-        except SpecContextError:
-            return False
+            debug_logger.log(
+                "DEBUG",
+                "Creating SpecContext for CLI environment",
+                root_path=str(root_path) if root_path else None,
+                overrides_count=len(overrides),
+                override_keys=list(overrides.keys()),
+            )
+
+            # Validate inputs using factory utils
+            validated_inputs = validate_factory_inputs(
+                factory_type="cli_context",
+                environment="cli",
+                **overrides,
+            )
+
+            # Use current directory if no root path provided
+            if root_path is None:
+                root_path = Path.cwd()
+                debug_logger.log(
+                    "DEBUG", "Using current directory as root", root_path=str(root_path)
+                )
+
+            # Create CLI settings with real configuration
+            cli_settings = SpecSettingsInterface()
+            cli_settings.root_path = root_path
+            cli_settings.spec_dir = root_path / ".spec"
+            cli_settings.specs_dir = root_path / ".specs"
+            cli_settings.debug_enabled = validated_inputs.get("debug_mode", False)
+
+            # Apply any setting overrides
+            for key, value in overrides.items():
+                if hasattr(cli_settings, key):
+                    setattr(cli_settings, key, value)
+                    debug_logger.log(
+                        "DEBUG", "Applied setting override", key=key, value=value
+                    )
+
+            # Create CLI console with real output capabilities
+            cli_console = SpecConsoleInterface()
+
+            # Create CLI progress with real progress tracking
+            cli_progress = SpecProgressInterface()
+
+            # Create and return context
+            context = cls(
+                settings=cli_settings, console=cli_console, progress=cli_progress
+            )
+
+            debug_logger.log(
+                "DEBUG",
+                "CLI SpecContext created successfully",
+                context_hash=context.get_context_hash()[:8],
+                settings_type=type(cli_settings).__name__,
+                console_type=type(cli_console).__name__,
+                progress_type=type(cli_progress).__name__,
+            )
+
+            return context
+
+        except Exception as e:
+            error_context = create_error_context(root_path or Path.cwd())
+            error_context.update(
+                {
+                    "factory_type": "cli",
+                    "overrides": overrides,
+                    "error_type": type(e).__name__,
+                    "error_details": str(e),
+                }
+            )
+            raise SpecFactoryError(
+                f"Failed to create CLI SpecContext: {e}", error_context
+            ) from e
+
+    @classmethod
+    def create_for_testing(
+        cls, testing_overrides: dict[str, Any] | None = None
+    ) -> "SpecContext":
+        """Create SpecContext for testing environment with mock dependencies.
+
+        Factory method for creating test SpecContext instances with mock
+        dependencies suitable for isolated unit testing.
+
+        Args:
+            testing_overrides: Optional configuration overrides for testing
+
+        Returns:
+            SpecContext instance configured for testing environment
+
+        Raises:
+            SpecFactoryError: If testing context creation fails
+
+        Example:
+            context = SpecContext.create_for_testing({"debug_enabled": True})
+            # Use context with predictable mock behavior
+        """
+        try:
+            overrides = testing_overrides or {}
+            debug_logger.log(
+                "DEBUG",
+                "Creating SpecContext for testing environment",
+                overrides_count=len(overrides),
+                override_keys=list(overrides.keys()),
+            )
+
+            # Validate inputs using factory utils
+            validated_inputs = validate_factory_inputs(
+                factory_type="testing_context",
+                environment="testing",
+                **overrides,
+            )
+
+            # Create mock settings with deterministic behavior
+            mock_settings = Mock(spec=SpecSettingsInterface)
+            mock_settings.debug_enabled = validated_inputs.get("debug_mode", False)
+            mock_settings.console_width = 80
+            mock_settings.use_color = False  # Disable for testing consistency
+            mock_settings.root_path = Path("/tmp/test")
+            mock_settings.spec_dir = Path("/tmp/test/.spec")
+            mock_settings.specs_dir = Path("/tmp/test/.specs")
+
+            # Apply testing overrides to mock settings
+            for key, value in overrides.items():
+                if hasattr(SpecSettingsInterface(), key):
+                    setattr(mock_settings, key, value)
+                    debug_logger.log(
+                        "DEBUG", "Applied testing override", key=key, value=value
+                    )
+
+            # Mock settings methods
+            mock_settings.get_setting.return_value = None
+            mock_settings.validate_configuration.return_value = {}
+
+            # Create mock console with deterministic behavior
+            mock_console = Mock(spec=SpecConsoleInterface)
+            mock_console.get_width.return_value = 80
+            mock_console.supports_color.return_value = False
+            # Mock console methods don't need return values (print operations)
+            mock_console.print_message.return_value = None
+            mock_console.print_error.return_value = None
+            mock_console.print_success.return_value = None
+            mock_console.print_warning.return_value = None
+
+            # Create mock progress with deterministic behavior
+            mock_progress = Mock(spec=SpecProgressInterface)
+            mock_progress.start_operation.return_value = "test_op_001"
+            mock_progress.show_progress.return_value = None
+            mock_progress.update_status.return_value = None
+            mock_progress.finish_operation.return_value = None
+
+            # Create and return context
+            context = cls(
+                settings=mock_settings, console=mock_console, progress=mock_progress
+            )
+
+            debug_logger.log(
+                "DEBUG",
+                "Testing SpecContext created successfully",
+                context_hash=context.get_context_hash()[:8],
+                settings_type=type(mock_settings).__name__,
+                console_type=type(mock_console).__name__,
+                progress_type=type(mock_progress).__name__,
+            )
+
+            return context
+
+        except Exception as e:
+            error_context = {
+                "factory_type": "testing",
+                "overrides": testing_overrides or {},
+                "error_type": type(e).__name__,
+                "error_details": str(e),
+            }
+            raise SpecFactoryError(
+                f"Failed to create testing SpecContext: {e}", error_context
+            ) from e
