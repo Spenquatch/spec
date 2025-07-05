@@ -170,7 +170,7 @@ from spec_cli.core.factory_interface import AbstractContextFactory, FactoryConfi
 class TestFactory(AbstractContextFactory):
     def create_context(self, config):
         return {'context_type': 'test', 'environment': config.environment}
-    
+
     def validate_config(self, config):
         self._validate_common_config(config)
         return True
@@ -178,11 +178,11 @@ class TestFactory(AbstractContextFactory):
 try:
     factory = TestFactory('test_factory')
     config = FactoryConfig(factory_type='context', environment='testing')
-    
+
     print(f'Factory created: {factory.factory_type}')
     print(f'Supports testing env: {factory.supports_environment(\"testing\")}')
     print(f'Config validation: {factory.validate_config(config)}')
-    
+
     context = factory.create_context(config)
     print(f'Context created: {context}')
 except Exception as e:
@@ -220,29 +220,29 @@ try:
     registry = FactoryRegistry()
     factory1 = TestFactory('cli_factory')
     factory2 = TestFactory('test_factory')
-    
+
     # Register factories
     registry.register_factory('context', 'cli', factory1)
     registry.register_factory('context', 'testing', factory2)
-    
+
     print(f'Factories registered successfully')
-    
+
     # List available factories
     available = registry.list_available_factories()
     print(f'Available factories: {available}')
-    
+
     # Retrieve and test factories
     cli_factory = registry.get_factory('context', 'cli')
     test_factory = registry.get_factory('context', 'testing')
-    
+
     print(f'CLI factory retrieved: {cli_factory.factory_type}')
     print(f'Test factory retrieved: {test_factory.factory_type}')
-    
+
     # Test context creation
     cli_config = FactoryConfig(factory_type='context', environment='cli')
     cli_context = cli_factory.create_context(cli_config)
     print(f'CLI context: {cli_context}')
-    
+
 except Exception as e:
     print(f'ERROR: {e}')
 ")
@@ -256,14 +256,14 @@ from spec_cli.core.factory_interface import FactoryRegistry, FactoryInterfaceErr
 
 try:
     registry = FactoryRegistry()
-    
+
     # Try to get non-existent factory
     try:
         registry.get_factory('nonexistent', 'cli')
         print('UNEXPECTED: Should have raised error for nonexistent factory')
     except FactoryInterfaceError as e:
         print(f'Expected error for nonexistent factory: {type(e).__name__}')
-    
+
     print('Error handling working correctly')
 except Exception as e:
     print(f'ERROR: {e}')
@@ -294,18 +294,18 @@ class EnvironmentSpecificFactory(AbstractContextFactory):
     def __init__(self, factory_type, supported_env):
         super().__init__(factory_type)
         self.supported_env = supported_env
-    
+
     def create_context(self, config):
         return {
             'factory_type': self.factory_type,
             'environment': config.environment,
             'supported': self.supports_environment(config.environment)
         }
-    
+
     def validate_config(self, config):
         self._validate_common_config(config)
         return self.supports_environment(config.environment)
-    
+
     def supports_environment(self, environment):
         return environment == self.supported_env
 
@@ -313,26 +313,26 @@ try:
     # Create environment-specific factories
     cli_factory = EnvironmentSpecificFactory('cli_factory', 'cli')
     testing_factory = EnvironmentSpecificFactory('testing_factory', 'testing')
-    
+
     print(f'CLI factory supports CLI: {cli_factory.supports_environment(\"cli\")}')
     print(f'CLI factory supports testing: {cli_factory.supports_environment(\"testing\")}')
     print(f'Testing factory supports testing: {testing_factory.supports_environment(\"testing\")}')
     print(f'Testing factory supports CLI: {testing_factory.supports_environment(\"cli\")}')
-    
+
     # Test with appropriate environments
     cli_config = FactoryConfig(factory_type='context', environment='cli')
     testing_config = FactoryConfig(factory_type='context', environment='testing')
-    
+
     cli_context = cli_factory.create_context(cli_config)
     testing_context = testing_factory.create_context(testing_config)
-    
+
     print(f'CLI context: {cli_context}')
     print(f'Testing context: {testing_context}')
-    
+
     # Test validation
     print(f'CLI factory validates CLI config: {cli_factory.validate_config(cli_config)}')
     print(f'Testing factory validates testing config: {testing_factory.validate_config(testing_config)}')
-    
+
 except Exception as e:
     print(f'ERROR: {e}')
 ")
@@ -372,7 +372,7 @@ try:
         }
     )
     print(f'SpecContext inputs validated: {len(spec_inputs)} parameters')
-    
+
     # Create SpecContext-compatible config
     config = FactoryConfig(
         factory_type=spec_inputs['factory_type'],
@@ -382,7 +382,7 @@ try:
         factory_config=spec_inputs['factory_config']
     )
     print(f'SpecContext config created: {config.factory_type}')
-    
+
     # Real factory interface testing with actual data structures
     class RealSpecContextCompatibilityFactory(AbstractContextFactory):
         def create_context(self, config):
@@ -396,21 +396,21 @@ try:
                 'timeout': config.timeout,
                 'creation_timestamp': '2025-07-05T10:45:00Z'
             }
-        
+
         def validate_config(self, config):
             self._validate_common_config(config)
             # Real validation logic
             required_keys = ['project_root']
             has_required = all(key in config.factory_config for key in required_keys)
             return has_required and config.factory_type == 'spec_context'
-    
+
     factory = RealSpecContextCompatibilityFactory('spec_context')
     print(f'Real factory created: {factory.factory_type}')
-    
+
     # Test real validation and creation workflow
     is_valid = factory.validate_config(config)
     print(f'Config validation result: {is_valid}')
-    
+
     if is_valid:
         context = factory.create_context(config)
         print(f'Real context created: {context[\"context_id\"]}')
@@ -422,7 +422,7 @@ try:
         print(f'Creation timestamp: {context[\"creation_timestamp\"]}')
     else:
         print('Validation failed - config does not meet requirements')
-    
+
 except Exception as e:
     print(f'ERROR: {e}')
 ")
@@ -451,31 +451,31 @@ try:
     # Check AbstractContextFactory has required methods
     abstract_methods = inspect.getmembers(AbstractContextFactory, predicate=inspect.isfunction)
     method_names = [name for name, _ in abstract_methods]
-    
+
     required_methods = ['create_context', 'validate_config', 'supports_environment']
     has_all_methods = all(method in method_names for method in required_methods)
-    
+
     print(f'AbstractContextFactory methods: {method_names}')
     print(f'Has all required methods: {has_all_methods}')
-    
+
     # Check FactoryConfig has required fields
     config_fields = FactoryConfig.__dataclass_fields__.keys()
     required_fields = ['factory_type', 'environment', 'debug_mode', 'timeout', 'factory_config']
     has_all_fields = all(field in config_fields for field in required_fields)
-    
+
     print(f'FactoryConfig fields: {list(config_fields)}')
     print(f'Has all required fields: {has_all_fields}')
-    
+
     # Check FactoryRegistry has required methods
     registry_methods = [name for name, _ in inspect.getmembers(FactoryRegistry, predicate=inspect.ismethod)]
     required_registry_methods = ['register_factory', 'get_factory', 'list_available_factories']
     has_all_registry_methods = all(method in registry_methods for method in required_registry_methods)
-    
+
     print(f'FactoryRegistry methods: {registry_methods}')
     print(f'Has all required registry methods: {has_all_registry_methods}')
-    
+
     print(f'Interface completeness: {has_all_methods and has_all_fields and has_all_registry_methods}')
-    
+
 except Exception as e:
     print(f'ERROR: {e}')
 ")
@@ -501,27 +501,27 @@ try:
     for _ in range(100):
         detect_environment_type()
     env_detection_time = (time.time() - start_time) * 1000  # Convert to ms
-    
+
     # Measure input validation
     start_time = time.time()
     for _ in range(100):
         validate_factory_inputs(factory_type='test', timeout=30)
     validation_time = (time.time() - start_time) * 1000
-    
+
     # Measure config creation
     start_time = time.time()
     for _ in range(100):
         FactoryConfig(factory_type='test', environment='testing')
     config_creation_time = (time.time() - start_time) * 1000
-    
+
     print(f'Environment detection (100 calls): {env_detection_time:.2f}ms')
     print(f'Input validation (100 calls): {validation_time:.2f}ms')
     print(f'Config creation (100 calls): {config_creation_time:.2f}ms')
-    
+
     # All operations should be fast (< 100ms for 100 calls)
     performance_ok = all(t < 100 for t in [env_detection_time, validation_time, config_creation_time])
     print(f'Performance acceptable: {performance_ok}')
-    
+
 except Exception as e:
     print(f'ERROR: {e}')
 ")

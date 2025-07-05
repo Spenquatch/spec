@@ -66,81 +66,81 @@ from spec_cli.utils.dependency_analysis import (  # noqa: E402
 def test_validate_dependency_exists():
     """Test dependency validation function."""
     print("Testing validate_dependency_exists()...")
-    
+
     # Test existing dependency
     result1 = validate_dependency_exists("spec_cli.config.settings")
     print(f"  spec_cli.config.settings exists: {result1}")
-    
-    # Test existing dependency  
+
+    # Test existing dependency
     result2 = validate_dependency_exists("spec_cli.ui.console")
     print(f"  spec_cli.ui.console exists: {result2}")
-    
+
     # Test non-existent dependency
     result3 = validate_dependency_exists("spec_cli.nonexistent.fake")
     print(f"  spec_cli.nonexistent.fake exists: {result3}")
-    
+
     return result1, result2, result3
 
 def test_analyze_current_usage():
     """Test current usage analysis function."""
     print("Testing analyze_current_usage()...")
-    
+
     codebase_path = Path("spec_cli")
-    
+
     # Analyze settings usage
     settings_files = analyze_current_usage("settings", codebase_path)
     print(f"  Settings usage found in {len(settings_files)} files")
-    
+
     # Analyze console usage
     console_files = analyze_current_usage("console", codebase_path)
     print(f"  Console usage found in {len(console_files)} files")
-    
+
     # Analyze progress usage
     progress_files = analyze_current_usage("progress", codebase_path)
     print(f"  Progress usage found in {len(progress_files)} files")
-    
+
     return settings_files, console_files, progress_files
 
 def test_generate_dependency_report():
     """Test comprehensive dependency report generation."""
     print("Testing generate_dependency_report()...")
-    
+
     codebase_path = Path("spec_cli")
     dependency_names = ["settings", "console", "progress"]
-    
+
     reports = generate_dependency_report(dependency_names, codebase_path)
-    
+
     print(f"  Generated reports for {len(reports)} dependencies")
     for name, report in reports.items():
         print(f"    {name}: exists={report.exists}, usage_count={len(report.usage_patterns)}, errors={len(report.analysis_errors)}")
-    
+
     return reports
 
 def main():
     """Run all dependency analysis tests."""
     print("Running dependency analysis tests...")
     print("=" * 50)
-    
+
     try:
         # Test 1: Dependency validation
         exists_results = test_validate_dependency_exists()
         print()
-        
-        # Test 2: Usage analysis  
+
+        # Test 2: Usage analysis
         usage_results = test_analyze_current_usage()
         print()
-        
+
         # Test 3: Report generation
         report_results = test_generate_dependency_report()
         print()
-        
+
         # Return results for shell script validation
         return {
             "exists_results": exists_results,
-            "usage_results": usage_results, 
+            "usage_results": usage_results,
             "report_results": report_results
         }
-        
+
     except Exception as e:
         print(f"ERROR: {e}")
         import traceback
@@ -199,7 +199,7 @@ PROGRESS_COUNT=$(echo "$VALIDATION_OUTPUT" | grep "Progress usage found in" | gr
 
 echo "Actual Results:"
 echo "  Settings usage: $SETTINGS_COUNT files"
-echo "  Console usage: $CONSOLE_COUNT files"  
+echo "  Console usage: $CONSOLE_COUNT files"
 echo "  Progress usage: $PROGRESS_COUNT files"
 
 # Validate Test 2 results
@@ -262,28 +262,28 @@ from spec_cli.utils.dependency_analysis import generate_dependency_report
 
 try:
     reports = generate_dependency_report(["settings", "console", "progress"], Path("spec_cli"))
-    
+
     for dep_name, report in reports.items():
         interface_reqs = report.requirements.get("interface_requirements", [])
         print(f"{dep_name}: {len(interface_reqs)} interface requirements")
-        
+
         if len(interface_reqs) > 0:
             print(f"  Sample: {interface_reqs[0]}")
-        
+
     # Check specific interface requirements
     settings_reqs = reports["settings"].requirements.get("interface_requirements", [])
     has_debug_enabled = any("debug_enabled" in req for req in settings_reqs)
     has_get_setting = any("get_setting" in req for req in settings_reqs)
-    
+
     console_reqs = reports["console"].requirements.get("interface_requirements", [])
     has_print_message = any("print_message" in req for req in console_reqs)
     has_get_width = any("get_width" in req for req in console_reqs)
-    
+
     print(f"Settings has debug_enabled: {has_debug_enabled}")
     print(f"Settings has get_setting: {has_get_setting}")
     print(f"Console has print_message: {has_print_message}")
     print(f"Console has get_width: {has_get_width}")
-    
+
 except Exception as e:
     print(f"ERROR: {e}")
     sys.exit(1)
@@ -323,9 +323,9 @@ try:
     except DependencyValidationError as e:
         print(f"Correctly caught validation error: {type(e).__name__}")
         print(f"Error message contains expected text: {'does not exist' in str(e)}")
-    
+
     print("Error handling validation passed")
-    
+
 except Exception as e:
     print(f"ERROR: {e}")
     sys.exit(1)
