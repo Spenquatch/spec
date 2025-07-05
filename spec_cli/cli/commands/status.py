@@ -7,10 +7,10 @@ import click
 
 from ...ai.config.loader import load_ai_config
 from ...ai.providers.manager import ProviderManager
+from ...core.context import SpecContext
 from ...exceptions import SpecRepositoryError
-from ...logging.debug import debug_logger
-from ...ui.console import get_console
 from ...ui.tables import StatusTable, create_key_value_table
+from ..decorators import context_injection
 from ..options import spec_command
 from ..utils import echo_status, get_spec_repository
 
@@ -23,16 +23,20 @@ from ..utils import echo_status, get_spec_repository
 )
 @click.option("--git", is_flag=True, help="Also show Git repository status")
 @click.option("--summary", is_flag=True, help="Show processing capabilities summary")
+@context_injection
 def status_command(
-    debug: bool, verbose: bool, health: bool, git: bool, summary: bool
+    context: SpecContext,
+    debug: bool,
+    verbose: bool,
+    health: bool,
+    git: bool,
+    summary: bool,
 ) -> None:
     """Show repository status.
 
     Displays comprehensive information about the spec repository including
     file counts, Git status, and system health.
     """
-    console = get_console()
-
     try:
         # Get repository (validates initialization)
         repo = get_spec_repository()
@@ -50,24 +54,29 @@ def status_command(
 
         # Show Git status if requested
         if git:
-            console.print("\n[bold cyan]Git Status:[/bold cyan]")
+            context.console.print_message("\n[bold cyan]Git Status:[/bold cyan]")
             git_status = _get_git_status_data(repo)
             _display_git_status(git_status)
 
         # Show processing summary if requested
         if summary:
-            console.print("\n[bold cyan]Processing Summary:[/bold cyan]")
-            summary_info = _get_processing_summary()
+            context.console.print_message(
+                "\n[bold cyan]Processing Summary:[/bold cyan]"
+            )
+            summary_info = _get_processing_summary(context)
             _display_processing_summary(summary_info)
 
-        debug_logger.log(
-            "INFO", "Status check completed", health=health, git=git, summary=summary
-        )
+        # Use context for logging instead of singleton
+        if hasattr(context.settings, "debug") and context.settings.debug:
+            context.console.print_message(
+                f"Status check completed - health={health}, git={git}, summary={summary}"
+            )
 
     except SpecRepositoryError as e:
         raise click.ClickException(f"Repository error: {e}") from e
     except Exception as e:
-        debug_logger.log("ERROR", "Status check failed", error=str(e))
+        # Use context for error logging instead of singleton
+        context.console.print_error(f"Status check failed: {e}")
         raise click.ClickException(f"Status check failed: {e}") from e
 
 
@@ -175,8 +184,11 @@ def _get_repository_health(repo: Any) -> dict[str, Any]:
     return health
 
 
-def _get_real_ai_status() -> dict[str, Any]:
+def _get_real_ai_status(context: SpecContext) -> dict[str, Any]:
     """Get real AI provider status information.
+
+    Args:
+        context: SpecContext instance for logging and configuration
 
     Returns:
         Dictionary containing actual AI provider status and configuration
@@ -209,12 +221,12 @@ def _get_real_ai_status() -> dict[str, Any]:
                     }
                 )
 
-        debug_logger.log(
-            "DEBUG",
-            "AI status retrieved successfully",
-            ai_enabled=provider_info["ai_enabled"],
-            provider_available=provider_info["provider_available"],
-        )
+        # Use context for debug logging instead of singleton
+        if hasattr(context.settings, "debug") and context.settings.debug:
+            context.console.print_message(
+                f"AI status retrieved - enabled={provider_info['ai_enabled']}, "
+                f"available={provider_info['provider_available']}"
+            )
 
         return {
             "enabled": provider_info["ai_enabled"],
@@ -228,12 +240,8 @@ def _get_real_ai_status() -> dict[str, Any]:
         }
 
     except Exception as e:  # decision point 4
-        debug_logger.log(
-            "ERROR",
-            "Failed to get AI provider status",
-            error=str(e),
-            error_type=type(e).__name__,
-        )
+        # Use context for error logging instead of singleton
+        context.console.print_error(f"Failed to get AI provider status: {e}")
 
         # Return graceful fallback information
         return {
@@ -244,7 +252,7 @@ def _get_real_ai_status() -> dict[str, Any]:
         }
 
 
-def _get_processing_summary() -> dict[str, Any]:
+def _get_processing_summary(context: SpecContext) -> dict[str, Any]:
     """Get processing capabilities summary."""
     return {
         "template_system": {
@@ -256,7 +264,7 @@ def _get_processing_summary() -> dict[str, Any]:
             "batch_processing": True,
             "conflict_resolution": True,
         },
-        "ai_integration": _get_real_ai_status(),
+        "ai_integration": _get_real_ai_status(context),
     }
 
 
@@ -299,25 +307,24 @@ def _display_health_check(health_info: dict[str, Any]) -> None:
 
 def _display_git_status(git_status: dict[str, Any]) -> None:
     """Display Git status information."""
-    console = get_console()
-
+    # Use echo_status helper for display - it handles console internally
     if git_status.get("staged"):
-        console.print("\n[green]Staged files:[/green]")
+        echo_status("\nStaged files:", "info")
         for file in git_status["staged"]:
-            console.print(f"  [green]A[/green] {file}")
+            echo_status(f"  A {file}", "success")
 
     if git_status.get("modified"):
-        console.print("\n[yellow]Modified files:[/yellow]")
+        echo_status("\nModified files:", "info")
         for file in git_status["modified"]:
-            console.print(f"  [yellow]M[/yellow] {file}")
+            echo_status(f"  M {file}", "warning")
 
     if git_status.get("untracked"):
-        console.print("\n[red]Untracked files:[/red]")
+        echo_status("\nUntracked files:", "info")
         for file in git_status["untracked"]:
-            console.print(f"  [red]?[/red] {file}")
+            echo_status(f"  ? {file}", "error")
 
     if not any(git_status.values()):
-        console.print("\n[green]Working directory clean[/green]")
+        echo_status("\nWorking directory clean", "success")
 
 
 def _display_processing_summary(summary_info: dict[str, Any]) -> None:
