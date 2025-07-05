@@ -18,6 +18,7 @@ class SignatureReport:
         is_compatible: Whether function is compatible with decorators
         error_message: Error message if analysis failed
     """
+
     function_name: str
     parameters: dict[str, dict[str, Any]]
     return_annotation: str | None
@@ -60,9 +61,7 @@ def analyze_function_signature(func: Callable[..., Any]) -> SignatureReport:
         >>> assert "name" in report.parameters
     """
     if not callable(func):
-        raise DecoratorAnalysisError(
-            f"Expected callable function, got {type(func)}"
-        )
+        raise DecoratorAnalysisError(f"Expected callable function, got {type(func)}")
 
     try:
         sig = inspect.signature(func)
@@ -74,8 +73,12 @@ def analyze_function_signature(func: Callable[..., Any]) -> SignatureReport:
 
         for param_name, param in sig.parameters.items():
             param_info = {
-                "annotation": str(param.annotation) if param.annotation != inspect.Parameter.empty else None,
-                "default": param.default if param.default != inspect.Parameter.empty else None,
+                "annotation": str(param.annotation)
+                if param.annotation != inspect.Parameter.empty
+                else None,
+                "default": param.default
+                if param.default != inspect.Parameter.empty
+                else None,
                 "kind": param.kind.name,
             }
             parameters[param_name] = param_info
@@ -103,8 +106,7 @@ def analyze_function_signature(func: Callable[..., Any]) -> SignatureReport:
     except Exception as e:
         error_context = {"function": repr(func), "error_type": type(e).__name__}
         raise DecoratorAnalysisError(
-            f"Failed to analyze function signature: {e}",
-            context=error_context
+            f"Failed to analyze function signature: {e}", context=error_context
         ) from e
 
 
@@ -156,4 +158,3 @@ def validate_decorator_compatibility(func: Callable[..., Any]) -> bool:
         return False
     except Exception:
         return False
-

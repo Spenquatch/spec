@@ -8,10 +8,9 @@ from pathlib import Path
 from .error_handler import ErrorHandler
 
 # Create error handler for command analysis
-command_analysis_error_handler = ErrorHandler({
-    "module": "utils",
-    "component": "command_analysis"
-})
+command_analysis_error_handler = ErrorHandler(
+    {"module": "utils", "component": "command_analysis"}
+)
 
 
 @dataclass
@@ -52,6 +51,7 @@ class CommandStructureReport:
 
 class CommandAnalysisError(Exception):
     """Error during command analysis."""
+
     pass
 
 
@@ -128,7 +128,7 @@ def identify_singleton_usage(command_file: Path) -> list[SingletonUsage]:
     singleton_patterns = []
 
     try:
-        content = command_file.read_text(encoding='utf-8')
+        content = command_file.read_text(encoding="utf-8")
         lines = content.splitlines()
 
         # Parse AST for detailed analysis
@@ -154,7 +154,7 @@ def _extract_commands_from_file(py_file: Path) -> list[dict[str, str]]:
     commands = []
 
     try:
-        content = py_file.read_text(encoding='utf-8')
+        content = py_file.read_text(encoding="utf-8")
         tree = ast.parse(content)
 
         for node in ast.walk(tree):
@@ -167,12 +167,14 @@ def _extract_commands_from_file(py_file: Path) -> list[dict[str, str]]:
                         break
 
                 if has_command_decorator:
-                    commands.append({
-                        "name": node.name,
-                        "file": str(py_file),
-                        "line": str(node.lineno),
-                        "type": "command"
-                    })
+                    commands.append(
+                        {
+                            "name": node.name,
+                            "file": str(py_file),
+                            "line": str(node.lineno),
+                            "type": "command",
+                        }
+                    )
 
     except Exception:
         # Skip files that can't be parsed
@@ -186,13 +188,15 @@ def _extract_click_patterns_from_file(py_file: Path) -> list[ClickPattern]:
     patterns = []
 
     try:
-        content = py_file.read_text(encoding='utf-8')
+        content = py_file.read_text(encoding="utf-8")
         tree = ast.parse(content)
 
         for node in ast.walk(tree):
             if isinstance(node, ast.FunctionDef):
                 for decorator in node.decorator_list:
-                    click_pattern = _analyze_click_decorator(decorator, node.name, str(py_file), node.lineno)
+                    click_pattern = _analyze_click_decorator(
+                        decorator, node.name, str(py_file), node.lineno
+                    )
                     if click_pattern:
                         patterns.append(click_pattern)
 
@@ -209,70 +213,83 @@ def _analyze_ast_for_singletons(tree: ast.AST, file_path: str) -> list[Singleton
 
     # Known singleton patterns to detect
     singleton_classes = {
-        "SpecGitRepository", "Console", "ProviderManager",
-        "ProgressManager", "DebugLogger"
+        "SpecGitRepository",
+        "Console",
+        "ProviderManager",
+        "ProgressManager",
+        "DebugLogger",
     }
 
-    singleton_functions = {
-        "get_spec_repository", "get_console", "get_progress_manager"
-    }
+    singleton_functions = {"get_spec_repository", "get_console", "get_progress_manager"}
 
     for node in ast.walk(tree):
         if isinstance(node, ast.Call):
             # Direct instantiation: ClassName()
             if isinstance(node.func, ast.Name) and node.func.id in singleton_classes:
-                singleton_patterns.append(SingletonUsage(
-                    singleton_class=node.func.id,
-                    usage_pattern="direct_instantiation",
-                    file_path=file_path,
-                    line_number=node.lineno,
-                    context=f"{node.func.id}()",
-                ))
+                singleton_patterns.append(
+                    SingletonUsage(
+                        singleton_class=node.func.id,
+                        usage_pattern="direct_instantiation",
+                        file_path=file_path,
+                        line_number=node.lineno,
+                        context=f"{node.func.id}()",
+                    )
+                )
 
             # Factory function calls: get_something()
-            elif isinstance(node.func, ast.Name) and node.func.id in singleton_functions:
+            elif (
+                isinstance(node.func, ast.Name) and node.func.id in singleton_functions
+            ):
                 # Map function to class
                 class_name = _map_factory_to_class(node.func.id)
-                singleton_patterns.append(SingletonUsage(
-                    singleton_class=class_name,
-                    usage_pattern="factory_function",
-                    file_path=file_path,
-                    line_number=node.lineno,
-                    context=f"{node.func.id}()",
-                ))
+                singleton_patterns.append(
+                    SingletonUsage(
+                        singleton_class=class_name,
+                        usage_pattern="factory_function",
+                        file_path=file_path,
+                        line_number=node.lineno,
+                        context=f"{node.func.id}()",
+                    )
+                )
 
     return singleton_patterns
 
 
-def _analyze_regex_for_singletons(lines: list[str], file_path: str) -> list[SingletonUsage]:
+def _analyze_regex_for_singletons(
+    lines: list[str], file_path: str
+) -> list[SingletonUsage]:
     """Fallback regex analysis for singleton patterns."""
     singleton_patterns = []
 
     # Regex patterns for common singleton usage
-    direct_instantiation_pattern = re.compile(r'(\w+Repository|Console|Manager)\(\)')
-    factory_function_pattern = re.compile(r'get_(\w+)\(\)')
+    direct_instantiation_pattern = re.compile(r"(\w+Repository|Console|Manager)\(\)")
+    factory_function_pattern = re.compile(r"get_(\w+)\(\)")
 
     for line_num, line in enumerate(lines, 1):
         # Check for direct instantiation
         for match in direct_instantiation_pattern.finditer(line):
-            singleton_patterns.append(SingletonUsage(
-                singleton_class=match.group(1),
-                usage_pattern="direct_instantiation",
-                file_path=file_path,
-                line_number=line_num,
-                context=line.strip(),
-            ))
+            singleton_patterns.append(
+                SingletonUsage(
+                    singleton_class=match.group(1),
+                    usage_pattern="direct_instantiation",
+                    file_path=file_path,
+                    line_number=line_num,
+                    context=line.strip(),
+                )
+            )
 
         # Check for factory functions
         for match in factory_function_pattern.finditer(line):
             class_name = _map_factory_to_class(f"get_{match.group(1)}")
-            singleton_patterns.append(SingletonUsage(
-                singleton_class=class_name,
-                usage_pattern="factory_function",
-                file_path=file_path,
-                line_number=line_num,
-                context=line.strip(),
-            ))
+            singleton_patterns.append(
+                SingletonUsage(
+                    singleton_class=class_name,
+                    usage_pattern="factory_function",
+                    file_path=file_path,
+                    line_number=line_num,
+                    context=line.strip(),
+                )
+            )
 
     return singleton_patterns
 
@@ -290,12 +307,17 @@ def _is_click_command_decorator(decorator: ast.expr) -> bool:
         return decorator.attr in {"command", "group"}
     elif isinstance(decorator, ast.Call) and isinstance(decorator.func, ast.Attribute):
         # Handle @click.command(), @click.group() patterns
-        if isinstance(decorator.func.value, ast.Name) and decorator.func.value.id == "click":
+        if (
+            isinstance(decorator.func.value, ast.Name)
+            and decorator.func.value.id == "click"
+        ):
             return decorator.func.attr in {"command", "group"}
     return False
 
 
-def _analyze_click_decorator(decorator: ast.expr, func_name: str, file_path: str, line_num: int) -> ClickPattern | None:
+def _analyze_click_decorator(
+    decorator: ast.expr, func_name: str, file_path: str, line_num: int
+) -> ClickPattern | None:
     """Analyze a decorator to extract Click pattern information."""
     if isinstance(decorator, ast.Call) and isinstance(decorator.func, ast.Name):
         decorator_name = decorator.func.id
@@ -306,11 +328,14 @@ def _analyze_click_decorator(decorator: ast.expr, func_name: str, file_path: str
                 file_path=file_path,
                 line_number=line_num,
                 is_command=decorator_name in {"command", "spec_command"},
-                is_group=decorator_name == "group"
+                is_group=decorator_name == "group",
             )
     elif isinstance(decorator, ast.Call) and isinstance(decorator.func, ast.Attribute):
         # Handle @click.command(), @click.group() patterns
-        if isinstance(decorator.func.value, ast.Name) and decorator.func.value.id == "click":
+        if (
+            isinstance(decorator.func.value, ast.Name)
+            and decorator.func.value.id == "click"
+        ):
             decorator_name = decorator.func.attr
             return ClickPattern(
                 decorator_name=decorator_name,
@@ -318,7 +343,7 @@ def _analyze_click_decorator(decorator: ast.expr, func_name: str, file_path: str
                 file_path=file_path,
                 line_number=line_num,
                 is_command=decorator_name == "command",
-                is_group=decorator_name == "group"
+                is_group=decorator_name == "group",
             )
     elif isinstance(decorator, ast.Name):
         if decorator.id in {"command", "group"}:
@@ -328,7 +353,7 @@ def _analyze_click_decorator(decorator: ast.expr, func_name: str, file_path: str
                 file_path=file_path,
                 line_number=line_num,
                 is_command=decorator.id == "command",
-                is_group=decorator.id == "group"
+                is_group=decorator.id == "group",
             )
     elif isinstance(decorator, ast.Attribute):
         # Handle click.command without parentheses
@@ -340,7 +365,7 @@ def _analyze_click_decorator(decorator: ast.expr, func_name: str, file_path: str
                 file_path=file_path,
                 line_number=line_num,
                 is_command=decorator_name == "command",
-                is_group=decorator_name == "group"
+                is_group=decorator_name == "group",
             )
 
     return None
@@ -356,4 +381,3 @@ def _map_factory_to_class(factory_function: str) -> str:
     }
 
     return factory_mapping.get(factory_function, "Unknown")
-

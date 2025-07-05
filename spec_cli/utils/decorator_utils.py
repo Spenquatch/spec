@@ -55,7 +55,9 @@ def create_context_injector(context_retriever: Callable[[], Any]) -> Callable[[F
         >>> result = my_func("test")  # ctx automatically injected
     """
     if not callable(context_retriever):
-        raise TypeError(f"context_retriever must be callable, got {type(context_retriever)}")
+        raise TypeError(
+            f"context_retriever must be callable, got {type(context_retriever)}"
+        )
 
     def decorator(func: F) -> F:
         if not callable(func):
@@ -70,7 +72,9 @@ def create_context_injector(context_retriever: Callable[[], Any]) -> Callable[[F
 
         # Check if function expects context parameter
         if not param_names:
-            raise DecoratorError("Function must accept at least one parameter for context", func)
+            raise DecoratorError(
+                "Function must accept at least one parameter for context", func
+            )
 
         # First parameter will be used for context injection
 
@@ -99,7 +103,9 @@ def create_context_injector(context_retriever: Callable[[], Any]) -> Callable[[F
     return decorator
 
 
-def preserve_function_metadata(wrapper: Callable[..., Any], original: Callable[..., Any]) -> Callable[..., Any]:
+def preserve_function_metadata(
+    wrapper: Callable[..., Any], original: Callable[..., Any]
+) -> Callable[..., Any]:
     """Preserve function metadata for decorator compatibility.
 
     Args:
@@ -136,7 +142,14 @@ def preserve_function_metadata(wrapper: Callable[..., Any], original: Callable[.
         wrapper.__annotations__ = getattr(original, "__annotations__", {})
 
         # Preserve Click-specific attributes if they exist
-        click_attrs = ["__click_params__", "__click_group__", "__click_command__", "callback", "name", "help"]
+        click_attrs = [
+            "__click_params__",
+            "__click_group__",
+            "__click_command__",
+            "callback",
+            "name",
+            "help",
+        ]
         for attr in click_attrs:
             if hasattr(original, attr):
                 setattr(wrapper, attr, getattr(original, attr))
@@ -144,7 +157,9 @@ def preserve_function_metadata(wrapper: Callable[..., Any], original: Callable[.
         return wrapper
 
     except Exception as e:
-        raise DecoratorError(f"Failed to preserve function metadata: {e}", original) from e
+        raise DecoratorError(
+            f"Failed to preserve function metadata: {e}", original
+        ) from e
 
 
 def validate_decorator_target(func: Callable[..., Any]) -> bool:
@@ -175,18 +190,24 @@ def validate_decorator_target(func: Callable[..., Any]) -> bool:
         params = list(sig.parameters.values())
 
         if not params:
-            raise DecoratorError("Function must accept at least one parameter for context", func)
+            raise DecoratorError(
+                "Function must accept at least one parameter for context", func
+            )
 
         # Validate first parameter can accept context
         first_param = params[0]
         if first_param.kind == inspect.Parameter.VAR_KEYWORD:
-            raise DecoratorError("First parameter cannot be **kwargs for context injection", func)
+            raise DecoratorError(
+                "First parameter cannot be **kwargs for context injection", func
+            )
 
         # Check for conflicting decorators or attributes
         if hasattr(func, "__wrapped__"):
             # Function is already wrapped, validate chain compatibility
             if not hasattr(func, "__name__"):
-                raise DecoratorError("Wrapped function missing __name__ attribute", func)
+                raise DecoratorError(
+                    "Wrapped function missing __name__ attribute", func
+                )
 
         return True
 
@@ -194,4 +215,3 @@ def validate_decorator_target(func: Callable[..., Any]) -> bool:
         if isinstance(e, DecoratorError):
             raise
         raise DecoratorError(f"Function validation failed: {e}", func) from e
-

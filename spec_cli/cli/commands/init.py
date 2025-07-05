@@ -39,7 +39,9 @@ def init_command(context: SpecContext, debug: bool, verbose: bool, force: bool) 
             return
 
         if force and repo.is_initialized():
-            context.console.print_message("Force reinitializing spec repository...", "info")
+            context.console.print_message(
+                "Force reinitializing spec repository...", "info"
+            )
         else:
             context.console.print_message("Initializing spec repository...", "info")
 
@@ -66,8 +68,12 @@ def init_command(context: SpecContext, debug: bool, verbose: bool, force: bool) 
         # Log through context if debug mode enabled
         if context.settings.debug_enabled:
             from ...logging.debug import debug_logger
+
             debug_logger.log(
-                "INFO", "Repository initialized", directory=str(current_dir), force=force
+                "INFO",
+                "Repository initialized",
+                directory=str(current_dir),
+                force=force,
             )
 
     except SpecRepositoryError as e:
@@ -75,6 +81,7 @@ def init_command(context: SpecContext, debug: bool, verbose: bool, force: bool) 
     except Exception as e:
         if context.settings.debug_enabled:
             from ...logging.debug import debug_logger
+
             debug_logger.log("ERROR", "Initialization failed", error=str(e))
         raise click.ClickException(
             f"Unexpected error during initialization: {e}"

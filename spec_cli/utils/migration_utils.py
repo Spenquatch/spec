@@ -24,7 +24,9 @@ class MigrationError(SpecError):
             self.add_context("command_name", command_name)
 
 
-def migrate_command_signature(func: Callable[..., Any], context_param: str) -> Callable[..., Any]:
+def migrate_command_signature(
+    func: Callable[..., Any], context_param: str
+) -> Callable[..., Any]:
     """Migrate command signature to accept context parameter.
 
     Args:
@@ -59,7 +61,7 @@ def migrate_command_signature(func: Callable[..., Any], context_param: str) -> C
         context_parameter = inspect.Parameter(
             context_param,
             inspect.Parameter.POSITIONAL_OR_KEYWORD,
-            annotation="SpecContext"
+            annotation="SpecContext",
         )
 
         # Build new parameter list with context first
@@ -74,8 +76,7 @@ def migrate_command_signature(func: Callable[..., Any], context_param: str) -> C
             # Extract context from first argument
             if not args:
                 raise MigrationError(
-                    "Context parameter required as first argument",
-                    func_name
+                    "Context parameter required as first argument", func_name
                 )
 
             # Skip context parameter when calling original function
@@ -97,14 +98,12 @@ def migrate_command_signature(func: Callable[..., Any], context_param: str) -> C
 
     except Exception as e:
         raise MigrationError(
-            f"Failed to migrate command signature: {e}",
-            getattr(func, "__name__", None)
+            f"Failed to migrate command signature: {e}", getattr(func, "__name__", None)
         ) from e
 
 
 def validate_migration_behavior(
-    original: Callable[..., Any],
-    migrated: Callable[..., Any]
+    original: Callable[..., Any], migrated: Callable[..., Any]
 ) -> bool:
     """Validate that migrated command maintains behavior compatibility.
 
@@ -133,7 +132,6 @@ def validate_migration_behavior(
         raise TypeError(f"Expected callable migrated, got {type(migrated)}")
 
     try:
-
         # Validate signatures
         original_sig = inspect.signature(original)
         migrated_sig = inspect.signature(migrated)
@@ -239,7 +237,8 @@ def get_migration_requirements(func: Callable[..., Any]) -> dict[str, Any]:
 
         # Check for special parameter types
         has_special_params = any(
-            param.kind in (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD)
+            param.kind
+            in (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD)
             for param in sig.parameters.values()
         )
         if has_special_params:

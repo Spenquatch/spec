@@ -30,7 +30,9 @@ class ContextInjectionError(DecoratorError):
         super().__init__(message)
         if click_ctx is not None:
             self.add_context("click_command", getattr(click_ctx.command, "name", None))
-            self.add_context("click_params", click_ctx.params if click_ctx.params else {})
+            self.add_context(
+                "click_params", click_ctx.params if click_ctx.params else {}
+            )
 
 
 def _get_spec_context_from_click() -> SpecContext:
@@ -81,17 +83,15 @@ def _get_spec_context_from_click() -> SpecContext:
                     self._console.print_status(text, "warning")
 
                 def get_width(self) -> int:
-                    return getattr(self._console, 'width', 80)
+                    return getattr(self._console, "width", 80)
 
                 def supports_color(self) -> bool:
-                    return not getattr(self._console, 'no_color', False)
+                    return not getattr(self._console, "no_color", False)
 
             console = ConsoleAdapter(rich_console)
 
             spec_context = SpecContext(
-                settings=settings,
-                console=console,
-                progress=progress
+                settings=settings, console=console, progress=progress
             )
 
         if not isinstance(spec_context, SpecContext):
@@ -219,4 +219,3 @@ def with_context(func: F) -> F:
         ...     print(f"Using context: {ctx}")
     """
     return context_injection(func)
-
