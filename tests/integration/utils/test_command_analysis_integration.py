@@ -17,7 +17,7 @@ REAL_CLI_COMMANDS = [
     "status_command",
     "add_command",
     "gen_command",
-    "show_command"
+    "show_command",
 ]
 
 
@@ -167,7 +167,9 @@ def echo_status(message, status_type="info"):
 
         # Verify file-specific analysis
         init_patterns = [u for u in result.singleton_usage if "init.py" in u.file_path]
-        status_patterns = [u for u in result.singleton_usage if "status.py" in u.file_path]
+        status_patterns = [
+            u for u in result.singleton_usage if "status.py" in u.file_path
+        ]
 
         assert len(init_patterns) >= 1  # SpecGitRepository() in init
         assert len(status_patterns) >= 2  # get_console(), get_spec_repository()
@@ -235,7 +237,8 @@ def status_command(debug: bool, verbose: bool, health: bool) -> None:
         # Assert: Analysis provides migration requirements for P2.3b and P2.3c
         # P2.3b (init) requirements
         init_singletons = [
-            u for u in result.singleton_usage
+            u
+            for u in result.singleton_usage
             if "init.py" in u.file_path and u.singleton_class == "SpecGitRepository"
         ]
         assert len(init_singletons) >= 1
@@ -243,8 +246,7 @@ def status_command(debug: bool, verbose: bool, health: bool) -> None:
 
         # P2.3c (status) requirements
         status_singletons = [
-            u for u in result.singleton_usage
-            if "status.py" in u.file_path
+            u for u in result.singleton_usage if "status.py" in u.file_path
         ]
         status_classes = {u.singleton_class for u in status_singletons}
         assert "Console" in status_classes
@@ -252,11 +254,11 @@ def status_command(debug: bool, verbose: bool, health: bool) -> None:
 
         # Verify migration guidance data
         factory_patterns = [
-            u for u in result.singleton_usage
-            if u.usage_pattern == "factory_function"
+            u for u in result.singleton_usage if u.usage_pattern == "factory_function"
         ]
         direct_patterns = [
-            u for u in result.singleton_usage
+            u
+            for u in result.singleton_usage
             if u.usage_pattern == "direct_instantiation"
         ]
 

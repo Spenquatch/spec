@@ -4,20 +4,27 @@ from pathlib import Path
 
 import click
 
+from ...core.context import SpecContext
 from ...exceptions import SpecRepositoryError
 from ...git.repository import SpecGitRepository
-from ...logging.debug import debug_logger
+from ..decorators import context_injection
 from ..options import force_option, spec_command
-from ..utils import echo_status
 
 
 @spec_command()
 @force_option
-def init_command(debug: bool, verbose: bool, force: bool) -> None:
+@context_injection
+def init_command(context: SpecContext, debug: bool, verbose: bool, force: bool) -> None:
     """Initialize spec repository.
 
     Creates a new spec repository in the current directory with proper
     directory structure and Git configuration.
+
+    Args:
+        context: SpecContext with settings, console, and progress dependencies
+        debug: Debug mode flag
+        verbose: Verbose mode flag
+        force: Force reinitialize flag
     """
     try:
         # Create repository instance
@@ -26,16 +33,15 @@ def init_command(debug: bool, verbose: bool, force: bool) -> None:
 
         # Check if already initialized
         if repo.is_initialized() and not force:
-            echo_status(
-                "Spec repository is already initialized. Use --force to reinitialize.",
-                "warning",
+            context.console.print_warning(
+                "Spec repository is already initialized. Use --force to reinitialize."
             )
             return
 
         if force and repo.is_initialized():
-            echo_status("Force reinitializing spec repository...", "info")
+            context.console.print_message("Force reinitializing spec repository...", "info")
         else:
-            echo_status("Initializing spec repository...", "info")
+            context.console.print_message("Initializing spec repository...", "info")
 
         # Initialize repository
         repo.initialize()
@@ -55,16 +61,21 @@ def init_command(debug: bool, verbose: bool, force: bool) -> None:
             "  • Run 'spec gen <files>' to generate documentation"
         )
 
-        echo_status(success_msg, "success")
+        context.console.print_success(success_msg)
 
-        debug_logger.log(
-            "INFO", "Repository initialized", directory=str(current_dir), force=force
-        )
+        # Log through context if debug mode enabled
+        if context.settings.debug_enabled:
+            from ...logging.debug import debug_logger
+            debug_logger.log(
+                "INFO", "Repository initialized", directory=str(current_dir), force=force
+            )
 
     except SpecRepositoryError as e:
         raise click.ClickException(f"Repository initialization failed: {e}") from e
     except Exception as e:
-        debug_logger.log("ERROR", "Initialization failed", error=str(e))
+        if context.settings.debug_enabled:
+            from ...logging.debug import debug_logger
+            debug_logger.log("ERROR", "Initialization failed", error=str(e))
         raise click.ClickException(
             f"Unexpected error during initialization: {e}"
         ) from e

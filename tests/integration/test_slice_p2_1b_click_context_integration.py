@@ -22,11 +22,7 @@ from spec_cli.core.context import (
 from spec_cli.utils.click_utils import retrieve_context_data, store_context_data
 
 # Test constants
-INTEGRATION_CONFIG = {
-    "integration_test": True,
-    "environment": "testing",
-    "debug": True
-}
+INTEGRATION_CONFIG = {"integration_test": True, "environment": "testing", "debug": True}
 
 
 @pytest.fixture
@@ -78,7 +74,13 @@ class TestClickContextIntegrationEndToEnd:
 
             # Verify context keys
             keys = get_context_keys(ctx)
-            expected_keys = {"config", "debug_mode", "max_retries", "spec_context", "di_metadata"}
+            expected_keys = {
+                "config",
+                "debug_mode",
+                "max_retries",
+                "spec_context",
+                "di_metadata",
+            }
             assert set(keys) == expected_keys
 
             # Cleanup
@@ -190,10 +192,11 @@ class TestClickContextIntegrationEndToEnd:
             integrate_spec_context(ctx, spec_context1)
 
             # Store context-specific data
-            store_context_data(ctx, f"context_{context_id}_data", {
-                "id": context_id,
-                "type": "spec_context"
-            })
+            store_context_data(
+                ctx,
+                f"context_{context_id}_data",
+                {"id": context_id, "type": "spec_context"},
+            )
 
             # Verify retrieval
             retrieved_context = retrieve_spec_context(ctx)
@@ -227,6 +230,7 @@ class TestClickContextIntegrationEndToEnd:
         def worker(worker_id: int) -> None:
             """Worker function for concurrent testing."""
             try:
+
                 @click.command()
                 @click.pass_context
                 def worker_command(ctx: click.Context) -> None:
@@ -237,7 +241,7 @@ class TestClickContextIntegrationEndToEnd:
                     worker_data = {
                         "worker_id": worker_id,
                         "timestamp": time.time(),
-                        "thread_id": threading.current_thread().ident
+                        "thread_id": threading.current_thread().ident,
                     }
                     store_context_data(ctx, f"worker_{worker_id}", worker_data)
 
@@ -293,7 +297,7 @@ class TestCrossSliceIntegration:
             dependency_config = {
                 "auto_inject": True,
                 "factory_type": "cli",
-                "dependencies": ["spec_context", "config", "logger"]
+                "dependencies": ["spec_context", "config", "logger"],
             }
             store_typed_context_data(ctx, "dependency_config", dependency_config, dict)
 
@@ -302,7 +306,9 @@ class TestCrossSliceIntegration:
             integrate_spec_context(ctx, spec_context)
 
             # Verify P2.2a requirements are met
-            retrieved_config = retrieve_typed_context_data(ctx, "dependency_config", dict)
+            retrieved_config = retrieve_typed_context_data(
+                ctx, "dependency_config", dict
+            )
             assert retrieved_config["auto_inject"] is True
             assert retrieved_config["factory_type"] == "cli"
 
@@ -341,6 +347,7 @@ class TestCrossSliceIntegration:
 
         # Requirement: Context validation
         from spec_cli.utils.click_utils import validate_click_context
+
         assert validate_click_context(ctx) is True
 
         # Requirement: Context cleanup
@@ -385,7 +392,7 @@ class TestDependencyInjectionMigrationContext:
         di_config = {
             "pattern": "dependency_injection",
             "factory_type": "cli",
-            "singleton_migration": True
+            "singleton_migration": True,
         }
         store_typed_context_data(ctx, "di_config", di_config, dict)
 

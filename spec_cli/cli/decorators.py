@@ -51,16 +51,47 @@ def _get_spec_context_from_click() -> SpecContext:
         # Retrieve SpecContext from Click context storage
         spec_context = retrieve_context_data(click_ctx, "spec_context")
         if spec_context is None:
-            # Create default context if not found with mock dependencies
-            from ..core.context import (
-                SpecConsoleInterface,
-                SpecProgressInterface,
-                SpecSettingsInterface,
-            )
+            # Create default context if not found with real implementations
+            from ..config.settings import get_settings
+            from ..ui.console import get_console
+            from ..ui.progress_manager import ProgressManager
+
+            settings = get_settings()
+            rich_console = get_console()
+            progress = ProgressManager()
+
+            # Create adapter to bridge SpecConsole to SpecConsoleInterface
+            class ConsoleAdapter:
+                def __init__(self, rich_console):
+                    self._console = rich_console
+
+                def print_message(self, text: str, style: str | None = None) -> None:
+                    if style:
+                        self._console.print_status(text, style)
+                    else:
+                        self._console.print(text)
+
+                def print_error(self, text: str) -> None:
+                    self._console.print_status(text, "error")
+
+                def print_success(self, text: str) -> None:
+                    self._console.print_status(text, "success")
+
+                def print_warning(self, text: str) -> None:
+                    self._console.print_status(text, "warning")
+
+                def get_width(self) -> int:
+                    return getattr(self._console, 'width', 80)
+
+                def supports_color(self) -> bool:
+                    return not getattr(self._console, 'no_color', False)
+
+            console = ConsoleAdapter(rich_console)
+
             spec_context = SpecContext(
-                settings=SpecSettingsInterface(),
-                console=SpecConsoleInterface(),
-                progress=SpecProgressInterface()
+                settings=settings,
+                console=console,
+                progress=progress
             )
 
         if not isinstance(spec_context, SpecContext):

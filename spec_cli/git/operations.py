@@ -71,7 +71,7 @@ class GitOperations:
             )
             raise SpecGitError(f"Command validation failed: {error_message}")
 
-        env = self._prepare_git_environment()
+        env = self._prepare_git_environment(args)
         cmd = self._prepare_git_command(args)
 
         debug_logger.log(
@@ -140,8 +140,11 @@ class GitOperations:
                 f"Unexpected error during git command execution: {str(e)}"
             ) from e
 
-    def _prepare_git_environment(self) -> dict[str, str]:
+    def _prepare_git_environment(self, args: list[str] | None = None) -> dict[str, str]:
         """Prepare environment variables for Git command.
+
+        Args:
+            args: Git command arguments to determine environment needs
 
         Returns:
             Environment dictionary with Git configuration
@@ -151,9 +154,14 @@ class GitOperations:
         # Set spec-specific Git environment
         git_env = {
             "GIT_DIR": str(self.spec_dir),
-            "GIT_WORK_TREE": str(self.specs_dir),
             "GIT_INDEX_FILE": str(self.index_file),
         }
+
+        # Don't set GIT_WORK_TREE for init command since bare repos don't have working trees
+        if args and len(args) > 0 and args[0] == "init":
+            debug_logger.log("DEBUG", "Skipping GIT_WORK_TREE for init command")
+        else:
+            git_env["GIT_WORK_TREE"] = str(self.specs_dir)
 
         env.update(git_env)
 

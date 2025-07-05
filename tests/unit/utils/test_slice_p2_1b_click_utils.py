@@ -225,6 +225,7 @@ class TestValidateClickContext:
         self,
     ):
         """Test validation failure for context missing info."""
+
         # Setup - create minimal context-like object without info
         class MockContext:
             def __init__(self):

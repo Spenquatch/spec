@@ -136,7 +136,7 @@ def preserve_function_metadata(wrapper: Callable[..., Any], original: Callable[.
         wrapper.__annotations__ = getattr(original, "__annotations__", {})
 
         # Preserve Click-specific attributes if they exist
-        click_attrs = ["__click_params__", "callback", "name", "help"]
+        click_attrs = ["__click_params__", "__click_group__", "__click_command__", "callback", "name", "help"]
         for attr in click_attrs:
             if hasattr(original, attr):
                 setattr(wrapper, attr, getattr(original, attr))

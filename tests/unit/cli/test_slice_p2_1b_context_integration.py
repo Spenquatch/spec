@@ -103,7 +103,9 @@ class TestIntegrateSpecContext:
 class TestRetrieveSpecContext:
     """Test SpecContext retrieval functionality."""
 
-    def test_retrieve_spec_context_when_context_exists_then_returns_spec_context(self, mock_spec_context):
+    def test_retrieve_spec_context_when_context_exists_then_returns_spec_context(
+        self, mock_spec_context
+    ):
         """Test SpecContext retrieval when it exists."""
         # Setup
         cmd = click.Command("test")
@@ -475,7 +477,9 @@ class TestTeardownDependencyInjectionContext:
 class TestGetContextKeys:
     """Test context keys retrieval functionality."""
 
-    def test_get_context_keys_when_spec_keys_exist_then_returns_unprefixed_keys(self, mock_spec_context):
+    def test_get_context_keys_when_spec_keys_exist_then_returns_unprefixed_keys(
+        self, mock_spec_context
+    ):
         """Test getting spec-related context keys."""
         # Setup
         cmd = click.Command("test")

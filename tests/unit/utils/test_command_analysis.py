@@ -1,6 +1,5 @@
 """Unit tests for command analysis utilities."""
 
-
 import pytest
 
 from spec_cli.utils.command_analysis import (
@@ -233,7 +232,9 @@ def decorated_command(verbose):
         result = analyze_command_structure(cli_dir)
 
         # Assert: Click decorator patterns identified
-        click_patterns = [p for p in result.click_patterns if p.decorator_name == "command"]
+        click_patterns = [
+            p for p in result.click_patterns if p.decorator_name == "command"
+        ]
         assert len(click_patterns) >= 1
 
         pattern = click_patterns[0]
@@ -307,7 +308,7 @@ class TestCommandAnalysisErrorHandling:
         """Test handling files with invalid encoding."""
         # Setup: Create file with invalid encoding
         bad_file = tmp_path / "bad_encoding.py"
-        bad_file.write_bytes(b'\xff\xfe# Invalid UTF-8')
+        bad_file.write_bytes(b"\xff\xfe# Invalid UTF-8")
 
         # Action & Assert: Should handle encoding error gracefully
         with pytest.raises(CommandAnalysisError) as exc_info:
@@ -373,12 +374,17 @@ class TestIntegrationWithExistingCode:
 import click
 from spec_cli.git.repository import SpecGitRepository
 
-""" + "\n".join([f"""
+""" + "\n".join(
+            [
+                f"""
 @click.command()
 def command_{i}():
     repo = SpecGitRepository()
     return repo
-""" for i in range(50)])
+"""
+                for i in range(50)
+            ]
+        )
 
         large_file.write_text(large_content)
 

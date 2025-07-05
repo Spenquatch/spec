@@ -46,6 +46,7 @@ class TestContextInjectionDecorator:
     @pytest.fixture
     def sample_command_function(self):
         """Sample function for decorator testing."""
+
         def sample_command(ctx, name="default"):
             """Test command function."""
             return f"name: {name}, config: {getattr(ctx, 'config', {})}"
@@ -57,7 +58,10 @@ class TestContextInjectionDecorator:
         self, sample_command_function, mock_spec_context
     ):
         """Test decorator injects context into valid function."""
-        with patch("spec_cli.cli.decorators._get_spec_context_from_click", return_value=mock_spec_context):
+        with patch(
+            "spec_cli.cli.decorators._get_spec_context_from_click",
+            return_value=mock_spec_context,
+        ):
             decorated_func = context_injection(sample_command_function)
 
             # Call without context - should be injected automatically
@@ -70,8 +74,10 @@ class TestContextInjectionDecorator:
         self, sample_command_function
     ):
         """Test decorator raises error when context retrieval fails."""
-        with patch("spec_cli.cli.decorators._get_spec_context_from_click",
-                   side_effect=ContextInjectionError("Context not found")):
+        with patch(
+            "spec_cli.cli.decorators._get_spec_context_from_click",
+            side_effect=ContextInjectionError("Context not found"),
+        ):
             decorated_func = context_injection(sample_command_function)
 
             with pytest.raises(ContextInjectionError, match="Context not found"):
@@ -84,7 +90,10 @@ class TestContextInjectionDecorator:
         original_name = sample_command_function.__name__
         original_doc = sample_command_function.__doc__
 
-        with patch("spec_cli.cli.decorators._get_spec_context_from_click", return_value=Mock(spec=SpecContext)):
+        with patch(
+            "spec_cli.cli.decorators._get_spec_context_from_click",
+            return_value=Mock(spec=SpecContext),
+        ):
             decorated_func = context_injection(sample_command_function)
 
             assert decorated_func.__name__ == original_name
@@ -94,6 +103,7 @@ class TestContextInjectionDecorator:
         self, mock_spec_context
     ):
         """Test decorator maintains Click command compatibility."""
+
         @click.command()
         def click_command(ctx, name):
             return f"click: {name}"
@@ -102,7 +112,10 @@ class TestContextInjectionDecorator:
         click_command.__click_params__ = []
         click_command.callback = click_command
 
-        with patch("spec_cli.cli.decorators._get_spec_context_from_click", return_value=mock_spec_context):
+        with patch(
+            "spec_cli.cli.decorators._get_spec_context_from_click",
+            return_value=mock_spec_context,
+        ):
             decorated_func = context_injection(click_command)
 
             # Check Click attributes are preserved
@@ -113,11 +126,15 @@ class TestContextInjectionDecorator:
         self, sample_command_function, mock_spec_context
     ):
         """Test decorator works in decorator chain."""
+
         def other_decorator(func):
             func.__other_decorator_applied__ = True
             return func
 
-        with patch("spec_cli.cli.decorators._get_spec_context_from_click", return_value=mock_spec_context):
+        with patch(
+            "spec_cli.cli.decorators._get_spec_context_from_click",
+            return_value=mock_spec_context,
+        ):
             # Apply multiple decorators
             decorated_func = context_injection(other_decorator(sample_command_function))
 
@@ -128,19 +145,24 @@ class TestContextInjectionDecorator:
 
     def test_context_decorator_when_invalid_signature_then_raises_signature_error(self):
         """Test decorator raises error for invalid function signature."""
+
         def invalid_function():
             """Function with no parameters."""
             return "invalid"
 
-        with pytest.raises(ContextInjectionError, match="Function must accept at least one parameter"):
+        with pytest.raises(
+            ContextInjectionError, match="Function must accept at least one parameter"
+        ):
             context_injection(invalid_function)
 
     def test_context_decorator_when_context_retrieval_fails_then_raises_context_error(
         self, sample_command_function
     ):
         """Test decorator handles context retrieval failure."""
-        with patch("spec_cli.cli.decorators._get_spec_context_from_click",
-                   side_effect=Exception("Retrieval failed")):
+        with patch(
+            "spec_cli.cli.decorators._get_spec_context_from_click",
+            side_effect=Exception("Retrieval failed"),
+        ):
             decorated_func = context_injection(sample_command_function)
 
             with pytest.raises(DecoratorError, match="Context injection failed"):
@@ -159,10 +181,14 @@ class TestInjectContextParametricDecorator:
         self, mock_spec_context
     ):
         """Test inject_context accepts custom parameter name."""
+
         def test_function(context, name):
             return f"context: {context}, name: {name}"
 
-        with patch("spec_cli.cli.decorators._get_spec_context_from_click", return_value=mock_spec_context):
+        with patch(
+            "spec_cli.cli.decorators._get_spec_context_from_click",
+            return_value=mock_spec_context,
+        ):
             decorator = inject_context("context")
             decorated_func = decorator(test_function)
 
@@ -171,16 +197,21 @@ class TestInjectContextParametricDecorator:
 
     def test_inject_context_when_empty_param_name_then_raises_error(self):
         """Test inject_context raises error for empty parameter name."""
-        with pytest.raises(ContextInjectionError, match="context_param must be a non-empty string"):
+        with pytest.raises(
+            ContextInjectionError, match="context_param must be a non-empty string"
+        ):
             inject_context("")
 
     def test_inject_context_when_invalid_param_type_then_raises_error(self):
         """Test inject_context raises error for invalid parameter type."""
-        with pytest.raises(ContextInjectionError, match="context_param must be a non-empty string"):
+        with pytest.raises(
+            ContextInjectionError, match="context_param must be a non-empty string"
+        ):
             inject_context(123)  # type: ignore
 
     def test_inject_context_when_decoration_fails_then_raises_context_error(self):
         """Test inject_context handles decoration failure."""
+
         def invalid_function():
             return "invalid"
 
@@ -202,10 +233,14 @@ class TestWithContextAlias:
         self, mock_spec_context
     ):
         """Test with_context alias works like context_injection."""
+
         def test_function(ctx, name):
             return f"ctx: {ctx}, name: {name}"
 
-        with patch("spec_cli.cli.decorators._get_spec_context_from_click", return_value=mock_spec_context):
+        with patch(
+            "spec_cli.cli.decorators._get_spec_context_from_click",
+            return_value=mock_spec_context,
+        ):
             decorated_func = with_context(test_function)
 
             result = decorated_func("test_name")
@@ -213,6 +248,7 @@ class TestWithContextAlias:
 
     def test_with_context_when_invalid_function_then_raises_error(self):
         """Test with_context raises error for invalid function."""
+
         def invalid_function():
             return "invalid"
 
@@ -230,7 +266,10 @@ class TestGetSpecContextFromClick:
 
         with (
             patch("click.get_current_context", return_value=mock_click_ctx),
-            patch("spec_cli.cli.decorators.retrieve_context_data", return_value=mock_spec_context),
+            patch(
+                "spec_cli.cli.decorators.retrieve_context_data",
+                return_value=mock_spec_context,
+            ),
         ):
             result = _get_spec_context_from_click()
 
@@ -239,7 +278,9 @@ class TestGetSpecContextFromClick:
     def test_get_context_when_no_click_context_then_raises_error(self):
         """Test error when no Click context available."""
         with patch("click.get_current_context", return_value=None):
-            with pytest.raises(ContextInjectionError, match="No active Click context found"):
+            with pytest.raises(
+                ContextInjectionError, match="No active Click context found"
+            ):
                 _get_spec_context_from_click()
 
     def test_get_context_when_no_spec_context_then_creates_default(self):
@@ -255,6 +296,7 @@ class TestGetSpecContextFromClick:
 
             # Should be a SpecContext instance
             from spec_cli.core.context import SpecContext
+
             assert isinstance(result, SpecContext)
 
     def test_get_context_when_invalid_context_type_then_raises_error(self):
@@ -264,7 +306,10 @@ class TestGetSpecContextFromClick:
 
         with (
             patch("click.get_current_context", return_value=mock_click_ctx),
-            patch("spec_cli.cli.decorators.retrieve_context_data", return_value=invalid_context),
+            patch(
+                "spec_cli.cli.decorators.retrieve_context_data",
+                return_value=invalid_context,
+            ),
         ):
             with pytest.raises(ContextInjectionError, match="Invalid context type"):
                 _get_spec_context_from_click()
@@ -275,15 +320,19 @@ class TestGetSpecContextFromClick:
 
         with (
             patch("click.get_current_context", return_value=mock_click_ctx),
-            patch("spec_cli.cli.decorators.retrieve_context_data",
-                  side_effect=ClickIntegrationError("Integration failed")),
+            patch(
+                "spec_cli.cli.decorators.retrieve_context_data",
+                side_effect=ClickIntegrationError("Integration failed"),
+            ),
         ):
             with pytest.raises(ContextInjectionError, match="Click integration failed"):
                 _get_spec_context_from_click()
 
     def test_get_context_when_unexpected_error_then_raises_context_error(self):
         """Test handling of unexpected errors."""
-        with patch("click.get_current_context", side_effect=RuntimeError("Unexpected error")):
+        with patch(
+            "click.get_current_context", side_effect=RuntimeError("Unexpected error")
+        ):
             with pytest.raises(ContextInjectionError, match="Context retrieval failed"):
                 _get_spec_context_from_click()
 
@@ -291,7 +340,9 @@ class TestGetSpecContextFromClick:
 class TestContextInjectionError:
     """Test ContextInjectionError exception class."""
 
-    def test_context_injection_error_when_click_context_provided_then_adds_context(self):
+    def test_context_injection_error_when_click_context_provided_then_adds_context(
+        self,
+    ):
         """Test error adds Click context information."""
         mock_click_ctx = Mock(spec=click.Context)
         mock_click_ctx.command = Mock()

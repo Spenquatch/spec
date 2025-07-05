@@ -30,6 +30,7 @@ class TestCreateContextInjector:
     @pytest.fixture
     def sample_function(self):
         """Sample function for testing."""
+
         def test_function(ctx, name="default"):
             """Test function."""
             return f"ctx: {ctx}, name: {name}"
@@ -45,7 +46,9 @@ class TestCreateContextInjector:
 
         assert callable(injector)
 
-    def test_create_context_injector_when_invalid_retriever_then_raises_type_error(self):
+    def test_create_context_injector_when_invalid_retriever_then_raises_type_error(
+        self,
+    ):
         """Test create_context_injector raises TypeError for non-callable."""
         with pytest.raises(TypeError, match="context_retriever must be callable"):
             create_context_injector("not_callable")  # type: ignore
@@ -97,7 +100,9 @@ class TestCreateContextInjector:
         def no_params_function():
             return "no params"
 
-        with pytest.raises(DecoratorError, match="Function must accept at least one parameter"):
+        with pytest.raises(
+            DecoratorError, match="Function must accept at least one parameter"
+        ):
             injector(no_params_function)
 
     def test_context_injector_when_signature_inspection_fails_then_raises_decorator_error(
@@ -111,7 +116,9 @@ class TestCreateContextInjector:
         mock_func.__name__ = "mock_func"
 
         with patch("inspect.signature", side_effect=ValueError("Cannot inspect")):
-            with pytest.raises(DecoratorError, match="Cannot inspect function signature"):
+            with pytest.raises(
+                DecoratorError, match="Cannot inspect function signature"
+            ):
                 injector(mock_func)
 
     def test_context_injector_when_retriever_fails_then_raises_decorator_error(
@@ -129,6 +136,7 @@ class TestCreateContextInjector:
         self, mock_context_retriever
     ):
         """Test context injector inserts context when argument count matches."""
+
         def two_param_function(ctx, name):
             return f"ctx: {ctx}, name: {name}"
 
@@ -148,6 +156,7 @@ class TestPreserveFunctionMetadata:
     @pytest.fixture
     def original_function(self):
         """Original function with metadata."""
+
         def original_function(x, y):
             """Original function docstring."""
             return x + y
@@ -167,6 +176,7 @@ class TestPreserveFunctionMetadata:
     @pytest.fixture
     def wrapper_function(self):
         """Wrapper function for testing."""
+
         def wrapper_function(*args, **kwargs):
             """Wrapper function."""
             return "wrapped"
@@ -201,6 +211,7 @@ class TestPreserveFunctionMetadata:
         self, wrapper_function
     ):
         """Test preserve_function_metadata handles missing attributes."""
+
         def minimal_function():
             pass
 
@@ -227,6 +238,7 @@ class TestPreserveFunctionMetadata:
         self, wrapper_function, original_function
     ):
         """Test preserve_function_metadata handles attribute setting errors."""
+
         # Create a wrapper that can't have attributes set
         class ReadOnlyWrapper:
             def __call__(self):
@@ -237,7 +249,9 @@ class TestPreserveFunctionMetadata:
 
         readonly_wrapper = ReadOnlyWrapper()
 
-        with pytest.raises(DecoratorError, match="Failed to preserve function metadata"):
+        with pytest.raises(
+            DecoratorError, match="Failed to preserve function metadata"
+        ):
             preserve_function_metadata(readonly_wrapper, original_function)
 
 
@@ -246,6 +260,7 @@ class TestValidateDecoratorTarget:
 
     def test_validate_decorator_target_when_valid_function_then_returns_true(self):
         """Test validate_decorator_target returns True for valid function."""
+
         def valid_function(ctx, name):
             return f"ctx: {ctx}, name: {name}"
 
@@ -258,24 +273,35 @@ class TestValidateDecoratorTarget:
         with pytest.raises(TypeError, match="Expected callable function"):
             validate_decorator_target("not_callable")  # type: ignore
 
-    def test_validate_decorator_target_when_no_parameters_then_raises_decorator_error(self):
+    def test_validate_decorator_target_when_no_parameters_then_raises_decorator_error(
+        self,
+    ):
         """Test validate_decorator_target raises error for parameterless function."""
+
         def no_params():
             return "no params"
 
-        with pytest.raises(DecoratorError, match="Function must accept at least one parameter"):
+        with pytest.raises(
+            DecoratorError, match="Function must accept at least one parameter"
+        ):
             validate_decorator_target(no_params)
 
-    def test_validate_decorator_target_when_var_keyword_first_param_then_raises_decorator_error(self):
+    def test_validate_decorator_target_when_var_keyword_first_param_then_raises_decorator_error(
+        self,
+    ):
         """Test validate_decorator_target raises error for **kwargs as first param."""
+
         def invalid_function(**kwargs):
             return "invalid"
 
-        with pytest.raises(DecoratorError, match="First parameter cannot be \\*\\*kwargs"):
+        with pytest.raises(
+            DecoratorError, match="First parameter cannot be \\*\\*kwargs"
+        ):
             validate_decorator_target(invalid_function)
 
     def test_validate_decorator_target_when_wrapped_function_then_validates_chain(self):
         """Test validate_decorator_target handles wrapped functions."""
+
         def original_function(ctx, name):
             return f"ctx: {ctx}, name: {name}"
 
@@ -289,8 +315,11 @@ class TestValidateDecoratorTarget:
 
         assert result is True
 
-    def test_validate_decorator_target_when_wrapped_missing_name_then_raises_decorator_error(self):
+    def test_validate_decorator_target_when_wrapped_missing_name_then_raises_decorator_error(
+        self,
+    ):
         """Test validate_decorator_target raises error for wrapped function missing __name__."""
+
         # Create a mock object that has __wrapped__ but no __name__
         class NamelessWrapper:
             def __call__(self, *args, **kwargs):
@@ -302,10 +331,14 @@ class TestValidateDecoratorTarget:
 
         nameless_wrapper = NamelessWrapper()
 
-        with pytest.raises(DecoratorError, match="Wrapped function missing __name__ attribute"):
+        with pytest.raises(
+            DecoratorError, match="Wrapped function missing __name__ attribute"
+        ):
             validate_decorator_target(nameless_wrapper)
 
-    def test_validate_decorator_target_when_signature_error_then_raises_decorator_error(self):
+    def test_validate_decorator_target_when_signature_error_then_raises_decorator_error(
+        self,
+    ):
         """Test validate_decorator_target handles signature inspection errors."""
         mock_func = Mock()
         mock_func.__name__ = "mock_func"
@@ -320,6 +353,7 @@ class TestDecoratorError:
 
     def test_decorator_error_when_function_provided_then_adds_context(self):
         """Test DecoratorError adds function context information."""
+
         def test_function(x, y):
             return x + y
 

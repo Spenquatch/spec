@@ -434,7 +434,9 @@ def simple():
 class TestClickAnalysisEdgeCases:
     """Test edge cases and branch coverage for Click analysis."""
 
-    def test_analyze_file_patterns_when_context_parameter_variations_then_detects_all(self):
+    def test_analyze_file_patterns_when_context_parameter_variations_then_detects_all(
+        self,
+    ):
         """Test detection of various context parameter naming patterns."""
         with tempfile.TemporaryDirectory() as temp_dir:
             cli_dir = Path(temp_dir) / TEST_CLI_DIR_NAME
@@ -470,14 +472,16 @@ def cmd_with_click_context(click_context):
             context_usage = list(result.context_usage.values())[0]
             assert len(context_usage) == 3  # Three functions with context params
 
-    def test_analyze_decorator_when_attribute_decorator_without_click_then_ignores(self):
+    def test_analyze_decorator_when_attribute_decorator_without_click_then_ignores(
+        self,
+    ):
         """Test decorator analysis ignores non-Click attribute decorators."""
         with tempfile.TemporaryDirectory() as temp_dir:
             cli_dir = Path(temp_dir) / TEST_CLI_DIR_NAME
             cli_dir.mkdir()
 
             # Create file with non-Click decorators
-            non_click_content = '''
+            non_click_content = """
 import other_module
 
 @other_module.decorator
@@ -487,7 +491,7 @@ def function_with_other_decorator():
 @some_decorator.command
 def function_with_different_decorator():
     pass
-'''
+"""
 
             cli_file = cli_dir / "non_click.py"
             cli_file.write_text(non_click_content)
@@ -505,7 +509,7 @@ def function_with_different_decorator():
             cli_dir.mkdir()
 
             # Create file with non-Click call decorators
-            non_click_call_content = '''
+            non_click_call_content = """
 import other
 
 @other.command()
@@ -515,7 +519,7 @@ def function_with_other_call():
 @different_module.option("--test")
 def function_with_different_option():
     pass
-'''
+"""
 
             cli_file = cli_dir / "non_click_calls.py"
             cli_file.write_text(non_click_call_content)

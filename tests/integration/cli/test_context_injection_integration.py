@@ -33,6 +33,7 @@ class TestContextInjectionIntegration:
     @pytest.fixture
     def click_app_with_context(self, mock_spec_context):
         """Create Click application with context storage setup."""
+
         @click.group()
         @click.pass_context
         def cli(ctx):
@@ -46,6 +47,7 @@ class TestContextInjectionIntegration:
         self, temp_directory, mock_spec_context, click_app_with_context
     ):
         """Test complete context injection flow from CLI entry to command execution."""
+
         # Setup: Create test CLI command with context injection
         @context_injection
         @click.command()
@@ -59,7 +61,9 @@ class TestContextInjectionIntegration:
 
             # Write result to file for verification
             result_file = temp_directory / "command_result.txt"
-            result_file.write_text(f"executed: {target_file}, force: {force}, debug: {ctx.config['debug']}")
+            result_file.write_text(
+                f"executed: {target_file}, force: {force}, debug: {ctx.config['debug']}"
+            )
 
         # Add command to CLI app
         click_app_with_context.add_command(test_command)
@@ -68,9 +72,9 @@ class TestContextInjectionIntegration:
         runner = click.testing.CliRunner()
 
         with runner.isolated_filesystem():
-            result = runner.invoke(click_app_with_context, [
-                "test-command", "sample.txt", "--force"
-            ])
+            result = runner.invoke(
+                click_app_with_context, ["test-command", "sample.txt", "--force"]
+            )
 
         # Assert: Context properly injected and command executes successfully
         assert result.exit_code == 0
@@ -83,7 +87,9 @@ class TestContextInjectionIntegration:
             assert "force: True" in content
             assert "debug: True" in content
 
-    def test_multiple_decorators_compatibility_with_context_injection(self, mock_spec_context):
+    def test_multiple_decorators_compatibility_with_context_injection(
+        self, mock_spec_context
+    ):
         """Test context injection works with multiple decorator chains."""
         # Setup: Command with multiple decorators
         call_order = []
@@ -94,6 +100,7 @@ class TestContextInjectionIntegration:
                 result = func(*args, **kwargs)
                 call_order.append("logging_end")
                 return result
+
             return wrapper
 
         @logging_decorator
@@ -105,7 +112,10 @@ class TestContextInjectionIntegration:
             return f"ctx_debug: {ctx.config.get('debug', False)}, name: {name}"
 
         # Mock Click context setup
-        with patch("spec_cli.cli.decorators._get_spec_context_from_click", return_value=mock_spec_context):
+        with patch(
+            "spec_cli.cli.decorators._get_spec_context_from_click",
+            return_value=mock_spec_context,
+        ):
             # Action: Execute multi-decorated command
             result = multi_decorated_command("test_name")
 
@@ -116,6 +126,7 @@ class TestContextInjectionIntegration:
 
     def test_parametric_inject_context_decorator_integration(self, mock_spec_context):
         """Test inject_context parametric decorator in full flow."""
+
         # Setup: Command using parametric decorator
         @inject_context("application_context")
         @click.command()
@@ -124,7 +135,10 @@ class TestContextInjectionIntegration:
             return f"operation: {operation}, initialized: {application_context.is_initialized}"
 
         # Mock Click context setup
-        with patch("spec_cli.cli.decorators._get_spec_context_from_click", return_value=mock_spec_context):
+        with patch(
+            "spec_cli.cli.decorators._get_spec_context_from_click",
+            return_value=mock_spec_context,
+        ):
             # Action: Execute command with parametric decorator
             result = parametric_command("create_file")
 
@@ -134,6 +148,7 @@ class TestContextInjectionIntegration:
 
     def test_with_context_alias_integration(self, mock_spec_context):
         """Test with_context decorator alias in integration scenario."""
+
         # Setup: Command using with_context alias
         @with_context
         @click.command()
@@ -144,7 +159,10 @@ class TestContextInjectionIntegration:
             return f"output: {output}, repo: {repo_path}"
 
         # Mock Click context setup
-        with patch("spec_cli.cli.decorators._get_spec_context_from_click", return_value=mock_spec_context):
+        with patch(
+            "spec_cli.cli.decorators._get_spec_context_from_click",
+            return_value=mock_spec_context,
+        ):
             # Action: Execute command with alias decorator
             result = alias_command(output="file.txt")
 
@@ -154,6 +172,7 @@ class TestContextInjectionIntegration:
 
     def test_context_injection_error_handling_in_integration(self):
         """Test error handling in context injection integration flow."""
+
         # Setup: Command that will fail context injection
         @context_injection
         @click.command()
@@ -162,22 +181,26 @@ class TestContextInjectionIntegration:
             return f"This should not execute: {name}"
 
         # Mock Click context to fail
-        with patch("spec_cli.cli.decorators._get_spec_context_from_click",
-                   side_effect=Exception("Context retrieval failed")):
-
+        with patch(
+            "spec_cli.cli.decorators._get_spec_context_from_click",
+            side_effect=Exception("Context retrieval failed"),
+        ):
             # Action & Assert: Command execution fails with proper error
             with pytest.raises(Exception, match="Context retrieval failed"):
                 failing_command("test")
 
     def test_click_compatibility_preservation_in_integration(self, mock_spec_context):
         """Test that Click functionality is preserved after context injection."""
+
         # Setup: Full Click command with options and arguments
         @context_injection
         @click.command()
         @click.argument("input_file", type=click.Path(exists=False))
         @click.option("--verbose", "-v", is_flag=True, help="Verbose output")
         @click.option("--count", type=int, default=1, help="Number of iterations")
-        def full_click_command(ctx: SpecContext, input_file: str, verbose: bool, count: int) -> dict:
+        def full_click_command(
+            ctx: SpecContext, input_file: str, verbose: bool, count: int
+        ) -> dict:
             """Full Click command with context injection."""
             return {
                 "context_debug": ctx.config.get("debug", False),
@@ -188,10 +211,15 @@ class TestContextInjectionIntegration:
 
         # Verify Click attributes are preserved
         assert hasattr(full_click_command, "__click_params__")
-        assert full_click_command.name is None or isinstance(full_click_command.name, str)
+        assert full_click_command.name is None or isinstance(
+            full_click_command.name, str
+        )
 
         # Mock Click context setup
-        with patch("spec_cli.cli.decorators._get_spec_context_from_click", return_value=mock_spec_context):
+        with patch(
+            "spec_cli.cli.decorators._get_spec_context_from_click",
+            return_value=mock_spec_context,
+        ):
             # Action: Execute command with Click options
             result = full_click_command("test.txt", verbose=True, count=3)
 
@@ -203,6 +231,7 @@ class TestContextInjectionIntegration:
 
     def test_nested_click_context_integration(self, mock_spec_context):
         """Test context injection works in nested Click context scenarios."""
+
         # Setup: Nested Click groups and commands
         @click.group()
         @click.pass_context
@@ -225,25 +254,35 @@ class TestContextInjectionIntegration:
 
         # Action: Test nested command execution
         runner = click.testing.CliRunner()
-        result = runner.invoke(parent_group, ["sub-group", "nested-command", "test_target"])
+        result = runner.invoke(
+            parent_group, ["sub-group", "nested-command", "test_target"]
+        )
 
         # Assert: Context injection works in nested scenario
         assert result.exit_code == 0
         # Note: Full verification would require Click test runner integration
 
-    def test_context_injection_with_exception_handling_integration(self, mock_spec_context):
+    def test_context_injection_with_exception_handling_integration(
+        self, mock_spec_context
+    ):
         """Test context injection integrates properly with exception handling."""
+
         # Setup: Command that may raise exceptions
         @context_injection
         @click.command()
         def exception_handling_command(ctx: SpecContext, operation: str) -> str:
             """Command that tests exception handling with context."""
             if operation == "fail":
-                raise ValueError(f"Operation failed with debug={ctx.config.get('debug', False)}")
+                raise ValueError(
+                    f"Operation failed with debug={ctx.config.get('debug', False)}"
+                )
             return f"success: {operation}"
 
         # Mock Click context setup
-        with patch("spec_cli.cli.decorators._get_spec_context_from_click", return_value=mock_spec_context):
+        with patch(
+            "spec_cli.cli.decorators._get_spec_context_from_click",
+            return_value=mock_spec_context,
+        ):
             # Test successful operation
             result = exception_handling_command("create")
             assert "success: create" in result
@@ -272,7 +311,9 @@ class TestCrossSliceIntegration:
         assert decorated.__doc__ == test_func.__doc__
 
         # Assert: Error handling matches design requirements
-        with pytest.raises(Exception):  # Should raise appropriate error for invalid function
+        with pytest.raises(
+            Exception
+        ):  # Should raise appropriate error for invalid function
             context_injection(lambda: None)  # No parameters
 
     def test_decorator_uses_p2_1b_click_context_utilities(self):
@@ -302,6 +343,7 @@ class TestDIMigrationContext:
 
     def test_decorator_supports_singleton_migration_patterns(self):
         """Verify decorator supports migration from singleton to context injection."""
+
         # Setup: Function using singleton pattern (simulated)
         def singleton_function(name: str) -> str:
             # Simulate singleton access (would normally be global)
@@ -317,6 +359,7 @@ class TestDIMigrationContext:
         except Exception as e:
             # If it fails, it should be a clear decorator error
             from spec_cli.cli.decorators import ContextInjectionError
+
             assert isinstance(e, ContextInjectionError)
 
     def test_decorator_maintains_cli_structure_during_migration(self):
