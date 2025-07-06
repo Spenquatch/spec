@@ -1,14 +1,13 @@
 """Spec commit command implementation."""
 
-from typing import Any
 
 import click
 
+from ...core.context import SpecContext
 from ...git.repository import SpecGitRepository
 from ...logging.debug import debug_logger
-from ...ui.console import get_console
-from ...ui.error_display import show_message
 from ...ui.tables import StatusTable
+from ..decorators import context_injection
 from ..options import message_option, spec_command
 from ..utils import get_spec_repository, get_user_confirmation
 
@@ -23,13 +22,29 @@ from ..utils import get_spec_repository, get_user_confirmation
 )
 @click.option("--amend", is_flag=True, help="Amend the last commit")
 @click.option("--dry-run", is_flag=True, help="Show what would be committed")
+@context_injection
 def commit_command(
-    debug: bool, verbose: bool, message: str, all: bool, amend: bool, dry_run: bool
+    context: SpecContext,
+    debug: bool,
+    verbose: bool,
+    message: str,
+    all: bool,
+    amend: bool,
+    dry_run: bool,
 ) -> None:
     """Commit staged changes to spec repository.
 
     Creates a new commit with the staged changes in the spec repository.
     All changes must be in the .specs/ directory.
+
+    Args:
+        context: SpecContext with settings, console, and progress dependencies
+        debug: Debug mode flag
+        verbose: Verbose mode flag
+        message: Commit message
+        all: Auto-stage all modified files flag
+        amend: Amend last commit flag
+        dry_run: Dry run mode flag
 
     Examples:
         spec commit -m "Update documentation"       # Commit staged changes
@@ -42,53 +57,57 @@ def commit_command(
         repo = get_spec_repository()
 
         # Get current status
-        status = repo.get_git_status()
+        staged_files = repo.get_staged_files()
+        unstaged_files = repo.get_unstaged_files()
+        untracked_files = repo.get_untracked_files()
 
         # Auto-stage if requested
         if all:
-            _auto_stage_changes(repo, status)
+            _auto_stage_changes(context, repo, unstaged_files)
             # Refresh status after staging
-            status = repo.get_git_status()
+            staged_files = repo.get_staged_files()
 
         # Check if there are staged changes
-        staged_files = status.get("staged", [])
 
         if not staged_files:
-            if status.get("modified", []) or status.get("untracked", []):
-                show_message(
+            if unstaged_files or untracked_files:
+                context.console.print_warning(
                     "No changes staged for commit. Use 'spec add' to stage changes "
-                    "or use --all to stage all modified files.",
-                    "warning",
+                    "or use --all to stage all modified files."
                 )
             else:
-                show_message("No changes to commit. Working directory clean.", "info")
+                context.console.print_message(
+                    "No changes to commit. Working directory clean.", "info"
+                )
             return
 
         # Show commit preview
-        _show_commit_preview(staged_files, message, amend)
+        _show_commit_preview(context, staged_files, message, amend)
 
         # Dry run mode
         if dry_run:
-            show_message("This is a dry run. No commit would be created.", "info")
+            context.console.print_message(
+                "This is a dry run. No commit would be created.", "info"
+            )
             return
 
         # Confirm commit if not amending
         if not amend and not get_user_confirmation(
             f"Commit {len(staged_files)} files?", default=True
         ):
-            show_message("Commit cancelled", "info")
+            context.console.print_message("Commit cancelled", "info")
             return
 
         # Create commit
         if amend:
             commit_hash = repo.amend_commit(message)
-            show_message(f"Amended commit: {commit_hash[:8]}", "success")
+            context.console.print_success(f"Amended commit: {commit_hash[:8]}")
         else:
             commit_hash = repo.commit(message)
-            show_message(f"Created commit: {commit_hash[:8]}", "success")
+            context.console.print_success(f"Created commit: {commit_hash[:8]}")
 
         # Show commit details
-        _show_commit_result(repo, commit_hash, staged_files)
+        _show_commit_result(context, repo, commit_hash, staged_files)
 
         debug_logger.log(
             "INFO",
@@ -103,11 +122,12 @@ def commit_command(
         raise click.ClickException(f"Commit failed: {e}") from e
 
 
-def _auto_stage_changes(repo: SpecGitRepository, status: dict[str, Any]) -> None:
+def _auto_stage_changes(
+    context: SpecContext, repo: SpecGitRepository, unstaged_files: list[str]
+) -> None:
     """Automatically stage modified and deleted files."""
-    # Stage modified files
-    modified_files = status.get("modified", [])
-    for file_path in modified_files:
+    # Stage unstaged files
+    for file_path in unstaged_files:
         try:
             repo.add_files([file_path])
         except Exception as e:
@@ -115,53 +135,42 @@ def _auto_stage_changes(repo: SpecGitRepository, status: dict[str, Any]) -> None
                 "WARNING", "Failed to stage file", file=file_path, error=str(e)
             )
 
-    # Stage deleted files (if any)
-    deleted_files = status.get("deleted", [])
-    for file_path in deleted_files:
-        try:
-            # Note: remove_file method not available, using add with removal flag
-            # This is a placeholder - actual implementation would need proper removal support
-            pass  # TODO: Implement file removal when method is available
-        except Exception as e:
-            debug_logger.log(
-                "WARNING", "Failed to stage deletion", file=file_path, error=str(e)
-            )
-
-    total_staged = len(modified_files) + len(deleted_files)
+    total_staged = len(unstaged_files)
     if total_staged > 0:
-        show_message(f"Auto-staged {total_staged} files", "info")
+        context.console.print_message(f"Auto-staged {total_staged} files", "info")
 
 
-def _show_commit_preview(staged_files: list[str], message: str, amend: bool) -> None:
+def _show_commit_preview(
+    context: SpecContext, staged_files: list[str], message: str, amend: bool
+) -> None:
     """Show preview of what will be committed."""
-    console = get_console()
-
     # Commit info
     action = "Amend commit" if amend else "New commit"
-    console.print(f"\n[bold cyan]{action} Preview:[/bold cyan]")
-    console.print(f"Message: [yellow]{message}[/yellow]")
-    console.print(f"Files to commit: [yellow]{len(staged_files)}[/yellow]\n")
+    context.console.print_message(f"\n{action} Preview:", "info")
+    context.console.print_message(f"Message: {message}")
+    context.console.print_message(f"Files to commit: {len(staged_files)}\n")
 
     # Show files
     if len(staged_files) <= 15:
-        console.print("[bold cyan]Staged files:[/bold cyan]")
+        context.console.print_message("Staged files:")
         for file_path in staged_files:
-            console.print(f"  [green]M[/green] [path]{file_path}[/path]")
+            context.console.print_message(f"  M {file_path}")
     else:
-        console.print("[bold cyan]Staged files:[/bold cyan]")
+        context.console.print_message("Staged files:")
         for file_path in staged_files[:10]:
-            console.print(f"  [green]M[/green] [path]{file_path}[/path]")
-        console.print(f"  [dim]... and {len(staged_files) - 10} more files[/dim]")
+            context.console.print_message(f"  M {file_path}")
+        context.console.print_message(f"  ... and {len(staged_files) - 10} more files")
 
-    console.print()
+    context.console.print_message("")
 
 
 def _show_commit_result(
-    repo: SpecGitRepository, commit_hash: str, staged_files: list[str]
+    context: SpecContext,
+    repo: SpecGitRepository,
+    commit_hash: str,
+    staged_files: list[str],
 ) -> None:
     """Show commit result details."""
-    console = get_console()
-
     # Get commit info
     try:
         # Note: get_commit_info method not available in current implementation
@@ -184,6 +193,6 @@ def _show_commit_result(
         pass
 
     # Next steps
-    console.print("\n[bold cyan]Next steps:[/bold cyan]")
-    console.print("  Use [yellow]spec log[/yellow] to view commit history")
-    console.print("  Use [yellow]spec diff[/yellow] to see working directory changes")
+    context.console.print_message("\nNext steps:")
+    context.console.print_message("  Use 'spec log' to view commit history")
+    context.console.print_message("  Use 'spec diff' to see working directory changes")
