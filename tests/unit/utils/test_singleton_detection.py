@@ -210,7 +210,6 @@ class TestSingletonPatternDetector:
 
         # Test Call node
         ast.Call(
-
             args=[],
             keywords=[],
         )
@@ -316,10 +315,7 @@ class TestAnalyzePythonAST:
             assert len(report.violations) >= 4
             assert "SingletonClass" in report.classes
             assert "SingletonMeta" in report.metaclasses
-            assert (
-                "singleton" in report.decorators
-
-            )
+            assert "singleton" in report.decorators
             assert "singleton" in report.imports
 
         finally:

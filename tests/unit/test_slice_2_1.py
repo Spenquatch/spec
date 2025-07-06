@@ -19,10 +19,10 @@ from slice_2_1_test_categorization import (
     analyze_test_failures,
 )
 from spec_cli.utils.test_helpers.test_failure_categorizer import (
-    FailurePriority,
-    FailureType,
     FailureCategory,
     FailureInfo,
+    FailurePriority,
+    FailureType,
 )
 
 # Test constants
@@ -107,7 +107,9 @@ class TestAnalyzeTestFailures:
         """Test analyze_test_failures raises error when extraction fails."""
         mock_extract.side_effect = Exception("Extraction failed")
 
-        with pytest.raises(CategorizationError, match="Failed to analyze test failures"):
+        with pytest.raises(
+            CategorizationError, match="Failed to analyze test failures"
+        ):
             analyze_test_failures()
 
 
@@ -167,14 +169,18 @@ class TestParsePytestOutput:
 
         assert len(result) == 1
         failure = result[0]
-        assert failure["test_name"] == "tests/unit/test_example.py::TestClass::test_method"
+        assert (
+            failure["test_name"] == "tests/unit/test_example.py::TestClass::test_method"
+        )
         assert failure["file_path"] == "tests/unit/test_example.py"
         assert "AttributeError" in failure["error_message"]
 
     def test_parse_pytest_output_when_collection_errors_then_extracts_errors(self):
         """Test _parse_pytest_output extracts collection errors."""
         stdout = ""
-        stderr = "ERROR collecting tests/unit/test_broken.py - SyntaxError: invalid syntax"
+        stderr = (
+            "ERROR collecting tests/unit/test_broken.py - SyntaxError: invalid syntax"
+        )
 
         result = _parse_pytest_output(stdout, stderr)
 
@@ -247,9 +253,13 @@ More unrelated output
 class TestExtractCollectionErrors:
     """Test the _extract_collection_errors function."""
 
-    def test_extract_collection_errors_when_errors_present_then_extracts_correctly(self):
+    def test_extract_collection_errors_when_errors_present_then_extracts_correctly(
+        self,
+    ):
         """Test _extract_collection_errors correctly extracts collection errors."""
-        output = "ERROR collecting tests/unit/test_broken.py - SyntaxError: invalid syntax"
+        output = (
+            "ERROR collecting tests/unit/test_broken.py - SyntaxError: invalid syntax"
+        )
 
         result = _extract_collection_errors(output)
 
@@ -277,11 +287,13 @@ class TestCategorizeAllFailures:
     ):
         """Test _categorize_all_failures with single failure creates correct category."""
         # Setup test data
-        test_data = [{
-            "test_name": SAMPLE_TEST_NAME,
-            "file_path": SAMPLE_FILE_PATH,
-            "error_message": SAMPLE_ERROR_MESSAGE,
-        }]
+        test_data = [
+            {
+                "test_name": SAMPLE_TEST_NAME,
+                "file_path": SAMPLE_FILE_PATH,
+                "error_message": SAMPLE_ERROR_MESSAGE,
+            }
+        ]
 
         # Setup mock category
         sample_failure = FailureInfo(
@@ -335,13 +347,15 @@ class TestCategorizeAllFailures:
                 failure_type=FailureType.RICH_COMPATIBILITY,
                 priority=FailurePriority.LOW,
                 failure_count=1,
-                failures=[FailureInfo(
-                    test_name=failure_data["test_name"],
-                    file_path=Path(failure_data["file_path"]),
-                    failure_type=FailureType.RICH_COMPATIBILITY,
-                    priority=FailurePriority.LOW,
-                    error_message=failure_data["error_message"],
-                )],
+                failures=[
+                    FailureInfo(
+                        test_name=failure_data["test_name"],
+                        file_path=Path(failure_data["file_path"]),
+                        failure_type=FailureType.RICH_COMPATIBILITY,
+                        priority=FailurePriority.LOW,
+                        error_message=failure_data["error_message"],
+                    )
+                ],
             )
 
         mock_categorize.side_effect = mock_categorize_side_effect
@@ -359,11 +373,13 @@ class TestCategorizeAllFailures:
         self, mock_categorize
     ):
         """Test _categorize_all_failures handles categorization errors gracefully."""
-        test_data = [{
-            "test_name": SAMPLE_TEST_NAME,
-            "file_path": SAMPLE_FILE_PATH,
-            "error_message": SAMPLE_ERROR_MESSAGE,
-        }]
+        test_data = [
+            {
+                "test_name": SAMPLE_TEST_NAME,
+                "file_path": SAMPLE_FILE_PATH,
+                "error_message": SAMPLE_ERROR_MESSAGE,
+            }
+        ]
 
         mock_categorize.side_effect = Exception("Categorization failed")
 
@@ -379,7 +395,9 @@ class TestCategorizeAllFailures:
 class TestGenerateSummaryStatistics:
     """Test the _generate_summary_statistics function."""
 
-    def test_generate_summary_statistics_when_multiple_categories_then_returns_correct_stats(self):
+    def test_generate_summary_statistics_when_multiple_categories_then_returns_correct_stats(
+        self,
+    ):
         """Test _generate_summary_statistics with multiple categories."""
         categorized_failures = {
             FailureType.RICH_COMPATIBILITY: FailureCategory(
@@ -405,7 +423,9 @@ class TestGenerateSummaryStatistics:
         assert result["priority_distribution"]["low"] == 5
         assert result["priority_distribution"]["high"] == 3
 
-    def test_generate_summary_statistics_when_empty_categories_then_returns_zero_stats(self):
+    def test_generate_summary_statistics_when_empty_categories_then_returns_zero_stats(
+        self,
+    ):
         """Test _generate_summary_statistics with empty categories."""
         categorized_failures = {}
 
@@ -420,7 +440,9 @@ class TestGenerateSummaryStatistics:
 class TestCreateCategorizationReport:
     """Test the _create_categorization_report function."""
 
-    def test_create_categorization_report_when_categories_exist_then_creates_serializable_report(self):
+    def test_create_categorization_report_when_categories_exist_then_creates_serializable_report(
+        self,
+    ):
         """Test _create_categorization_report creates JSON-serializable report."""
         sample_failure = FailureInfo(
             test_name=SAMPLE_TEST_NAME,
@@ -454,7 +476,9 @@ class TestCreateCategorizationReport:
         # Verify JSON serialization works
         json.dumps(result)  # Should not raise exception
 
-    def test_create_categorization_report_when_empty_categories_then_returns_empty_dict(self):
+    def test_create_categorization_report_when_empty_categories_then_returns_empty_dict(
+        self,
+    ):
         """Test _create_categorization_report with empty categories."""
         categorized_failures = {}
 

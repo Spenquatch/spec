@@ -163,6 +163,7 @@ class TestGenCommandMigration:
         import inspect
 
         import spec_cli.cli.commands.gen as gen_module
+
         source_file = inspect.getfile(gen_module)
         with open(source_file) as f:
             source = f.read()

@@ -15,10 +15,10 @@ from .git_test_helpers import (
     git_test_repository,
 )
 from .test_failure_categorizer import (
-    FailurePriority,
-    FailureType,
     FailureCategory,
     FailureInfo,
+    FailurePriority,
+    FailureType,
     categorize_test_failure,
 )
 

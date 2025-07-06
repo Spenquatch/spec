@@ -11,7 +11,9 @@ from spec_cli.utils.migration_cleanup_utils import (
 class TestMigrationCleanupIntegration:
     """Integration tests for migration cleanup and validation workflow."""
 
-    def test_migration_cleanup_when_all_singleton_references_removed_then_test_suite_executes_completely(self):
+    def test_migration_cleanup_when_all_singleton_references_removed_then_test_suite_executes_completely(
+        self,
+    ):
         """Test complete migration cleanup workflow with real file processing."""
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_path = Path(temp_dir)
@@ -80,7 +82,9 @@ class ConsoleManager:
         # Note: Some references may remain in detection/test files, which is expected
         assert isinstance(report.singleton_violations, list)
 
-    def test_migration_integration_when_full_workflow_then_maintains_functionality(self):
+    def test_migration_integration_when_full_workflow_then_maintains_functionality(
+        self,
+    ):
         """Test that migration maintains code functionality."""
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_path = Path(temp_dir)

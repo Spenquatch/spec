@@ -1,6 +1,5 @@
 """Spec commit command implementation."""
 
-
 import click
 
 from ...core.context import SpecContext

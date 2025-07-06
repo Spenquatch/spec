@@ -13,5 +13,6 @@ def main():
     else:
         print("No config found")
 
+
 if __name__ == "__main__":
     main()

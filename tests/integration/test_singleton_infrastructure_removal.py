@@ -79,7 +79,9 @@ def test_function():
 class TestSingletonInfrastructureRemoval:
     """Integration test for complete singleton infrastructure removal."""
 
-    def test_singleton_infrastructure_removal_when_complete_workflow_then_codebase_clean_and_functional(self):
+    def test_singleton_infrastructure_removal_when_complete_workflow_then_codebase_clean_and_functional(
+        self,
+    ):
         """Test complete singleton infrastructure removal workflow."""
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_path = Path(temp_dir)
@@ -149,7 +151,9 @@ class TestSingletonInfrastructureRemoval:
             assert len(remaining_singleton_files) == 0
             assert len(remaining_compatibility_files) == 0
 
-    def test_infrastructure_removal_when_partial_structure_then_handles_missing_files_gracefully(self):
+    def test_infrastructure_removal_when_partial_structure_then_handles_missing_files_gracefully(
+        self,
+    ):
         """Test graceful handling when some infrastructure files don't exist."""
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_path = Path(temp_dir)
@@ -201,13 +205,15 @@ class TestSingletonInfrastructureRemoval:
             )
             assert len(violations) == 0
 
-    def test_infrastructure_removal_when_complex_references_then_detects_all_patterns(self):
+    def test_infrastructure_removal_when_complex_references_then_detects_all_patterns(
+        self,
+    ):
         """Test reference detection with complex import patterns."""
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_path = Path(temp_dir)
 
             # Create files with various reference patterns
-            complex_refs_code = '''
+            complex_refs_code = """
             # Various import patterns
 
             import spec_cli.core.compatibility as compat
@@ -218,7 +224,7 @@ class TestSingletonInfrastructureRemoval:
                 pass
 
             layer = compat.CompatibilityLayer()
-            '''
+            """
 
             complex_file = temp_path / "complex_refs.py"
             complex_file.write_text(complex_refs_code)
@@ -303,4 +309,3 @@ class TestSingletonInfrastructureRemoval:
                 assert violation_file.exists()
                 content = violation_file.read_text()
                 assert "singleton" in content or "compatibility" in content
-

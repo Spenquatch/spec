@@ -165,7 +165,11 @@ def sample_context_fixture():
         assert report.total_fixtures >= 3  # The fixtures we created
 
         # Check for isolation patterns
-        isolation_fixtures = [f for f in report.isolation_issues if "isolate" in f.name or "clean" in f.name]
+        isolation_fixtures = [
+            f
+            for f in report.isolation_issues
+            if "isolate" in f.name or "clean" in f.name
+        ]
         assert len(isolation_fixtures) >= 1  # Should identify isolation patterns
 
         # Verify migration requirements address context needs
@@ -228,13 +232,15 @@ def complex_singleton_fixture():
 
         # Should identify settings-based migration needs
         settings_requirements = [
-            req for name, req in requirements.items()
+            req
+            for name, req in requirements.items()
             if "settings" in name.lower() and "context.settings" in req
         ]
 
         # Should identify console-based migration needs
         console_requirements = [
-            req for name, req in requirements.items()
+            req
+            for name, req in requirements.items()
             if "console" in name.lower() and "context.console" in req
         ]
 
@@ -300,7 +306,8 @@ def directory_contaminating_fixture():
 
         # Migration requirements should address isolation
         contamination_requirements = [
-            req for name, req in report.migration_requirements.items()
+            req
+            for name, req in report.migration_requirements.items()
             if "contaminating" in name.lower()
         ]
 
@@ -311,4 +318,8 @@ def directory_contaminating_fixture():
         # Verify solutions focus on context-based approaches
         for requirement in contamination_requirements:
             requirement_lower = requirement.lower()
-            assert "context" in requirement_lower or "injection" in requirement_lower or "migration" in requirement_lower
+            assert (
+                "context" in requirement_lower
+                or "injection" in requirement_lower
+                or "migration" in requirement_lower
+            )

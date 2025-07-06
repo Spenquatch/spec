@@ -63,7 +63,9 @@ class TestCreateContextFixture:
         self,
     ):
         """Test error handling for invalid factory method."""
-        with pytest.raises(FixtureMigrationError, match="Factory method must be callable"):
+        with pytest.raises(
+            FixtureMigrationError, match="Factory method must be callable"
+        ):
             create_context_fixture("not_callable")
 
     def test_create_context_fixture_when_factory_returns_wrong_type_then_raises_error(
@@ -138,7 +140,9 @@ class TestValidateTestIsolation:
 
     def test_validate_test_isolation_when_invalid_function_then_raises_error(self):
         """Test error handling for invalid test function."""
-        with pytest.raises(FixtureMigrationError, match="Test function must be callable"):
+        with pytest.raises(
+            FixtureMigrationError, match="Test function must be callable"
+        ):
             validate_test_isolation("not_callable")
 
     def test_validate_test_isolation_when_no_context_param_then_returns_false(self):
@@ -323,7 +327,9 @@ class TestMigrateSingletonFixture:
 
     def test_migrate_singleton_fixture_when_invalid_fixture_then_raises_error(self):
         """Test error handling for invalid fixture function."""
-        with pytest.raises(FixtureMigrationError, match="Legacy fixture must be callable"):
+        with pytest.raises(
+            FixtureMigrationError, match="Legacy fixture must be callable"
+        ):
             migrate_singleton_fixture("not_callable")
 
     def test_migrate_singleton_fixture_when_fixture_execution_fails_then_raises_error(

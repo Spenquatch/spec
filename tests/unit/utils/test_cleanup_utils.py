@@ -16,21 +16,21 @@ from spec_cli.utils.cleanup_utils import (
 
 # Test constants
 TEST_FILE_CONTENT = "test content"
-SAMPLE_PYTHON_CODE = '''
+SAMPLE_PYTHON_CODE = """
 import os
 
 from ..core.compatibility import CompatibilityLayer
 
 def test_function():
     pass
-'''
-CLEAN_PYTHON_CODE = '''
+"""
+CLEAN_PYTHON_CODE = """
 import os
 from pathlib import Path
 
 def test_function():
     pass
-'''
+"""
 
 class TestSafeFileRemoval:
     """Test safe_file_removal function."""
@@ -106,7 +106,9 @@ class TestValidateNoReferences:
 
             assert violations == []
 
-    def test_validate_no_references_when_references_found_then_returns_violation_list(self):
+    def test_validate_no_references_when_references_found_then_returns_violation_list(
+        self,
+    ):
         """Test violations returned when references found."""
         with tempfile.TemporaryDirectory() as temp_dir:
             # Create file with singleton references
@@ -127,7 +129,9 @@ class TestValidateNoReferences:
 
         assert "must be a Path object" in str(exc_info.value)
 
-    def test_validate_no_references_when_invalid_modules_type_then_raises_type_error(self):
+    def test_validate_no_references_when_invalid_modules_type_then_raises_type_error(
+        self,
+    ):
         """Test TypeError when removed_modules is not a list."""
         with tempfile.TemporaryDirectory() as temp_dir:
             with pytest.raises(TypeError) as exc_info:
@@ -143,9 +147,7 @@ class TestValidateNoReferences:
             binary_file.write_bytes(b"\x80\x81\x82")  # Invalid UTF-8
 
             # Should not raise exception
-            violations = validate_no_references(
-                Path(temp_dir), ["singleton"]
-            )
+            violations = validate_no_references(Path(temp_dir), ["singleton"])
 
             assert violations == []  # Binary file should be skipped
 
@@ -153,12 +155,12 @@ class TestValidateNoReferences:
         """Test detection of multiple reference patterns."""
         with tempfile.TemporaryDirectory() as temp_dir:
             # Create file with multiple reference types
-            multi_ref_code = '''
+            multi_ref_code = """
 
             import spec_cli.core.compatibility
 
             CompatibilityLayer = None
-            '''
+            """
             ref_file = Path(temp_dir) / "multi_ref.py"
             ref_file.write_text(multi_ref_code)
 
@@ -172,7 +174,9 @@ class TestValidateNoReferences:
 class TestCleanupSingletonInfrastructure:
     """Test cleanup_singleton_infrastructure function."""
 
-    def test_cleanup_singleton_infrastructure_when_removal_complete_then_no_singleton_files(self):
+    def test_cleanup_singleton_infrastructure_when_removal_complete_then_no_singleton_files(
+        self,
+    ):
         """Test complete removal of singleton infrastructure."""
         with tempfile.TemporaryDirectory() as temp_dir:
             # Create mock singleton file structure
@@ -187,7 +191,9 @@ class TestCleanupSingletonInfrastructure:
             assert str(singleton_file) in removed_files
             assert not singleton_file.exists()
 
-    def test_cleanup_singleton_infrastructure_when_files_missing_then_empty_result(self):
+    def test_cleanup_singleton_infrastructure_when_files_missing_then_empty_result(
+        self,
+    ):
         """Test handling when singleton files don't exist."""
         with tempfile.TemporaryDirectory() as temp_dir:
             # Directory structure without singleton files
@@ -214,7 +220,9 @@ class TestCleanupSingletonInfrastructure:
 class TestCleanupCompatibilityLayer:
     """Test cleanup_compatibility_layer function."""
 
-    def test_cleanup_compatibility_layer_when_removal_complete_then_no_compatibility_files(self):
+    def test_cleanup_compatibility_layer_when_removal_complete_then_no_compatibility_files(
+        self,
+    ):
         """Test complete removal of compatibility layer."""
         with tempfile.TemporaryDirectory() as temp_dir:
             # Create mock compatibility file structure
@@ -309,4 +317,3 @@ class TestCleanupUtilsIntegration:
             )
             assert len(violations) == 1
             assert str(ref_file) in violations
-

@@ -312,7 +312,9 @@ def create_mock_context_fixture(
         return mock_context_fixture
 
     except Exception as e:
-        raise FixtureMigrationError(f"Failed to create mock context fixture: {e}") from e
+        raise FixtureMigrationError(
+            f"Failed to create mock context fixture: {e}"
+        ) from e
 
 def migrate_singleton_fixture(legacy_fixture_func: Callable) -> Callable:
     """Migrate legacy singleton fixture to context-based pattern.

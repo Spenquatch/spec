@@ -1,1 +1,2 @@
-class Test(metaclass=SingletonMeta): pass
+class Test(metaclass=SingletonMeta):
+    pass

@@ -18,7 +18,9 @@ import pytest
 #     get_progress_manager_compatibility,
 # )
 
-@pytest.mark.skip(reason="Compatibility layer removed in P3.2a - singleton elimination complete")
+@pytest.mark.skip(
+    reason="Compatibility layer removed in P3.2a - singleton elimination complete"
+)
 class TestCompatibilityWrapperIntegration:
     """Test compatibility wrapper integration with real singleton usage patterns."""
 
@@ -185,21 +187,20 @@ class TestCompatibilityWrapperIntegration:
         with patch(
             "spec_cli.ui.progress_manager.ProgressManagerSingleton", StatefulSingleton
         ):
+            wrapper = self.layer.get_progress_manager_wrapper()
 
-                wrapper = self.layer.get_progress_manager_wrapper()
+            # Modify singleton state through wrapper
+            wrapper.set_data("test_key", "test_value")
 
-                # Modify singleton state through wrapper
-                wrapper.set_data("test_key", "test_value")
+            # Verify state is set
+            data = wrapper.get_data()
+            assert data["test_key"] == "test_value"
 
-                # Verify state is set
-                data = wrapper.get_data()
-                assert data["test_key"] == "test_value"
+            # Reset through wrapper
+            wrapper.reset_progress_manager()
 
-                # Reset through wrapper
-                wrapper.reset_progress_manager()
-
-                # Verify reset was called on both wrapper and singleton utility
-                mock_reset.assert_called_once()
+            # Verify reset was called on both wrapper and singleton utility
+            mock_reset.assert_called_once()
 
     def test_compatibility_wrapper_error_handling_when_singleton_errors_then_propagates_correctly(
         self,
@@ -356,41 +357,40 @@ class TestCompatibilityWrapperImplementsP1_3aRequirements:
             "spec_cli.ui.progress_manager.ProgressManagerSingleton",
             P1_3aCompliantSingleton,
         ):
+            layer = CompatibilityLayer()
+            wrapper = layer.get_progress_manager_wrapper()
 
-                layer = CompatibilityLayer()
-                wrapper = layer.get_progress_manager_wrapper()
+            # Test P1.3a Requirement: API Preservation
+            assert hasattr(wrapper, "get_progress_manager")
+            assert hasattr(wrapper, "set_progress_manager")
+            assert hasattr(wrapper, "reset_progress_manager")
 
-                # Test P1.3a Requirement: API Preservation
-                assert hasattr(wrapper, "get_progress_manager")
-                assert hasattr(wrapper, "set_progress_manager")
-                assert hasattr(wrapper, "reset_progress_manager")
+            # Test P1.3a Requirement: Convenience Function Compatibility
+            manager = wrapper.get_progress_manager()
+            assert manager is not None
 
-                # Test P1.3a Requirement: Convenience Function Compatibility
-                manager = wrapper.get_progress_manager()
-                assert manager is not None
+            # Test P1.3a Requirement: Custom Manager Injection
+            custom_manager = Mock()
+            wrapper.set_progress_manager(custom_manager)
+            # Should not raise exception
 
-                # Test P1.3a Requirement: Custom Manager Injection
-                custom_manager = Mock()
-                wrapper.set_progress_manager(custom_manager)
-                # Should not raise exception
+            # Test P1.3a Requirement: Reset Functionality
+            wrapper.reset_progress_manager()
+            mock_reset.assert_called_once()
 
-                # Test P1.3a Requirement: Reset Functionality
-                wrapper.reset_progress_manager()
-                mock_reset.assert_called_once()
+            # Test P1.3a Requirement: Thread Safety (basic check)
+            assert hasattr(wrapper, "_lock")
+            assert wrapper._lock is not None
 
-                # Test P1.3a Requirement: Thread Safety (basic check)
-                assert hasattr(wrapper, "_lock")
-                assert wrapper._lock is not None
+            # Test P1.3a Requirement: Backward Compatibility
+            # Wrapper should work exactly like direct singleton access
+            direct_singleton = P1_3aCompliantSingleton()
+            direct_manager = direct_singleton.get_progress_manager()
+            wrapper_manager = wrapper.get_progress_manager()
 
-                # Test P1.3a Requirement: Backward Compatibility
-                # Wrapper should work exactly like direct singleton access
-                direct_singleton = P1_3aCompliantSingleton()
-                direct_manager = direct_singleton.get_progress_manager()
-                wrapper_manager = wrapper.get_progress_manager()
-
-                # Both should provide similar interface
-                assert hasattr(direct_manager, "__class__")
-                assert hasattr(wrapper_manager, "__class__")
+            # Both should provide similar interface
+            assert hasattr(direct_manager, "__class__")
+            assert hasattr(wrapper_manager, "__class__")
 
 class TestDIMigrationContext:
     """Test compatibility wrapper supports migration from singleton to context patterns."""

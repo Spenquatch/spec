@@ -5,11 +5,11 @@ from pathlib import Path
 import pytest
 
 from spec_cli.utils.test_helpers.test_failure_categorizer import (
-    FailurePriority,
-    FailureType,
     FailureCategorizationError,
     FailureCategory,
     FailureInfo,
+    FailurePriority,
+    FailureType,
     _analyze_failure_type,
     _determine_failure_priority,
     _estimate_remediation_effort,
@@ -32,7 +32,9 @@ ASSERTION_ERROR_MESSAGE = "AssertionError: expected 5, got 3"
 class TestCategorizeTestFailure:
     """Test the main categorize_test_failure function."""
 
-    def test_categorize_test_failure_when_valid_failure_info_then_returns_category(self):
+    def test_categorize_test_failure_when_valid_failure_info_then_returns_category(
+        self,
+    ):
         """Test categorize_test_failure with valid failure information."""
         failure_info = {
             "test_name": SAMPLE_TEST_NAME,
@@ -50,7 +52,9 @@ class TestCategorizeTestFailure:
         assert result.failures[0].test_name == SAMPLE_TEST_NAME
         assert result.failures[0].file_path == Path(SAMPLE_FILE_PATH)
 
-    def test_categorize_test_failure_when_rich_error_then_categorizes_as_rich_compatibility(self):
+    def test_categorize_test_failure_when_rich_error_then_categorizes_as_rich_compatibility(
+        self,
+    ):
         """Test categorize_test_failure correctly identifies Rich compatibility issues."""
         failure_info = {
             "test_name": SAMPLE_TEST_NAME,
@@ -64,7 +68,9 @@ class TestCategorizeTestFailure:
         assert result.failure_type == FailureType.RICH_COMPATIBILITY
         assert result.priority == FailurePriority.LOW
 
-    def test_categorize_test_failure_when_import_error_then_categorizes_as_import_error(self):
+    def test_categorize_test_failure_when_import_error_then_categorizes_as_import_error(
+        self,
+    ):
         """Test categorize_test_failure correctly identifies import errors."""
         failure_info = {
             "test_name": SAMPLE_TEST_NAME,
@@ -78,7 +84,9 @@ class TestCategorizeTestFailure:
         assert result.failure_type == FailureType.IMPORT_ERROR
         assert result.priority == FailurePriority.CRITICAL
 
-    def test_categorize_test_failure_when_migration_artifact_then_categorizes_correctly(self):
+    def test_categorize_test_failure_when_migration_artifact_then_categorizes_correctly(
+        self,
+    ):
         """Test categorize_test_failure correctly identifies migration artifacts."""
         failure_info = {
             "test_name": SAMPLE_TEST_NAME,
@@ -105,18 +113,24 @@ class TestCategorizeTestFailure:
         assert result.failures[0].file_path == Path("")
         assert result.failures[0].error_message == ""
 
-    def test_categorize_test_failure_when_categorization_error_then_raises_exception(self):
+    def test_categorize_test_failure_when_categorization_error_then_raises_exception(
+        self,
+    ):
         """Test categorize_test_failure raises exception on internal error."""
         # Invalid failure_info that causes internal error
         failure_info = None
 
-        with pytest.raises(FailureCategorizationError, match="Failed to categorize test failure"):
+        with pytest.raises(
+            FailureCategorizationError, match="Failed to categorize test failure"
+        ):
             categorize_test_failure(failure_info)
 
 class TestAnalyzeFailureType:
     """Test the _analyze_failure_type function."""
 
-    def test_analyze_failure_type_when_rich_patterns_then_returns_rich_compatibility(self):
+    def test_analyze_failure_type_when_rich_patterns_then_returns_rich_compatibility(
+        self,
+    ):
         """Test _analyze_failure_type identifies Rich compatibility patterns."""
         error_message = "rich.console error occurred"
         stack_trace = "Console.print_text() failed"
@@ -125,7 +139,9 @@ class TestAnalyzeFailureType:
 
         assert result == FailureType.RICH_COMPATIBILITY
 
-    def test_analyze_failure_type_when_attribute_error_then_returns_missing_function(self):
+    def test_analyze_failure_type_when_attribute_error_then_returns_missing_function(
+        self,
+    ):
         """Test _analyze_failure_type identifies missing function patterns."""
         error_message = "AttributeError: object has no attribute 'method'"
         stack_trace = ""
@@ -143,7 +159,9 @@ class TestAnalyzeFailureType:
 
         assert result == FailureType.IMPORT_ERROR
 
-    def test_analyze_failure_type_when_migration_patterns_then_returns_migration_artifact(self):
+    def test_analyze_failure_type_when_migration_patterns_then_returns_migration_artifact(
+        self,
+    ):
         """Test _analyze_failure_type identifies migration artifact patterns."""
         error_message = "singleton pattern not found"
         stack_trace = "inject_context decorator missing"
@@ -152,7 +170,9 @@ class TestAnalyzeFailureType:
 
         assert result == FailureType.MIGRATION_ARTIFACT
 
-    def test_analyze_failure_type_when_fixture_patterns_then_returns_fixture_dependency(self):
+    def test_analyze_failure_type_when_fixture_patterns_then_returns_fixture_dependency(
+        self,
+    ):
         """Test _analyze_failure_type identifies fixture dependency patterns."""
         error_message = "pytest fixture not found"
         stack_trace = ""
@@ -161,7 +181,9 @@ class TestAnalyzeFailureType:
 
         assert result == FailureType.FIXTURE_DEPENDENCY
 
-    def test_analyze_failure_type_when_context_patterns_then_returns_context_injection(self):
+    def test_analyze_failure_type_when_context_patterns_then_returns_context_injection(
+        self,
+    ):
         """Test _analyze_failure_type identifies context injection patterns."""
         error_message = "context injection failed"
         stack_trace = "decorator compatibility issue"
@@ -170,7 +192,9 @@ class TestAnalyzeFailureType:
 
         assert result == FailureType.CONTEXT_INJECTION
 
-    def test_analyze_failure_type_when_assertion_error_then_returns_real_logic_error(self):
+    def test_analyze_failure_type_when_assertion_error_then_returns_real_logic_error(
+        self,
+    ):
         """Test _analyze_failure_type identifies real logic errors."""
         error_message = "AssertionError: expected 5, got 3"
         stack_trace = ""
@@ -246,28 +270,36 @@ class TestDetermineFailurePriority:
 class TestGenerateRemediationNotes:
     """Test the _generate_remediation_notes function."""
 
-    def test_generate_remediation_notes_when_rich_compatibility_then_returns_ui_guidance(self):
+    def test_generate_remediation_notes_when_rich_compatibility_then_returns_ui_guidance(
+        self,
+    ):
         """Test _generate_remediation_notes provides UI-specific guidance for Rich issues."""
         notes = _generate_remediation_notes(FailureType.RICH_COMPATIBILITY)
 
         assert "Rich UI compatibility" in notes
         assert "mock console" in notes
 
-    def test_generate_remediation_notes_when_missing_function_then_returns_implementation_guidance(self):
+    def test_generate_remediation_notes_when_missing_function_then_returns_implementation_guidance(
+        self,
+    ):
         """Test _generate_remediation_notes provides implementation guidance."""
         notes = _generate_remediation_notes(FailureType.MISSING_FUNCTION)
 
         assert "Implement missing function" in notes
         assert "renamed or moved" in notes
 
-    def test_generate_remediation_notes_when_migration_artifact_then_returns_cleanup_guidance(self):
+    def test_generate_remediation_notes_when_migration_artifact_then_returns_cleanup_guidance(
+        self,
+    ):
         """Test _generate_remediation_notes provides migration cleanup guidance."""
         notes = _generate_remediation_notes(FailureType.MIGRATION_ARTIFACT)
 
         assert "Clean up migration artifacts" in notes
         assert "context injection" in notes
 
-    def test_generate_remediation_notes_when_unknown_type_then_returns_manual_analysis(self):
+    def test_generate_remediation_notes_when_unknown_type_then_returns_manual_analysis(
+        self,
+    ):
         """Test _generate_remediation_notes suggests manual analysis for unknown types."""
         notes = _generate_remediation_notes(FailureType.UNKNOWN)
 
@@ -277,7 +309,9 @@ class TestGenerateRemediationNotes:
 class TestGetRemediationStrategy:
     """Test the _get_remediation_strategy function."""
 
-    def test_get_remediation_strategy_when_each_failure_type_then_returns_appropriate_strategy(self):
+    def test_get_remediation_strategy_when_each_failure_type_then_returns_appropriate_strategy(
+        self,
+    ):
         """Test _get_remediation_strategy returns appropriate strategy for each type."""
         strategies = {
             FailureType.RICH_COMPATIBILITY: "Batch update UI testing patterns",
@@ -297,7 +331,9 @@ class TestGetRemediationStrategy:
 class TestEstimateRemediationEffort:
     """Test the _estimate_remediation_effort function."""
 
-    def test_estimate_remediation_effort_when_each_failure_type_then_returns_time_estimate(self):
+    def test_estimate_remediation_effort_when_each_failure_type_then_returns_time_estimate(
+        self,
+    ):
         """Test _estimate_remediation_effort returns time estimates for each type."""
         efforts = {
             FailureType.RICH_COMPATIBILITY: "2-4 hours",
@@ -336,7 +372,9 @@ class TestDataClasses:
         assert failure_info.priority == FailurePriority.HIGH
         assert len(failure_info.related_failures) == 2
 
-    def test_test_failure_category_creation_when_all_fields_then_creates_successfully(self):
+    def test_test_failure_category_creation_when_all_fields_then_creates_successfully(
+        self,
+    ):
         """Test FailureCategory can be created with all fields."""
         sample_failure = FailureInfo(
             test_name=SAMPLE_TEST_NAME,

@@ -52,7 +52,9 @@ class TestClass:
 class TestRemoveSingletonImports:
     """Test remove_singleton_imports function."""
 
-    def test_remove_singleton_imports_when_valid_file_then_removes_imports_successfully(self):
+    def test_remove_singleton_imports_when_valid_file_then_removes_imports_successfully(
+        self,
+    ):
         """Test successful removal of singleton imports from valid file."""
         with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
             f.write(SINGLETON_IMPORT_CODE)
@@ -72,7 +74,9 @@ class TestRemoveSingletonImports:
         finally:
             file_path.unlink()
 
-    def test_remove_singleton_imports_when_no_imports_found_then_returns_false_unchanged(self):
+    def test_remove_singleton_imports_when_no_imports_found_then_returns_false_unchanged(
+        self,
+    ):
         """Test file with no singleton imports returns False and remains unchanged."""
         with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
             f.write(CLEAN_CODE)
@@ -92,7 +96,9 @@ class TestRemoveSingletonImports:
         finally:
             file_path.unlink()
 
-    def test_remove_singleton_imports_when_file_not_found_then_raises_cleanup_error(self):
+    def test_remove_singleton_imports_when_file_not_found_then_raises_cleanup_error(
+        self,
+    ):
         """Test error handling when file does not exist."""
         non_existent_file = Path("/nonexistent/test.py")
 
@@ -101,7 +107,9 @@ class TestRemoveSingletonImports:
 
         assert "File not found" in str(exc_info.value)
 
-    def test_remove_singleton_imports_when_invalid_path_type_then_raises_type_error(self):
+    def test_remove_singleton_imports_when_invalid_path_type_then_raises_type_error(
+        self,
+    ):
         """Test type validation for file_path parameter."""
         with pytest.raises(TypeError) as exc_info:
             remove_singleton_imports("not_a_path")
@@ -255,7 +263,7 @@ class TestCleanupMigration:
                 files_processed=2,
                 imports_removed=0,
                 context_imports_added=0,
-                errors=[]
+                errors=[],
             )
 
             result = cleanup_migration(temp_path)
@@ -274,7 +282,9 @@ class TestCleanupMigration:
         assert "codebase_path must be a Path object" in str(exc_info.value)
 
     @patch("spec_cli.utils.migration_cleanup_utils.validate_migration_complete")
-    def test_cleanup_migration_when_validation_fails_then_includes_errors(self, mock_validate):
+    def test_cleanup_migration_when_validation_fails_then_includes_errors(
+        self, mock_validate
+    ):
         """Test error handling during migration cleanup."""
         mock_validate.side_effect = Exception("Validation error")
 
@@ -286,7 +296,9 @@ class TestCleanupMigration:
 class TestMigrationValidationReport:
     """Test MigrationValidationReport dataclass."""
 
-    def test_migration_validation_when_test_suite_passes_then_confirms_complete_migration(self):
+    def test_migration_validation_when_test_suite_passes_then_confirms_complete_migration(
+        self,
+    ):
         """Test migration validation report creation and attributes."""
         report = MigrationValidationReport(
             success=True,
@@ -294,7 +306,7 @@ class TestMigrationValidationReport:
             files_processed=EXPECTED_SUCCESS_COUNT,
             imports_removed=10,
             context_imports_added=EXPECTED_SUCCESS_COUNT,
-            errors=[]
+            errors=[],
         )
 
         assert report.success is True
@@ -315,7 +327,7 @@ class TestMigrationValidationReport:
             files_processed=3,
             imports_removed=1,
             context_imports_added=0,
-            errors=test_errors
+            errors=test_errors,
         )
 
         assert report.success is False
@@ -326,7 +338,9 @@ class TestMigrationValidationReport:
 class TestCleanupOrchestration:
     """Test orchestration of cleanup and validation functions."""
 
-    def test_cleanup_orchestration_when_cleanup_and_validation_then_generates_completion_report(self):
+    def test_cleanup_orchestration_when_cleanup_and_validation_then_generates_completion_report(
+        self,
+    ):
         """Test end-to-end orchestration of cleanup and validation."""
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_path = Path(temp_dir)

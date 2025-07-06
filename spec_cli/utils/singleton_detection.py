@@ -51,14 +51,12 @@ class SingletonPatternDetector:
 
     SINGLETON_DECORATOR_NAMES = {
         "singleton",
-
         "@singleton",
     }
 
     SINGLETON_IMPORT_PATTERNS = {
         "singleton",
         "SingletonMeta",
-
     }
 
     def __init__(self) -> None:

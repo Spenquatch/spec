@@ -474,9 +474,7 @@ class TestConvenienceFunctions:
         assert result == mock_console
         mock_manager.get_console.assert_called_once_with(self.test_root)
 
-    def test_reset_settings_function_calls_manager_and_singleton_reset(
-
-    ):
+    def test_reset_settings_function_calls_manager_and_singleton_reset():
         """Test reset_settings function calls both manager reset and singleton reset."""
         # Create a real manager to test the reset behavior
         manager = SettingsManager()

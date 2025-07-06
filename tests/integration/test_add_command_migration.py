@@ -40,7 +40,9 @@ class TestAddCommandMigrationIntegration:
             # Mock init command dependencies
             patch("spec_cli.git.repository.SpecGitRepository") as mock_repo_class,
             # Mock status command dependencies
-            patch("spec_cli.cli.commands.status.StatusCommand") as mock_status_cmd_class,
+            patch(
+                "spec_cli.cli.commands.status.StatusCommand"
+            ) as mock_status_cmd_class,
         ):
             # Setup mocks for add command
             mock_add_validate.return_value = self.TEST_FILE_PATHS
@@ -69,9 +71,7 @@ class TestAddCommandMigrationIntegration:
             # All commands should use the same context instance
 
             # Step 1: Initialize repository
-            init_command.callback(
-                mock_context, debug=False, verbose=False, force=False
-            )
+            init_command.callback(mock_context, debug=False, verbose=False, force=False)
 
             # Step 2: Add files
             add_command.callback(
@@ -89,7 +89,9 @@ class TestAddCommandMigrationIntegration:
             # Verify all commands used the same context.settings instance
             # This ensures consistency across the migration
             mock_add_cmd_class.assert_called_once_with(settings=mock_context.settings)
-            mock_status_cmd_class.assert_called_once_with(settings=mock_context.settings)
+            mock_status_cmd_class.assert_called_once_with(
+                settings=mock_context.settings
+            )
 
     def test_add_command_when_used_with_migrated_init_then_context_consistent(
         self, mock_context
@@ -114,9 +116,7 @@ class TestAddCommandMigrationIntegration:
             mock_repo_class.return_value = mock_repo_instance
 
             # Both commands should receive the same context
-            init_command.callback(
-                mock_context, debug=False, verbose=False, force=False
-            )
+            init_command.callback(mock_context, debug=False, verbose=False, force=False)
             add_command.callback(
                 mock_context,
                 debug=False,
@@ -136,7 +136,9 @@ class TestAddCommandMigrationIntegration:
         with (
             patch("spec_cli.cli.commands.add.validate_file_paths") as mock_validate,
             patch("spec_cli.cli.commands.add.AddCommand") as mock_add_cmd_class,
-            patch("spec_cli.cli.commands.status.StatusCommand") as mock_status_cmd_class,
+            patch(
+                "spec_cli.cli.commands.status.StatusCommand"
+            ) as mock_status_cmd_class,
         ):
             mock_validate.return_value = self.TEST_FILE_PATHS
             mock_add_instance = Mock()
@@ -166,7 +168,9 @@ class TestAddCommandMigrationIntegration:
 
             # Verify dependency injection worked for both
             mock_add_cmd_class.assert_called_once_with(settings=mock_context.settings)
-            mock_status_cmd_class.assert_called_once_with(settings=mock_context.settings)
+            mock_status_cmd_class.assert_called_once_with(
+                settings=mock_context.settings
+            )
 
 class TestCrossSliceContextIntegration:
     """Test context integration across different command slices."""

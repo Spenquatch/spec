@@ -330,7 +330,10 @@ def clean_fixture():
         # Mock Path.read_text to raise exception
         with (
             patch("spec_cli.utils.test_analysis.Path.exists", return_value=True),
-            patch("spec_cli.utils.test_analysis.Path.read_text", side_effect=OSError("Read error")),
+            patch(
+                "spec_cli.utils.test_analysis.Path.read_text",
+                side_effect=OSError("Read error"),
+            ),
         ):
             with pytest.raises(FixtureAnalysisError) as exc_info:
                 identify_singleton_dependencies(fixture_func)

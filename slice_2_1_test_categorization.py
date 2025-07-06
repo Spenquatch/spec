@@ -14,10 +14,10 @@ from typing import Any
 
 from spec_cli.logging.debug import debug_logger
 from spec_cli.utils.test_helpers.test_failure_categorizer import (
-    FailurePriority,
-    FailureType,
     FailureCategory,
     FailureInfo,
+    FailurePriority,
+    FailureType,
     categorize_test_failure,
 )
 

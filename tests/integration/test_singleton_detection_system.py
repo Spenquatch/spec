@@ -199,7 +199,6 @@ class TestSingletonDetectionSystemIntegration:
             expected_types = {
                 "metaclass_singleton",
                 "decorator_singleton",
-
                 "import_singleton_name",
                 "import_singleton",
             }

@@ -93,7 +93,9 @@ class TestAddCommandMigration:
             # Verify settings accessed from context
             mock_cmd_class.assert_called_once_with(settings=mock_context.settings)
 
-    def test_add_command_when_migrated_signature_then_maintains_click_compatibility(self):
+    def test_add_command_when_migrated_signature_then_maintains_click_compatibility(
+        self,
+    ):
         """Test that migrated command maintains Click compatibility."""
         # Verify function has required Click attributes
         assert hasattr(add_command, "callback")
@@ -151,7 +153,9 @@ class TestAddCommandMigration:
         with patch("spec_cli.cli.commands.add.validate_file_paths") as mock_validate:
             mock_validate.return_value = []
 
-            with pytest.raises(click.BadParameter, match="No valid file paths provided"):
+            with pytest.raises(
+                click.BadParameter, match="No valid file paths provided"
+            ):
                 unwrapped_func = get_unwrapped_function(add_command.callback)
                 unwrapped_func(
                     mock_context,
@@ -197,7 +201,9 @@ class TestAddCommandMigration:
             mock_validate.return_value = self.TEST_FILE_PATHS
             mock_cmd_class.side_effect = RuntimeError("Unexpected error")
 
-            with pytest.raises(click.ClickException, match="Add failed: Unexpected error"):
+            with pytest.raises(
+                click.ClickException, match="Add failed: Unexpected error"
+            ):
                 unwrapped_func = get_unwrapped_function(add_command.callback)
                 unwrapped_func(
                     mock_context,

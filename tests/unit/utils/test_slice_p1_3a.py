@@ -307,7 +307,6 @@ class MyService(metaclass=SingletonMeta):
                 line_number=20,
                 usage_type="reset_function",
                 singleton_name="ProgressManagerSingleton",
-
             ),
             SingletonUsage(
                 file_path=Path("utils.py"),

@@ -1,5 +1,6 @@
 """Test module for gen command migration testing."""
 
+
 def calculate_sum(a: int, b: int) -> int:
     """Calculate the sum of two numbers.
 
@@ -11,6 +12,7 @@ def calculate_sum(a: int, b: int) -> int:
         Sum of a and b
     """
     return a + b
+
 
 class Calculator:
     """Simple calculator class."""

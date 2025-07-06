@@ -80,7 +80,9 @@ def analyze_test_fixtures(test_dir: Path) -> FixtureAnalysisReport:
             singleton_dependent_fixtures=singleton_deps,
             isolation_issues=isolation_issues,
             context_migration_candidates=migration_candidates,
-            migration_requirements=_generate_migration_requirements(migration_candidates),
+            migration_requirements=_generate_migration_requirements(
+                migration_candidates
+            ),
             analysis_summary=_create_analysis_summary(
                 fixtures, singleton_deps, isolation_issues
             ),
@@ -246,7 +248,6 @@ def _extract_singleton_patterns(func_node: ast.FunctionDef) -> list[str]:
         r"\.instance\s*\(",
         r"@singleton",
         r"SingletonMeta",
-
     }
 
     for pattern in singleton_patterns:

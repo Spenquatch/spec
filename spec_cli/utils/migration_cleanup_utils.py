@@ -48,7 +48,9 @@ def remove_singleton_imports(file_path: Path) -> bool:
         # Check if file exists
         if not file_path.exists():
             error_context = create_error_context(file_path)
-            error_context.update({"operation": "remove_singleton_imports", "issue": "file_not_found"})
+            error_context.update(
+                {"operation": "remove_singleton_imports", "issue": "file_not_found"}
+            )
             raise InfrastructureRemovalError(
                 f"File not found: {file_path}", error_context
             )
@@ -62,8 +64,8 @@ def remove_singleton_imports(file_path: Path) -> bool:
             r"from\s+\.\.utils\.singleton\s+import\s+[^#\n]+",
             r"from\s+spec_cli\.utils\.singleton\s+import\s+[^#\n]+",
             r"import\s+.*singleton[^#\n]*",
-#\n]*",
-#\n]*",
+            # \n]*",
+            # \n]*",
         ]
 
         imports_removed = 0
@@ -81,7 +83,7 @@ def remove_singleton_imports(file_path: Path) -> bool:
                 )
 
         # Clean up empty lines left by removed imports
-        content = re.sub(r'\n\s*\n\s*\n', '\n\n', content)
+        content = re.sub(r"\n\s*\n\s*\n", "\n\n", content)
 
         # Only write if content changed
         if content != original_content:
@@ -106,10 +108,12 @@ def remove_singleton_imports(file_path: Path) -> bool:
         raise
     except Exception as e:
         error_context = create_error_context(file_path)
-        error_context.update({
-            "operation": "remove_singleton_imports",
-            "error": str(e),
-        })
+        error_context.update(
+            {
+                "operation": "remove_singleton_imports",
+                "error": str(e),
+            }
+        )
         debug_logger.log(
             "ERROR",
             "Failed to remove singleton imports",
@@ -148,13 +152,16 @@ def add_context_imports(file_path: Path, imports_needed: list[str]) -> bool:
     try:
         # Read file content
         content = file_path.read_text(encoding="utf-8")
-        lines = content.split('\n')
+        lines = content.split("\n")
 
         # Find the last import line to insert new imports after
         last_import_idx = -1
         for i, line in enumerate(lines):
-            if (line.strip().startswith('import ') or
-                line.strip().startswith('from ') and 'import' in line):
+            if (
+                line.strip().startswith("import ")
+                or line.strip().startswith("from ")
+                and "import" in line
+            ):
                 last_import_idx = i
 
         # Add new imports after last import or at beginning if no imports found
@@ -175,7 +182,7 @@ def add_context_imports(file_path: Path, imports_needed: list[str]) -> bool:
 
         if imports_added > 0:
             # Write updated content
-            new_content = '\n'.join(lines)
+            new_content = "\n".join(lines)
             file_path.write_text(new_content, encoding="utf-8")
 
             debug_logger.log(
@@ -189,11 +196,13 @@ def add_context_imports(file_path: Path, imports_needed: list[str]) -> bool:
 
     except Exception as e:
         error_context = create_error_context(file_path)
-        error_context.update({
-            "operation": "add_context_imports",
-            "imports_needed": imports_needed,
-            "error": str(e),
-        })
+        error_context.update(
+            {
+                "operation": "add_context_imports",
+                "imports_needed": imports_needed,
+                "error": str(e),
+            }
+        )
         debug_logger.log(
             "ERROR",
             "Failed to add context imports",
@@ -233,19 +242,22 @@ def validate_migration_complete() -> MigrationValidationReport:
         violations: list[str] = []  # For now, focus on import cleanup
 
         # Also check for any remaining singleton imports
-        remaining_refs = validate_no_references(
-            codebase_path,
-            ["singleton"]
-        )
+        remaining_refs = validate_no_references(codebase_path, ["singleton"])
 
         # Calculate success status
         success = len(violations) == 0 and len(remaining_refs) == 0
 
         # Count processed files
         python_files = list(codebase_path.rglob("*.py"))
-        files_processed = len([f for f in python_files
-                            if not any(pattern in str(f) for pattern in
-                                     [".venv", "__pycache__", ".git"])])
+        files_processed = len(
+            [
+                f
+                for f in python_files
+                if not any(
+                    pattern in str(f) for pattern in [".venv", "__pycache__", ".git"]
+                )
+            ]
+        )
 
         debug_logger.log(
             "INFO",
@@ -313,20 +325,25 @@ def cleanup_migration(codebase_path: Path) -> MigrationValidationReport:
             "spec_cli/config/settings.py": ["from ..core.context import SpecContext"],
             "spec_cli/ui/console.py": ["from ..core.context import SpecContext"],
             "spec_cli/ui/theme.py": ["from ..core.context import SpecContext"],
-            "spec_cli/ui/progress_manager.py": ["from ..core.context import SpecContext"],
+            "spec_cli/ui/progress_manager.py": [
+                "from ..core.context import SpecContext"
+            ],
         }
 
         # Find all Python files with singleton imports
         singleton_files = []
         for py_file in codebase_path.rglob("*.py"):
             # Skip virtual environment and cache directories
-            if any(pattern in str(py_file) for pattern in [".venv", "__pycache__", ".git"]):
+            if any(
+                pattern in str(py_file) for pattern in [".venv", "__pycache__", ".git"]
+            ):
                 continue
 
             try:
                 content = py_file.read_text(encoding="utf-8")
-                if ("singleton" in content and
-                    ("import" in content or "from" in content)):
+                if "singleton" in content and (
+                    "import" in content or "from" in content
+                ):
                     singleton_files.append(py_file)
             except (UnicodeDecodeError, PermissionError):
                 # Skip files that can't be read
@@ -387,10 +404,12 @@ def cleanup_migration(codebase_path: Path) -> MigrationValidationReport:
 
     except Exception as e:
         error_context = create_error_context(codebase_path)
-        error_context.update({
-            "operation": "cleanup_migration",
-            "error": str(e),
-        })
+        error_context.update(
+            {
+                "operation": "cleanup_migration",
+                "error": str(e),
+            }
+        )
         debug_logger.log(
             "ERROR",
             "Migration cleanup failed",

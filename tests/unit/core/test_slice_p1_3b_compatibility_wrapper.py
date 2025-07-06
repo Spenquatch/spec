@@ -296,7 +296,9 @@ class TestGetDefaultContextKey:
 
         assert result == "database2_connection"
 
-@pytest.mark.skip(reason="CompatibilityLayer removed in P3.2a - singleton elimination complete")
+@pytest.mark.skip(
+    reason="CompatibilityLayer removed in P3.2a - singleton elimination complete"
+)
 class TestCompatibilityLayer:
     """Test CompatibilityLayer central management."""
 
@@ -408,7 +410,9 @@ class TestCompatibilityLayer:
         # Verify reset was called
         mock_wrapper.reset.assert_called_once()
 
-@pytest.mark.skip(reason="ProgressManagerWrapper removed in P3.2a - singleton elimination complete")
+@pytest.mark.skip(
+    reason="ProgressManagerWrapper removed in P3.2a - singleton elimination complete"
+)
 class TestProgressManagerWrapper:
     """Test ProgressManagerWrapper specific functionality."""
 
@@ -525,7 +529,9 @@ class TestProgressManagerWrapper:
         with pytest.raises(CompatibilityError, match="Failed to access attribute"):
             _ = self.wrapper.some_attr
 
-@pytest.mark.skip(reason="Global compatibility layer removed in P3.2a - singleton elimination complete")
+@pytest.mark.skip(
+    reason="Global compatibility layer removed in P3.2a - singleton elimination complete"
+)
 class TestGlobalCompatibilityLayer:
     """Test global compatibility layer instance and utilities."""
 
