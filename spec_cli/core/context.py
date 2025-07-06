@@ -86,6 +86,14 @@ class SpecSettingsInterface:
         """
         return {}
 
+    def is_initialized(self) -> bool:
+        """Check if the spec repository is initialized.
+
+        Returns:
+            True if repository is initialized, False otherwise
+        """
+        return (self.root_path / ".spec").exists()
+
     def __eq__(self, other: object) -> bool:
         """Check equality based on configuration values."""
         if not isinstance(other, SpecSettingsInterface):
@@ -281,9 +289,9 @@ class SpecContext:
     Provides immutable dependency injection with thread-safe access.
     """
 
-    settings: SpecSettingsInterface
-    console: SpecConsoleInterface
-    progress: SpecProgressInterface
+    settings: Any  # SpecSettingsInterface (temporarily Any for migration)
+    console: Any  # SpecConsoleInterface (temporarily Any for migration)
+    progress: Any  # SpecProgressInterface (temporarily Any for migration)
 
     def __post_init__(self) -> None:
         """Validate context after initialization.
@@ -450,14 +458,24 @@ class SpecContext:
                     "DEBUG", "Using current directory as root", root_path=str(root_path)
                 )
 
-            # Create CLI settings with real configuration
-            cli_settings = SpecSettingsInterface()
-            cli_settings.root_path = root_path
-            cli_settings.spec_dir = root_path / ".spec"
-            cli_settings.specs_dir = root_path / ".specs"
-            cli_settings.debug_enabled = validated_inputs.get("debug_mode", False)
+            # Create CLI settings with real configuration using actual implementations
+            from ..config.settings import get_settings
+            from ..ui.console import get_console
+            from ..ui.progress_manager import ProgressManager
 
-            # Apply any setting overrides
+            cli_settings = get_settings()
+            cli_console = get_console()
+            cli_progress = ProgressManager()
+
+            debug_logger.log(
+                "DEBUG",
+                "Using concrete implementations",
+                settings_type=type(cli_settings).__name__,
+                console_type=type(cli_console).__name__,
+                progress_type=type(cli_progress).__name__,
+            )
+
+            # Apply any setting overrides if provided
             for key, value in overrides.items():
                 if hasattr(cli_settings, key):
                     setattr(cli_settings, key, value)
@@ -465,15 +483,61 @@ class SpecContext:
                         "DEBUG", "Applied setting override", key=key, value=value
                     )
 
-            # Create CLI console with real output capabilities
-            cli_console = SpecConsoleInterface()
+            # Create console adapter for interface compatibility
+            class CLIConsoleAdapter:
+                def __init__(self, console):
+                    self._console = console
+                    # Detect non-interactive mode to prevent hanging
+                    import sys
 
-            # Create CLI progress with real progress tracking
-            cli_progress = SpecProgressInterface()
+                    self._is_interactive = sys.stdout.isatty() and sys.stderr.isatty()
+
+                def print_message(self, text: str, style: str | None = None) -> None:
+                    if not self._is_interactive:
+                        # In non-interactive mode, use simple print to avoid Rich hanging
+                        print(text)
+                        return
+                    if style:
+                        self._console.print_status(text, style)
+                    else:
+                        self._console.print(text)
+
+                def print_error(self, text: str) -> None:
+                    if not self._is_interactive:
+                        print(f"Error: {text}")
+                        return
+                    self._console.print_status(text, "error")
+
+                def print_success(self, text: str) -> None:
+                    if not self._is_interactive:
+                        print(f"Success: {text}")
+                        return
+                    self._console.print_status(text, "success")
+
+                def print_warning(self, text: str) -> None:
+                    if not self._is_interactive:
+                        print(f"Warning: {text}")
+                        return
+                    self._console.print_status(text, "warning")
+
+                def get_width(self) -> int:
+                    return getattr(self._console, "width", 80)
+
+                def supports_color(self) -> bool:
+                    return self._is_interactive and not getattr(
+                        self._console, "no_color", False
+                    )
+
+                def capture_output(self):
+                    return getattr(self._console, "capture_output", lambda: None)()
+
+            cli_console_adapter = CLIConsoleAdapter(cli_console)
 
             # Create and return context
             context = cls(
-                settings=cli_settings, console=cli_console, progress=cli_progress
+                settings=cli_settings,
+                console=cli_console_adapter,
+                progress=cli_progress,
             )
 
             debug_logger.log(

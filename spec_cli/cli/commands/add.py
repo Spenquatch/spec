@@ -1,7 +1,12 @@
 """Spec add command implementation."""
 
+from typing import cast
+
 import click
 
+from ...config.settings import SpecSettings
+from ...core.context import SpecContext
+from ..decorators import context_injection
 from ..options import dry_run_option, files_argument, force_option, spec_command
 from ..utils import validate_file_paths
 from .add_command import AddCommand
@@ -11,13 +16,27 @@ from .add_command import AddCommand
 @files_argument
 @force_option
 @dry_run_option
+@context_injection
 def add_command(
-    debug: bool, verbose: bool, files: tuple[str, ...], force: bool, dry_run: bool
+    context: SpecContext,
+    debug: bool,
+    verbose: bool,
+    files: tuple[str, ...],
+    force: bool,
+    dry_run: bool,
 ) -> None:
     """Add spec files to Git tracking.
 
     Adds specification files to the spec repository for version control.
     Files must be in the .specs/ directory to be added.
+
+    Args:
+        context: SpecContext with settings, console, and progress dependencies
+        debug: Debug mode flag
+        verbose: Verbose mode flag
+        files: File paths to add to spec repository
+        force: Force add ignored files
+        dry_run: Preview what would be added without doing it
 
     Examples:
         spec add .specs/src/main.py/index.md  # Add specific spec file
@@ -33,7 +52,7 @@ def add_command(
             raise click.BadParameter("No valid file paths provided")
 
         # Create and execute command
-        command = AddCommand()
+        command = AddCommand(settings=cast(SpecSettings, context.settings))
         result = command.safe_execute(files=file_paths, force=force, dry_run=dry_run)
 
         # Exit with appropriate code

@@ -6,6 +6,7 @@ from typing import Any, TypeVar
 import click
 
 from ..core.context import SpecContext
+from ..logging.debug import debug_logger
 from ..utils.click_utils import ClickIntegrationError, retrieve_context_data
 from ..utils.decorator_utils import (
     DecoratorError,
@@ -52,6 +53,12 @@ def _get_spec_context_from_click() -> SpecContext:
 
         # Retrieve SpecContext from Click context storage
         spec_context = retrieve_context_data(click_ctx, "spec_context")
+        debug_logger.log(
+            "DEBUG",
+            "Context retrieval status",
+            spec_context_found=spec_context is not None,
+            spec_context_type=type(spec_context).__name__ if spec_context else None,
+        )
         if spec_context is None:
             # Create default context if not found with real implementations
             from ..config.settings import get_settings
@@ -62,36 +69,77 @@ def _get_spec_context_from_click() -> SpecContext:
             rich_console = get_console()
             progress = ProgressManager()
 
+            debug_logger.log(
+                "DEBUG",
+                "Created default dependencies",
+                settings_type=type(settings).__name__,
+                console_type=type(rich_console).__name__,
+                progress_type=type(progress).__name__,
+            )
+
             # Create adapter to bridge SpecConsole to SpecConsoleInterface
             class ConsoleAdapter:
-                def __init__(self, rich_console):
-                    self._console = rich_console
+                def __init__(self, spec_console):
+                    self._console = spec_console
+                    # Detect non-interactive mode to prevent hanging
+                    import sys
+
+                    self._is_interactive = sys.stdout.isatty() and sys.stderr.isatty()
 
                 def print_message(self, text: str, style: str | None = None) -> None:
+                    if not self._is_interactive:
+                        # In non-interactive mode, use simple print to avoid Rich hanging
+                        print(text)
+                        return
                     if style:
                         self._console.print_status(text, style)
                     else:
                         self._console.print(text)
 
                 def print_error(self, text: str) -> None:
+                    if not self._is_interactive:
+                        print(f"Error: {text}")
+                        return
                     self._console.print_status(text, "error")
 
                 def print_success(self, text: str) -> None:
+                    if not self._is_interactive:
+                        print(f"Success: {text}")
+                        return
                     self._console.print_status(text, "success")
 
                 def print_warning(self, text: str) -> None:
+                    if not self._is_interactive:
+                        print(f"Warning: {text}")
+                        return
                     self._console.print_status(text, "warning")
 
                 def get_width(self) -> int:
                     return getattr(self._console, "width", 80)
 
                 def supports_color(self) -> bool:
-                    return not getattr(self._console, "no_color", False)
+                    return self._is_interactive and not getattr(
+                        self._console, "no_color", False
+                    )
+
+                def capture_output(self):
+                    # Return the capture_output from the underlying console if available
+                    return getattr(self._console, "capture_output", lambda: None)()
 
             console = ConsoleAdapter(rich_console)
 
+            # For migration period, pass concrete settings directly
+            # even though SpecContext expects interface types
             spec_context = SpecContext(
                 settings=settings, console=console, progress=progress
+            )
+
+            debug_logger.log(
+                "DEBUG",
+                "Created default SpecContext",
+                final_settings_type=type(spec_context.settings).__name__,
+                final_console_type=type(spec_context.console).__name__,
+                final_progress_type=type(spec_context.progress).__name__,
             )
 
         if not isinstance(spec_context, SpecContext):
