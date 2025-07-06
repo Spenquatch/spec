@@ -1,7 +1,8 @@
 """Pytest configuration and shared fixtures for spec-cli tests.
 
 This module provides common pytest fixtures and configuration for all
-test modules in the spec-cli test suite.
+test modules in the spec-cli test suite, using context-based dependency
+injection instead of singleton patterns.
 """
 
 import os
@@ -10,6 +11,7 @@ from unittest.mock import patch
 
 import pytest
 
+from spec_cli.core.context import SpecContext
 from spec_cli.utils.test_helpers.git_test_helpers import (
     create_git_command_simulator,
     create_git_environment_isolator,
@@ -24,6 +26,8 @@ def isolate_working_directory():
     This fixture automatically captures and restores the current working
     directory for every test, preventing working directory contamination
     between tests that causes systematic failures in the full test suite.
+
+    Context-compatible isolation that works with SpecContext dependency injection.
 
     Complexity: 2/7 (PASSES McCabe requirement)
     """
@@ -42,6 +46,9 @@ def isolate_environment_variables():
     This fixture captures and restores environment variables that tests
     might modify, preventing environment variable contamination between
     tests that causes systematic failures in the full test suite.
+
+    Context-compatible isolation that ensures environment state doesn't
+    interfere with SpecContext dependency injection patterns.
 
     Targets common SPEC_ environment variables that tests modify:
     - SPEC_DEBUG, SPEC_DEBUG_LEVEL, SPEC_DEBUG_TIMING
@@ -80,6 +87,9 @@ def clean_mock_state():
     state that can accumulate during large test suite execution, preventing
     state pollution between tests.
 
+    Enhanced for context-based testing to ensure SpecContext mock state
+    doesn't contaminate between test executions.
+
     Targets the extensive test helper infrastructure that imports:
     - ai_test_doubles (mock providers, timeout simulators)
     - cli_test_helpers (command runners, input mockers)
@@ -110,18 +120,118 @@ def clean_mock_state():
                     del sys.modules[mod]
 
 
-@pytest.fixture
-def git_test_repository(tmp_path):
-    """Pytest fixture for temporary Git repository.
+# Context-Based Fixtures for Dependency Injection
 
-    Args:
-        tmp_path: pytest tmp_path fixture
+
+@pytest.fixture
+def spec_context():
+    """Primary dependency injection context for tests.
+
+    Provides isolated SpecContext instance with mock dependencies for testing,
+    eliminating singleton dependencies and ensuring test isolation.
 
     Returns:
-        GitRepositoryMocker instance for testing
+        SpecContext: Isolated context with mock settings, console, and progress
     """
-    repo_path = tmp_path / "test_repo"
-    repo_path.mkdir()
+    return SpecContext.create_for_testing()
+
+
+@pytest.fixture
+def mock_spec_settings(spec_context):
+    """Mock settings for test isolation.
+
+    Args:
+        spec_context: SpecContext fixture
+
+    Returns:
+        Mock settings instance from context
+    """
+    return spec_context.settings
+
+
+@pytest.fixture
+def mock_spec_console(spec_context):
+    """Mock console for test isolation.
+
+    Args:
+        spec_context: SpecContext fixture
+
+    Returns:
+        Mock console instance from context
+    """
+    return spec_context.console
+
+
+@pytest.fixture
+def mock_spec_progress(spec_context):
+    """Mock progress manager for test isolation.
+
+    Args:
+        spec_context: SpecContext fixture
+
+    Returns:
+        Mock progress instance from context
+    """
+    return spec_context.progress
+
+
+@pytest.fixture
+def isolated_test_context(tmp_path):
+    """Fully isolated test context with temporary directories.
+
+    Creates a complete test context with temporary directory isolation,
+    ensuring no test state contamination across test executions.
+
+    Args:
+        tmp_path: pytest temporary path fixture
+
+    Returns:
+        SpecContext: Isolated context with temporary directory settings
+    """
+    return SpecContext.create_for_testing(
+        {
+            "root_path": tmp_path,
+            "spec_dir": tmp_path / ".spec",
+            "specs_dir": tmp_path / ".specs",
+            "debug_enabled": False,
+        }
+    )
+
+
+@pytest.fixture
+def debug_test_context(tmp_path):
+    """Debug-enabled test context for testing debug functionality.
+
+    Args:
+        tmp_path: pytest temporary path fixture
+
+    Returns:
+        SpecContext: Context with debug enabled for testing
+    """
+    return SpecContext.create_for_testing(
+        {
+            "root_path": tmp_path,
+            "debug_enabled": True,
+            "console_width": 120,
+        }
+    )
+
+
+# Git Test Fixtures (Updated for Context Integration)
+
+
+@pytest.fixture
+def git_test_repository(isolated_test_context):
+    """Pytest fixture for temporary Git repository with context integration.
+
+    Args:
+        isolated_test_context: Isolated SpecContext fixture
+
+    Returns:
+        GitRepositoryMocker instance configured with context settings
+    """
+    repo_path = isolated_test_context.settings.root_path / "test_repo"
+    repo_path.mkdir(exist_ok=True)
     return create_git_repository_mocker(repo_path)
 
 
@@ -136,40 +246,42 @@ def git_command_simulator():
 
 
 @pytest.fixture
-def git_environment_isolator(tmp_path):
-    """Pytest fixture for Git environment isolation.
+def git_environment_isolator(isolated_test_context):
+    """Pytest fixture for Git environment isolation with context.
 
     Args:
-        tmp_path: pytest tmp_path fixture
+        isolated_test_context: Isolated SpecContext fixture
 
     Returns:
-        GitEnvironmentIsolator instance for testing
+        GitEnvironmentIsolator instance configured with context paths
     """
-    spec_dir = tmp_path / ".spec"
-    specs_dir = tmp_path / ".specs"
+    settings = isolated_test_context.settings
+    spec_dir = settings.root_path / settings.spec_dir
+    specs_dir = settings.root_path / settings.specs_dir
     return create_git_environment_isolator(spec_dir, specs_dir)
 
 
 @pytest.fixture
-def mock_git_environment(tmp_path):
-    """Pytest fixture for complete Git environment mocking.
+def mock_git_environment(isolated_test_context):
+    """Pytest fixture for complete Git environment mocking with context.
 
     Combines repository mocking, command simulation, and environment isolation
-    for comprehensive Git testing.
+    for comprehensive Git testing using context-based configuration.
 
     Args:
-        tmp_path: pytest tmp_path fixture
+        isolated_test_context: Isolated SpecContext fixture
 
     Returns:
-        Dictionary with 'repository', 'simulator', and 'isolator' keys
+        Dictionary with 'repository', 'simulator', 'isolator', and 'context' keys
     """
-    repo_path = tmp_path / "test_repo"
-    repo_path.mkdir()
+    settings = isolated_test_context.settings
+    repo_path = settings.root_path / "test_repo"
+    repo_path.mkdir(exist_ok=True)
 
     repository = create_git_repository_mocker(repo_path)
     simulator = create_git_command_simulator()
     isolator = create_git_environment_isolator(
-        repo_path / ".spec", repo_path / ".specs"
+        settings.root_path / settings.spec_dir, settings.root_path / settings.specs_dir
     )
 
     # Set up simulator with repository as default
@@ -180,6 +292,7 @@ def mock_git_environment(tmp_path):
         "simulator": simulator,
         "isolator": isolator,
         "repo_path": repo_path,
+        "context": isolated_test_context,
     }
 
 
