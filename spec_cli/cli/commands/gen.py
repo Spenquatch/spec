@@ -1,7 +1,12 @@
 """Spec gen command implementation."""
 
+from typing import cast
+
 import click
 
+from ...config.settings import SpecSettings
+from ...core.context import SpecContext
+from ..decorators import context_injection
 from ..options import dry_run_option, files_argument, force_option, spec_command
 from ..utils import validate_file_paths
 from .gen_command import GenCommand
@@ -28,7 +33,9 @@ from .gen_command import GenCommand
 )
 @force_option
 @dry_run_option
+@context_injection
 def gen_command(
+    context: SpecContext,
     debug: bool,
     verbose: bool,
     files: tuple[str, ...],
@@ -46,6 +53,19 @@ def gen_command(
     source files using the selected template. Files can be individual source
     files or directories containing source files.
 
+    Args:
+        context: SpecContext with settings, console, and progress dependencies
+        debug: Debug mode flag
+        verbose: Verbose mode flag
+        files: File paths to generate documentation for
+        template: Template to use for generation
+        conflict_strategy: How to handle existing spec files
+        commit: Automatically commit generated files
+        message: Commit message (implies commit)
+        interactive: Enable interactive prompts for configuration
+        force: Force generation despite warnings
+        dry_run: Preview what would be generated without doing it
+
     Examples:
         spec gen src/main.py                    # Generate for single file
         spec gen src/ --template comprehensive  # Generate for directory
@@ -60,7 +80,7 @@ def gen_command(
             raise click.BadParameter("No valid source files provided")
 
         # Create and execute command
-        command = GenCommand()
+        command = GenCommand(settings=cast(SpecSettings, context.settings))
         result = command.safe_execute(
             files=source_files,
             template=template,
