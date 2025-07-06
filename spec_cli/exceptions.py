@@ -175,6 +175,14 @@ class CompatibilityError(SpecError):
         return f"Compatibility wrapper failed: {self.message}"
 
 
+class InfrastructureRemovalError(SpecError):
+    """Raised when infrastructure removal operations fail."""
+
+    def get_user_message(self) -> str:
+        """Get user-friendly error message for InfrastructureRemovalError."""
+        return f"Infrastructure removal failed: {self.message}"
+
+
 # Convenience function for creating errors with context
 def create_spec_error(
     error_type: type, message: str, **context_kwargs: Any
