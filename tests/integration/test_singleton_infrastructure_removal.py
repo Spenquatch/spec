@@ -41,7 +41,7 @@ from typing import Any, cast
 
 class CompatibilityLayer:
     """Central compatibility layer managing singleton to DI migration."""
-    
+
     def __init__(self) -> None:
         self._wrappers: dict[str, Any] = {}
         self._lock = threading.Lock()
@@ -215,11 +215,11 @@ class TestSingletonInfrastructureRemoval:
             from spec_cli.utils.singleton import SingletonMeta
             import spec_cli.core.compatibility as compat
             from ..core.compatibility import CompatibilityLayer
-            
+
             # Usage patterns
             class MyClass(metaclass=SingletonMeta):
                 pass
-                
+
             layer = compat.CompatibilityLayer()
             '''
 

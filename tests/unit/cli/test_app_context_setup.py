@@ -67,7 +67,7 @@ class TestCLIAppContextSetup:
         """Test CLI app provides context to all registered commands."""
         # Setup: Create CLI app and get context
         cli_app = create_cli_app(tmp_path)
-        runner = CliRunner()
+        CliRunner()
 
         # Action: Get list of commands
         commands = list(cli_app.commands.keys())

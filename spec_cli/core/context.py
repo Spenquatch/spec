@@ -445,7 +445,7 @@ class SpecContext:
             )
 
             # Validate inputs using factory utils
-            validated_inputs = validate_factory_inputs(
+            validate_factory_inputs(
                 factory_type="cli_context",
                 environment="cli",
                 **overrides,

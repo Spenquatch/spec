@@ -2,11 +2,11 @@
 
 def calculate_sum(a: int, b: int) -> int:
     """Calculate the sum of two numbers.
-    
+
     Args:
         a: First number
         b: Second number
-        
+
     Returns:
         Sum of a and b
     """
