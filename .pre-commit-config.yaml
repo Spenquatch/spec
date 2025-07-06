@@ -1,6 +1,15 @@
 repos:
 - repo: local
   hooks:
+  - id: singleton-detection
+    name: Singleton Pattern Detection
+    entry: python scripts/check_singletons.py
+    language: system
+    files: ^spec_cli/.*\.py$
+    description: 'Detect singleton patterns in Python code'
+    pass_filenames: true
+    require_serial: false
+    additional_dependencies: []
   - id: sync-pre-commit-deps
     name: Sync pre-commit dependencies with poetry
     entry: python scripts/sync-pre-commit.py --quiet
