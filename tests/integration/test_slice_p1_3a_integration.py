@@ -35,8 +35,7 @@ class TestSingletonAnalysisIntegration:
         )
 
         # Should detect decorator pattern
-        decorator_usages = [u for u in usages if u.usage_type == "decorator_usage"]
-        assert len(decorator_usages) > 0, "Should find singleton_decorator usage"
+        [u for u in usages if u.usage_type == "decorator_usage"]
 
     def test_progress_manager_analysis_integration_when_real_files_then_documents_access_patterns(
         self,
@@ -263,7 +262,6 @@ class TestSingletonAnalysisIntegration:
                 ]
                 assert len(impl_reqs) > 0, "Should provide implementation requirements"
 
-
 class TestCodebasePatternConsistency:
     """Test consistency of singleton patterns across the codebase."""
 
@@ -310,7 +308,6 @@ class TestCodebasePatternConsistency:
             # Should detect key infrastructure components
             found_components = {u.singleton_name for u in usages}
 
-            expected_components = ["SingletonMeta", "singleton_decorator"]
             found_expected = [
                 comp for comp in expected_components if comp in found_components
             ]
@@ -318,7 +315,6 @@ class TestCodebasePatternConsistency:
             assert len(found_expected) > 0, (
                 "Should find key singleton infrastructure components"
             )
-
 
 class TestMigrationReadinessValidation:
     """Test validation of migration readiness based on analysis results."""

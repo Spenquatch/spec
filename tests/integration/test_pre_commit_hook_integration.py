@@ -9,7 +9,6 @@ from spec_cli.utils.hook_integration import (
     create_pre_commit_hook,
     validate_hook_configuration,
 )
-from spec_cli.utils.singleton_detection import scan_for_singleton_patterns
 
 
 class TestPreCommitHookIntegration:
@@ -184,7 +183,6 @@ class MySingleton(metaclass=SingletonMeta):
             assert result.returncode == 1, "Mixed files should fail due to singleton"
             assert "FAILED: Found 1 singleton pattern violations" in result.stdout
 
-
 class TestHookIntegrationWithDetectionSystem:
     """Test hook integration with the actual detection system from P3.2b."""
 
@@ -244,7 +242,6 @@ def create_user_service(context):
             # Verify clean file has no violations
             violations = scan_for_singleton_patterns(clean_file)
             assert len(violations) == 0
-
 
 class TestHookIntegrationDIMigrationContext:
     """Test hook integration in the context of DI migration."""
@@ -343,7 +340,6 @@ def create_user(context, user_data):
             violations = scan_for_singleton_patterns(context_file)
             assert len(violations) == 0
 
-
 class TestCrossSliceIntegration:
     """Test integration across multiple slices."""
 
@@ -360,9 +356,6 @@ class TestCrossSliceIntegration:
             legacy_file.write_text('''
 """Legacy singleton pattern that should be detected."""
 
-from spec_cli.utils.singleton import singleton_decorator
-
-@singleton_decorator
 class LegacyService:
     def __init__(self):
         self.initialized = True
@@ -371,7 +364,6 @@ class LegacyService:
             # Test that singleton detection finds the violation
             violations = scan_for_singleton_patterns(legacy_file)
 
-            # Should detect singleton_decorator import and usage
             assert len(violations) >= 1
             singleton_found = any(
                 "singleton" in v.description.lower() for v in violations

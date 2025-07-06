@@ -38,7 +38,6 @@ def isolate_working_directory():
         if os.getcwd() != original_cwd:  # +0 (condition in finally)
             os.chdir(original_cwd)
 
-
 @pytest.fixture(autouse=True)
 def isolate_environment_variables():
     """Isolate environment variables between tests.
@@ -77,7 +76,6 @@ def isolate_environment_variables():
                 os.environ[key] = value
             elif key in os.environ:
                 del os.environ[key]
-
 
 @pytest.fixture(autouse=True)
 def clean_mock_state():
@@ -119,9 +117,7 @@ def clean_mock_state():
                 if mod in sys.modules:
                     del sys.modules[mod]
 
-
 # Context-Based Fixtures for Dependency Injection
-
 
 @pytest.fixture
 def spec_context():
@@ -135,7 +131,6 @@ def spec_context():
     """
     return SpecContext.create_for_testing()
 
-
 @pytest.fixture
 def mock_spec_settings(spec_context):
     """Mock settings for test isolation.
@@ -147,7 +142,6 @@ def mock_spec_settings(spec_context):
         Mock settings instance from context
     """
     return spec_context.settings
-
 
 @pytest.fixture
 def mock_spec_console(spec_context):
@@ -161,7 +155,6 @@ def mock_spec_console(spec_context):
     """
     return spec_context.console
 
-
 @pytest.fixture
 def mock_spec_progress(spec_context):
     """Mock progress manager for test isolation.
@@ -173,7 +166,6 @@ def mock_spec_progress(spec_context):
         Mock progress instance from context
     """
     return spec_context.progress
-
 
 @pytest.fixture
 def isolated_test_context(tmp_path):
@@ -197,7 +189,6 @@ def isolated_test_context(tmp_path):
         }
     )
 
-
 @pytest.fixture
 def debug_test_context(tmp_path):
     """Debug-enabled test context for testing debug functionality.
@@ -216,9 +207,7 @@ def debug_test_context(tmp_path):
         }
     )
 
-
 # Git Test Fixtures (Updated for Context Integration)
-
 
 @pytest.fixture
 def git_test_repository(isolated_test_context):
@@ -234,7 +223,6 @@ def git_test_repository(isolated_test_context):
     repo_path.mkdir(exist_ok=True)
     return create_git_repository_mocker(repo_path)
 
-
 @pytest.fixture
 def git_command_simulator():
     """Pytest fixture for Git command simulation.
@@ -243,7 +231,6 @@ def git_command_simulator():
         GitCommandSimulator instance for testing
     """
     return create_git_command_simulator()
-
 
 @pytest.fixture
 def git_environment_isolator(isolated_test_context):
@@ -259,7 +246,6 @@ def git_environment_isolator(isolated_test_context):
     spec_dir = settings.root_path / settings.spec_dir
     specs_dir = settings.root_path / settings.specs_dir
     return create_git_environment_isolator(spec_dir, specs_dir)
-
 
 @pytest.fixture
 def mock_git_environment(isolated_test_context):
@@ -294,7 +280,6 @@ def mock_git_environment(isolated_test_context):
         "repo_path": repo_path,
         "context": isolated_test_context,
     }
-
 
 @pytest.fixture
 def sample_git_repository(git_test_repository):

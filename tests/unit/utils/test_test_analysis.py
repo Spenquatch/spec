@@ -11,9 +11,9 @@ from unittest.mock import Mock, patch
 import pytest
 
 from spec_cli.utils.test_analysis import (
+    FixtureAnalysisError,
+    FixtureAnalysisReport,
     FixtureInfo,
-    TestAnalysisError,
-    TestFixtureReport,
     analyze_test_fixtures,
     identify_singleton_dependencies,
 )
@@ -24,7 +24,6 @@ SAMPLE_FIXTURE_COUNT = 3
 SINGLETON_DEPENDENCY_COUNT = 2
 ISOLATION_ISSUE_COUNT = 1
 EMPTY_FIXTURE_COUNT = 0
-
 
 class TestAnalyzeTestFixtures:
     """Unit tests for analyze_test_fixtures function."""
@@ -105,7 +104,7 @@ def test_simple():
         """Test fixture analysis raises error when directory doesn't exist."""
         non_existent_path = Path("/non/existent/directory")
 
-        with pytest.raises(TestAnalysisError) as exc_info:
+        with pytest.raises(FixtureAnalysisError) as exc_info:
             analyze_test_fixtures(non_existent_path)
 
         assert "does not exist" in str(exc_info.value)
@@ -118,7 +117,7 @@ def test_simple():
         file_path = tmp_path / "not_a_directory.py"
         file_path.write_text("# This is a file")
 
-        with pytest.raises(TestAnalysisError) as exc_info:
+        with pytest.raises(FixtureAnalysisError) as exc_info:
             analyze_test_fixtures(file_path)
 
         assert "not a directory" in str(exc_info.value)
@@ -126,7 +125,7 @@ def test_simple():
     def test_analyze_test_fixtures_when_analysis_fails_then_raises_test_analysis_error(
         self, tmp_path
     ):
-        """Test fixture analysis raises TestAnalysisError when analysis fails."""
+        """Test fixture analysis raises FixtureAnalysisError when analysis fails."""
         # Setup: Create invalid Python file
         invalid_file = tmp_path / "conftest.py"
         invalid_file.write_text("invalid python syntax {{{")
@@ -134,7 +133,7 @@ def test_simple():
         # Execute and verify: Analysis should handle parsing errors gracefully
         # but still return a report (files with parse errors are skipped)
         report = analyze_test_fixtures(tmp_path)
-        assert isinstance(report, TestFixtureReport)
+        assert isinstance(report, FixtureAnalysisReport)
 
     def test_analyze_test_fixtures_when_state_contamination_found_then_identifies_isolation_issues(
         self, tmp_path
@@ -189,7 +188,7 @@ def console_fixture():
 
 @pytest.fixture
 def singleton_fixture():
-    @singleton_decorator
+
     class TestClass:
         pass
     return TestClass()
@@ -216,7 +215,6 @@ def singleton_fixture():
             assert "context.settings" in settings_req
         if console_req:
             assert "context.console" in console_req
-
 
 class TestIdentifySingletonDependencies:
     """Unit tests for identify_singleton_dependencies function."""
@@ -334,11 +332,10 @@ def clean_fixture():
             patch("spec_cli.utils.test_analysis.Path.exists", return_value=True),
             patch("spec_cli.utils.test_analysis.Path.read_text", side_effect=OSError("Read error")),
         ):
-            with pytest.raises(TestAnalysisError) as exc_info:
+            with pytest.raises(FixtureAnalysisError) as exc_info:
                 identify_singleton_dependencies(fixture_func)
 
             assert "Failed to analyze fixture function" in str(exc_info.value)
-
 
 class TestFixtureInfo:
     """Unit tests for FixtureInfo dataclass."""
@@ -362,14 +359,13 @@ class TestFixtureInfo:
         assert fixture_info.state_contamination_risk is False
         assert fixture_info.context_migration_required is False
 
-
-class TestTestFixtureReport:
-    """Unit tests for TestFixtureReport dataclass."""
+class TestFixtureAnalysisReport:
+    """Unit tests for FixtureAnalysisReport dataclass."""
 
     def test_test_fixture_report_when_created_then_has_expected_defaults(self):
-        """Test TestFixtureReport dataclass has expected default values."""
+        """Test FixtureAnalysisReport dataclass has expected default values."""
         # Execute: Create report
-        report = TestFixtureReport()
+        report = FixtureAnalysisReport()
 
         # Verify: Default values set correctly
         assert report.total_fixtures == EMPTY_FIXTURE_COUNT

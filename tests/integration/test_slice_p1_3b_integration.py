@@ -11,12 +11,14 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from spec_cli.core.compatibility import (
-    CompatibilityLayer,
-    get_progress_manager_compatibility,
-)
+# DEPRECATED: Compatibility layer was removed as part of singleton elimination (P3.2a)
+# These tests need to be updated to test context-based patterns instead
+# from spec_cli.core.compatibility import (
+#     CompatibilityLayer,
+#     get_progress_manager_compatibility,
+# )
 
-
+@pytest.mark.skip(reason="Compatibility layer removed in P3.2a - singleton elimination complete")
 class TestCompatibilityWrapperIntegration:
     """Test compatibility wrapper integration with real singleton usage patterns."""
 
@@ -183,7 +185,7 @@ class TestCompatibilityWrapperIntegration:
         with patch(
             "spec_cli.ui.progress_manager.ProgressManagerSingleton", StatefulSingleton
         ):
-            with patch("spec_cli.utils.singleton.reset_singleton") as mock_reset:
+
                 wrapper = self.layer.get_progress_manager_wrapper()
 
                 # Modify singleton state through wrapper
@@ -284,7 +286,6 @@ class TestCompatibilityWrapperIntegration:
             final_count = wrapper.increment()
             assert final_count == 16  # Previous 15 + 1
 
-
 class TestP1_3bToPhase2CompatibilityBridge:
     """Test compatibility wrapper provides bridge for Phase 2 CLI integration."""
 
@@ -328,7 +329,6 @@ class TestP1_3bToPhase2CompatibilityBridge:
             # Verify the call was delegated properly
             # This shows the bridge is ready for Phase 2 DI integration
 
-
 class TestCompatibilityWrapperImplementsP1_3aRequirements:
     """Test wrapper implementation satisfies P1.3a compatibility requirements."""
 
@@ -356,7 +356,7 @@ class TestCompatibilityWrapperImplementsP1_3aRequirements:
             "spec_cli.ui.progress_manager.ProgressManagerSingleton",
             P1_3aCompliantSingleton,
         ):
-            with patch("spec_cli.utils.singleton.reset_singleton") as mock_reset:
+
                 layer = CompatibilityLayer()
                 wrapper = layer.get_progress_manager_wrapper()
 
@@ -391,7 +391,6 @@ class TestCompatibilityWrapperImplementsP1_3aRequirements:
                 # Both should provide similar interface
                 assert hasattr(direct_manager, "__class__")
                 assert hasattr(wrapper_manager, "__class__")
-
 
 class TestDIMigrationContext:
     """Test compatibility wrapper supports migration from singleton to context patterns."""

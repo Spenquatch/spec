@@ -28,7 +28,6 @@ class SingletonMeta(type):
     """Metaclass-based singleton implementation."""
     pass
 
-def singleton_decorator(cls: type[T]) -> type[T]:
     """Thread-safe singleton decorator."""
     pass
 '''
@@ -58,7 +57,6 @@ class ProgressManagerWrapper:
 REFERENCING_CODE = '''
 """File that references removed modules."""
 
-from spec_cli.utils.singleton import SingletonMeta, singleton_decorator
 from spec_cli.core.compatibility import CompatibilityLayer
 
 def test_function():
@@ -77,7 +75,6 @@ def test_function():
     """Function that doesn't use singleton infrastructure."""
     pass
 '''
-
 
 class TestSingletonInfrastructureRemoval:
     """Integration test for complete singleton infrastructure removal."""
@@ -212,7 +209,7 @@ class TestSingletonInfrastructureRemoval:
             # Create files with various reference patterns
             complex_refs_code = '''
             # Various import patterns
-            from spec_cli.utils.singleton import SingletonMeta
+
             import spec_cli.core.compatibility as compat
             from ..core.compatibility import CompatibilityLayer
 

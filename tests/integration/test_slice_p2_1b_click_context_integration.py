@@ -24,7 +24,6 @@ from spec_cli.utils.click_utils import retrieve_context_data, store_context_data
 # Test constants
 INTEGRATION_CONFIG = {"integration_test": True, "environment": "testing", "debug": True}
 
-
 @pytest.fixture
 def mock_spec_context():
     """Create a mock SpecContext for integration testing."""
@@ -32,7 +31,6 @@ def mock_spec_context():
     console = SpecConsoleInterface()
     progress = SpecProgressInterface()
     return SpecContext(settings=settings, console=console, progress=progress)
-
 
 class TestClickContextIntegrationEndToEnd:
     """Test Click context integration with real CLI command scenarios."""
@@ -278,7 +276,6 @@ class TestClickContextIntegrationEndToEnd:
         assert len(results) == 5
         assert set(results) == {0, 1, 2, 3, 4}
 
-
 class TestCrossSliceIntegration:
     """Test integration requirements for future slices."""
 
@@ -354,7 +351,6 @@ class TestCrossSliceIntegration:
         teardown_dependency_injection_context(ctx)
         keys = get_context_keys(ctx)
         assert len(keys) == 0  # All spec data should be cleared
-
 
 class TestDependencyInjectionMigrationContext:
     """Test Click integration supports dependency injection migration patterns."""

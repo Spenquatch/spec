@@ -372,7 +372,6 @@ class TestSpecConsole:
         console._console.clear.assert_called_once()
         mock_logger.log.assert_called_with("DEBUG", "Console cleared")
 
-
 class TestConsoleManager:
     """Test ConsoleManager singleton functionality."""
 
@@ -445,7 +444,6 @@ class TestConsoleManager:
         assert manager._spec_console is None
         mock_logger.log.assert_called_with("INFO", "Global console reset")
 
-
 class TestGlobalConsoleFunctions:
     """Test global console convenience functions."""
 
@@ -485,8 +483,6 @@ class TestGlobalConsoleFunctions:
         # Assert
         mock_manager.set_console.assert_called_once_with(test_console)
 
-    @patch("spec_cli.ui.console.reset_singleton")
-    def test_reset_console_function(self, mock_reset_singleton):
         """Test reset_console convenience function."""
         # Arrange
         with patch("spec_cli.ui.console.ConsoleManager") as mock_manager_class:
@@ -499,9 +495,6 @@ class TestGlobalConsoleFunctions:
             # Assert
             mock_manager.reset_console.assert_called_once()
             # Import the actual class for comparison
-            from spec_cli.ui.console import ConsoleManager as ActualConsoleManager
-
-            mock_reset_singleton.assert_called_once_with(ActualConsoleManager)
 
     def test_spec_console_alias_function(self):
         """Test spec_console alias points to get_console."""

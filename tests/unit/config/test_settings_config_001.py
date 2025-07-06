@@ -143,7 +143,6 @@ class TestConfigurationScenarios:
         # Verify large width is accepted
         assert settings.console_width == 2000
 
-
 class TestEnvironmentTesting:
     """Test environment variable parsing and behavior."""
 
@@ -247,7 +246,6 @@ class TestEnvironmentTesting:
             settings = SpecSettings(root_path=tmp_path)
             assert settings.console_width is None
             # Empty string might not trigger warning, so don't assert it
-
 
 class TestIntegrationScenarios:
     """Test integration scenarios between components."""
@@ -356,7 +354,6 @@ class TestIntegrationScenarios:
         assert settings.template_file.parent == settings.root_path
         assert settings.gitignore_file.parent == settings.root_path
 
-
 class TestPermissionAndInitializationScenarios:
     """Test permission validation and initialization scenarios."""
 
@@ -450,7 +447,6 @@ class TestPermissionAndInitializationScenarios:
         error_str = str(exc_info.value)
         assert "No write permission" in error_str
         assert str(settings.specs_dir) in error_str
-
 
 class TestComplexIntegrationWorkflows:
     """Test complex integration workflows and real-world scenarios."""

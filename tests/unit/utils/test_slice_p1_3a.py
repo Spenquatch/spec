@@ -53,7 +53,6 @@ class ProgressManagerSingleton:
 def get_progress_manager():
     return ProgressManagerSingleton().get_progress_manager()
 
-@singleton_decorator
 class ServiceClass:
     pass
 """)
@@ -156,7 +155,6 @@ get_progress_manager()
 
         assert result == []
 
-
 class TestDocumentAccessPatterns:
     """Test document_access_patterns function for access pattern analysis."""
 
@@ -243,7 +241,6 @@ class TestDocumentAccessPatterns:
         ]
         assert len(progress_requirements) > 0
 
-
 class TestSingletonMetaclassAnalysis:
     """Test singleton metaclass analysis and behavior documentation."""
 
@@ -311,7 +308,7 @@ class MyService(metaclass=SingletonMeta):
                 line_number=20,
                 usage_type="reset_function",
                 singleton_name="ProgressManagerSingleton",
-                context="reset_singleton(ProgressManagerSingleton)",
+
             ),
             SingletonUsage(
                 file_path=Path("utils.py"),
@@ -349,7 +346,6 @@ class MyService(metaclass=SingletonMeta):
             "ProgressManager specific requirements should be included"
         )
 
-
 class TestPatternAnalysisErrorHandling:
     """Test error handling in pattern analysis functionality."""
 
@@ -384,7 +380,6 @@ class TestPatternAnalysisErrorHandling:
             assert str(test_file) in str(exc_info.value)
             assert "Access denied" in str(exc_info.value)
 
-
 class TestCrossPlatformSupport:
     """Test cross-platform compatibility for pattern analysis."""
 
@@ -416,7 +411,6 @@ manager = ProgressManagerSingleton()
             assert isinstance(usage.file_path, Path)
             assert usage.file_path == test_file
 
-
 class TestIntegrationWithExistingCode:
     """Test integration of pattern analysis with existing codebase patterns."""
 
@@ -433,7 +427,6 @@ from spec_cli.ui.progress_manager import (
     set_progress_manager,
     reset_progress_manager
 )
-from spec_cli.utils.singleton import reset_singleton
 
 class WorkflowManager:
     def __init__(self):
@@ -445,7 +438,6 @@ class WorkflowManager:
 
     def cleanup(self):
         reset_progress_manager()
-        reset_singleton(ProgressManagerSingleton)
 
 def setup_custom_progress():
     custom_manager = CustomProgressManager()

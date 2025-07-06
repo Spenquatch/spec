@@ -96,7 +96,6 @@ class TestProgressState:
         assert elapsed is not None
         assert 4.5 <= elapsed <= 5.5  # Allow for timing variations
 
-
 class TestProgressManagerInitialization:
     """Test ProgressManager initialization and configuration."""
 
@@ -173,7 +172,6 @@ class TestProgressManagerInitialization:
         }
 
         assert set(manager._event_handlers.keys()) == expected_events
-
 
 class TestProgressManagerEventHandling:
     """Test ProgressManager event handling functionality."""
@@ -278,7 +276,6 @@ class TestProgressManagerEventHandling:
         self.manager.progress_bar.start.assert_not_called()
         self.manager.progress_bar.add_task.assert_not_called()
 
-
 class TestProgressManagerOperations:
     """Test ProgressManager operation management."""
 
@@ -367,7 +364,6 @@ class TestProgressManagerOperations:
         self.manager.spinner_manager.stop_all.assert_called_once()
         self.manager.progress_bar.stop.assert_called_once()
 
-
 class TestProgressManagerEventHandlers:
     """Test specific progress event handler methods."""
 
@@ -427,7 +423,6 @@ class TestProgressManagerEventHandlers:
         )
 
         assert result is False
-
 
 class TestProgressManagerSingleton:
     """Test ProgressManagerSingleton functionality."""
@@ -497,7 +492,6 @@ class TestProgressManagerSingleton:
         # Verify manager was reset
         assert singleton._progress_manager is None
 
-
 class TestConvenienceFunctions:
     """Test module-level convenience functions."""
 
@@ -531,8 +525,6 @@ class TestConvenienceFunctions:
         mock_singleton_class.assert_called_once()
         mock_singleton.set_progress_manager.assert_called_once_with(custom_manager)
 
-    @patch("spec_cli.ui.progress_manager.reset_singleton")
-    def test_reset_progress_manager_function(self, mock_reset_singleton):
         """Test reset_progress_manager convenience function."""
         # Mock the ProgressManagerSingleton class itself
         with patch(
@@ -546,8 +538,6 @@ class TestConvenienceFunctions:
             mock_singleton_class.assert_called_once()
             mock_singleton.reset.assert_called_once()
             # The actual class will be passed, not the mock
-            mock_reset_singleton.assert_called_once()
-
 
 class TestProgressManagerPrivateMethods:
     """Test ProgressManager private helper methods."""

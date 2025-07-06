@@ -32,7 +32,6 @@ class TestHookIntegrationError:
         assert str(error) == message
         assert error.hook_config == config
 
-
 class TestCreatePreCommitHook:
     """Test create_pre_commit_hook function."""
 
@@ -71,7 +70,6 @@ class TestCreatePreCommitHook:
         assert "Detection tool not found" in str(exc_info.value)
         assert exc_info.value.hook_config is not None
         assert "tool_path" in exc_info.value.hook_config
-
 
 class TestValidateHookConfiguration:
     """Test validate_hook_configuration function."""
@@ -197,7 +195,6 @@ class TestValidateHookConfiguration:
         result = validate_hook_configuration(config)
         assert result is False
 
-
 class TestGetSingletonDetectionHook:
     """Test get_singleton_detection_hook function."""
 
@@ -213,7 +210,6 @@ class TestGetSingletonDetectionHook:
         assert "^spec_cli/.*\\.py$" in hook.hook_files
         assert hook.hook_language == "system"
         assert "check_singletons.py" in hook.hook_entry
-
 
 class TestCreateHookScript:
     """Test create_hook_script function."""
@@ -248,7 +244,7 @@ class TestCreateHookScript:
 
         # Check for import error handling
         assert "except ImportError as e:" in script
-        assert "Cannot import singleton detection" in script
+        assert "Cannot import module" in script
 
         # Check for file checking logic
         assert "Only check Python files" in script
@@ -274,7 +270,6 @@ class TestCreateHookScript:
         assert "except Exception as e:" in script
         assert "ERROR checking" in script
 
-
 class TestHookIntegration:
     """Test HookIntegration dataclass."""
 
@@ -293,7 +288,6 @@ class TestHookIntegration:
         assert hook.hook_files == "*.py"
         assert hook.hook_language == "system"
         assert hook.hook_entry == "python test.py"
-
 
 class TestHookIntegrationErrorHandling:
     """Test error handling scenarios in hook integration."""
@@ -319,7 +313,6 @@ class TestHookIntegrationErrorHandling:
 
         with pytest.raises(HookIntegrationError):
             create_pre_commit_hook(None)
-
 
 class TestHookExecutionScenarios:
     """Test hook execution scenarios."""

@@ -226,7 +226,6 @@ class TestSpecSettings:
         assert "No write permission" in str(exc_info.value)
         assert str(settings.specs_dir) in str(exc_info.value)
 
-
 class TestSettingsManager:
     """Unit tests for SettingsManager singleton."""
 
@@ -328,7 +327,6 @@ class TestSettingsManager:
         assert settings1 is not settings2
         assert console1 is not console2
 
-
 class TestConvenienceFunctions:
     """Unit tests for convenience functions."""
 
@@ -381,7 +379,6 @@ class TestConvenienceFunctions:
         assert settings is settings2
         assert console is console2
 
-
 class TestSpecTheme:
     """Unit tests for SPEC_THEME constant."""
 
@@ -416,7 +413,6 @@ class TestSpecTheme:
         assert "dim" in str(styles["debug"])
         assert "cyan" in str(styles["path"])
         assert "white" in str(styles["count"])
-
 
 class TestIntegration:
     """Integration tests for settings components."""

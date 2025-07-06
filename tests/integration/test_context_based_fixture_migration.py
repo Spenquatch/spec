@@ -322,7 +322,6 @@ class TestContextBasedFixtureMigration:
             result = validate_test_isolation(mock_context_test)
             assert result is False
 
-
 # Test constants for magic number elimination
 MINIMUM_HASH_LENGTH = 8
 TEST_CONTEXT_COUNT = 5

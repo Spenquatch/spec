@@ -20,7 +20,6 @@ REAL_CLI_COMMANDS = [
     "show_command",
 ]
 
-
 class TestCommandAnalysisIntegration:
     """Integration tests for command analysis with real CLI structure."""
 

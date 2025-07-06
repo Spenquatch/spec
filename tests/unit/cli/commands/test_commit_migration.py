@@ -15,7 +15,6 @@ TEST_COMMIT_HASH = "abc12345"
 TEST_FILE_PATH = ".specs/test.md"
 EXPECTED_CONTEXT_TYPES = ["SpecContext", "Mock"]
 
-
 # Fixtures
 @pytest.fixture
 def mock_context():
@@ -33,7 +32,6 @@ def mock_context():
 
     return context
 
-
 @pytest.fixture
 def mock_repo():
     """Create mock repository for testing."""
@@ -48,7 +46,6 @@ def mock_repo():
     repo.amend_commit.return_value = TEST_COMMIT_HASH
     return repo
 
-
 @pytest.fixture
 def mock_repo_empty():
     """Create mock repository with no staged changes."""
@@ -61,7 +58,6 @@ def mock_repo_empty():
     }
     return repo
 
-
 @pytest.fixture
 def mock_repo_modified():
     """Create mock repository with modified files."""
@@ -73,7 +69,6 @@ def mock_repo_modified():
         "deleted": [],
     }
     return repo
-
 
 class TestCommitCommandContextInjection:
     """Test context injection decorator application."""
@@ -236,7 +231,6 @@ class TestCommitCommandContextInjection:
                 commit_command.callback(
                     False, False, TEST_COMMIT_MESSAGE, False, False, False
                 )
-
 
 class TestCommitCommandContextBehavior:
     """Test commit command behavior with context injection."""

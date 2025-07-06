@@ -19,7 +19,6 @@ DEFAULT_CONFLICT_STRATEGY = "backup"
 TEST_CONTEXT_SETTINGS_TYPE = "TestSpecSettings"
 TEST_GENERATED_FILES = ["index.md", "history.md"]
 
-
 class TestGenCommandMigration:
     """Test gen command migration to context injection pattern."""
 
@@ -290,7 +289,6 @@ class TestGenCommandMigration:
                 or "Context not available" in str(result.exception)
             )
 
-
 class TestGenCommandParameterValidation:
     """Test parameter validation in migrated gen command."""
 
@@ -354,7 +352,6 @@ class TestGenCommandParameterValidation:
             # Verify error handling
             assert result.exit_code != 0
             assert "Generation failed" in result.output
-
 
 class TestGenCommandConflictStrategyHandling:
     """Test conflict strategy parameter handling in migrated command."""

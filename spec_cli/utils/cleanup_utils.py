@@ -77,7 +77,6 @@ def safe_file_removal(file_path: Path) -> bool:
             f"Failed to remove file {file_path}: {e}", error_context
         ) from e
 
-
 def validate_no_references(codebase_path: Path, removed_modules: list[str]) -> list[str]:
     """Validate no remaining references to removed modules exist in codebase.
 
@@ -199,7 +198,6 @@ def validate_no_references(codebase_path: Path, removed_modules: list[str]) -> l
             f"Reference validation failed: {e}", error_context
         ) from e
 
-
 def cleanup_singleton_infrastructure(codebase_path: Path) -> list[str]:
     """Remove singleton infrastructure files from codebase.
 
@@ -260,7 +258,6 @@ def cleanup_singleton_infrastructure(codebase_path: Path) -> list[str]:
         raise InfrastructureRemovalError(
             f"Singleton infrastructure cleanup failed: {e}", error_context
         ) from e
-
 
 def cleanup_compatibility_layer(codebase_path: Path) -> list[str]:
     """Remove compatibility layer files from codebase.

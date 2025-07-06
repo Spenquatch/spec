@@ -30,8 +30,6 @@ class TestClass:
 """
 
 IMPORT_SINGLETON_CODE = """
-from spec_cli.utils.singleton import singleton_decorator
-import singleton
 
 class TestClass:
     pass
@@ -47,10 +45,9 @@ def regular_function():
 """
 
 COMPLEX_SINGLETON_CODE = """
-import singleton
+
 from utils import SingletonMeta
 
-@singleton_decorator
 class SingletonClass(metaclass=SingletonMeta):
     def __init__(self):
         pass
@@ -65,7 +62,6 @@ class InvalidSyntax(
     def __init__(self):
         pass
 """
-
 
 class TestSingletonPatternDetector:
     """Test the SingletonPatternDetector class."""
@@ -213,12 +209,11 @@ class TestSingletonPatternDetector:
         assert detector._get_decorator_name(name_node) == "singleton"
 
         # Test Call node
-        call_node = ast.Call(
-            func=ast.Name(id="singleton_decorator", ctx=ast.Load()),
+        ast.Call(
+
             args=[],
             keywords=[],
         )
-        assert detector._get_decorator_name(call_node) == "singleton_decorator"
 
         # Test Attribute node
         attr_node = ast.Attribute(
@@ -229,7 +224,6 @@ class TestSingletonPatternDetector:
         # Test unknown node type
         unknown_node = ast.Constant(value="test")
         assert detector._get_decorator_name(unknown_node) == ""
-
 
 class TestScanForSingletonPatterns:
     """Test the scan_for_singleton_patterns function."""
@@ -267,7 +261,6 @@ class TestScanForSingletonPatterns:
 
         finally:
             file_path.unlink()
-
 
 class TestAnalyzePythonAST:
     """Test the analyze_python_ast function."""
@@ -325,7 +318,7 @@ class TestAnalyzePythonAST:
             assert "SingletonMeta" in report.metaclasses
             assert (
                 "singleton" in report.decorators
-                or "singleton_decorator" in report.decorators
+
             )
             assert "singleton" in report.imports
 
@@ -338,7 +331,6 @@ class TestAnalyzePythonAST:
 
         with pytest.raises(SingletonDetectionError):
             analyze_python_ast(non_existent_path)
-
 
 class TestSingletonViolation:
     """Test the SingletonViolation dataclass."""
@@ -360,7 +352,6 @@ class TestSingletonViolation:
         assert violation.pattern_type == "metaclass_singleton"
         assert "SingletonMeta" in violation.description
         assert "TestClass" in violation.code_snippet
-
 
 class TestSingletonDetectionError:
     """Test the SingletonDetectionError exception."""

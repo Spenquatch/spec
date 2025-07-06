@@ -14,7 +14,6 @@ from rich.theme import Theme
 from ..exceptions import SpecConfigurationError
 from ..logging.debug import debug_logger
 from ..utils.path_utils import normalize_path, resolve_project_root
-from ..utils.singleton import reset_singleton, singleton_decorator
 
 # Rich theme for consistent styling throughout the application
 SPEC_THEME = Theme(
@@ -28,7 +27,6 @@ SPEC_THEME = Theme(
         "count": "bold white",
     }
 )
-
 
 @dataclass
 class SpecSettings:
@@ -124,8 +122,6 @@ class SpecSettings:
                     {"directory": str(self.specs_dir), "permission": "write"},
                 )
 
-
-@singleton_decorator
 class SettingsManager:
     """Manages global settings and console instances."""
 
@@ -168,20 +164,16 @@ class SettingsManager:
         self._settings_instance = None
         self._console_instance = None
 
-
 # Convenience functions for getting settings and console
 def get_settings(root_path: Path | None = None) -> SpecSettings:
     """Get global settings instance."""
     return SettingsManager().get_settings(root_path)
 
-
 def get_console(root_path: Path | None = None) -> Console:
     """Get Rich console instance."""
     return SettingsManager().get_console(root_path)
-
 
 def reset_settings() -> None:
     """Reset settings manager for testing."""
     manager = SettingsManager()
     manager.reset()
-    reset_singleton(SettingsManager)

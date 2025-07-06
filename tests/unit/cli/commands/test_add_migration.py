@@ -21,7 +21,6 @@ def get_unwrapped_function(func):
         func = func.__wrapped__
     return func
 
-
 class TestAddCommandMigration:
     """Test add command migration to context injection."""
 
@@ -237,7 +236,6 @@ class TestAddCommandMigration:
                 dry_run=False,
             )
 
-
 class TestAddCommandContextUsage:
     """Test that add command properly uses context dependencies."""
 
@@ -313,7 +311,6 @@ class TestAddCommandContextUsage:
                 # Note: The AddCommand class may still use singletons internally
                 mock_get_settings.assert_not_called()
                 mock_get_console.assert_not_called()
-
 
 class TestAddCommandErrorHandling:
     """Test error handling in migrated add command."""

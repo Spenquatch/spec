@@ -24,7 +24,6 @@ from spec_cli.exceptions import SpecConfigurationError
 # Type: ignore for mypy on test methods to focus on coverage over typing
 # mypy: disable-error-code=no-untyped-def
 
-
 class TestSpecSettings:
     """Unit tests for SpecSettings dataclass."""
 
@@ -277,7 +276,6 @@ class TestSpecSettings:
             # Should not raise any exception
             settings.validate_permissions()
 
-
 class TestSettingsManager:
     """Unit tests for SettingsManager singleton."""
 
@@ -438,7 +436,6 @@ class TestSettingsManager:
         assert manager._settings_instance is None
         assert manager._console_instance is None
 
-
 class TestConvenienceFunctions:
     """Unit tests for convenience functions."""
 
@@ -477,9 +474,8 @@ class TestConvenienceFunctions:
         assert result == mock_console
         mock_manager.get_console.assert_called_once_with(self.test_root)
 
-    @patch("spec_cli.config.settings.reset_singleton")
     def test_reset_settings_function_calls_manager_and_singleton_reset(
-        self, mock_reset_singleton
+
     ):
         """Test reset_settings function calls both manager reset and singleton reset."""
         # Create a real manager to test the reset behavior
@@ -494,8 +490,6 @@ class TestConvenienceFunctions:
         assert manager._console_instance is None
 
         # Verify singleton reset was called
-        mock_reset_singleton.assert_called_once()
-
 
 class TestSpecTheme:
     """Unit tests for SPEC_THEME configuration."""

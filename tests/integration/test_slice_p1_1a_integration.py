@@ -26,7 +26,6 @@ EXPECTED_IMPORT_PATHS = {
     "console": "spec_cli.ui.console",
 }
 
-
 class TestDependencyAnalysisIntegration:
     """Integration tests for dependency analysis using real codebase."""
 

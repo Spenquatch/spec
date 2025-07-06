@@ -36,7 +36,6 @@ def test_function():
     return console
 """
 
-
 class TestCommandAnalysis:
     """Test command structure analysis functionality."""
 
@@ -208,7 +207,6 @@ def custom_command():
         assert len(command_patterns) >= 2  # command and spec_command
         assert len(group_patterns) >= 1  # group
 
-
 class TestCommandAnalysisHelpers:
     """Test helper functions for command analysis."""
 
@@ -298,7 +296,6 @@ def complex_command(debug: bool, verbose: bool, force: bool = False):
         assert command["type"] == "command"
         assert int(command["line"]) > 0
 
-
 class TestCommandAnalysisErrorHandling:
     """Test error handling in command analysis."""
 
@@ -336,7 +333,6 @@ class TestCommandAnalysisErrorHandling:
             # Cleanup: Restore permissions for cleanup
             protected_file.chmod(0o644)
 
-
 class TestCrossPlatformSupport:
     """Test cross-platform compatibility for command analysis."""
 
@@ -361,7 +357,6 @@ class TestCrossPlatformSupport:
         # Verify path normalization
         command_files = [cmd["file"] for cmd in result.commands]
         assert any("cross_platform.py" in file_path for file_path in command_files)
-
 
 class TestIntegrationWithExistingCode:
     """Test integration with existing codebase patterns."""
@@ -400,7 +395,6 @@ def command_{i}():
         singleton_classes = [usage.singleton_class for usage in result.singleton_usage]
         assert all(cls == "SpecGitRepository" for cls in singleton_classes)
 
-
 # Fixtures for test data
 @pytest.fixture
 def mock_cli_directory(tmp_path):
@@ -424,7 +418,6 @@ def init_command():
 
     return cli_dir
 
-
 @pytest.fixture
 def mock_command_file(tmp_path):
     """Create mock command file for testing."""
@@ -439,7 +432,6 @@ def test_command():
     return settings.get_value()
 """)
     return cmd_file
-
 
 @pytest.fixture
 def sample_singleton_patterns():

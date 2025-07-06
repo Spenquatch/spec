@@ -169,7 +169,6 @@ class TestAddCommandMigrationIntegration:
             mock_add_cmd_class.assert_called_once_with(settings=mock_context.settings)
             mock_status_cmd_class.assert_called_once_with(settings=mock_context.settings)
 
-
 class TestCrossSliceContextIntegration:
     """Test context integration across different command slices."""
 
@@ -250,7 +249,6 @@ class TestCrossSliceContextIntegration:
                 mock_get_settings.assert_not_called()
                 mock_get_console.assert_not_called()
                 mock_progress.assert_not_called()
-
 
 class TestAddCommandDecoratorCompatibility:
     """Test decorator compatibility and ordering."""

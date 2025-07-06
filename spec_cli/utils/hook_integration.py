@@ -18,7 +18,6 @@ class HookIntegrationError(SpecError):
         super().__init__(message)
         self.hook_config = hook_config
 
-
 @dataclass
 class HookIntegration:
     """Represents a pre-commit hook integration configuration."""
@@ -28,7 +27,6 @@ class HookIntegration:
     hook_files: str
     hook_language: str
     hook_entry: str
-
 
 def create_pre_commit_hook(detection_tool: Path) -> str:
     """Create pre-commit hook configuration for singleton detection.
@@ -72,7 +70,6 @@ def create_pre_commit_hook(detection_tool: Path) -> str:
 """
 
     return hook_config
-
 
 def validate_hook_configuration(hook_config: dict[str, Any]) -> bool:
     """Validate pre-commit hook configuration structure.
@@ -133,7 +130,6 @@ def validate_hook_configuration(hook_config: dict[str, Any]) -> bool:
 
     return True
 
-
 def get_singleton_detection_hook() -> HookIntegration:
     """Get the singleton detection hook integration configuration.
 
@@ -151,7 +147,6 @@ def get_singleton_detection_hook() -> HookIntegration:
         hook_language="system",
         hook_entry="python scripts/check_singletons.py",
     )
-
 
 def create_hook_script(detection_module_path: Path) -> str:
     """Create executable hook script for singleton detection.
@@ -187,11 +182,10 @@ project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
 try:
-    from spec_cli.utils.singleton_detection import scan_for_singleton_patterns
+    from spec_cli.utils.singleton_detection import SingletonPatternDetector
 except ImportError as e:
-    print(f"ERROR: Cannot import singleton detection: {e}")
+    print(f"ERROR: Cannot
     sys.exit(1)
-
 
 def main() -> int:
     """Run singleton detection on provided files."""
@@ -213,12 +207,13 @@ def main() -> int:
             continue
 
         try:
-            violations = scan_for_singleton_patterns(file_path)
+            detector = SingletonPatternDetector()
+            violations = detector.detect_violations(file_path)
 
             if violations:
                 print(f"\\nSingleton violations found in {file_path}:")
                 for violation in violations:
-                    print(f"  Line {violation.line_number}: {violation.description}")
+                    print(f"  Line {violation.line_number}: {violation.pattern_type}")
                     print(f"    Code: {violation.code_snippet}")
                 violation_count += len(violations)
 
@@ -232,7 +227,6 @@ def main() -> int:
         return 1
 
     return 0
-
 
 if __name__ == "__main__":
     sys.exit(main())

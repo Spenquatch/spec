@@ -16,9 +16,8 @@ from ..logging.debug import debug_logger
 from .error_utils import SpecAnalysisError
 
 
-class TestMigrationError(SpecAnalysisError):
+class FixtureMigrationError(SpecAnalysisError):
     """Error during test fixture migration to context-based patterns."""
-
 
 def create_context_fixture(factory_method: Callable) -> Callable:
     """Create context-based pytest fixture from factory method.
@@ -34,7 +33,7 @@ def create_context_fixture(factory_method: Callable) -> Callable:
         Pytest fixture function that provides isolated context
 
     Raises:
-        TestMigrationError: If context fixture creation fails
+        FixtureMigrationError: If context fixture creation fails
 
     Example:
         def create_test_context():
@@ -43,7 +42,7 @@ def create_context_fixture(factory_method: Callable) -> Callable:
         test_context_fixture = create_context_fixture(create_test_context)
     """
     if not callable(factory_method):
-        raise TestMigrationError(
+        raise FixtureMigrationError(
             f"Factory method must be callable, got {type(factory_method)}"
         )
 
@@ -84,7 +83,7 @@ def create_context_fixture(factory_method: Callable) -> Callable:
                     context = factory_method()
 
                 if not isinstance(context, SpecContext):
-                    raise TestMigrationError(
+                    raise FixtureMigrationError(
                         f"Factory method must return SpecContext, got {type(context)}"
                     )
 
@@ -107,7 +106,7 @@ def create_context_fixture(factory_method: Callable) -> Callable:
                     error=str(e),
                     error_type=type(e).__name__,
                 )
-                raise TestMigrationError(
+                raise FixtureMigrationError(
                     f"Failed to create context from factory {factory_method.__name__}: {e}"
                 ) from e
 
@@ -120,10 +119,9 @@ def create_context_fixture(factory_method: Callable) -> Callable:
         return context_fixture
 
     except Exception as e:
-        raise TestMigrationError(
+        raise FixtureMigrationError(
             f"Failed to create context fixture from factory method: {e}"
         ) from e
-
 
 def validate_test_isolation(test_func: Callable) -> bool:
     """Validate that test function provides proper isolation.
@@ -138,7 +136,7 @@ def validate_test_isolation(test_func: Callable) -> bool:
         True if test provides proper isolation, False otherwise
 
     Raises:
-        TestMigrationError: If isolation validation fails
+        FixtureMigrationError: If isolation validation fails
 
     Example:
         def test_with_context(spec_context):
@@ -148,7 +146,7 @@ def validate_test_isolation(test_func: Callable) -> bool:
         is_isolated = validate_test_isolation(test_with_context)  # Returns True
     """
     if not callable(test_func):
-        raise TestMigrationError(
+        raise FixtureMigrationError(
             f"Test function must be callable, got {type(test_func)}"
         )
 
@@ -217,10 +215,9 @@ def validate_test_isolation(test_func: Callable) -> bool:
         return is_isolated
 
     except Exception as e:
-        raise TestMigrationError(
+        raise FixtureMigrationError(
             f"Failed to validate test isolation for {test_func.__name__}: {e}"
         ) from e
-
 
 def create_mock_context_fixture(
     settings_overrides: dict[str, Any] | None = None,
@@ -241,7 +238,7 @@ def create_mock_context_fixture(
         Pytest fixture that provides mock SpecContext
 
     Raises:
-        TestMigrationError: If mock context fixture creation fails
+        FixtureMigrationError: If mock context fixture creation fails
 
     Example:
         mock_fixture = create_mock_context_fixture(
@@ -309,15 +306,14 @@ def create_mock_context_fixture(
                     error=str(e),
                     error_type=type(e).__name__,
                 )
-                raise TestMigrationError(
+                raise FixtureMigrationError(
                     f"Failed to create mock context fixture: {e}"
                 ) from e
 
         return mock_context_fixture
 
     except Exception as e:
-        raise TestMigrationError(f"Failed to create mock context fixture: {e}") from e
-
+        raise FixtureMigrationError(f"Failed to create mock context fixture: {e}") from e
 
 def migrate_singleton_fixture(legacy_fixture_func: Callable) -> Callable:
     """Migrate legacy singleton fixture to context-based pattern.
@@ -332,7 +328,7 @@ def migrate_singleton_fixture(legacy_fixture_func: Callable) -> Callable:
         New context-based fixture function
 
     Raises:
-        TestMigrationError: If fixture migration fails
+        FixtureMigrationError: If fixture migration fails
 
     Example:
         @pytest.fixture
@@ -343,7 +339,7 @@ def migrate_singleton_fixture(legacy_fixture_func: Callable) -> Callable:
         new_settings = migrate_singleton_fixture(legacy_settings)
     """
     if not callable(legacy_fixture_func):
-        raise TestMigrationError(
+        raise FixtureMigrationError(
             f"Legacy fixture must be callable, got {type(legacy_fixture_func)}"
         )
 
@@ -390,7 +386,7 @@ def migrate_singleton_fixture(legacy_fixture_func: Callable) -> Callable:
                     error=str(e),
                     error_type=type(e).__name__,
                 )
-                raise TestMigrationError(
+                raise FixtureMigrationError(
                     f"Failed to migrate fixture {legacy_fixture_func.__name__}: {e}"
                 ) from e
 
@@ -403,4 +399,4 @@ def migrate_singleton_fixture(legacy_fixture_func: Callable) -> Callable:
         return migrated_fixture
 
     except Exception as e:
-        raise TestMigrationError(f"Failed to migrate singleton fixture: {e}") from e
+        raise FixtureMigrationError(f"Failed to migrate singleton fixture: {e}") from e

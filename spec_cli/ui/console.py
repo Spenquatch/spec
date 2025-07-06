@@ -10,7 +10,6 @@ from rich.console import Console
 
 from ..config.settings import get_settings
 from ..logging.debug import debug_logger
-from ..utils.singleton import reset_singleton, singleton_decorator
 from .theme import SpecTheme, get_current_theme
 
 
@@ -205,7 +204,6 @@ class SpecConsole:
         )
 
 
-@singleton_decorator
 class ConsoleManager:
     """Manages global console instances."""
 
@@ -260,7 +258,6 @@ def reset_console() -> None:
     """Reset the global console to default."""
     manager = ConsoleManager()
     manager.reset_console()
-    reset_singleton(ConsoleManager)
 
 
 # Convenient alias for the global console

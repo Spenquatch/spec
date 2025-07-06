@@ -27,7 +27,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-
 class SingletonDetectionSystem:
     """System for detecting singleton patterns in codebase."""
 
@@ -132,7 +131,6 @@ class SingletonDetectionSystem:
         lines.append(f"✗ {len(violations)} singleton violations detected")
         return "\n".join(lines)
 
-
 def main() -> int:
     """Main entry point for singleton detection tool."""
     parser = argparse.ArgumentParser(
@@ -221,7 +219,6 @@ Examples:
     except Exception as e:
         logger.error("Singleton detection failed: %s", e)
         return 1
-
 
 if __name__ == "__main__":
     sys.exit(main())

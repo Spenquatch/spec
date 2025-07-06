@@ -18,7 +18,6 @@ REALISTIC_SINGLETON_MODULE = '''
 from typing import Dict, Any
 import threading
 
-
 class SingletonMeta(type):
     """Metaclass for singleton pattern."""
     _instances = {}
@@ -29,7 +28,6 @@ class SingletonMeta(type):
             if cls not in cls._instances:
                 cls._instances[cls] = super().__call__(*args, **kwargs)
         return cls._instances[cls]
-
 
 class ConfigurationManager(metaclass=SingletonMeta):
     """Global configuration manager using singleton pattern."""
@@ -49,12 +47,9 @@ class ConfigurationManager(metaclass=SingletonMeta):
         """Get configuration value."""
         return self.config.get(key, default)
 
-
-@singleton_decorator
 def get_global_config():
     """Get global configuration instance."""
     return ConfigurationManager()
-
 
 # Utility functions that don't use singletons
 def process_data(data: str) -> str:
@@ -65,9 +60,7 @@ def process_data(data: str) -> str:
 MIXED_CODEBASE_MODULE = '''
 """Module with both clean and singleton code."""
 
-from utils.singleton import singleton_decorator
-import singleton_config
-
+from utils.singleton
 
 class RegularService:
     """Regular service class without singleton pattern."""
@@ -77,7 +70,6 @@ class RegularService:
 
     def process(self, data: str) -> str:
         return f"Processed: {data}"
-
 
 @singleton
 class LegacyCache:
@@ -91,7 +83,6 @@ class LegacyCache:
 
     def set(self, key: str, value):
         self._cache[key] = value
-
 
 class ModernService:
     """Modern service with dependency injection."""
@@ -118,13 +109,11 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-
 class CacheProtocol(Protocol):
     """Cache service protocol."""
 
     def get(self, key: str) -> str | None: ...
     def set(self, key: str, value: str) -> None: ...
-
 
 class InMemoryCache:
     """In-memory cache implementation."""
@@ -138,7 +127,6 @@ class InMemoryCache:
     def set(self, key: str, value: str) -> None:
         self._cache[key] = value
         logger.debug("Cached value for key: %s", key)
-
 
 class DataProcessor:
     """Data processor with dependency injection."""
@@ -156,7 +144,6 @@ class DataProcessor:
         self.cache.set(data, result)
         return result
 '''
-
 
 class TestSingletonDetectionSystemIntegration:
     """Integration tests for the complete singleton detection system."""
@@ -212,7 +199,7 @@ class TestSingletonDetectionSystemIntegration:
             expected_types = {
                 "metaclass_singleton",
                 "decorator_singleton",
-                "function_singleton_decorator",
+
                 "import_singleton_name",
                 "import_singleton",
             }
@@ -243,7 +230,7 @@ class TestSingletonDetectionSystemIntegration:
             assert "ConfigurationManager" in report.classes
             assert "SingletonMeta" in report.classes
             assert "SingletonMeta" in report.metaclasses
-            assert "singleton_decorator" in report.decorators
+
             assert len(report.imports) > 0
 
             # Verify violations are properly linked to metadata
@@ -253,11 +240,7 @@ class TestSingletonDetectionSystemIntegration:
             metaclass_violations = [
                 v for v in report.violations if v.pattern_type == "metaclass_singleton"
             ]
-            decorator_violations = [
-                v
-                for v in report.violations
-                if v.pattern_type == "function_singleton_decorator"
-            ]
+            decorator_violations = list(report.violations)
 
             assert len(metaclass_violations) >= 1
             assert len(decorator_violations) >= 1

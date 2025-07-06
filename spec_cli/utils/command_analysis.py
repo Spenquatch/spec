@@ -12,7 +12,6 @@ command_analysis_error_handler = ErrorHandler(
     {"module": "utils", "component": "command_analysis"}
 )
 
-
 @dataclass
 class ClickPattern:
     """Represents a Click decorator pattern found in code."""
@@ -25,7 +24,6 @@ class ClickPattern:
     is_command: bool = False
     is_group: bool = False
 
-
 @dataclass
 class SingletonUsage:
     """Represents usage of singleton pattern in CLI command."""
@@ -37,7 +35,6 @@ class SingletonUsage:
     context: str  # surrounding code context
     import_source: str | None = None
 
-
 @dataclass
 class CommandStructureReport:
     """Complete CLI command structure analysis report."""
@@ -48,12 +45,10 @@ class CommandStructureReport:
     file_count: int = 0
     analysis_errors: list[str] = field(default_factory=list)
 
-
 class CommandAnalysisError(Exception):
     """Error during command analysis."""
 
     pass
-
 
 @command_analysis_error_handler.wrap
 def analyze_command_structure(cli_dir: Path) -> CommandStructureReport:
@@ -105,7 +100,6 @@ def analyze_command_structure(cli_dir: Path) -> CommandStructureReport:
 
     return report
 
-
 @command_analysis_error_handler.wrap
 def identify_singleton_usage(command_file: Path) -> list[SingletonUsage]:
     """Identify singleton usage patterns in a command file.
@@ -148,7 +142,6 @@ def identify_singleton_usage(command_file: Path) -> list[SingletonUsage]:
 
     return singleton_patterns
 
-
 def _extract_commands_from_file(py_file: Path) -> list[dict[str, str]]:
     """Extract command definitions from a Python file."""
     commands = []
@@ -182,7 +175,6 @@ def _extract_commands_from_file(py_file: Path) -> list[dict[str, str]]:
 
     return commands
 
-
 def _extract_click_patterns_from_file(py_file: Path) -> list[ClickPattern]:
     """Extract Click decorator patterns from a Python file."""
     patterns = []
@@ -205,7 +197,6 @@ def _extract_click_patterns_from_file(py_file: Path) -> list[ClickPattern]:
         pass
 
     return patterns
-
 
 def _analyze_ast_for_singletons(tree: ast.AST, file_path: str) -> list[SingletonUsage]:
     """Analyze AST tree for singleton usage patterns."""
@@ -254,7 +245,6 @@ def _analyze_ast_for_singletons(tree: ast.AST, file_path: str) -> list[Singleton
 
     return singleton_patterns
 
-
 def _analyze_regex_for_singletons(
     lines: list[str], file_path: str
 ) -> list[SingletonUsage]:
@@ -293,7 +283,6 @@ def _analyze_regex_for_singletons(
 
     return singleton_patterns
 
-
 def _is_click_command_decorator(decorator: ast.expr) -> bool:
     """Check if a decorator is a Click command decorator."""
     if isinstance(decorator, ast.Name):
@@ -313,7 +302,6 @@ def _is_click_command_decorator(decorator: ast.expr) -> bool:
         ):
             return decorator.func.attr in {"command", "group"}
     return False
-
 
 def _analyze_click_decorator(
     decorator: ast.expr, func_name: str, file_path: str, line_num: int
@@ -369,7 +357,6 @@ def _analyze_click_decorator(
             )
 
     return None
-
 
 def _map_factory_to_class(factory_function: str) -> str:
     """Map factory function names to their corresponding class names."""

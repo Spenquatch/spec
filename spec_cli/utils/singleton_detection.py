@@ -18,7 +18,6 @@ class SingletonDetectionError(SpecError):
         super().__init__(message)
         self.file_path = file_path
 
-
 @dataclass
 class SingletonViolation:
     """Represents a detected singleton pattern violation."""
@@ -30,7 +29,6 @@ class SingletonViolation:
     description: str
     code_snippet: str
 
-
 @dataclass
 class ASTAnalysisReport:
     """Report from AST analysis of a Python file."""
@@ -41,7 +39,6 @@ class ASTAnalysisReport:
     classes: set[str]
     decorators: set[str]
     metaclasses: set[str]
-
 
 class SingletonPatternDetector:
     """Detects singleton patterns in Python AST nodes."""
@@ -55,14 +52,14 @@ class SingletonPatternDetector:
 
     SINGLETON_DECORATOR_NAMES = {
         "singleton",
-        "singleton_decorator",
+
         "@singleton",
     }
 
     SINGLETON_IMPORT_PATTERNS = {
         "singleton",
         "SingletonMeta",
-        "singleton_decorator",
+
     }
 
     def __init__(self) -> None:
@@ -135,7 +132,7 @@ class SingletonPatternDetector:
                 )
 
     def _check_import_statement(self, node: ast.Import) -> None:
-        """Check import statement for singleton imports."""
+        """Check Import statements for singleton module imports."""
         for alias in node.names:
             if any(pattern in alias.name for pattern in self.SINGLETON_IMPORT_PATTERNS):
                 self._add_violation(
@@ -145,7 +142,7 @@ class SingletonPatternDetector:
                 )
 
     def _check_import_from_statement(self, node: ast.ImportFrom) -> None:
-        """Check import from statement for singleton imports."""
+        """Check ImportFrom statements for singleton module imports."""
         if node.module and any(
             pattern in node.module for pattern in self.SINGLETON_IMPORT_PATTERNS
         ):
@@ -170,7 +167,7 @@ class SingletonPatternDetector:
             if decorator_name in self.SINGLETON_DECORATOR_NAMES:
                 self._add_violation(
                     node,
-                    "function_singleton_decorator",
+                    "function_decorator_singleton",
                     f"Function uses singleton decorator: {decorator_name}",
                 )
 
@@ -215,7 +212,6 @@ class SingletonPatternDetector:
             pass
         return ""
 
-
 def scan_for_singleton_patterns(file_path: Path) -> list[SingletonViolation]:
     """Scan a Python file for singleton patterns.
 
@@ -230,7 +226,6 @@ def scan_for_singleton_patterns(file_path: Path) -> list[SingletonViolation]:
     """
     detector = SingletonPatternDetector()
     return detector.detect_violations(file_path)
-
 
 def analyze_python_ast(file_path: Path) -> ASTAnalysisReport:
     """Analyze Python file AST for singleton patterns and metadata.

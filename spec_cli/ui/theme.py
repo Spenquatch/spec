@@ -11,7 +11,6 @@ from rich.theme import Theme
 
 from ..config.settings import SpecSettings, get_settings
 from ..logging.debug import debug_logger
-from ..utils.singleton import reset_singleton, singleton_decorator
 
 
 class ColorScheme(Enum):
@@ -220,7 +219,6 @@ class SpecTheme:
         return cls(color_scheme)
 
 
-@singleton_decorator
 class ThemeManager:
     """Manages global theme instances."""
 
@@ -273,4 +271,3 @@ def reset_theme() -> None:
     """Reset the global theme to default."""
     manager = ThemeManager()
     manager.reset_theme()
-    reset_singleton(ThemeManager)

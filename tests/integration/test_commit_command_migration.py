@@ -11,14 +11,12 @@ from spec_cli.core.context import SpecContext
 TEST_COMMIT_MESSAGE = "Integration test commit"
 TEST_FILE_PATH = ".specs/integration_test.md"
 
-
 @pytest.fixture
 def integration_context():
     """Create integration test context with realistic dependencies."""
     return SpecContext.create_for_testing(
         {"debug_enabled": False, "console_width": 80, "use_color": False}
     )
-
 
 @pytest.fixture
 def integration_repo():
@@ -33,7 +31,6 @@ def integration_repo():
     repo.commit.return_value = "abc123456789"
     repo.add_files.return_value = None
     return repo
-
 
 class TestCommitCommandMigrationIntegration:
     """Test commit command migration with integrated context flow."""

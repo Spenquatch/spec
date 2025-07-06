@@ -291,7 +291,6 @@ class TestContextInjectionIntegration:
             with pytest.raises(ValueError, match="Operation failed with debug=True"):
                 exception_handling_command("fail")
 
-
 class TestCrossSliceIntegration:
     """Test integration with P2.1b and P2.2a requirements."""
 
@@ -336,7 +335,6 @@ class TestCrossSliceIntegration:
                 # Should use P2.1b utilities
                 _get_spec_context_from_click()
                 assert mock_retrieve.called
-
 
 class TestDIMigrationContext:
     """Test dependency injection migration compatibility."""

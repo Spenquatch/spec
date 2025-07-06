@@ -13,12 +13,14 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from spec_cli.core.compatibility import (
-    CompatibilityLayer,
-    ProgressManagerWrapper,
-    compatibility_layer,
-    get_progress_manager_compatibility,
-)
+# DEPRECATED: Compatibility layer was removed as part of singleton elimination (P3.2a)
+# These tests need to be updated to test context-based patterns instead
+# from spec_cli.core.compatibility import (
+#     CompatibilityLayer,
+#     ProgressManagerWrapper,
+#     compatibility_layer,
+#     get_progress_manager_compatibility,
+# )
 from spec_cli.exceptions import CompatibilityError
 from spec_cli.utils.compatibility_utils import (
     SingletonCompatibilityWrapper,
@@ -35,7 +37,6 @@ MOCK_ATTRIBUTE_NAME = "test_attribute"
 MOCK_ATTRIBUTE_VALUE = "test_value"
 MOCK_METHOD_RETURN = "method_result"
 THREAD_COUNT = 5
-
 
 class TestCompatibilityUtilsWrapperCreation:
     """Test compatibility utils wrapper creation functions."""
@@ -88,7 +89,6 @@ class TestCompatibilityUtilsWrapperCreation:
             wrapper._fallback_enabled = False
             wrapper._get_instance()
 
-
 class TestCompatibilityUtilsWrapperValidation:
     """Test compatibility utils wrapper validation functions."""
 
@@ -140,7 +140,6 @@ class TestCompatibilityUtilsWrapperValidation:
             result = validate_wrapper_behavior(mock_wrapper, mock_original)
 
         assert result is False
-
 
 class TestSingletonCompatibilityWrapper:
     """Test SingletonCompatibilityWrapper class behavior."""
@@ -267,7 +266,6 @@ class TestSingletonCompatibilityWrapper:
         # Singleton class should only be called once
         assert self.mock_singleton_class.call_count == 1
 
-
 class TestGetDefaultContextKey:
     """Test context key generation utility."""
 
@@ -298,7 +296,7 @@ class TestGetDefaultContextKey:
 
         assert result == "database2_connection"
 
-
+@pytest.mark.skip(reason="CompatibilityLayer removed in P3.2a - singleton elimination complete")
 class TestCompatibilityLayer:
     """Test CompatibilityLayer central management."""
 
@@ -410,7 +408,7 @@ class TestCompatibilityLayer:
         # Verify reset was called
         mock_wrapper.reset.assert_called_once()
 
-
+@pytest.mark.skip(reason="ProgressManagerWrapper removed in P3.2a - singleton elimination complete")
 class TestProgressManagerWrapper:
     """Test ProgressManagerWrapper specific functionality."""
 
@@ -459,23 +457,22 @@ class TestProgressManagerWrapper:
 
     def test_reset_progress_manager_when_called_then_resets_singleton_and_cache(self):
         """Test reset clears both wrapper and singleton state."""
-        with patch("spec_cli.utils.singleton.reset_singleton") as mock_reset:
-            # Setup instance with reset method
-            self.mock_instance.reset = Mock()
+        # Setup instance with reset method
+        self.mock_instance.reset = Mock()
 
-            # Access instance to cache it
-            _ = self.wrapper.get_progress_manager()
-            assert self.wrapper._cached_instance is not None
+        # Access instance to cache it
+        _ = self.wrapper.get_progress_manager()
+        assert self.wrapper._cached_instance is not None
 
-            # Reset progress manager
-            self.wrapper.reset_progress_manager()
+        # Reset progress manager
+        self.wrapper.reset_progress_manager()
 
-            # Verify singleton reset was called
-            self.mock_instance.reset.assert_called_once()
-            mock_reset.assert_called_once_with(self.mock_singleton_class)
+        # Verify singleton reset was called
+        self.mock_instance.reset.assert_called_once()
+        mock_reset.assert_called_once_with(self.mock_singleton_class)
 
-            # Verify cache was cleared
-            assert self.wrapper._cached_instance is None
+        # Verify cache was cleared
+        assert self.wrapper._cached_instance is None
 
     def test_reset_progress_manager_when_reset_fails_then_raises_error(self):
         """Test error handling when reset operation fails."""
@@ -528,7 +525,7 @@ class TestProgressManagerWrapper:
         with pytest.raises(CompatibilityError, match="Failed to access attribute"):
             _ = self.wrapper.some_attr
 
-
+@pytest.mark.skip(reason="Global compatibility layer removed in P3.2a - singleton elimination complete")
 class TestGlobalCompatibilityLayer:
     """Test global compatibility layer instance and utilities."""
 
@@ -548,7 +545,6 @@ class TestGlobalCompatibilityLayer:
 
             assert wrapper is not None
             assert isinstance(wrapper, ProgressManagerWrapper)
-
 
 class TestErrorHandlingAndContexts:
     """Test error handling with proper context information."""
@@ -593,7 +589,6 @@ class TestErrorHandlingAndContexts:
                 assert "Failed to get progress manager" in str(e)
                 assert hasattr(e, "context")
                 assert "operation" in e.context
-
 
 class TestConcurrencyAndThreadSafety:
     """Test thread safety of compatibility wrappers."""
