@@ -14,7 +14,6 @@ from .cleanup_utils import validate_no_references
 from .error_utils import create_error_context
 from .singleton_detection import SingletonPatternDetector
 
-
 @dataclass
 class MigrationValidationReport:
     """Report of migration validation results."""
@@ -227,11 +226,11 @@ def validate_migration_complete() -> MigrationValidationReport:
         )
 
         codebase_path = Path(".")
-        errors = []
+        errors: list[str] = []
 
         # Use singleton detection to find violations
         SingletonPatternDetector()
-        violations = []  # For now, focus on import cleanup
+        violations: list[str] = []  # For now, focus on import cleanup
 
         # Also check for any remaining singleton imports
         remaining_refs = validate_no_references(

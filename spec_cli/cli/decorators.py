@@ -79,7 +79,7 @@ def _get_spec_context_from_click() -> SpecContext:
 
             # Create adapter to bridge SpecConsole to SpecConsoleInterface
             class ConsoleAdapter:
-                def __init__(self, spec_console):
+                def __init__(self, spec_console: Any) -> None:
                     self._console = spec_console
                     # Detect non-interactive mode to prevent hanging
                     import sys
@@ -122,7 +122,7 @@ def _get_spec_context_from_click() -> SpecContext:
                         self._console, "no_color", False
                     )
 
-                def capture_output(self):
+                def capture_output(self) -> Any:
                     # Return the capture_output from the underlying console if available
                     return getattr(self._console, "capture_output", lambda: None)()
 

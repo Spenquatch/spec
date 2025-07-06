@@ -16,7 +16,6 @@ from ..utils.context_utils import create_context_hash, validate_context_immutabi
 from ..utils.error_utils import create_error_context
 from ..utils.factory_utils import validate_factory_inputs
 
-
 class SpecContextError(Exception):
     """Exception raised when SpecContext operations fail."""
 
@@ -480,7 +479,7 @@ class SpecContext:
 
             # Create console adapter for interface compatibility
             class CLIConsoleAdapter:
-                def __init__(self, console):
+                def __init__(self, console: Any) -> None:
                     self._console = console
                     # Detect non-interactive mode to prevent hanging
                     import sys
@@ -523,7 +522,7 @@ class SpecContext:
                         self._console, "no_color", False
                     )
 
-                def capture_output(self):
+                def capture_output(self) -> Any:
                     return getattr(self._console, "capture_output", lambda: None)()
 
             cli_console_adapter = CLIConsoleAdapter(cli_console)

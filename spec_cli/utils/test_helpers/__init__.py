@@ -14,6 +14,13 @@ from .git_test_helpers import (
     git_command_simulator,
     git_test_repository,
 )
+from .test_failure_categorizer import (
+    FailurePriority,
+    FailureType,
+    FailureCategory,
+    FailureInfo,
+    categorize_test_failure,
+)
 
 __all__ = [
     "GitRepositoryMocker",
@@ -24,4 +31,9 @@ __all__ = [
     "create_git_environment_isolator",
     "git_test_repository",
     "git_command_simulator",
+    "FailureType",
+    "FailurePriority",
+    "FailureInfo",
+    "FailureCategory",
+    "categorize_test_failure",
 ]

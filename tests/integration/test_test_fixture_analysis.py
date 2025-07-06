@@ -8,7 +8,6 @@ from pathlib import Path
 
 from spec_cli.utils.test_analysis import analyze_test_fixtures
 
-
 class TestTestFixtureAnalysisIntegration:
     """Integration tests for complete test fixture analysis workflow."""
 

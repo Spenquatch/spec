@@ -11,7 +11,6 @@ from spec_cli.cli.decorators import context_injection, inject_context, with_cont
 from spec_cli.core.context import SpecContext
 from spec_cli.utils.click_utils import store_context_data
 
-
 class TestContextInjectionIntegration:
     """Test complete context injection flow from CLI entry to command execution."""
 

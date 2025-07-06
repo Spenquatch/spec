@@ -18,7 +18,6 @@ from spec_cli.utils.pattern_analysis import (
     document_access_patterns,
 )
 
-
 class TestAnalyzeSingletonUsage:
     """Test analyze_singleton_usage function for singleton pattern detection."""
 

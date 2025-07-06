@@ -15,7 +15,6 @@ from ..core.context import SpecContext
 from ..logging.debug import debug_logger
 from .error_utils import SpecAnalysisError
 
-
 class FixtureMigrationError(SpecAnalysisError):
     """Error during test fixture migration to context-based patterns."""
 

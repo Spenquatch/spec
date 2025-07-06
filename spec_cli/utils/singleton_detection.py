@@ -10,7 +10,6 @@ from pathlib import Path
 
 from ..exceptions import SpecError
 
-
 class SingletonDetectionError(SpecError):
     """Exception raised when singleton detection fails."""
 

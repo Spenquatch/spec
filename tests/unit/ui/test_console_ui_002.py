@@ -27,7 +27,6 @@ from spec_cli.ui.console import (
 )
 from spec_cli.ui.theme import SpecTheme
 
-
 class TestSpecConsole:
     """Test SpecConsole class functionality."""
 
