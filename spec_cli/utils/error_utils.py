@@ -5,6 +5,20 @@ from pathlib import Path
 from typing import Any
 
 
+class SpecAnalysisError(Exception):
+    """Base exception for analysis-related errors in spec CLI."""
+
+    def __init__(self, message: str, context: dict[str, Any] | None = None):
+        """Initialize analysis error with optional context.
+
+        Args:
+            message: Error message
+            context: Optional context dictionary for debugging
+        """
+        super().__init__(message)
+        self.context = context or {}
+
+
 def handle_os_error(exc: OSError) -> str:
     """Format OSError messages with consistent context.
 
