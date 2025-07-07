@@ -11,6 +11,7 @@ from typing import Any
 
 from ...exceptions import SpecError
 
+
 class ReadinessAssessmentError(SpecError):
     """Exception raised when readiness assessment fails."""
 
@@ -28,6 +29,7 @@ class ReadinessAssessmentError(SpecError):
             for key, value in assessment_context.items():
                 self.add_context(key, value)
 
+
 @dataclass
 class ReadinessReport:
     """Comprehensive readiness assessment report for migration planning."""
@@ -42,6 +44,7 @@ class ReadinessReport:
     migration_blockers: list[str] = field(default_factory=list)
     assessment_timestamp: str = ""
 
+
 @dataclass
 class FoundationState:
     """Current state of Phase 1-3 foundation deliverables."""
@@ -50,6 +53,7 @@ class FoundationState:
     test_infrastructure_status: dict[str, float]
     singleton_baseline: dict[str, Any]
     integration_health: dict[str, bool]
+
 
 def assess_migration_readiness(foundation_state: FoundationState) -> ReadinessReport:
     """Assess migration readiness based on Phase 1-3 foundation state.
@@ -105,6 +109,7 @@ def assess_migration_readiness(foundation_state: FoundationState) -> ReadinessRe
         assessment_timestamp="",
     )
 
+
 def _calculate_stability_score(foundation_state: FoundationState) -> float:
     """Calculate foundation stability score from deliverable quality metrics."""
     deliverable_count = len(foundation_state.phase_deliverables)
@@ -117,6 +122,7 @@ def _calculate_stability_score(foundation_state: FoundationState) -> float:
 
     # Weighted average of test infrastructure scores
     return sum(test_scores) / len(test_scores)
+
 
 def _evaluate_deliverable_completeness(
     foundation_state: FoundationState,
@@ -138,9 +144,11 @@ def _evaluate_deliverable_completeness(
 
     return completeness
 
+
 def _assess_test_infrastructure(foundation_state: FoundationState) -> dict[str, float]:
     """Assess quality of test infrastructure across all phases."""
     return dict(foundation_state.test_infrastructure_status)
+
 
 def _validate_integration_points(foundation_state: FoundationState) -> dict[str, bool]:
     """Validate integration points between phase deliverables."""
@@ -157,6 +165,7 @@ def _validate_integration_points(foundation_state: FoundationState) -> dict[str,
         integration_results["cross_phase_compatibility"] = False
 
     return integration_results
+
 
 def _calculate_overall_readiness(
     stability_score: float,
@@ -199,6 +208,7 @@ def _calculate_overall_readiness(
 
     return min(1.0, max(0.0, overall_score))
 
+
 def _generate_recommendations(
     stability_score: float,
     completeness_scores: dict[str, float],
@@ -225,6 +235,7 @@ def _generate_recommendations(
 
     return recommendations
 
+
 def _identify_risk_factors(
     foundation_state: FoundationState, overall_score: float
 ) -> list[str]:
@@ -242,6 +253,7 @@ def _identify_risk_factors(
         risks.append("Poor test coverage in some areas may lead to regressions")
 
     return risks
+
 
 def _identify_migration_blockers(
     foundation_state: FoundationState, overall_score: float

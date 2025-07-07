@@ -10,10 +10,12 @@ from ...exceptions import SpecError
 from ...logging.debug import debug_logger
 from ..singleton_detection import SingletonViolation
 
+
 class ComplexityAnalysisError(SpecError):
     """Exception raised when complexity analysis fails."""
 
     pass
+
 
 @dataclass
 class ComplexityAssessment:
@@ -24,6 +26,7 @@ class ComplexityAssessment:
     risk_factors: list[str]  # List of specific complexity risk factors
     estimated_effort_hours: int  # Rough estimate for migration effort
     dependency_count: int  # Number of dependencies on this pattern
+
 
 def analyze_pattern_complexity(
     pattern: SingletonViolation, dependency_count: int = 0
@@ -99,6 +102,7 @@ def analyze_pattern_complexity(
             f"Failed to analyze pattern complexity: {e}"
         ) from e
 
+
 def _calculate_base_complexity(pattern: SingletonViolation) -> int:
     """Calculate base complexity score based on pattern type."""
     complexity_map = {
@@ -112,6 +116,7 @@ def _calculate_base_complexity(pattern: SingletonViolation) -> int:
 
     return complexity_map.get(pattern.pattern_type, 5)  # Default to medium complexity
 
+
 def _determine_migration_priority(complexity_score: int, dependency_count: int) -> str:
     """Determine migration priority based on complexity and dependencies."""
     if complexity_score >= 8 or dependency_count >= 10:
@@ -122,6 +127,7 @@ def _determine_migration_priority(complexity_score: int, dependency_count: int) 
         return "medium"
     else:
         return "low"
+
 
 def _identify_risk_factors(
     pattern: SingletonViolation, dependency_count: int
@@ -161,6 +167,7 @@ def _identify_risk_factors(
         risk_factors.append("Standard migration complexity")
 
     return risk_factors
+
 
 def _estimate_effort_hours(complexity_score: int, dependency_count: int) -> int:
     """Estimate migration effort in hours."""

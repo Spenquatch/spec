@@ -11,7 +11,8 @@
       "wont_fix": 0,
       "last_updated": "2025-07-07",
       "detection_tool_accuracy": "7%",
-      "notes": "Based on comprehensive codebase analysis. Expert recommends expand-contract hybrid strategy."
+      "notes": "Based on comprehensive codebase analysis. Expert recommends expand-contract hybrid strategy.",
+      "foundation_ready": true
     },
     "progress_by_category": {
       "cli_commands": {
@@ -50,14 +51,21 @@
             "id": "cli_cmd_001",
             "file_path": "spec_cli/cli/commands/init.py",
             "qualified_symbol": "spec_cli.cli.commands.init.init_command",
-            "line_numbers": [14, 16, 17],
+            "line_numbers": [
+              14,
+              16,
+              17
+            ],
             "pattern_type": "cli_command",
             "current_state": "partial",
             "migration_approach": "Already uses @context_injection but has remaining debug_logger imports",
             "priority": "medium",
             "estimated_effort_hours": 2,
             "blocked_by": [],
-            "related_to": ["debug_logger_070", "debug_logger_083"],
+            "related_to": [
+              "debug_logger_070",
+              "debug_logger_083"
+            ],
             "metrics": {
               "touch_count": 12,
               "last_touched": "2025-07-01"
@@ -69,17 +77,28 @@
             ]
           },
           "diff_command": {
-            "id": "cli_cmd_002", 
+            "id": "cli_cmd_002",
             "file_path": "spec_cli/cli/commands/diff.py",
             "qualified_symbol": "spec_cli.cli.commands.diff.diff_command",
-            "line_numbers": [7, 8, 29, 51, 93, 102, 108],
+            "line_numbers": [
+              7,
+              8,
+              29,
+              51,
+              93,
+              102,
+              108
+            ],
             "pattern_type": "cli_command",
             "current_state": "not_migrated",
             "migration_approach": "Add @context_injection decorator and SpecContext parameter",
             "priority": "high",
             "estimated_effort_hours": 4,
             "blocked_by": [],
-            "related_to": ["func_singleton_001", "func_singleton_002"],
+            "related_to": [
+              "func_singleton_001",
+              "func_singleton_002"
+            ],
             "metrics": {
               "touch_count": 8,
               "last_touched": "2025-06-15"
@@ -94,7 +113,7 @@
           },
           "help_command": {
             "id": "cli_cmd_003",
-            "file_path": "spec_cli/cli/commands/help.py", 
+            "file_path": "spec_cli/cli/commands/help.py",
             "qualified_symbol": "spec_cli.cli.commands.help.help_command",
             "line_numbers": [],
             "pattern_type": "cli_command",
@@ -118,7 +137,7 @@
       },
       "functional_singletons": {
         "description": "Functions that return singleton instances (get_console, get_settings, etc.)",
-        "priority": "medium", 
+        "priority": "medium",
         "migration_approach": "Replace with context.property access after facade implementation",
         "estimated_effort_days": 15,
         "facade_strategy": "Implement context bridge pattern as recommended by expert",
@@ -127,14 +146,22 @@
             "id": "func_singleton_001",
             "file_path": "spec_cli/cli/commands/diff.py",
             "qualified_symbol": "spec_cli.ui.console.get_console",
-            "line_numbers": [8, 51, 108],
+            "line_numbers": [
+              8,
+              51,
+              108
+            ],
             "pattern_type": "functional_singleton_call",
             "current_state": "not_migrated",
             "migration_approach": "Replace with context.console after facade bridge",
             "priority": "high",
             "estimated_effort_hours": 1,
-            "blocked_by": ["facade_bridge_implementation"],
-            "related_to": ["cli_cmd_002"],
+            "blocked_by": [
+              "facade_bridge_implementation"
+            ],
+            "related_to": [
+              "cli_cmd_002"
+            ],
             "metrics": {
               "touch_count": 8,
               "last_touched": "2025-06-15"
@@ -149,14 +176,20 @@
             "id": "func_singleton_002",
             "file_path": "spec_cli/config/settings.py",
             "qualified_symbol": "spec_cli.config.settings.get_settings",
-            "line_numbers": [45, 67, 89],
+            "line_numbers": [
+              45,
+              67,
+              89
+            ],
             "pattern_type": "functional_singleton_definition",
             "current_state": "not_migrated",
             "migration_approach": "Replace with SpecContext.settings property",
             "priority": "high",
             "estimated_effort_hours": 3,
             "blocked_by": [],
-            "related_to": ["settings_manager_singleton"],
+            "related_to": [
+              "settings_manager_singleton"
+            ],
             "metrics": {
               "touch_count": 25,
               "last_touched": "2025-07-01"
@@ -180,14 +213,18 @@
             "id": "import_singleton_001",
             "file_path": "spec_cli/logging/debug.py",
             "qualified_symbol": "spec_cli.logging.debug.debug_logger",
-            "line_numbers": [15],
+            "line_numbers": [
+              15
+            ],
             "pattern_type": "singleton_definition",
             "current_state": "not_migrated",
             "migration_approach": "Replace with logging factory in SpecContext",
             "priority": "medium",
             "estimated_effort_hours": 4,
             "blocked_by": [],
-            "related_to": ["debug_logger_*"],
+            "related_to": [
+              "debug_logger_*"
+            ],
             "metrics": {
               "touch_count": 45,
               "last_touched": "2025-06-30"
@@ -203,14 +240,24 @@
             "id": "import_singleton_002",
             "file_path": "spec_cli/ai/context/processing.py",
             "qualified_symbol": "spec_cli.logging.debug.debug_logger",
-            "line_numbers": [12, 45, 67, 89],
+            "line_numbers": [
+              12,
+              45,
+              67,
+              89
+            ],
             "pattern_type": "module_level_import",
             "current_state": "not_migrated",
             "migration_approach": "Automated replacement with context.logger",
             "priority": "low",
             "estimated_effort_hours": 0.1,
-            "blocked_by": ["facade_bridge_implementation", "automated_codemod"],
-            "related_to": ["import_singleton_001"],
+            "blocked_by": [
+              "facade_bridge_implementation",
+              "automated_codemod"
+            ],
+            "related_to": [
+              "import_singleton_001"
+            ],
             "metrics": {
               "touch_count": 3,
               "last_touched": "2025-04-15"
@@ -270,7 +317,10 @@
             "priority": "critical",
             "estimated_effort_hours": 8,
             "blocked_by": [],
-            "related_to": ["func_singleton_*", "import_singleton_*"],
+            "related_to": [
+              "func_singleton_*",
+              "import_singleton_*"
+            ],
             "metrics": {
               "touch_count": 0,
               "last_touched": "never"
@@ -295,7 +345,9 @@
             "priority": "high",
             "estimated_effort_hours": 6,
             "blocked_by": [],
-            "related_to": ["detection_accuracy"],
+            "related_to": [
+              "detection_accuracy"
+            ],
             "metrics": {
               "touch_count": 8,
               "last_touched": "2025-06-20"
@@ -314,10 +366,10 @@
     },
     "migration_phases": {
       "phase_0_fence_the_beast": {
-        "name": "Fence the Beast - Facade Implementation", 
+        "name": "Fence the Beast - Facade Implementation",
         "duration_weeks": 1,
         "description": "Implement facade layer for safe gradual migration",
-        "status": "not_started",
+        "status": "completed",
         "tasks": [
           "infra_001"
         ],
@@ -325,17 +377,21 @@
           "All singleton access goes through facade",
           "No behavior changes in existing code",
           "Foundation for gradual migration established"
-        ]
+        ],
+        "completion_date": "2025-07-07T16:48:58.111869",
+        "completion_notes": "Foundation stabilized: tests passing, facade bridge operational, detection tools validated"
       },
       "phase_1_cli_commands": {
         "name": "Complete CLI Command Migration",
         "duration_weeks": 2,
         "description": "Finish migrating all CLI commands to @context_injection",
         "status": "in_progress",
-        "dependencies": ["phase_0_fence_the_beast"],
+        "dependencies": [
+          "phase_0_fence_the_beast"
+        ],
         "tasks": [
           "test_fail_001",
-          "cli_cmd_002", 
+          "cli_cmd_002",
           "cli_cmd_003"
         ],
         "success_criteria": [
@@ -349,7 +405,9 @@
         "duration_weeks": 3,
         "description": "Migrate high-churn core services",
         "status": "planned",
-        "dependencies": ["phase_1_cli_commands"],
+        "dependencies": [
+          "phase_1_cli_commands"
+        ],
         "tasks": [
           "func_singleton_002"
         ],
@@ -364,7 +422,9 @@
         "duration_weeks": 4,
         "description": "Automated migration of 940 debug_logger instances",
         "status": "planned",
-        "dependencies": ["phase_0_fence_the_beast"],
+        "dependencies": [
+          "phase_0_fence_the_beast"
+        ],
         "tasks": [
           "import_singleton_001",
           "import_singleton_002"
@@ -413,7 +473,7 @@
       },
       "get_settings_call": {
         "pattern": "get_settings()",
-        "replacement": "context.settings", 
+        "replacement": "context.settings",
         "requires_context": true,
         "validation": "grep -r 'get_settings()' spec_cli/ | wc -l"
       }

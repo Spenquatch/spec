@@ -561,6 +561,7 @@ class TestDocumentationGeneratorUtilityMethods:
             assert self.generator.tokenizer is None
 
     @patch("spec_cli.ai.providers.generation.torch")
+    @patch("spec_cli.ai.providers.generation.HF_AVAILABLE", True)
     @patch("spec_cli.ai.providers.generation.sys.platform", "darwin")
     def test_cleanup_with_mps_cache(self, mock_torch):
         """Test cleanup with MPS cache clearing on macOS."""

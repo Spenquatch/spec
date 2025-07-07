@@ -14,6 +14,7 @@ from .cleanup_utils import validate_no_references
 from .error_utils import create_error_context
 from .singleton_detection import SingletonPatternDetector
 
+
 @dataclass
 class MigrationValidationReport:
     """Report of migration validation results."""
@@ -24,6 +25,7 @@ class MigrationValidationReport:
     imports_removed: int
     context_imports_added: int
     errors: list[str]
+
 
 def remove_singleton_imports(file_path: Path) -> bool:
     """Remove singleton imports from a Python file.
@@ -124,6 +126,7 @@ def remove_singleton_imports(file_path: Path) -> bool:
             f"Failed to remove singleton imports from {file_path}: {e}", error_context
         ) from e
 
+
 def add_context_imports(file_path: Path, imports_needed: list[str]) -> bool:
     """Add context-based imports to replace singleton imports.
 
@@ -213,6 +216,7 @@ def add_context_imports(file_path: Path, imports_needed: list[str]) -> bool:
             f"Failed to add context imports to {file_path}: {e}", error_context
         ) from e
 
+
 def validate_migration_complete() -> MigrationValidationReport:
     """Validate that singleton migration is complete.
 
@@ -287,6 +291,7 @@ def validate_migration_complete() -> MigrationValidationReport:
         raise InfrastructureRemovalError(
             f"Migration validation failed: {e}", error_context
         ) from e
+
 
 def cleanup_migration(codebase_path: Path) -> MigrationValidationReport:
     """Complete migration cleanup by removing singleton imports and adding context imports.

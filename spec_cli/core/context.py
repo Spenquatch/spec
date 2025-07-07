@@ -16,6 +16,7 @@ from ..utils.context_utils import create_context_hash, validate_context_immutabi
 from ..utils.error_utils import create_error_context
 from ..utils.factory_utils import validate_factory_inputs
 
+
 class SpecContextError(Exception):
     """Exception raised when SpecContext operations fail."""
 
@@ -28,6 +29,7 @@ class SpecContextError(Exception):
         """
         super().__init__(message)
         self.context = context or {}
+
 
 class SpecFactoryError(SpecContextError):
     """Exception raised when SpecContext factory operations fail."""
@@ -46,6 +48,7 @@ class SpecFactoryError(SpecContextError):
             error_message=message,
             factory_context=self.context,
         )
+
 
 class SpecSettingsInterface:
     """Interface specification for settings dependency in SpecContext.
@@ -116,6 +119,7 @@ class SpecSettingsInterface:
                 str(self.specs_dir),
             )
         )
+
 
 class SpecConsoleInterface:
     """Interface specification for console dependency in SpecContext.
@@ -198,6 +202,7 @@ class SpecConsoleInterface:
         """Make console interface hashable."""
         return hash("SpecConsoleInterface")
 
+
 class SpecProgressInterface:
     """Interface specification for progress dependency in SpecContext.
 
@@ -270,6 +275,7 @@ class SpecProgressInterface:
     def __hash__(self) -> int:
         """Make progress interface hashable."""
         return hash("SpecProgressInterface")
+
 
 @dataclass(frozen=True)
 class SpecContext:

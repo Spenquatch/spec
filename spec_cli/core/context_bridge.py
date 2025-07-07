@@ -1,0 +1,165 @@
+"""
+Migration facade bridge for singleton to dependency injection transition.
+Provides backward compatibility during gradual migration.
+
+This bridge allows legacy singleton code and new context-based code to coexist
+during the migration period. It will be removed after migration completion.
+"""
+
+import threading
+from typing import Any, Protocol
+
+# Import original singletons (these imports may fail if singletons don't exist yet)
+try:
+    from ..logging.debug import debug_logger as _original_debug_logger
+except ImportError:
+    _original_debug_logger = None  # type: ignore[assignment]
+
+try:
+    from ..ui.console import get_console as _original_get_console
+except ImportError:
+    _original_get_console = None  # type: ignore[assignment]
+
+try:
+    from ..config.settings import get_settings as _original_get_settings
+except ImportError:
+    _original_get_settings = None  # type: ignore[assignment]
+
+# Thread-safe context management
+_context_lock = threading.Lock()
+_migration_context: Any | None = None
+
+
+def set_migration_context(context: Any) -> None:
+    """Set the migration context for facade access."""
+    global _migration_context
+    with _context_lock:
+        _migration_context = context
+
+
+def get_migration_context() -> Any:
+    """Get current migration context or None."""
+    with _context_lock:
+        return _migration_context
+
+
+# Logger Protocol for type safety
+class LoggerProtocol(Protocol):
+    def log(self, level: str, message: str, **kwargs: Any) -> None: ...
+    def info(self, message: str, **kwargs: Any) -> None: ...
+    def error(self, message: str, **kwargs: Any) -> None: ...
+    def debug(self, message: str, **kwargs: Any) -> None: ...
+    def warning(self, message: str, **kwargs: Any) -> None: ...
+
+
+class DebugLoggerFacade:
+    """
+    Facade for debug_logger that can use context or fall back to singleton.
+
+    During migration, this allows both old singleton-based code and new
+    context-based code to work simultaneously.
+    """
+
+    def log(self, level: str, message: str, **kwargs: Any) -> None:
+        """Log message using context logger if available, otherwise singleton."""
+        context = get_migration_context()
+        if context and hasattr(context, "logger"):
+            context.logger.log(level, message, **kwargs)
+        elif _original_debug_logger:
+            _original_debug_logger.log(level, message, **kwargs)
+        else:
+            # Fallback to print if no logger available
+            print(f"[{level}] {message}")
+
+    def info(self, message: str, **kwargs: Any) -> None:
+        self.log("INFO", message, **kwargs)
+
+    def error(self, message: str, **kwargs: Any) -> None:
+        self.log("ERROR", message, **kwargs)
+
+    def debug(self, message: str, **kwargs: Any) -> None:
+        self.log("DEBUG", message, **kwargs)
+
+    def warning(self, message: str, **kwargs: Any) -> None:
+        self.log("WARNING", message, **kwargs)
+
+    def __getattr__(self, name: str) -> Any:
+        """Delegate unknown attributes to context logger or original logger."""
+        context = get_migration_context()
+        if context and hasattr(context, "logger"):
+            return getattr(context.logger, name)
+        elif _original_debug_logger:
+            return getattr(_original_debug_logger, name)
+        else:
+            raise AttributeError(f"No logger available for attribute: {name}")
+
+
+def get_console() -> Any:
+    """Facade for console access during migration."""
+    context = get_migration_context()
+    if context and hasattr(context, "console"):
+        return context.console
+    elif _original_get_console is not None:
+        return _original_get_console()
+
+    # Return a mock console for testing
+    class MockConsole:  # type: ignore[unreachable]
+        def print(self, *args, **kwargs: Any) -> None:
+            print(*args)
+
+        def print_status(
+            self, message: str, status: str = "info", **kwargs: Any
+        ) -> None:
+            print(f"[{status.upper()}] {message}")
+
+    return MockConsole()
+
+
+def get_settings() -> Any:
+    """Facade for settings access during migration."""
+    context = get_migration_context()
+    if context and hasattr(context, "settings"):
+        return context.settings
+    elif _original_get_settings is not None:
+        return _original_get_settings()
+
+    # Return empty settings for testing
+    class MockSettings:  # type: ignore[unreachable]
+        pass
+
+    return MockSettings()
+
+
+# Export facade instances
+debug_logger = DebugLoggerFacade()
+
+
+# Validation functions for testing
+def validate_facade_bridge() -> bool:
+    """Validate that facade bridge is working correctly."""
+    try:
+        # Test debug logger facade
+        debug_logger.log("INFO", "Facade bridge test")
+
+        # Test console facade
+        console = get_console()
+        console.print("Facade bridge console test")
+
+        # Test settings facade
+        get_settings()
+
+        return True
+    except Exception as e:
+        print(f"Facade bridge validation failed: {e}")
+        return False
+
+
+def get_facade_status() -> dict[str, Any]:
+    """Get current facade bridge status for diagnostics."""
+    return {
+        "context_set": get_migration_context() is not None,
+        "original_debug_logger": _original_debug_logger is not None,
+        "original_get_console": _original_get_console is not None,
+        "original_get_settings": _original_get_settings is not None,
+        "facade_operational": validate_facade_bridge(),
+    }

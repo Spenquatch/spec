@@ -9,6 +9,7 @@ from typing import Any
 
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class AccuracyReport:
     """Report containing detection accuracy metrics and validation results."""
@@ -27,6 +28,7 @@ class AccuracyReport:
     false_positive_details: list[dict[str, Any]]
     false_negative_details: list[dict[str, Any]]
     baseline_approved: bool
+
 
 @dataclass
 class SingletonPattern:
@@ -51,6 +53,7 @@ class SingletonPattern:
             and self.pattern_type == other.pattern_type
             and self.line_number == other.line_number
         )
+
 
 def validate_detection_accuracy(
     detected_patterns: list[SingletonPattern],
@@ -160,6 +163,7 @@ def validate_detection_accuracy(
         baseline_approved=baseline_approved,
     )
 
+
 def _parse_known_pattern_locations(known_patterns: list[str]) -> set[str]:
     """Parse known pattern locations into standardized format."""
     locations = set()
@@ -179,6 +183,7 @@ def _parse_known_pattern_locations(known_patterns: list[str]) -> set[str]:
 
     return locations
 
+
 def _extract_detected_locations(detected_patterns: list[SingletonPattern]) -> set[str]:
     """Extract detected pattern locations in standardized format."""
     locations = set()
@@ -187,6 +192,7 @@ def _extract_detected_locations(detected_patterns: list[SingletonPattern]) -> se
         locations.add(normalized_location)
 
     return locations
+
 
 def _generate_false_positive_details(
     detected_patterns: list[SingletonPattern], false_positive_locations: set[str]
@@ -209,6 +215,7 @@ def _generate_false_positive_details(
             )
 
     return details
+
 
 def _generate_false_negative_details(
     known_patterns: list[str], false_negative_locations: set[str]
@@ -235,6 +242,7 @@ def _generate_false_negative_details(
                 continue
 
     return details
+
 
 def calculate_baseline_completeness(
     accuracy_report: AccuracyReport,

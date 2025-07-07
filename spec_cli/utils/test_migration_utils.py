@@ -15,8 +15,10 @@ from ..core.context import SpecContext
 from ..logging.debug import debug_logger
 from .error_utils import SpecAnalysisError
 
+
 class FixtureMigrationError(SpecAnalysisError):
     """Error during test fixture migration to context-based patterns."""
+
 
 def create_context_fixture(factory_method: Callable) -> Callable:
     """Create context-based pytest fixture from factory method.
@@ -122,6 +124,7 @@ def create_context_fixture(factory_method: Callable) -> Callable:
             f"Failed to create context fixture from factory method: {e}"
         ) from e
 
+
 def validate_test_isolation(test_func: Callable) -> bool:
     """Validate that test function provides proper isolation.
 
@@ -217,6 +220,7 @@ def validate_test_isolation(test_func: Callable) -> bool:
         raise FixtureMigrationError(
             f"Failed to validate test isolation for {test_func.__name__}: {e}"
         ) from e
+
 
 def create_mock_context_fixture(
     settings_overrides: dict[str, Any] | None = None,
@@ -315,6 +319,7 @@ def create_mock_context_fixture(
         raise FixtureMigrationError(
             f"Failed to create mock context fixture: {e}"
         ) from e
+
 
 def migrate_singleton_fixture(legacy_fixture_func: Callable) -> Callable:
     """Migrate legacy singleton fixture to context-based pattern.

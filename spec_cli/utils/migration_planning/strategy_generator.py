@@ -9,10 +9,12 @@ from typing import Any
 from ...exceptions import SpecError
 from ...logging.debug import debug_logger
 
+
 class StrategyGenerationError(SpecError):
     """Exception raised when strategy generation fails."""
 
     pass
+
 
 def generate_elimination_strategy(pattern: Any) -> dict[str, Any]:
     """Generate appropriate elimination strategy for a classified singleton pattern.
@@ -61,6 +63,7 @@ def generate_elimination_strategy(pattern: Any) -> dict[str, Any]:
             error=str(e),
         )
         raise StrategyGenerationError(f"Failed to generate strategy: {e}") from e
+
 
 def _get_base_strategy(pattern_type: str) -> dict[str, Any]:
     """Get base strategy template for singleton pattern type."""
@@ -129,6 +132,7 @@ def _get_base_strategy(pattern_type: str) -> dict[str, Any]:
 
     return strategies.get(pattern_type, _get_generic_strategy())
 
+
 def _get_generic_strategy() -> dict[str, Any]:
     """Get generic strategy for unknown singleton pattern types."""
     return {
@@ -146,6 +150,7 @@ def _get_generic_strategy() -> dict[str, Any]:
         "prerequisites": ["pattern_analysis_tools"],
         "tools_required": ["ast_refactoring", "pattern_analyzer"],
     }
+
 
 def _customize_strategy_for_pattern(
     base_strategy: dict[str, Any], pattern: Any
@@ -189,6 +194,7 @@ def _customize_strategy_for_pattern(
         "complexity_score": complexity_score,
     }
 
+
 def _calculate_effort_with_dependencies(
     base_hours: int, complexity_score: int, dependency_count: int
 ) -> int:
@@ -203,6 +209,7 @@ def _calculate_effort_with_dependencies(
 
     # Minimum effort is 2 hours
     return max(2, total_effort)
+
 
 def _determine_risk_level(
     base_risk: str, complexity_score: int, dependency_count: int

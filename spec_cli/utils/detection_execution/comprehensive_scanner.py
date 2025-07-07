@@ -14,10 +14,13 @@ from ...exceptions import SpecError
 from ...logging.debug import debug_logger
 from ..singleton_detection import SingletonPatternDetector, SingletonViolation
 
+
 class ScanExecutionError(SpecError):
     """Exception raised when scan execution fails."""
 
-    def __init__(self, message: str, scan_context: dict[str, Any] | None = None) -> None:
+    def __init__(
+        self, message: str, scan_context: dict[str, Any] | None = None
+    ) -> None:
         """Initialize ScanExecutionError with message and context.
 
         Args:
@@ -26,6 +29,7 @@ class ScanExecutionError(SpecError):
         """
         super().__init__(message)
         self.scan_context = scan_context or {}
+
 
 @dataclass
 class SingletonPattern:
@@ -39,6 +43,7 @@ class SingletonPattern:
     code_snippet: str
     usage_context: str | None = None
 
+
 @dataclass
 class ScanStatistics:
     """Statistics from comprehensive codebase scan execution."""
@@ -51,6 +56,7 @@ class ScanStatistics:
     errors_encountered: int
     excluded_files: int
 
+
 @dataclass
 class ComprehensiveScanResult:
     """Result from comprehensive singleton detection scan."""
@@ -60,6 +66,7 @@ class ComprehensiveScanResult:
     detection_report: str
     scan_config: dict[str, Any]
     error_details: list[str]
+
 
 def execute_full_codebase_scan(scan_config: dict[str, Any]) -> ComprehensiveScanResult:
     """Execute comprehensive singleton detection scan across entire codebase.
@@ -88,7 +95,9 @@ def execute_full_codebase_scan(scan_config: dict[str, Any]) -> ComprehensiveScan
         print(f"Found {len(result.singleton_patterns)} patterns")
     """
     debug_logger.log(
-        "INFO", "Starting comprehensive singleton detection scan", scan_config=scan_config
+        "INFO",
+        "Starting comprehensive singleton detection scan",
+        scan_config=scan_config,
     )
 
     # Validate scan configuration
@@ -104,15 +113,14 @@ def execute_full_codebase_scan(scan_config: dict[str, Any]) -> ComprehensiveScan
     try:
         # Discover Python files to scan
         python_files = _discover_python_files(
-            codebase_root,
-            scan_config.get("exclusion_patterns", [])
+            codebase_root, scan_config.get("exclusion_patterns", [])
         )
 
         debug_logger.log(
             "INFO",
             "Python files discovered for scanning",
             file_count=len(python_files),
-            codebase_root=str(codebase_root)
+            codebase_root=str(codebase_root),
         )
 
         # Execute parallel scanning
@@ -120,7 +128,7 @@ def execute_full_codebase_scan(scan_config: dict[str, Any]) -> ComprehensiveScan
             python_files,
             scan_config.get("max_workers", 4),
             scan_config.get("timeout_seconds", 300),
-            scan_errors
+            scan_errors,
         )
 
         # Calculate scan statistics
@@ -134,7 +142,7 @@ def execute_full_codebase_scan(scan_config: dict[str, Any]) -> ComprehensiveScan
             scan_duration_seconds=duration,
             files_per_second=len(python_files) / duration if duration > 0 else 0,
             errors_encountered=len(scan_errors),
-            excluded_files=0  # Would need file counting to implement properly
+            excluded_files=0,  # Would need file counting to implement properly
         )
 
         # Generate detection report
@@ -145,7 +153,7 @@ def execute_full_codebase_scan(scan_config: dict[str, Any]) -> ComprehensiveScan
             "Comprehensive scan completed successfully",
             patterns_found=len(all_patterns),
             duration_seconds=duration,
-            files_scanned=len(python_files)
+            files_scanned=len(python_files),
         )
 
         return ComprehensiveScanResult(
@@ -153,23 +161,24 @@ def execute_full_codebase_scan(scan_config: dict[str, Any]) -> ComprehensiveScan
             scan_statistics=statistics,
             detection_report=report,
             scan_config=scan_config,
-            error_details=scan_errors
+            error_details=scan_errors,
         )
 
     except Exception as e:
         scan_context = {
             "codebase_root": str(codebase_root),
             "scan_config": scan_config,
-            "duration": time.time() - start_time
+            "duration": time.time() - start_time,
         }
         debug_logger.log(
             "ERROR",
             "Comprehensive scan execution failed",
             error=str(e),
             error_type=type(e).__name__,
-            scan_context=scan_context
+            scan_context=scan_context,
         )
         raise ScanExecutionError(f"Scan execution failed: {e}", scan_context) from e
+
 
 def _validate_scan_config(scan_config: dict[str, Any]) -> None:
     """Validate scan configuration parameters.
@@ -198,6 +207,7 @@ def _validate_scan_config(scan_config: dict[str, Any]) -> None:
     if not isinstance(timeout, int) or timeout < 1:
         raise ScanExecutionError("timeout_seconds must be positive integer")
 
+
 def _discover_python_files(
     codebase_root: Path, exclusion_patterns: list[str]
 ) -> list[Path]:
@@ -221,11 +231,12 @@ def _discover_python_files(
 
     return python_files
 
+
 def _execute_parallel_scan(
     python_files: list[Path],
     max_workers: int,
     timeout_seconds: int,
-    scan_errors: list[str]
+    scan_errors: list[str],
 ) -> list[SingletonPattern]:
     """Execute parallel scanning of Python files for singleton patterns.
 
@@ -263,7 +274,7 @@ def _execute_parallel_scan(
                         "WARNING",
                         "File scan failed",
                         file_path=str(py_file),
-                        error=str(e)
+                        error=str(e),
                     )
 
         except concurrent.futures.TimeoutError:
@@ -272,6 +283,7 @@ def _execute_parallel_scan(
             debug_logger.log("ERROR", "Scan timeout exceeded", timeout=timeout_seconds)
 
     return all_patterns
+
 
 def _scan_single_file(file_path: Path) -> list[SingletonPattern]:
     """Scan a single Python file for singleton patterns.
@@ -297,35 +309,27 @@ def _scan_single_file(file_path: Path) -> list[SingletonPattern]:
                 pattern_type=violation.pattern_type,
                 singleton_name=_extract_singleton_name(violation),
                 description=violation.description,
-                code_snippet=violation.code_snippet
+                code_snippet=violation.code_snippet,
             )
             patterns.append(pattern)
 
-        # Also check for usage patterns via pattern analysis
-        usage_patterns = analyze_singleton_usage(file_path)
-
-        for usage in usage_patterns:
-            if usage.usage_type in ["class_definition", "instantiation"]:
-                pattern = SingletonPattern(
-                    file_path=usage.file_path,
-                    line_number=usage.line_number,
-                    pattern_type=f"usage_{usage.usage_type}",
-                    singleton_name=usage.singleton_name,
-                    description=f"Singleton usage: {usage.usage_type}",
-                    code_snippet=usage.context,
-                    usage_context=usage.context
-                )
-                patterns.append(pattern)
+        # TODO: Implement usage pattern analysis after basic detection is stable
+        # usage_patterns = analyze_singleton_usage(file_path)
+        # for usage in usage_patterns:
+        #     if usage.usage_type in ["class_definition", "instantiation"]:
+        #         pattern = SingletonPattern(...)
+        #         patterns.append(pattern)
 
     except Exception as e:
         debug_logger.log(
             "WARNING",
             "Failed to scan file for patterns",
             file_path=str(file_path),
-            error=str(e)
+            error=str(e),
         )
 
     return patterns
+
 
 def _extract_singleton_name(violation: SingletonViolation) -> str:
     """Extract singleton name from violation description or code snippet.
@@ -353,10 +357,11 @@ def _extract_singleton_name(violation: SingletonViolation) -> str:
 
     return "unknown_singleton"
 
+
 def _generate_detection_report(
     patterns: list[SingletonPattern],
     statistics: ScanStatistics,
-    scan_config: dict[str, Any]
+    scan_config: dict[str, Any],
 ) -> str:
     """Generate comprehensive detection report from scan results.
 
@@ -404,11 +409,13 @@ def _generate_detection_report(
             report_lines.append(f"    ... and {len(type_patterns) - 3} more")
         report_lines.append("")
 
-    report_lines.extend([
-        "",
-        "=== Scan Completed Successfully ===",
-        f"Total singleton patterns found: {len(patterns)}",
-        f"Scan completed in {statistics.scan_duration_seconds:.2f} seconds"
-    ])
+    report_lines.extend(
+        [
+            "",
+            "=== Scan Completed Successfully ===",
+            f"Total singleton patterns found: {len(patterns)}",
+            f"Scan completed in {statistics.scan_duration_seconds:.2f} seconds",
+        ]
+    )
 
     return "\n".join(report_lines)
