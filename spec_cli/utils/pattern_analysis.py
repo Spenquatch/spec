@@ -13,7 +13,6 @@ from ..exceptions import PatternAnalysisError
 from ..logging.debug import debug_logger
 from .error_utils import handle_os_error
 
-
 @dataclass
 class SingletonUsage:
     """Represents a singleton usage found in code analysis."""

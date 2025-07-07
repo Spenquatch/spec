@@ -261,7 +261,7 @@ class TestFindDependentFiles:
             column=0,
             pattern_type="import_singleton",
             description="Test pattern",
-            code_snippet="import singleton",
+            code_snippet="import some_module"
         )
         all_files = [TEST_FILE_PATH, TEST_FILE_PATH_2]
 
@@ -876,7 +876,7 @@ class TestEdgeCaseBranches:
             column=0,
             pattern_type="import_singleton",
             description="Low effort pattern",
-            code_snippet="import singleton",
+            code_snippet="import low_effort_module"
         )
         LOW_EFFORT_HOURS = 10  # Below the 20 hour threshold
         assessment = ComplexityAssessment(

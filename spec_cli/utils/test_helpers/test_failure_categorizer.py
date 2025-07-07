@@ -13,7 +13,6 @@ from spec_cli.logging.debug import debug_logger
 
 from ..error_utils import SpecAnalysisError
 
-
 class FailureType(Enum):
     """Categories of test failures for systematic analysis."""
 

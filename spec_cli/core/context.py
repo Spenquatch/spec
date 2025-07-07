@@ -16,7 +16,6 @@ from ..utils.context_utils import create_context_hash, validate_context_immutabi
 from ..utils.error_utils import create_error_context
 from ..utils.factory_utils import validate_factory_inputs
 
-
 class SpecContextError(Exception):
     """Exception raised when SpecContext operations fail."""
 

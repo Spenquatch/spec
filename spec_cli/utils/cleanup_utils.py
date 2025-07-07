@@ -11,7 +11,6 @@ from ..exceptions import InfrastructureRemovalError
 from ..logging.debug import debug_logger
 from .error_utils import create_error_context
 
-
 def safe_file_removal(file_path: Path) -> bool:
     """Safely remove a file with error handling and validation.
 

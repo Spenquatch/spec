@@ -29,7 +29,6 @@ from spec_cli.ui.progress_manager import (
     set_progress_manager,
 )
 
-
 class TestProgressState:
     """Test ProgressState data class and its properties."""
 

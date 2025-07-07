@@ -14,7 +14,6 @@ from .cleanup_utils import validate_no_references
 from .error_utils import create_error_context
 from .singleton_detection import SingletonPatternDetector
 
-
 @dataclass
 class MigrationValidationReport:
     """Report of migration validation results."""

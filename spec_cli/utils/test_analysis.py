@@ -13,7 +13,6 @@ from pathlib import Path
 
 from .error_utils import SpecAnalysisError
 
-
 @dataclass
 class FixtureInfo:
     """Information about a single pytest fixture."""

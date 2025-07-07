@@ -12,7 +12,6 @@ from typing import Any
 from ..exceptions import CompatibilityError
 from ..logging.debug import debug_logger
 
-
 def create_singleton_wrapper(
     singleton_class: type[Any],
     fallback_enabled: bool = True,

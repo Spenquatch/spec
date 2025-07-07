@@ -21,7 +21,6 @@ from spec_cli.config.settings import (
 )
 from spec_cli.exceptions import SpecConfigurationError
 
-
 class TestConfigurationScenarios:
     """Test configuration scenarios and environment-based behavior."""
 

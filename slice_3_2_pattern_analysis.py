@@ -18,7 +18,6 @@ from spec_cli.utils.pattern_classification.complexity_analyzer import (
 )
 from spec_cli.utils.singleton_detection import SingletonViolation
 
-
 class PatternAnalysisError(SpecError):
     """Exception raised when pattern analysis fails."""
 

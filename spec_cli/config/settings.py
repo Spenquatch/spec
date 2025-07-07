@@ -14,6 +14,7 @@ from rich.theme import Theme
 from ..exceptions import SpecConfigurationError
 from ..logging.debug import debug_logger
 from ..utils.path_utils import normalize_path, resolve_project_root
+from ..core.context import SpecContext
 
 # Rich theme for consistent styling throughout the application
 SPEC_THEME = Theme(

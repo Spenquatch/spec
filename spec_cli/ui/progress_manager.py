@@ -22,7 +22,7 @@ from ..utils.error_handler import ErrorHandler
 from .console import get_console
 from .progress_bar import SpecProgressBar
 from .spinner import SpinnerManager
-
+from ..core.context import SpecContext
 
 @dataclass
 class ProgressState:

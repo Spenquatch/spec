@@ -10,7 +10,6 @@ from ...exceptions import SpecError
 from ...logging.debug import debug_logger
 from ..singleton_detection import SingletonViolation
 
-
 class ComplexityAnalysisError(SpecError):
     """Exception raised when complexity analysis fails."""
 

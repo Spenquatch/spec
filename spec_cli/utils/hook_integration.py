@@ -10,7 +10,6 @@ from typing import Any
 
 from ..exceptions import SpecError
 
-
 class HookIntegrationError(SpecError):
     """Exception raised when hook integration fails."""
 

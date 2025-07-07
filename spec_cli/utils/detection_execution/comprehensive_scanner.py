@@ -12,9 +12,8 @@ from typing import Any
 
 from ...exceptions import SpecError
 from ...logging.debug import debug_logger
-from ..pattern_analysis import analyze_singleton_usage
+from ..pattern_analysis import SingletonUsage
 from ..singleton_detection import SingletonPatternDetector, SingletonViolation
-
 
 class ScanExecutionError(SpecError):
     """Exception raised when scan execution fails."""

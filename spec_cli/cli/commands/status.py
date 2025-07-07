@@ -14,7 +14,6 @@ from ..decorators import context_injection
 from ..options import spec_command
 from ..utils import echo_status, get_spec_repository
 
-
 @spec_command()
 @click.option(
     "--health",

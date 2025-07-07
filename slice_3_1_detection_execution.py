@@ -16,7 +16,6 @@ from spec_cli.utils.detection_execution.comprehensive_scanner import (
     execute_full_codebase_scan,
 )
 
-
 class DetectionExecutionError(SpecError):
     """Exception raised when detection execution fails."""
 
