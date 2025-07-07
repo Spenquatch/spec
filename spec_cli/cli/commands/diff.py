@@ -5,7 +5,7 @@ from typing import Any
 import click
 
 from ...core.context import SpecContext
-from ...decorators import context_injection
+from ..decorators import context_injection
 from ...logging.debug import debug_logger
 from ...ui.error_display import show_message
 from ...ui.tables import StatusTable

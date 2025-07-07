@@ -5,7 +5,7 @@ from typing import Any
 import click
 
 from ...core.context import SpecContext
-from ...decorators import context_injection
+from ..decorators import context_injection
 from ...ui.tables import SpecTable
 
 
