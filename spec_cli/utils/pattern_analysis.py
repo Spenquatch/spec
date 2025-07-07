@@ -296,7 +296,7 @@ def _is_singleton_name(name: str) -> bool:
     return any(indicator in name for indicator in singleton_indicators)
 
 def _is_singleton_import(module_name: str) -> bool:
-    """Check if a module 
+    """Check if a module contains singleton imports."""
     singleton_modules = ["singleton", "progress_manager"]
     return any(mod in module_name for mod in singleton_modules)
 
