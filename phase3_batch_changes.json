@@ -1,0 +1,24 @@
+{
+  "batch_number": 1,
+  "changes_log": [
+    {
+      "file": "spec_cli/ui/progress_manager.py",
+      "instance_id": "get_console_usage_001_002",
+      "changes": [
+        "Replaced get_console import with context_bridge.get_console",
+        "Maintained event handler signature compatibility",
+        "Used facade bridge pattern for gradual migration"
+      ]
+    },
+    {
+      "file": "spec_cli/ui/error_display.py",
+      "instance_id": "get_console_usage_003",
+      "changes": [
+        "Replaced get_console import with context_bridge.get_console",
+        "Maintained facade bridge compatibility for constructor usage"
+      ]
+    }
+  ],
+  "transformation_approach": "facade_bridge",
+  "reason": "Event handlers and constructors require signature compatibility"
+}

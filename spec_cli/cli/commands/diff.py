@@ -5,10 +5,10 @@ from typing import Any
 import click
 
 from ...core.context import SpecContext
-from ..decorators import context_injection
 from ...logging.debug import debug_logger
 from ...ui.error_display import show_message
 from ...ui.tables import StatusTable
+from ..decorators import context_injection
 from ..options import optional_files_argument, spec_command
 from ..utils import get_spec_repository
 from .history import format_diff_output

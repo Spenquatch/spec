@@ -8,6 +8,7 @@ from spec_cli.utils.migration_cleanup_utils import (
     validate_migration_complete,
 )
 
+
 class TestMigrationCleanupIntegration:
     """Integration tests for migration cleanup and validation workflow."""
 

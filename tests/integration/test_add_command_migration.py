@@ -10,6 +10,7 @@ from spec_cli.cli.commands.init import init_command
 from spec_cli.cli.commands.status import status_command
 from spec_cli.core.context import SpecContext
 
+
 class TestAddCommandMigrationIntegration:
     """Test add command migration integration with other migrated commands."""
 

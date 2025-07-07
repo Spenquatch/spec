@@ -15,6 +15,7 @@ from spec_cli.utils.assessment.readiness_evaluator import (
     assess_migration_readiness,
 )
 
+
 class TestAssessMigrationReadiness:
     """Test main readiness assessment functionality."""
 

@@ -10,6 +10,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
 
+from ..core.context_bridge import get_console
 from ..file_processing.progress_events import (
     ProcessingStage,
     ProgressEvent,
@@ -19,7 +20,6 @@ from ..file_processing.progress_events import (
 )
 from ..logging.debug import debug_logger
 from ..utils.error_handler import ErrorHandler
-from .console import get_console
 from .progress_bar import SpecProgressBar
 from .spinner import SpinnerManager
 

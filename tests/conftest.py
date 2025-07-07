@@ -18,6 +18,7 @@ from spec_cli.utils.test_helpers.git_test_helpers import (
     create_git_repository_mocker,
 )
 
+
 @pytest.fixture(autouse=True)
 def isolate_working_directory():
     """Ensure working directory is restored after each test.

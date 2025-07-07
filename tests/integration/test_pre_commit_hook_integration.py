@@ -10,6 +10,7 @@ from spec_cli.utils.hook_integration import (
     validate_hook_configuration,
 )
 
+
 class TestPreCommitHookIntegration:
     """Integration tests for pre-commit hook with singleton detection."""
 

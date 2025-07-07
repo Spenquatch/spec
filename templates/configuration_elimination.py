@@ -7,31 +7,32 @@ This template shows the before/after patterns for eliminating configuration sing
 
 from spec_cli.config.settings import get_settings
 
+
 def old_process_files():
     """OLD: Function using singleton configuration access."""
     # Anti-pattern: Global singleton access
     settings = get_settings()
-    
+
     max_file_size = settings.max_file_size
     debug_mode = settings.debug_enabled
     output_format = settings.output_format
-    
+
     for file_path in settings.input_files:
         if file_path.stat().st_size > max_file_size:
             if debug_mode:
                 print(f"Skipping large file: {file_path}")
             continue
-            
+
         process_single_file(file_path, output_format)
 
 def process_single_file(file_path, format):
     """Helper function that also needs configuration."""
     # Anti-pattern: Nested singleton access
     settings = get_settings()
-    
+
     if settings.validate_files:
         validate_file_content(file_path)
-    
+
     # Process file logic here
     pass
 
@@ -39,31 +40,32 @@ def process_single_file(file_path, format):
 
 from spec_cli.core.context import SpecContext
 
+
 def new_process_files(context: SpecContext):
     """NEW: Function using injected configuration."""
     # Target pattern: Configuration through context
     settings = context.settings
-    
+
     max_file_size = settings.max_file_size
     debug_mode = settings.debug_enabled
     output_format = settings.output_format
-    
+
     for file_path in settings.input_files:
         if file_path.stat().st_size > max_file_size:
             if debug_mode:
                 context.console.show_debug(f"Skipping large file: {file_path}")
             continue
-            
+
         process_single_file(file_path, format, context)
 
 def process_single_file(file_path, format, context: SpecContext):
     """Helper function with injected configuration."""
     # Target pattern: Configuration passed through
     settings = context.settings
-    
+
     if settings.validate_files:
         validate_file_content(file_path, context)
-    
+
     # Process file logic here
     pass
 
@@ -71,13 +73,14 @@ def process_single_file(file_path, format, context: SpecContext):
 
 from spec_cli.config.settings import SettingsFactory
 
+
 class SpecContext:
     """Context with factory-based configuration."""
-    
+
     def __init__(self, config_path=None, overrides=None):
         self._settings_factory = SettingsFactory(config_path, overrides)
         self._settings = None
-    
+
     @property
     def settings(self):
         """Lazy-loaded settings from factory."""
@@ -120,14 +123,14 @@ Step 5: Update Tests
 def test_old_process_files():
     """OLD: Test with global configuration setup."""
     from spec_cli.config.settings import configure_settings
-    
+
     # Anti-pattern: Global configuration setup
     configure_settings({
         'max_file_size': 1024,
         'debug_enabled': True,
         'input_files': [Path('test.txt')]
     })
-    
+
     old_process_files()
     # Validation logic
 
@@ -140,10 +143,10 @@ def test_new_process_files():
         'debug_enabled': True,
         'input_files': [Path('test.txt')]
     })
-    
+
     context = SpecContext()
     context._settings_factory = settings_factory
-    
+
     new_process_files(context)
     # Validation logic
 
@@ -156,7 +159,7 @@ def context_with_config():
         'max_file_size': 2048,
         'validate_files': False
     })
-    
+
     context = SpecContext()
     context._settings_factory = factory
     return context
