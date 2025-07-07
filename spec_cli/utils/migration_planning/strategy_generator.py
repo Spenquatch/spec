@@ -99,7 +99,7 @@ def _get_base_strategy(pattern_type: str) -> dict[str, Any]:
             "strategy_type": "import_refactoring",
             "description": "Refactor singleton imports to use dependency injection",
             "implementation_steps": [
-                "Identify all 
+                "Identify all import locations",
                 "Create dependency injection points",
                 "Update import statements across modules",
                 "Configure dependency injection container",
