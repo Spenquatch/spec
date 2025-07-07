@@ -12,8 +12,9 @@ from typing import Any
 
 from ...exceptions import SpecError
 from ...logging.debug import debug_logger
-from ..pattern_analysis 
-from ..singleton_detection 
+from ..pattern_analysis import analyze_singleton_usage
+from ..singleton_detection import SingletonPatternDetector, SingletonViolation
+
 
 class ScanExecutionError(SpecError):
     """Exception raised when scan execution fails."""
@@ -287,7 +288,8 @@ def _scan_single_file(file_path: Path) -> list[SingletonPattern]:
 
     try:
         # Use existing singleton detection utilities
-        violations = scan_for_singleton_patterns(file_path)
+        detector = SingletonPatternDetector()
+        violations = detector.detect_violations(file_path)
 
         # Convert violations to comprehensive patterns
         for violation in violations:
