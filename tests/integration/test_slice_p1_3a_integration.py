@@ -12,6 +12,7 @@ from spec_cli.utils.pattern_analysis import (
     document_access_patterns,
 )
 
+
 class TestSingletonAnalysisIntegration:
     """Test singleton analysis integration with real codebase."""
 

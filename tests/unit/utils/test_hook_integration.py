@@ -11,6 +11,7 @@ from spec_cli.utils.hook_integration import (
     validate_hook_configuration,
 )
 
+
 class TestHookIntegrationError:
     """Test HookIntegrationError exception class."""
 

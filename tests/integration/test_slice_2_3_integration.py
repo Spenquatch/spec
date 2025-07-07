@@ -5,6 +5,7 @@ from slice_2_3_function_restoration import (
     restore_functions_for_test_execution,
 )
 
+
 class TestSlice23Integration:
     """Integration tests for complete function restoration workflow."""
 

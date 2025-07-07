@@ -22,6 +22,7 @@ from spec_cli.config.settings import (
 )
 from spec_cli.exceptions import SpecConfigurationError
 
+
 class TestSpecSettings:
     """Unit tests for SpecSettings dataclass."""
 

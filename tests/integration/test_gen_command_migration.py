@@ -10,6 +10,7 @@ from spec_cli.cli.commands.gen import gen_command
 from spec_cli.config.settings import SpecSettings
 from spec_cli.core.context import SpecContext
 
+
 class TestGenCommandMigrationIntegration:
     """Integration tests for gen command migration with full context chain."""
 

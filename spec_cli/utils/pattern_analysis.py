@@ -26,7 +26,6 @@ class SingletonUsage:
     function_name: str | None = None
     class_name: str | None = None
 
-
 @dataclass
 class AccessPatternReport:
     """Report of access patterns for a specific singleton class."""
@@ -36,7 +35,6 @@ class AccessPatternReport:
     usage_locations: list[SingletonUsage]
     access_methods: set[str]  # Direct instantiation, function calls, etc.
     wrapper_requirements: list[str]  # Requirements for compatibility wrapper
-
 
 def analyze_singleton_usage(file_path: Path) -> list[SingletonUsage]:
     """Analyze a Python file for singleton usage patterns.
@@ -118,7 +116,6 @@ def analyze_singleton_usage(file_path: Path) -> list[SingletonUsage]:
         raise PatternAnalysisError(
             f"Failed to analyze singleton patterns in {file_path}: {formatted_error}"
         ) from e
-
 
 def _analyze_ast_for_singletons(tree: ast.AST, file_path: Path) -> list[SingletonUsage]:
     """Analyze AST for singleton patterns.
@@ -238,7 +235,6 @@ def _analyze_ast_for_singletons(tree: ast.AST, file_path: Path) -> list[Singleto
     visitor.visit(tree)
     return usages
 
-
 def _analyze_regex_for_singletons(
     content: str, file_path: Path
 ) -> list[SingletonUsage]:
@@ -280,7 +276,6 @@ def _analyze_regex_for_singletons(
 
     return usages
 
-
 def _is_singleton_class(node: ast.ClassDef) -> bool:
     """Check if a class definition uses singleton patterns."""
     # Check for metaclass=SingletonMeta
@@ -296,23 +291,19 @@ def _is_singleton_class(node: ast.ClassDef) -> bool:
     # Check for "Singleton" in class name
     return "Singleton" in node.name
 
-
 def _is_singleton_name(name: str) -> bool:
     """Check if a name indicates a singleton class or pattern."""
     singleton_indicators = ["Singleton", "ProgressManagerSingleton", "SingletonMeta"]
     return any(indicator in name for indicator in singleton_indicators)
-
 
 def _is_singleton_import(module_name: str) -> bool:
     """Check if a module contains singleton imports."""
     singleton_modules = ["singleton", "progress_manager"]
     return any(mod in module_name for mod in singleton_modules)
 
-
 def _is_singleton_module(module_name: str) -> bool:
     """Check if a module contains singleton functionality."""
     return _is_singleton_import(module_name)
-
 
 def _extract_singleton_name_from_line(line: str, pattern: str) -> str:
     """Extract singleton name from a line of code."""
@@ -329,7 +320,6 @@ def _extract_singleton_name_from_line(line: str, pattern: str) -> str:
     if match:
         return match.group(1).strip()
     return "unknown_singleton"
-
 
 def document_access_patterns(
     singleton_name: str, usages: list[SingletonUsage]
@@ -394,7 +384,6 @@ def document_access_patterns(
         access_methods=access_methods,
         wrapper_requirements=wrapper_requirements,
     )
-
 
 def _generate_wrapper_requirements(
     singleton_name: str, access_methods: set[str], usages: list[SingletonUsage]

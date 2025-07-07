@@ -19,6 +19,7 @@ from spec_cli.utils.test_migration_utils import (
     validate_test_isolation,
 )
 
+
 class TestCreateContextFixture:
     """Test create_context_fixture functionality."""
 

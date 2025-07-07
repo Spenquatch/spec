@@ -18,7 +18,6 @@ class SingletonDetectionError(SpecError):
         super().__init__(message)
         self.file_path = file_path
 
-
 @dataclass
 class SingletonViolation:
     """Represents a detected singleton pattern violation."""
@@ -30,7 +29,6 @@ class SingletonViolation:
     description: str
     code_snippet: str
 
-
 @dataclass
 class ASTAnalysisReport:
     """Report from AST analysis of a Python file."""
@@ -41,7 +39,6 @@ class ASTAnalysisReport:
     classes: set[str]
     decorators: set[str]
     metaclasses: set[str]
-
 
 class SingletonPatternDetector:
     """Detects singleton patterns in Python AST nodes."""
@@ -213,7 +210,6 @@ class SingletonPatternDetector:
             pass
         return ""
 
-
 def scan_for_singleton_patterns(file_path: Path) -> list[SingletonViolation]:
     """Scan a Python file for singleton patterns.
 
@@ -228,7 +224,6 @@ def scan_for_singleton_patterns(file_path: Path) -> list[SingletonViolation]:
     """
     detector = SingletonPatternDetector()
     return detector.detect_violations(file_path)
-
 
 def analyze_python_ast(file_path: Path) -> ASTAnalysisReport:
     """Analyze Python file AST for singleton patterns and metadata.

@@ -17,6 +17,7 @@ from spec_cli.utils.test_migration_utils import (
     validate_test_isolation,
 )
 
+
 class TestContextBasedFixtureMigration:
     """Integration test for complete context-based fixture migration."""
 

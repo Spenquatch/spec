@@ -14,6 +14,7 @@ from spec_cli.core.context import (
     SpecSettingsInterface,
 )
 
+
 def get_unwrapped_function(func):
     """Get the completely unwrapped function by following __wrapped__ chain."""
     while hasattr(func, "__wrapped__"):

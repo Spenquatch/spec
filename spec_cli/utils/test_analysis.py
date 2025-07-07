@@ -27,7 +27,6 @@ class FixtureInfo:
     state_contamination_risk: bool = False
     context_migration_required: bool = False
 
-
 @dataclass
 class FixtureAnalysisReport:
     """Comprehensive report of test fixture analysis."""
@@ -39,10 +38,8 @@ class FixtureAnalysisReport:
     migration_requirements: dict[str, str] = field(default_factory=dict)
     analysis_summary: str = ""
 
-
 class FixtureAnalysisError(SpecAnalysisError):
     """Error during test fixture analysis."""
-
 
 def analyze_test_fixtures(test_dir: Path) -> FixtureAnalysisReport:
     """Analyze existing test fixture structure and patterns.
@@ -97,7 +94,6 @@ def analyze_test_fixtures(test_dir: Path) -> FixtureAnalysisReport:
     except Exception as e:
         raise FixtureAnalysisError(f"Failed to analyze test fixtures: {e}") from e
 
-
 def identify_singleton_dependencies(fixture_func: Callable) -> list[str]:
     """Identify singleton dependencies in a fixture function.
 
@@ -145,7 +141,6 @@ def identify_singleton_dependencies(fixture_func: Callable) -> list[str]:
     except Exception as e:
         raise FixtureAnalysisError(f"Failed to analyze fixture function: {e}") from e
 
-
 def _discover_fixtures(test_dir: Path) -> list[FixtureInfo]:
     """Discover all pytest fixtures in test directory."""
     fixtures = []
@@ -159,7 +154,6 @@ def _discover_fixtures(test_dir: Path) -> list[FixtureInfo]:
             fixtures.extend(file_fixtures)
 
     return fixtures
-
 
 def _parse_fixtures_from_file(file_path: Path) -> list[FixtureInfo]:
     """Parse fixtures from a single test file."""
@@ -181,7 +175,6 @@ def _parse_fixtures_from_file(file_path: Path) -> list[FixtureInfo]:
 
     return fixtures
 
-
 def _extract_fixture_info(
     func_node: ast.FunctionDef, file_path: Path
 ) -> FixtureInfo | None:
@@ -202,7 +195,6 @@ def _extract_fixture_info(
 
     return None
 
-
 def _is_pytest_fixture_decorator(decorator: ast.expr) -> bool:
     """Check if decorator is pytest.fixture."""
     if isinstance(decorator, ast.Name) and decorator.id == "pytest.fixture":
@@ -219,7 +211,6 @@ def _is_pytest_fixture_decorator(decorator: ast.expr) -> bool:
 
     return False
 
-
 def _extract_fixture_scope(decorator: ast.expr) -> str:
     """Extract scope from fixture decorator."""
     if isinstance(decorator, ast.Call):
@@ -228,7 +219,6 @@ def _extract_fixture_scope(decorator: ast.expr) -> str:
                 return str(keyword.value.value)
     return "function"
 
-
 def _extract_autouse_flag(decorator: ast.expr) -> bool:
     """Extract autouse flag from fixture decorator."""
     if isinstance(decorator, ast.Call):
@@ -236,7 +226,6 @@ def _extract_autouse_flag(decorator: ast.expr) -> bool:
             if keyword.arg == "autouse" and isinstance(keyword.value, ast.Constant):
                 return bool(keyword.value.value)
     return False
-
 
 def _extract_singleton_patterns(func_node: ast.FunctionDef) -> list[str]:
     """Extract singleton dependency patterns from function."""
@@ -277,7 +266,6 @@ def _extract_singleton_patterns(func_node: ast.FunctionDef) -> list[str]:
 
     return patterns
 
-
 def _assess_contamination_risk(func_node: ast.FunctionDef) -> bool:
     """Assess if fixture has state contamination risk."""
     # Look for global state access patterns
@@ -293,28 +281,23 @@ def _assess_contamination_risk(func_node: ast.FunctionDef) -> bool:
     source = ast.unparse(func_node)
     return any(indicator in source for indicator in contamination_indicators)
 
-
 def _requires_context_migration(func_node: ast.FunctionDef) -> bool:
     """Determine if fixture requires context-based migration."""
     singleton_deps = _extract_singleton_patterns(func_node)
     contamination_risk = _assess_contamination_risk(func_node)
     return len(singleton_deps) > 0 or contamination_risk
 
-
 def _analyze_singleton_dependencies(fixtures: list[FixtureInfo]) -> list[FixtureInfo]:
     """Analyze fixtures for singleton dependencies."""
     return [f for f in fixtures if f.singleton_dependencies]
-
 
 def _identify_isolation_issues(fixtures: list[FixtureInfo]) -> list[FixtureInfo]:
     """Identify fixtures with test isolation issues."""
     return [f for f in fixtures if f.state_contamination_risk]
 
-
 def _identify_migration_candidates(fixtures: list[FixtureInfo]) -> list[FixtureInfo]:
     """Identify fixtures requiring context migration."""
     return [f for f in fixtures if f.context_migration_required]
-
 
 def _generate_migration_requirements(
     singleton_deps: list[FixtureInfo],
@@ -338,7 +321,6 @@ def _generate_migration_requirements(
             requirements[fixture_name] = "General context-based migration required"
 
     return requirements
-
 
 def _create_analysis_summary(
     fixtures: list[FixtureInfo],
