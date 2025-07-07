@@ -1,4 +1,5 @@
 import sys
+
 sys.path.insert(0, '/app')
 
 from slice_2_3_function_restoration import FunctionRestorationSystem
