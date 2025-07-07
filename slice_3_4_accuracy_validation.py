@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Any
 
 from spec_cli.utils.pattern_analysis 
-from spec_cli.utils.singleton_detection 
+from spec_cli.utils.singleton_detection import SingletonPatternDetector 
 from spec_cli.utils.validation.detection_accuracy_validator import (
     AccuracyReport,
     SingletonPattern,

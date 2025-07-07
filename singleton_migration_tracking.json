@@ -1,0 +1,433 @@
+{
+  "migration_tracking": {
+    "metadata": {
+      "version": "1.0",
+      "total_instances": 1019,
+      "completed": 5,
+      "in_progress": 0,
+      "not_migrated": 1001,
+      "blocked": 13,
+      "deprecated": 0,
+      "wont_fix": 0,
+      "last_updated": "2025-07-07",
+      "detection_tool_accuracy": "7%",
+      "notes": "Based on comprehensive codebase analysis. Expert recommends expand-contract hybrid strategy."
+    },
+    "progress_by_category": {
+      "cli_commands": {
+        "total": 21,
+        "migrated": 5,
+        "not_migrated": 16,
+        "completion_rate": "24%"
+      },
+      "functional_singletons": {
+        "total": 82,
+        "migrated": 0,
+        "not_migrated": 82,
+        "completion_rate": "0%"
+      },
+      "import_singletons": {
+        "total": 940,
+        "migrated": 0,
+        "not_migrated": 940,
+        "completion_rate": "0%"
+      },
+      "test_failures": {
+        "total": 13,
+        "resolved": 0,
+        "active": 13,
+        "completion_rate": "0%"
+      }
+    },
+    "categories": {
+      "cli_commands": {
+        "description": "CLI commands that need migration to @context_injection pattern",
+        "priority": "high",
+        "migration_approach": "Use @context_injection decorator and SpecContext parameter",
+        "estimated_effort_days": 8,
+        "instances": {
+          "init_command": {
+            "id": "cli_cmd_001",
+            "file_path": "spec_cli/cli/commands/init.py",
+            "qualified_symbol": "spec_cli.cli.commands.init.init_command",
+            "line_numbers": [14, 16, 17],
+            "pattern_type": "cli_command",
+            "current_state": "partial",
+            "migration_approach": "Already uses @context_injection but has remaining debug_logger imports",
+            "priority": "medium",
+            "estimated_effort_hours": 2,
+            "blocked_by": [],
+            "related_to": ["debug_logger_070", "debug_logger_083"],
+            "metrics": {
+              "touch_count": 12,
+              "last_touched": "2025-07-01"
+            },
+            "notes": "Migrated to SpecContext but still imports debug_logger in error handling",
+            "next_steps": [
+              "Replace debug_logger imports with context.logger",
+              "Update error handling to use context dependencies"
+            ]
+          },
+          "diff_command": {
+            "id": "cli_cmd_002", 
+            "file_path": "spec_cli/cli/commands/diff.py",
+            "qualified_symbol": "spec_cli.cli.commands.diff.diff_command",
+            "line_numbers": [7, 8, 29, 51, 93, 102, 108],
+            "pattern_type": "cli_command",
+            "current_state": "not_migrated",
+            "migration_approach": "Add @context_injection decorator and SpecContext parameter",
+            "priority": "high",
+            "estimated_effort_hours": 4,
+            "blocked_by": [],
+            "related_to": ["func_singleton_001", "func_singleton_002"],
+            "metrics": {
+              "touch_count": 8,
+              "last_touched": "2025-06-15"
+            },
+            "notes": "Uses get_console(), debug_logger imports - standard singleton pattern",
+            "next_steps": [
+              "Add @context_injection decorator",
+              "Add SpecContext parameter to function signature",
+              "Replace get_console() with context.console",
+              "Replace debug_logger with context.logger"
+            ]
+          },
+          "help_command": {
+            "id": "cli_cmd_003",
+            "file_path": "spec_cli/cli/commands/help.py", 
+            "qualified_symbol": "spec_cli.cli.commands.help.help_command",
+            "line_numbers": [],
+            "pattern_type": "cli_command",
+            "current_state": "not_migrated",
+            "migration_approach": "Add @context_injection decorator and SpecContext parameter",
+            "priority": "low",
+            "estimated_effort_hours": 2,
+            "blocked_by": [],
+            "related_to": [],
+            "metrics": {
+              "touch_count": 3,
+              "last_touched": "2025-05-20"
+            },
+            "notes": "Help command - low complexity, good candidate for quick migration",
+            "next_steps": [
+              "Add @context_injection decorator",
+              "Identify and replace any singleton usage"
+            ]
+          }
+        }
+      },
+      "functional_singletons": {
+        "description": "Functions that return singleton instances (get_console, get_settings, etc.)",
+        "priority": "medium", 
+        "migration_approach": "Replace with context.property access after facade implementation",
+        "estimated_effort_days": 15,
+        "facade_strategy": "Implement context bridge pattern as recommended by expert",
+        "instances": {
+          "get_console_usage": {
+            "id": "func_singleton_001",
+            "file_path": "spec_cli/cli/commands/diff.py",
+            "qualified_symbol": "spec_cli.ui.console.get_console",
+            "line_numbers": [8, 51, 108],
+            "pattern_type": "functional_singleton_call",
+            "current_state": "not_migrated",
+            "migration_approach": "Replace with context.console after facade bridge",
+            "priority": "high",
+            "estimated_effort_hours": 1,
+            "blocked_by": ["facade_bridge_implementation"],
+            "related_to": ["cli_cmd_002"],
+            "metrics": {
+              "touch_count": 8,
+              "last_touched": "2025-06-15"
+            },
+            "notes": "High-touch file, should be migrated early",
+            "next_steps": [
+              "Wait for facade bridge implementation",
+              "Replace get_console() with context.console"
+            ]
+          },
+          "get_settings_usage": {
+            "id": "func_singleton_002",
+            "file_path": "spec_cli/config/settings.py",
+            "qualified_symbol": "spec_cli.config.settings.get_settings",
+            "line_numbers": [45, 67, 89],
+            "pattern_type": "functional_singleton_definition",
+            "current_state": "not_migrated",
+            "migration_approach": "Replace with SpecContext.settings property",
+            "priority": "high",
+            "estimated_effort_hours": 3,
+            "blocked_by": [],
+            "related_to": ["settings_manager_singleton"],
+            "metrics": {
+              "touch_count": 25,
+              "last_touched": "2025-07-01"
+            },
+            "notes": "Core settings access - high impact migration",
+            "next_steps": [
+              "Implement facade bridge for get_settings()",
+              "Update all call sites to use context.settings"
+            ]
+          }
+        }
+      },
+      "import_singletons": {
+        "description": "Module-level singleton imports, primarily debug_logger instances",
+        "priority": "low",
+        "migration_approach": "Automated codemod replacement with context.logger",
+        "estimated_effort_days": 20,
+        "automation_strategy": "Use libcst or bowler for automated transformation",
+        "instances": {
+          "debug_logger_core": {
+            "id": "import_singleton_001",
+            "file_path": "spec_cli/logging/debug.py",
+            "qualified_symbol": "spec_cli.logging.debug.debug_logger",
+            "line_numbers": [15],
+            "pattern_type": "singleton_definition",
+            "current_state": "not_migrated",
+            "migration_approach": "Replace with logging factory in SpecContext",
+            "priority": "medium",
+            "estimated_effort_hours": 4,
+            "blocked_by": [],
+            "related_to": ["debug_logger_*"],
+            "metrics": {
+              "touch_count": 45,
+              "last_touched": "2025-06-30"
+            },
+            "notes": "Core debug logger definition - affects 940 instances",
+            "next_steps": [
+              "Implement logging factory in SpecContext",
+              "Create facade bridge for debug_logger access",
+              "Plan automated codemod for 940 usage sites"
+            ]
+          },
+          "debug_logger_usage_sample": {
+            "id": "import_singleton_002",
+            "file_path": "spec_cli/ai/context/processing.py",
+            "qualified_symbol": "spec_cli.logging.debug.debug_logger",
+            "line_numbers": [12, 45, 67, 89],
+            "pattern_type": "module_level_import",
+            "current_state": "not_migrated",
+            "migration_approach": "Automated replacement with context.logger",
+            "priority": "low",
+            "estimated_effort_hours": 0.1,
+            "blocked_by": ["facade_bridge_implementation", "automated_codemod"],
+            "related_to": ["import_singleton_001"],
+            "metrics": {
+              "touch_count": 3,
+              "last_touched": "2025-04-15"
+            },
+            "notes": "Representative of 940 similar instances - good automation candidate",
+            "next_steps": [
+              "Include in automated codemod batch",
+              "Verify after transformation"
+            ]
+          }
+        }
+      },
+      "test_failures": {
+        "description": "Current test failures that need resolution before migration",
+        "priority": "critical",
+        "migration_approach": "Fix test infrastructure issues first",
+        "estimated_effort_days": 3,
+        "instances": {
+          "test_failure_001": {
+            "id": "test_fail_001",
+            "file_path": "tests/unit/core/test_workflow_orchestrator.py",
+            "qualified_symbol": "test_workflow_orchestrator",
+            "line_numbers": [],
+            "pattern_type": "test_failure",
+            "current_state": "blocked",
+            "migration_approach": "Fix test setup and mocking issues",
+            "priority": "critical",
+            "estimated_effort_hours": 2,
+            "blocked_by": [],
+            "related_to": [],
+            "metrics": {
+              "touch_count": 15,
+              "last_touched": "2025-07-01"
+            },
+            "notes": "Test failure blocking migration progress",
+            "next_steps": [
+              "Run pytest with verbose output to identify specific failure",
+              "Fix test setup issues",
+              "Ensure test passes before any migration work"
+            ]
+          }
+        }
+      },
+      "infrastructure_tasks": {
+        "description": "Supporting infrastructure for successful migration",
+        "priority": "high",
+        "estimated_effort_days": 5,
+        "instances": {
+          "facade_bridge_implementation": {
+            "id": "infra_001",
+            "file_path": "spec_cli/core/context_bridge.py",
+            "qualified_symbol": "spec_cli.core.context_bridge",
+            "line_numbers": [],
+            "pattern_type": "infrastructure",
+            "current_state": "not_started",
+            "migration_approach": "Implement facade bridge as recommended by expert",
+            "priority": "critical",
+            "estimated_effort_hours": 8,
+            "blocked_by": [],
+            "related_to": ["func_singleton_*", "import_singleton_*"],
+            "metrics": {
+              "touch_count": 0,
+              "last_touched": "never"
+            },
+            "notes": "Expert-recommended facade pattern to enable gradual migration",
+            "next_steps": [
+              "Create context_bridge.py module",
+              "Implement facade for debug_logger access",
+              "Implement facade for get_console() access",
+              "Implement facade for get_settings() access",
+              "Create sed/automated replacement for imports"
+            ]
+          },
+          "detection_tool_improvement": {
+            "id": "infra_002",
+            "file_path": "tools/singleton_detector.py",
+            "qualified_symbol": "tools.singleton_detector",
+            "line_numbers": [],
+            "pattern_type": "infrastructure",
+            "current_state": "inadequate",
+            "migration_approach": "Add AST patterns for functional singletons",
+            "priority": "high",
+            "estimated_effort_hours": 6,
+            "blocked_by": [],
+            "related_to": ["detection_accuracy"],
+            "metrics": {
+              "touch_count": 8,
+              "last_touched": "2025-06-20"
+            },
+            "notes": "Current tool only catches 7% of actual singleton patterns",
+            "next_steps": [
+              "Add AST pattern for module-level assignments",
+              "Add detection for get_* function patterns",
+              "Add heuristics for callable singletons",
+              "Integrate with tracking.json updates",
+              "Add to CI pipeline"
+            ]
+          }
+        }
+      }
+    },
+    "migration_phases": {
+      "phase_0_fence_the_beast": {
+        "name": "Fence the Beast - Facade Implementation", 
+        "duration_weeks": 1,
+        "description": "Implement facade layer for safe gradual migration",
+        "status": "not_started",
+        "tasks": [
+          "infra_001"
+        ],
+        "success_criteria": [
+          "All singleton access goes through facade",
+          "No behavior changes in existing code",
+          "Foundation for gradual migration established"
+        ]
+      },
+      "phase_1_cli_commands": {
+        "name": "Complete CLI Command Migration",
+        "duration_weeks": 2,
+        "description": "Finish migrating all CLI commands to @context_injection",
+        "status": "in_progress",
+        "dependencies": ["phase_0_fence_the_beast"],
+        "tasks": [
+          "test_fail_001",
+          "cli_cmd_002", 
+          "cli_cmd_003"
+        ],
+        "success_criteria": [
+          "All 21 CLI commands use @context_injection",
+          "No get_console() calls in CLI layer",
+          "All tests pass"
+        ]
+      },
+      "phase_2_core_services": {
+        "name": "Core Service Migration",
+        "duration_weeks": 3,
+        "description": "Migrate high-churn core services",
+        "status": "planned",
+        "dependencies": ["phase_1_cli_commands"],
+        "tasks": [
+          "func_singleton_002"
+        ],
+        "success_criteria": [
+          "SettingsManager uses SpecContext",
+          "Console management through context",
+          "Progress management through context"
+        ]
+      },
+      "phase_3_debug_logger": {
+        "name": "Debug Logger Automation",
+        "duration_weeks": 4,
+        "description": "Automated migration of 940 debug_logger instances",
+        "status": "planned",
+        "dependencies": ["phase_0_fence_the_beast"],
+        "tasks": [
+          "import_singleton_001",
+          "import_singleton_002"
+        ],
+        "success_criteria": [
+          "Automated codemod successfully transforms 940 instances",
+          "All debug_logger calls use context.logger",
+          "No import-level debug_logger assignments remain"
+        ]
+      }
+    },
+    "expert_recommendations": {
+      "strategy": "expand_contract_hybrid",
+      "key_insights": [
+        "Implement facade bridge to enable gradual migration without breaking changes",
+        "Focus on CLI commands first for quick wins and confidence building",
+        "Use automated codemod for the 940 debug_logger instances",
+        "Add mutation tests for logger wrapper to prevent new instance creation",
+        "Include churn-risk metrics to prioritize high-touch files"
+      ],
+      "immediate_actions": [
+        "Fix 13 test failures to stabilize foundation",
+        "Implement facade bridge for singleton access",
+        "Complete remaining 16 CLI command migrations",
+        "Improve detection tools to handle functional singletons",
+        "Set up CI integration for singleton detection"
+      ]
+    },
+    "automation_commands": {
+      "detection_update": "python tools/singleton_detector.py spec_cli/ --output=json --update-tracking=singleton_migration_tracking.json",
+      "facade_replacement": "find spec_cli/ -name '*.py' -exec sed -i 's/from ..logging.debug import debug_logger/from ..core.context_bridge import debug_logger/g' {} \\;",
+      "progress_check": "python -c \"import json; data=json.load(open('singleton_migration_tracking.json')); print(f'Progress: {data[\\\"migration_tracking\\\"][\\\"metadata\\\"][\\\"completed\\\"]} / {data[\\\"migration_tracking\\\"][\\\"metadata\\\"][\\\"total_instances\\\"]} ({100*data[\\\"migration_tracking\\\"][\\\"metadata\\\"][\\\"completed\\\"]//data[\\\"migration_tracking\\\"][\\\"metadata\\\"][\\\"total_instances\\\"]}%)')\"",
+      "validation_suite": "poetry run pytest tests/unit/ -k 'not migration' && python tools/singleton_detector.py spec_cli/ --validate-zero"
+    },
+    "transformation_patterns": {
+      "debug_logger_import": {
+        "pattern": "from ..logging.debug import debug_logger",
+        "replacement": "from ..core.context_bridge import debug_logger",
+        "validation": "grep -r 'from.*logging.debug import debug_logger' spec_cli/ | wc -l"
+      },
+      "get_console_call": {
+        "pattern": "get_console()",
+        "replacement": "context.console",
+        "requires_context": true,
+        "validation": "grep -r 'get_console()' spec_cli/ | wc -l"
+      },
+      "get_settings_call": {
+        "pattern": "get_settings()",
+        "replacement": "context.settings", 
+        "requires_context": true,
+        "validation": "grep -r 'get_settings()' spec_cli/ | wc -l"
+      }
+    },
+    "ci_integration": {
+      "pre_commit_hook": ".pre-commit-config.yaml entry for singleton detection",
+      "github_actions": "Add step to workflow that fails on new singleton introductions",
+      "detection_command": "python tools/singleton_detector.py spec_cli/ --ci --fail-on-new"
+    },
+    "quality_gates": {
+      "pre_commit_hook": "Prevent new singleton introductions",
+      "ci_integration": "Track singleton debt reduction over time",
+      "mutation_testing": "Verify facade doesn't create new instances",
+      "coverage_requirement": "Maintain 80%+ test coverage through migration"
+    }
+  }
+}
