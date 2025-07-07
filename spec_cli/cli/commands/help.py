@@ -4,26 +4,28 @@ from typing import Any
 
 import click
 
-from ...ui.console import get_console
+from ...core.context import SpecContext
+from ...decorators import context_injection
 from ...ui.tables import SpecTable
 
 
 @click.command()
 @click.argument("command_name", required=False)
-def help_command(command_name: str | None) -> None:
+@context_injection
+def help_command(context: SpecContext, command_name: str | None) -> None:
     """Show help information for spec commands.
 
     COMMAND_NAME: Optional specific command to show help for
     """
     if command_name:
-        _display_command_help(command_name)
+        _display_command_help(command_name, context)
     else:
-        _display_main_help()
+        _display_main_help(context)
 
 
-def _display_main_help() -> None:
+def _display_main_help(context: SpecContext) -> None:
     """Display main help with command overview."""
-    console = get_console()
+    console = context.console
 
     # Header
     console.print(
@@ -59,9 +61,9 @@ def _display_main_help() -> None:
     )
 
 
-def _display_command_help(command: str) -> None:
+def _display_command_help(command: str, context: SpecContext) -> None:
     """Display detailed help for a specific command."""
-    console = get_console()
+    console = context.console
 
     help_data = _get_command_help(command)
 

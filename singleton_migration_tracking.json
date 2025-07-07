@@ -3,7 +3,7 @@
     "metadata": {
       "version": "1.0",
       "total_instances": 1019,
-      "completed": 6,
+      "completed": 7,
       "in_progress": 0,
       "not_migrated": 1001,
       "blocked": 13,
@@ -17,9 +17,9 @@
     "progress_by_category": {
       "cli_commands": {
         "total": 21,
-        "migrated": 6,
-        "not_migrated": 15,
-        "completion_rate": "28%"
+        "migrated": 7,
+        "not_migrated": 14,
+        "completion_rate": "33%"
       },
       "functional_singletons": {
         "total": 82,
@@ -118,7 +118,7 @@
             "qualified_symbol": "spec_cli.cli.commands.help.help_command",
             "line_numbers": [],
             "pattern_type": "cli_command",
-            "current_state": "not_migrated",
+            "current_state": "migrated",
             "migration_approach": "Add @context_injection decorator and SpecContext parameter",
             "priority": "low",
             "estimated_effort_hours": 2,
@@ -132,7 +132,8 @@
             "next_steps": [
               "Add @context_injection decorator",
               "Identify and replace any singleton usage"
-            ]
+            ],
+            "completion_date": "2025-07-07T17:11:46.447557"
           }
         }
       },
