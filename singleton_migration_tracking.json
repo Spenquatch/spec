@@ -3,7 +3,7 @@
     "metadata": {
       "version": "1.0",
       "total_instances": 1019,
-      "completed": 5,
+      "completed": 6,
       "in_progress": 0,
       "not_migrated": 1001,
       "blocked": 13,
@@ -17,9 +17,9 @@
     "progress_by_category": {
       "cli_commands": {
         "total": 21,
-        "migrated": 5,
-        "not_migrated": 16,
-        "completion_rate": "24%"
+        "migrated": 6,
+        "not_migrated": 15,
+        "completion_rate": "28%"
       },
       "functional_singletons": {
         "total": 82,
@@ -90,7 +90,7 @@
               108
             ],
             "pattern_type": "cli_command",
-            "current_state": "not_migrated",
+            "current_state": "migrated",
             "migration_approach": "Add @context_injection decorator and SpecContext parameter",
             "priority": "high",
             "estimated_effort_hours": 4,
@@ -109,7 +109,8 @@
               "Add SpecContext parameter to function signature",
               "Replace get_console() with context.console",
               "Replace debug_logger with context.logger"
-            ]
+            ],
+            "completion_date": "2025-07-07T17:08:32.623564"
           },
           "help_command": {
             "id": "cli_cmd_003",

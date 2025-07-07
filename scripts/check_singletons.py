@@ -34,7 +34,8 @@ def main() -> int:
             continue
 
         try:
-            violations = scan_for_singleton_patterns(file_path)
+            detector = SingletonPatternDetector()
+            violations = detector.detect_violations(file_path)
 
             if violations:
                 print(f"\nSingleton violations found in {file_path}:")

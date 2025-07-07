@@ -1,5 +1,5 @@
-"""
-Migration facade bridge for singleton to dependency injection transition.
+"""Migration facade bridge for singleton to dependency injection transition.
+
 Provides backward compatibility during gradual migration.
 
 This bridge allows legacy singleton code and new context-based code to coexist
@@ -45,11 +45,22 @@ def get_migration_context() -> Any:
 
 # Logger Protocol for type safety
 class LoggerProtocol(Protocol):
-    def log(self, level: str, message: str, **kwargs: Any) -> None: ...
-    def info(self, message: str, **kwargs: Any) -> None: ...
-    def error(self, message: str, **kwargs: Any) -> None: ...
-    def debug(self, message: str, **kwargs: Any) -> None: ...
-    def warning(self, message: str, **kwargs: Any) -> None: ...
+    """Protocol for logger interface during migration."""
+
+    def log(self, level: str, message: str, **kwargs: Any) -> None:
+        """Log a message with specified level."""
+
+    def info(self, message: str, **kwargs: Any) -> None:
+        """Log an info message."""
+
+    def error(self, message: str, **kwargs: Any) -> None:
+        """Log an error message."""
+
+    def debug(self, message: str, **kwargs: Any) -> None:
+        """Log a debug message."""
+
+    def warning(self, message: str, **kwargs: Any) -> None:
+        """Log a warning message."""
 
 
 class DebugLoggerFacade:
@@ -72,15 +83,19 @@ class DebugLoggerFacade:
             print(f"[{level}] {message}")
 
     def info(self, message: str, **kwargs: Any) -> None:
+        """Log an info message."""
         self.log("INFO", message, **kwargs)
 
     def error(self, message: str, **kwargs: Any) -> None:
+        """Log an error message."""
         self.log("ERROR", message, **kwargs)
 
     def debug(self, message: str, **kwargs: Any) -> None:
+        """Log a debug message."""
         self.log("DEBUG", message, **kwargs)
 
     def warning(self, message: str, **kwargs: Any) -> None:
+        """Log a warning message."""
         self.log("WARNING", message, **kwargs)
 
     def __getattr__(self, name: str) -> Any:
