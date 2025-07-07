@@ -58,6 +58,27 @@ else:
     print('✅ Functional singleton migration complete')
 "
 
+# Validate facade bridge pattern adoption from Phase 3
+python -c "
+import subprocess
+
+# Check for facade bridge functional singleton imports (should be substantial)
+facade_console = subprocess.run(['grep', '-r', 'from .*context_bridge import get_console', 'spec_cli/'],
+                               capture_output=True, text=True)
+facade_settings = subprocess.run(['grep', '-r', 'from .*context_bridge import get_settings', 'spec_cli/'],
+                                capture_output=True, text=True)
+
+facade_console_count = len(facade_console.stdout.split('\n')) - 1 if facade_console.stdout.strip() else 0
+facade_settings_count = len(facade_settings.stdout.split('\n')) - 1 if facade_settings.stdout.strip() else 0
+
+print(f'Facade bridge functional imports: console={facade_console_count}, settings={facade_settings_count}')
+
+if facade_console_count > 0 or facade_settings_count > 0:
+    print('✅ Phase 3 facade bridge pattern established')
+else:
+    print('⚠️ Limited facade bridge adoption - Phase 3 may not be complete')
+"
+
 # Load Phase 4 readiness
 test -f phase4_readiness.json && {
     python -c "
@@ -157,33 +178,47 @@ print(f'Import analysis saved to phase4_import_analysis.json')
 # Manual grep verification to cross-check automated detection
 echo "Manual import pattern verification:"
 
-# Count debug_logger import patterns
-debug_import_count=$(grep -r "from .*logging\.debug import debug_logger" spec_cli/ | wc -l)
-echo "Debug logger imports (specific): $debug_import_count"
+# Count debug_logger import patterns (OLD patterns to be migrated)
+debug_import_count=$(grep -r "from .*logging\.debug import debug_logger" spec_cli/ --exclude-dir=core | wc -l)
+echo "Debug logger imports (OLD - to migrate): $debug_import_count"
 
 # Count broader debug_logger import patterns
-broad_import_count=$(grep -r "import.*debug_logger" spec_cli/ | wc -l)
+broad_import_count=$(grep -r "import.*debug_logger" spec_cli/ --exclude-dir=core | wc -l)
 echo "Debug logger imports (broad): $broad_import_count"
 
-# Show sample of import patterns
+# Show sample of OLD import patterns
 echo ""
-echo "Sample import patterns:"
-grep -r "from .*debug import debug_logger" spec_cli/ | head -5
+echo "Sample OLD import patterns to migrate:"
+grep -r "from .*logging\.debug import debug_logger" spec_cli/ --exclude-dir=core | head -5
 
-# Verify facade bridge imports (should be minimal currently)
-facade_import_count=$(grep -r "from .*context_bridge import debug_logger" spec_cli/ | wc -l)
+# Verify existing facade bridge imports (Phase 3 may have created some)
+facade_debug_count=$(grep -r "from .*context_bridge import debug_logger" spec_cli/ | wc -l)
+facade_console_count=$(grep -r "from .*context_bridge import get_console" spec_cli/ | wc -l)
+facade_settings_count=$(grep -r "from .*context_bridge import get_settings" spec_cli/ | wc -l)
+
 echo ""
-echo "Facade bridge imports: $facade_import_count"
+echo "Existing facade bridge imports:"
+echo "- debug_logger: $facade_debug_count"
+echo "- get_console: $facade_console_count"
+echo "- get_settings: $facade_settings_count"
+
+# Check for mixed patterns that need cleanup
+mixed_patterns=$(grep -r "from .*logging\.debug import debug_logger" spec_cli/ --exclude-dir=core | wc -l)
+if [ "$mixed_patterns" -gt 0 ] && [ "$facade_debug_count" -gt 0 ]; then
+    echo "⚠️ MIXED PATTERNS DETECTED: Some files use old imports, some use facade"
+    echo "Phase 4 will standardize all debug_logger imports to facade bridge"
+fi
 
 # Save manual verification results
 cat > phase4_manual_verification.txt << EOF
 Manual Import Pattern Verification Results:
-- Debug logger imports (specific): $debug_import_count
+- Debug logger imports (OLD - to migrate): $debug_import_count
 - Debug logger imports (broad): $broad_import_count
-- Facade bridge imports: $facade_import_count
+- Facade bridge imports: debug_logger=$facade_debug_count, console=$facade_console_count, settings=$facade_settings_count
+- Mixed pattern status: $([ "$mixed_patterns" -gt 0 ] && [ "$facade_debug_count" -gt 0 ] && echo "MIXED - need standardization" || echo "CONSISTENT")
 
-Sample patterns:
-$(grep -r "from .*debug import debug_logger" spec_cli/ | head -5)
+Sample OLD patterns to migrate:
+$(grep -r "from .*logging\.debug import debug_logger" spec_cli/ --exclude-dir=core | head -5)
 EOF
 
 echo "Manual verification saved to phase4_manual_verification.txt"
@@ -323,7 +358,7 @@ files = batch['files']
 
 print(f'Applying automation to batch {batch_num}...')
 
-# Define transformation patterns
+# Define transformation patterns (Enhanced from Phase 3 learnings)
 transformations = [
     # Primary pattern: relative import to facade bridge
     (r'from \.\.logging\.debug import debug_logger', 'from ..core.context_bridge import debug_logger'),
@@ -331,6 +366,17 @@ transformations = [
     # Alternative patterns that might exist
     (r'from spec_cli\.logging\.debug import debug_logger', 'from spec_cli.core.context_bridge import debug_logger'),
     (r'from \.\.\.logging\.debug import debug_logger', 'from ...core.context_bridge import debug_logger'),
+    (r'from \.\.\.\.logging\.debug import debug_logger', 'from ....core.context_bridge import debug_logger'),
+
+    # SKIP patterns that are already using facade bridge (avoid double transformation)
+    # Note: This automation should NOT transform existing facade bridge imports
+]
+
+# Pre-check: Skip files that already use facade bridge pattern correctly
+skip_patterns = [
+    'from ..core.context_bridge import debug_logger',
+    'from spec_cli.core.context_bridge import debug_logger',
+    'from ...core.context_bridge import debug_logger'
 ]
 
 # Track changes
@@ -352,6 +398,16 @@ for file_path in files:
     content = original_content
     file_transformations = 0
 
+    # Pre-check: Skip files that already use facade bridge correctly
+    has_facade_import = any(skip_pattern in content for skip_pattern in skip_patterns)
+    has_old_import = any(re.search(old_pattern, content) for old_pattern, _ in transformations)
+
+    if has_facade_import and not has_old_import:
+        print(f'  ⏭️ {file_path}: Already using facade bridge, skipping')
+        continue
+    elif has_facade_import and has_old_import:
+        print(f'  ⚠️ {file_path}: Mixed patterns detected - will standardize to facade')
+
     # Apply each transformation pattern
     for old_pattern, new_import in transformations:
         matches = re.findall(old_pattern, content)
@@ -370,6 +426,8 @@ for file_path in files:
             'transformations': file_transformations
         })
         print(f'  ✅ {file_path}: {file_transformations} transformations applied')
+    else:
+        print(f'  ⚡ {file_path}: No transformations needed')
 
 print(f'Batch {batch_num} automation complete:')
 print(f'- Files processed: {transformation_log[\"files_processed\"]}')

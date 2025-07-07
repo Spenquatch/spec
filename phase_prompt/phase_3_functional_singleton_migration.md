@@ -1,6 +1,6 @@
 # Phase 3 Agent Directive: Functional Singleton Migration
 
-You are executing **Phase 3 of the singleton migration** which systematically replaces functional singleton calls with context-based access. Every rule tagged `P0-ABSOLUTE` is mandatory—no exceptions, no shortcuts. This phase requires Phase 2 CLI migration to be complete.
+You are executing **Phase 3 of the singleton migration** which systematically replaces functional singleton calls with facade bridge pattern. Every rule tagged `P0-ABSOLUTE` is mandatory—no exceptions, no shortcuts. This phase requires Phase 2 CLI migration to be complete.
 
 If a step is unclear: **do not guess**. Halt and escalate.
 
@@ -8,14 +8,20 @@ If a step is unclear: **do not guess**. Halt and escalate.
 
 ## Mission: Eliminate Functional Singleton Patterns
 
-**GOAL**: Replace all 82 functional singleton calls (`get_console()`, `get_settings()`, etc.) with context-based access patterns.
+**GOAL**: Replace all ~84 functional singleton calls (`get_console()`, `get_settings()`, etc.) with facade bridge access patterns.
 
 **SUCCESS CRITERIA**:
-- Zero `get_console()` calls remaining in codebase
-- Zero `get_settings()` calls remaining in codebase
-- All affected functions use dependency injection
+- Zero `get_console()` calls remaining that import from original modules
+- Zero `get_settings()` calls remaining that import from original modules
+- All functional singleton calls redirected through facade bridge
 - 100% test pass rate maintained
 - Functional singletons category shows 100% completion
+
+**TRANSFORMATION STRATEGY (Updated from Batch 1 Learnings)**:
+- **Use facade bridge pattern** (`from ..core.context_bridge import get_console`)
+- **NOT context injection** for event handlers and constructors
+- **Maintain signature compatibility** for existing methods
+- **Preserve backward compatibility** throughout migration
 
 ---
 
@@ -24,12 +30,47 @@ If a step is unclear: **do not guess**. Halt and escalate.
 **These rules override all other instructions in Phase 3:**
 
 1. **NEVER migrate more than 5 instances per batch** → Small batches for safety and validation
-2. **NEVER skip @context_injection decorator** → Functions need context parameter to access resources
+2. **ALWAYS use facade bridge pattern** → Event handlers/constructors need signature compatibility
 3. **NEVER proceed without Phase 2 complete** → CLI foundation must be solid first
-4. **NEVER break caller compatibility** → Add context parameter, don't remove existing parameters
-5. **NEVER commit partial batch migration** → Complete all 5 instances in batch before committing
+4. **NEVER break caller compatibility** → Maintain existing signatures and interfaces
+5. **NEVER commit partial batch migration** → Complete all instances in batch before committing
 
-> **Functional Migration Principle: "Small batches with complete validation"**
+> **Functional Migration Principle: "Facade bridge in small validated batches"**
+
+---
+
+## 🔄 BATCH CONTINUATION DETECTION [AUTOMATIC RESUME]
+
+### Check for Existing Batch Progress [RESUME OR START NEW]
+
+```bash
+# Check if there's an existing batch in progress
+if [ -f .next_functional_batch.json ]; then
+    echo "🔄 RESUMING EXISTING BATCH"
+    echo "Found existing batch configuration"
+
+    python -c "
+    import json
+    with open('.next_functional_batch.json', 'r') as f:
+        batch = json.load(f)
+
+    print(f'Resuming Batch {batch[\"batch_number\"]}: {len(batch[\"instances\"])} instances')
+    print('Target files:')
+    for file_path in batch.get('target_files', []):
+        print(f'  - {file_path}')
+
+    print()
+    print('⚠️ CONTINUING FROM STEP 2.1 (Load and Validate Current Batch)')
+    "
+
+    # Skip to Step 2.1 if batch exists
+    RESUME_BATCH=true
+else
+    echo "🚀 STARTING NEW BATCH SEQUENCE"
+    echo "No existing batch found - will create new batch"
+    RESUME_BATCH=false
+fi
+```
 
 ---
 
@@ -289,10 +330,10 @@ poetry run pytest tests/unit/ --tb=no -q | grep -E "(failed|error)" && {
 } || echo "✅ Pre-migration tests passing"
 ```
 
-### 2.2 Apply Functional Singleton Transformations [BATCH PROCESSING]
+### 2.2 Apply Functional Singleton Transformations [FACADE BRIDGE PATTERN]
 
 ```bash
-# Apply migration transformations to current batch
+# Apply facade bridge transformations to current batch
 python -c "
 import json
 import re
@@ -304,7 +345,8 @@ with open('.next_functional_batch.json', 'r') as f:
 
 instances = batch['instances']
 
-print(f'Applying transformations to batch {batch[\"batch_number\"]}...')
+print(f'Applying FACADE BRIDGE transformations to batch {batch[\"batch_number\"]}...')
+print('TRANSFORMATION STRATEGY: Replace imports with facade bridge, maintain signatures')
 
 # Track changes made
 changes_log = []
@@ -322,113 +364,82 @@ for instance in instances:
     content = file_path.read_text()
     original_content = content
 
-    # Apply transformations based on pattern type
+    # Apply FACADE BRIDGE transformations
     changes_made = []
 
-    # 1. Add context injection decorator if not present
-    if '@context_injection' not in content and 'def ' in content:
-        # Find function definitions and add decorator
-        if 'from ..decorators import context_injection' not in content:
-            # Add import
-            import_pattern = r'(from \.\..* import .*\\n)'
-            if re.search(import_pattern, content):
-                content = re.sub(import_pattern, r'\\1from ..decorators import context_injection\\n', content, count=1)
-            else:
-                # Add at top after existing imports
-                lines = content.split('\\n')
-                import_index = 0
-                for i, line in enumerate(lines):
-                    if line.startswith('from ') or line.startswith('import '):
-                        import_index = i + 1
-                lines.insert(import_index, 'from ..decorators import context_injection')
-                content = '\\n'.join(lines)
-            changes_made.append('Added context_injection import')
+    # 1. Replace get_console imports with facade bridge imports
+    console_import_patterns = [
+        (r'from \.\.ui\.console import get_console', 'from ..core.context_bridge import get_console'),
+        (r'from \.\.\.ui\.console import get_console', 'from ...core.context_bridge import get_console'),
+        (r'from spec_cli\.ui\.console import get_console', 'from spec_cli.core.context_bridge import get_console'),
+        (r'from \.\.console import get_console', 'from ..core.context_bridge import get_console'),
+    ]
 
-    # 2. Replace get_console() calls with context.console
-    if 'get_console()' in content:
-        # Remove get_console import
-        content = re.sub(r'from \.\..* import .*get_console.*\\n', '', content)
-        # Replace calls
-        content = content.replace('get_console()', 'context.console')
-        # Update variable assignments
-        content = re.sub(r'console = get_console\\(\\)', 'console = context.console', content)
-        changes_made.append('Replaced get_console() with context.console')
+    for old_import, new_import in console_import_patterns:
+        if re.search(old_import, content):
+            content = re.sub(old_import, new_import, content)
+            changes_made.append(f'Replaced console import with facade bridge: {old_import} -> {new_import}')
 
-    # 3. Replace get_settings() calls with context.settings
-    if 'get_settings()' in content:
-        # Remove get_settings import
-        content = re.sub(r'from \.\..* import .*get_settings.*\\n', '', content)
-        # Replace calls
-        content = content.replace('get_settings()', 'context.settings')
-        # Update variable assignments
-        content = re.sub(r'settings = get_settings\\(\\)', 'settings = context.settings', content)
-        changes_made.append('Replaced get_settings() with context.settings')
+    # 2. Replace get_settings imports with facade bridge imports
+    settings_import_patterns = [
+        (r'from \.\.config\.settings import get_settings', 'from ..core.context_bridge import get_settings'),
+        (r'from \.\.\.config\.settings import get_settings', 'from ...core.context_bridge import get_settings'),
+        (r'from spec_cli\.config\.settings import get_settings', 'from spec_cli.core.context_bridge import get_settings'),
+        (r'from \.\.settings import get_settings', 'from ..core.context_bridge import get_settings'),
+    ]
 
-    # 4. Add context parameter to function definitions (basic pattern)
-    # This is a simplified approach - complex cases may need manual intervention
-    func_pattern = r'def ([a-zA-Z_][a-zA-Z0-9_]*)\\(([^)]*)\\):'
-    matches = re.finditer(func_pattern, content)
+    for old_import, new_import in settings_import_patterns:
+        if re.search(old_import, content):
+            content = re.sub(old_import, new_import, content)
+            changes_made.append(f'Replaced settings import with facade bridge: {old_import} -> {new_import}')
 
-    for match in matches:
-        func_name = match.group(1)
-        params = match.group(2).strip()
+    # 3. Handle other functional singleton patterns (get_progress_manager, etc.)
+    other_patterns = [
+        (r'from \.\.ui\.progress_manager import get_progress_manager', 'from ..core.context_bridge import get_progress_manager'),
+        (r'from \.\.logging\.debug import get_logger', 'from ..core.context_bridge import get_logger'),
+    ]
 
-        # Skip if already has context parameter
-        if 'context:' in params or 'context =' in params:
-            continue
+    for old_import, new_import in other_patterns:
+        if re.search(old_import, content):
+            content = re.sub(old_import, new_import, content)
+            changes_made.append(f'Replaced import with facade bridge: {old_import} -> {new_import}')
 
-        # Add context parameter
-        if params:
-            new_params = f'context: SpecContext, {params}'
-        else:
-            new_params = 'context: SpecContext'
-
-        old_def = f'def {func_name}({params}):'
-        new_def = f'@context_injection\\ndef {func_name}({new_params}):'
-
-        if old_def in content and '@context_injection' not in content[:content.find(old_def)]:
-            content = content.replace(old_def, new_def)
-            changes_made.append(f'Added context parameter to {func_name}()')
-
-    # 5. Add SpecContext import if context parameter was added
-    if 'context: SpecContext' in content and 'from ..core.context import SpecContext' not in content:
-        lines = content.split('\\n')
-        import_index = 0
-        for i, line in enumerate(lines):
-            if line.startswith('from ') or line.startswith('import '):
-                import_index = i + 1
-        lines.insert(import_index, 'from ..core.context import SpecContext')
-        content = '\\n'.join(lines)
-        changes_made.append('Added SpecContext import')
+    # 4. NO SIGNATURE CHANGES - facade bridge maintains compatibility
+    # get_console() calls remain get_console() - just redirected through facade
+    # This preserves event handler and constructor compatibility
 
     # Save changes if any were made
     if content != original_content:
         file_path.write_text(content)
-        print(f'  ✅ Changes applied: {changes_made}')
+        print(f'  ✅ Facade bridge applied: {changes_made}')
         changes_log.append({
             'file': str(file_path),
             'instance_id': instance_id,
-            'changes': changes_made
+            'changes': changes_made,
+            'transformation_type': 'facade_bridge'
         })
     else:
-        print(f'  ⚠️ No changes needed')
+        print(f'  ⚠️ No facade bridge changes needed')
 
 # Save changes log
 with open('phase3_batch_changes.json', 'w') as f:
     json.dump({
         'batch_number': batch['batch_number'],
-        'changes_log': changes_log
+        'transformation_approach': 'facade_bridge',
+        'changes_log': changes_log,
+        'signature_compatibility': 'maintained'
     }, f, indent=2)
 
-print(f'Batch transformation complete: {len(changes_log)} files modified')
+print(f'Facade bridge transformation complete: {len(changes_log)} files modified')
+print('All function signatures preserved - backward compatibility maintained')
 "
 ```
 
-### 2.3 Manual Transformation Template [IF AUTOMATION INSUFFICIENT]
+### 2.3 Manual Transformation Template [FACADE BRIDGE APPROACH]
 
 **For complex cases requiring manual intervention:**
 
-**BEFORE (functional singleton pattern):**
+**BEFORE (original singleton pattern):**
 ```python
 from ..ui.console import get_console
 from ..config.settings import get_settings
@@ -442,20 +453,26 @@ def process_data(file_path: str, options: dict):
     # processing logic
 ```
 
-**AFTER (context-based pattern):**
+**AFTER (facade bridge pattern):**
 ```python
-from ..core.context import SpecContext
-from ..decorators import context_injection
+from ..core.context_bridge import get_console, get_settings
 
-@context_injection
-def process_data(context: SpecContext, file_path: str, options: dict):
-    # console = get_console()  # Removed
-    # settings = get_settings()  # Removed
+def process_data(file_path: str, options: dict):  # SIGNATURE UNCHANGED
+    console = get_console()  # CALLS UNCHANGED
+    settings = get_settings()  # CALLS UNCHANGED
 
-    context.console.print_message("Processing started")
-    debug_value = context.settings.debug_mode
+    console.print_message("Processing started")  # USAGE UNCHANGED
+    debug_value = settings.debug_mode  # USAGE UNCHANGED
     # processing logic unchanged
 ```
+
+**KEY DIFFERENCES FROM CONTEXT INJECTION:**
+- ✅ **Function signatures preserved** (no context parameter added)
+- ✅ **Function calls unchanged** (get_console() still works)
+- ✅ **Event handler compatibility** (no decorator needed)
+- ✅ **Constructor compatibility** (no signature changes)
+- ✅ **Backward compatibility** (existing callers unaffected)
+- 🔄 **Import redirected** through facade bridge only
 
 ---
 

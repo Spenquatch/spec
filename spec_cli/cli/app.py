@@ -8,6 +8,7 @@ from pathlib import Path
 
 import click
 
+from ..core.context import SpecContext
 from ..ui.console import get_console
 from ..utils.cli_setup_utils import (
     CLISetupError,
@@ -88,7 +89,13 @@ def app(ctx: click.Context, version: bool) -> None:
         # No subcommand provided, show help
         from .commands.help import _display_main_help
 
-        _display_main_help()
+        # Get SpecContext from Click context storage
+        spec_context = ctx.meta.get("spec_context")
+        if isinstance(spec_context, SpecContext):
+            _display_main_help(spec_context)
+        else:
+            # Fallback to simple message if context not available
+            click.echo("Spec CLI - Use 'spec help' for command information")
 
 
 # Add commands to the main group
@@ -154,7 +161,13 @@ def create_cli_app(root_path: Path | None = None) -> click.Group:
             # No subcommand provided, show help
             from .commands.help import _display_main_help
 
-            _display_main_help()
+            # Get SpecContext from Click context storage
+            spec_context = ctx.meta.get("spec_context")
+            if isinstance(spec_context, SpecContext):
+                _display_main_help(spec_context)
+            else:
+                # Fallback to simple message if context not available
+                click.echo("Spec CLI - Use 'spec help' for command information")
 
     # Add all commands to the CLI app
     cli_app.add_command(init_command, name="init")

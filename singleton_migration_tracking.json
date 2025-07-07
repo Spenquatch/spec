@@ -2,10 +2,10 @@
   "migration_tracking": {
     "metadata": {
       "version": "1.0",
-      "total_instances": 1019,
-      "completed": 7,
+      "total_instances": 1014,
+      "completed": 8,
       "in_progress": 0,
-      "not_migrated": 1001,
+      "not_migrated": 1006,
       "blocked": 13,
       "deprecated": 0,
       "wont_fix": 0,
@@ -16,10 +16,10 @@
     },
     "progress_by_category": {
       "cli_commands": {
-        "total": 21,
-        "migrated": 7,
-        "not_migrated": 14,
-        "completion_rate": "33%"
+        "total": 20,
+        "migrated": 8,
+        "not_migrated": 12,
+        "completion_rate": "40%"
       },
       "functional_singletons": {
         "total": 82,
@@ -134,6 +134,28 @@
               "Identify and replace any singleton usage"
             ],
             "completion_date": "2025-07-07T17:11:46.447557"
+          },
+          "show_command": {
+            "id": "cli_cmd_004",
+            "file_path": "spec_cli/cli/commands/show.py",
+            "qualified_symbol": "spec_cli.cli.commands.show.show_command",
+            "line_numbers": [
+              25
+            ],
+            "pattern_type": "cli_command",
+            "current_state": "migrated",
+            "migration_approach": "Add @context_injection decorator and SpecContext parameter",
+            "priority": "high",
+            "estimated_effort_hours": 3,
+            "blocked_by": [],
+            "related_to": [],
+            "metrics": {
+              "touch_count": 5,
+              "last_touched": "2025-07-07"
+            },
+            "notes": "Successfully migrated from get_console() to context.console pattern",
+            "next_steps": [],
+            "completion_date": "2025-07-07T19:22:04.314415"
           }
         }
       },

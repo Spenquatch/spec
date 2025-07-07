@@ -65,7 +65,7 @@ def init_command(context: SpecContext, debug: bool, verbose: bool, force: bool) 
 
         context.console.print_success(success_msg)
 
-        # Log through context if debug mode enabled
+        # Log through facade bridge if debug mode enabled
         if context.settings.debug_enabled:
             from ...logging.debug import debug_logger
 

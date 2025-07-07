@@ -492,6 +492,13 @@ class SpecContext:
 
                     self._is_interactive = sys.stdout.isatty() and sys.stderr.isatty()
 
+                def print(self, *args: Any, **kwargs: Any) -> None:
+                    """Print text to console (Rich compatibility method)."""
+                    if not self._is_interactive:
+                        print(*args, **kwargs)
+                        return
+                    self._console.print(*args, **kwargs)
+
                 def print_message(self, text: str, style: str | None = None) -> None:
                     if not self._is_interactive:
                         # In non-interactive mode, use simple print to avoid Rich hanging

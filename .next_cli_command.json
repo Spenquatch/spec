@@ -1,0 +1,32 @@
+{
+  "command_id": "init_command",
+  "command_info": {
+    "id": "cli_cmd_001",
+    "file_path": "spec_cli/cli/commands/init.py",
+    "qualified_symbol": "spec_cli.cli.commands.init.init_command",
+    "line_numbers": [
+      14,
+      16,
+      17
+    ],
+    "pattern_type": "cli_command",
+    "current_state": "partial",
+    "migration_approach": "Already uses @context_injection but has remaining debug_logger imports",
+    "priority": "medium",
+    "estimated_effort_hours": 2,
+    "blocked_by": [],
+    "related_to": [
+      "debug_logger_070",
+      "debug_logger_083"
+    ],
+    "metrics": {
+      "touch_count": 12,
+      "last_touched": "2025-07-01"
+    },
+    "notes": "Migrated to SpecContext but still imports debug_logger in error handling",
+    "next_steps": [
+      "Replace debug_logger imports with context.logger",
+      "Update error handling to use context dependencies"
+    ]
+  }
+}

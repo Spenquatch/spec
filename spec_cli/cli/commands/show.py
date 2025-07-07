@@ -5,10 +5,11 @@ from typing import Any
 
 import click
 
+from ...core.context import SpecContext
 from ...logging.debug import debug_logger
-from ...ui.console import get_console
 from ...ui.error_display import show_message
 from ...utils.path_utils import is_specs_path
+from ..decorators import context_injection
 from ..options import files_argument, spec_command
 from ..utils import get_spec_repository, validate_file_paths
 from .history import display_file_content, display_spec_content
@@ -20,7 +21,9 @@ from .history import display_file_content, display_spec_content
 @click.option("--no-syntax", is_flag=True, help="Disable syntax highlighting")
 @click.option("--no-line-numbers", is_flag=True, help="Hide line numbers")
 @click.option("--raw", is_flag=True, help="Show raw content without formatting")
+@context_injection
 def show_command(
+    context: SpecContext,
     debug: bool,
     verbose: bool,
     files: tuple[str, ...],
@@ -39,8 +42,6 @@ def show_command(
         spec show .specs/ --commit abc123          # Show from commit
         spec show .specs/file.md --raw             # Show without formatting
     """
-    console = get_console()
-
     try:
         # Validate file paths
         file_paths = validate_file_paths(list(files))
@@ -56,15 +57,25 @@ def show_command(
         # Process each file
         for i, file_path in enumerate(file_paths):
             if i > 0:
-                console.print("\n" + "═" * min(80, console.get_width()))  # Separator
+                context.console.print(
+                    "\n" + "═" * min(80, context.console.get_width())
+                )  # Separator
 
             try:
                 if commit:
                     _show_file_from_commit(
-                        repo, file_path, commit, no_syntax, no_line_numbers, raw
+                        context,
+                        repo,
+                        file_path,
+                        commit,
+                        no_syntax,
+                        no_line_numbers,
+                        raw,
                     )
                 else:
-                    _show_current_file(file_path, no_syntax, no_line_numbers, raw)
+                    _show_current_file(
+                        context, file_path, no_syntax, no_line_numbers, raw
+                    )
 
             except Exception as e:
                 debug_logger.log(
@@ -84,11 +95,13 @@ def show_command(
 
 
 def _show_current_file(
-    file_path: Path, no_syntax: bool, no_line_numbers: bool, raw: bool
+    context: SpecContext,
+    file_path: Path,
+    no_syntax: bool,
+    no_line_numbers: bool,
+    raw: bool,
 ) -> None:
     """Show current file content."""
-    console = get_console()
-
     if not file_path.exists():
         show_message(f"File not found: {file_path}", "error")
         return
@@ -111,7 +124,7 @@ def _show_current_file(
 
     if raw:
         # Raw output
-        console.print(content)
+        context.console.print(content)
     else:
         # Check if it's a spec file
         if _is_spec_file(file_path):
@@ -127,6 +140,7 @@ def _show_current_file(
 
 
 def _show_file_from_commit(
+    context: SpecContext,
     repo: Any,
     file_path: Path,
     commit: str,
@@ -135,8 +149,6 @@ def _show_file_from_commit(
     raw: bool,
 ) -> None:
     """Show file content from specific commit."""
-    console = get_console()
-
     try:
         # Get file content from commit
         content = repo.get_file_content_at_commit(str(file_path), commit)
@@ -148,11 +160,13 @@ def _show_file_from_commit(
             return
 
         # Show commit info header
-        console.print(f"[bold cyan]File {file_path} at commit {commit[:8]}[/bold cyan]")
+        context.console.print(
+            f"[bold cyan]File {file_path} at commit {commit[:8]}[/bold cyan]"
+        )
 
         if raw:
             # Raw output
-            console.print(content)
+            context.console.print(content)
         else:
             # Formatted display
             if _is_spec_file(file_path):
