@@ -60,7 +60,7 @@ from pathlib import Path
 result = analyze_command_structure(Path('spec_cli/cli'))
 print(f'Files: {result.file_count}')
 print(f'Commands: {len(result.commands)}')
-print(f'Click patterns: {len(result.click_patterns)}')  
+print(f'Click patterns: {len(result.click_patterns)}')
 print(f'Singleton usage: {len(result.singleton_usage)}')
 print(f'Errors: {len(result.analysis_errors)}')
 ")
@@ -119,7 +119,7 @@ from pathlib import Path
 result = identify_singleton_usage(Path('spec_cli/cli/commands/status.py'))
 for usage in result:
     print(f'Class: {usage.singleton_class}')
-    print(f'Pattern: {usage.usage_pattern}')  
+    print(f'Pattern: {usage.usage_pattern}')
     print(f'Context: {usage.context}')
 print(f'Total patterns: {len(result)}')
 ")

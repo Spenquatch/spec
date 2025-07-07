@@ -56,7 +56,7 @@ import json
 try:
     cli_dir = Path('spec_cli/cli')
     report = analyze_click_patterns(cli_dir)
-    
+
     result = {
         'commands_found': len(report.commands_found),
         'decorators_used': len(report.decorators_used),
@@ -79,7 +79,7 @@ if echo "$ANALYSIS_RESULT" | grep -q '"success": true'; then
     COMMANDS_COUNT=$(echo "$ANALYSIS_RESULT" | python -c "import sys, json; data=json.load(sys.stdin); print(data['commands_found'])")
     DECORATORS_COUNT=$(echo "$ANALYSIS_RESULT" | python -c "import sys, json; data=json.load(sys.stdin); print(data['decorators_used'])")
     REQUIREMENTS_COUNT=$(echo "$ANALYSIS_RESULT" | python -c "import sys, json; data=json.load(sys.stdin); print(data['integration_requirements'])")
-    
+
     if [[ $COMMANDS_COUNT -gt 0 ]] && [[ $DECORATORS_COUNT -gt 0 ]] && [[ $REQUIREMENTS_COUNT -gt 0 ]]; then
         echo "Status: PASS - Found $COMMANDS_COUNT commands, $DECORATORS_COUNT decorators, $REQUIREMENTS_COUNT requirements"
         ((PASSED_TESTS++))
@@ -139,7 +139,7 @@ import json
 try:
     cli_dir = Path('spec_cli/cli')
     report = analyze_click_patterns(cli_dir)
-    
+
     patterns_found = {
         'click_group': 'click_group' in report.decorators_used,
         'click_command': 'click_command' in report.decorators_used,
@@ -147,7 +147,7 @@ try:
         'click_pass_context': 'click_pass_context' in report.decorators_used,
         'has_commands': len(report.commands_found) > 0
     }
-    
+
     result = {
         'patterns': patterns_found,
         'success': True
@@ -165,7 +165,7 @@ if echo "$PATTERNS_RESULT" | grep -q '"success": true'; then
     # Check for key patterns
     GROUP_FOUND=$(echo "$PATTERNS_RESULT" | python -c "import sys, json; data=json.load(sys.stdin); print(data['patterns']['click_group'])")
     COMMAND_FOUND=$(echo "$PATTERNS_RESULT" | python -c "import sys, json; data=json.load(sys.stdin); print(data['patterns']['click_command'])")
-    
+
     if [[ "$GROUP_FOUND" == "True" ]] || [[ "$COMMAND_FOUND" == "True" ]]; then
         echo "Status: PASS - Key Click patterns detected (group: $GROUP_FOUND, command: $COMMAND_FOUND)"
         ((PASSED_TESTS++))
@@ -192,9 +192,9 @@ import json
 try:
     cli_dir = Path('spec_cli/cli')
     report = analyze_click_patterns(cli_dir)
-    
+
     requirements_text = ' '.join(report.integration_requirements).lower()
-    
+
     key_requirements = {
         'framework_integration': 'click framework integration' in requirements_text,
         'context_injection': 'context parameter injection' or 'injection' in requirements_text,
@@ -202,7 +202,7 @@ try:
         'storage_verified': 'storage verified' in requirements_text,
         'requirements_count': len(report.integration_requirements)
     }
-    
+
     result = {
         'requirements': key_requirements,
         'full_requirements': report.integration_requirements,
@@ -220,7 +220,7 @@ echo "$REQUIREMENTS_RESULT" | python -c "import sys, json; data=json.load(sys.st
 if echo "$REQUIREMENTS_RESULT" | grep -q '"success": true'; then
     REQ_COUNT=$(echo "$REQUIREMENTS_RESULT" | python -c "import sys, json; data=json.load(sys.stdin); print(data['requirements']['requirements_count'])")
     FRAMEWORK_REQ=$(echo "$REQUIREMENTS_RESULT" | python -c "import sys, json; data=json.load(sys.stdin); print(data['requirements']['framework_integration'])")
-    
+
     if [[ $REQ_COUNT -ge 3 ]] && [[ "$FRAMEWORK_REQ" == "True" ]]; then
         echo "Status: PASS - Generated $REQ_COUNT requirements including framework integration"
         ((PASSED_TESTS++))
@@ -252,17 +252,17 @@ try:
     result = {'success': False, 'error': 'Should have raised exception but did not'}
 except SpecValidationError as e:
     result = {
-        'success': True, 
+        'success': True,
         'error_handled': True,
         'error_type': 'SpecValidationError',
         'error_message': str(e)
     }
 except Exception as e:
     result = {
-        'success': False, 
+        'success': False,
         'error': f'Wrong exception type: {type(e).__name__}: {str(e)}'
     }
-    
+
 print(json.dumps(result))
 ")
 
@@ -292,7 +292,7 @@ try:
     cli_dir = Path('spec_cli/cli')
     report = analyze_click_patterns(cli_dir)
     storage_capable = validate_context_storage_capability()
-    
+
     readiness_check = {
         'has_click_patterns': len(report.decorators_used) > 0,
         'has_context_info': len(report.context_usage) >= 0,  # Can be 0 if no current usage
@@ -301,10 +301,10 @@ try:
         'has_storage_capabilities': len(report.storage_capabilities) > 0,
         'framework_analysis_complete': True
     }
-    
+
     # Check if all readiness criteria met
     all_ready = all(readiness_check.values())
-    
+
     result = {
         'p2_1b_ready': all_ready,
         'readiness_details': readiness_check,

@@ -47,7 +47,7 @@ from pathlib import Path
 class SettingsManager:
     def __init__(self):
         self.value = "test"
-    
+
     def get_value(self):
         return self.value
 
@@ -55,7 +55,7 @@ def get_settings():
     return SettingsManager()
 EOF
 
-# Test file 2: Console with singleton imports  
+# Test file 2: Console with singleton imports
 cat > test_project/spec_cli/ui/console.py << 'EOF'
 """Test console module with singleton imports."""
 from ..utils.singleton import singleton_decorator
@@ -65,7 +65,7 @@ from rich.console import Console
 class ConsoleManager:
     def __init__(self):
         self.console = Console()
-    
+
     def print(self, text):
         self.console.print(text)
 EOF
@@ -78,7 +78,7 @@ from pathlib import Path
 class Helper:
     def __init__(self):
         pass
-    
+
     def help(self):
         return "helper"
 EOF

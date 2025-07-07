@@ -19,7 +19,7 @@ rg 'def.*complexity' spec_cli/utils | head -n 5
 ```
 
 - Existing helper: `spec_cli/utils/dependency_analysis.py` → Dependency analysis utilities
-- Existing helper: `spec_cli/utils/pattern_analysis.py` → Pattern analysis utilities  
+- Existing helper: `spec_cli/utils/pattern_analysis.py` → Pattern analysis utilities
 - Existing helper: `spec_cli/utils/singleton_detection.py` → Singleton detection utilities
 - New helper to create: `spec_cli/utils/pattern_classification/complexity_analyzer.py` → `analyze_pattern_complexity(pattern: SingletonPattern) -> ComplexityAssessment`
 

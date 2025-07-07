@@ -21,7 +21,7 @@ rg 'def.*migration' spec_cli/utils | head -n 5
 ```
 
 - Existing helper: `spec_cli/utils/migration_utils.py` → Migration utilities
-- Existing helper: `spec_cli/utils/test_migration_utils.py` → Test migration utilities  
+- Existing helper: `spec_cli/utils/test_migration_utils.py` → Test migration utilities
 - Existing helper: `spec_cli/utils/migration_cleanup_utils.py` → Migration cleanup utilities
 - New helper to create: `spec_cli/utils/function_restoration/missing_function_impl.py` → `implement_missing_function(signature: str, purpose: str) -> Callable`
 

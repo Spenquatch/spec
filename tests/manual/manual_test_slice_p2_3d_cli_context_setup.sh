@@ -21,17 +21,17 @@ run_test() {
     local expected="$2"
     shift 2
     local command="$@"
-    
+
     echo "Test: $test_name"
     echo "Expected: $expected"
     echo "Executing: $command"
-    
+
     ((TOTAL_TESTS++))
-    
+
     if output=$(eval "$command" 2>&1); then
         echo "Actual Output:"
         echo "$output"
-        
+
         # Check if expected text is in output
         if [[ "$output" == *"$expected"* ]]; then
             echo "Status: PASS"
@@ -103,13 +103,13 @@ from pathlib import Path
 try:
     # Initialize context
     spec_context = initialize_cli_context(Path('.'))
-    
+
     # Create Click context
     click_ctx = click.Context(click.Command('test'))
-    
+
     # Setup storage
     setup_click_context_storage(click_ctx, spec_context)
-    
+
     # Verify retrieval
     retrieved = retrieve_spec_context(click_ctx)
     if retrieved is not None:
@@ -177,11 +177,11 @@ try:
     spec_context = initialize_cli_context(Path('.'))
     click_ctx = click.Context(click.Command('test'))
     setup_click_context_storage(click_ctx, spec_context)
-    
+
     # Validate setup
     validation = validate_cli_context_setup(click_ctx)
     print(f'Validation result: {validation}')
-    
+
     if validation.get('setup_complete', False):
         print('SUCCESS: Context validation working')
     else:
@@ -203,11 +203,11 @@ try:
     # Verify factory method exists
     if hasattr(SpecContext, 'create_for_cli'):
         print('SUCCESS: P1.2b factory method available')
-        
+
         # Test factory method
         context = SpecContext.create_for_cli(Path('.'))
         print(f'Factory created context: {type(context).__name__}')
-        
+
         # Verify context properties
         print('Has settings:', hasattr(context, 'settings'))
         print('Has console:', hasattr(context, 'console'))
@@ -232,11 +232,11 @@ try:
     # Test P2.1b integration utilities
     context = SpecContext.create_for_cli(Path('.'))
     click_ctx = click.Context(click.Command('test'))
-    
+
     # Test integration
     integrate_spec_context(click_ctx, context)
     print('SUCCESS: P2.1b integrate_spec_context working')
-    
+
     # Test retrieval
     retrieved = retrieve_spec_context(click_ctx)
     if retrieved is not None:

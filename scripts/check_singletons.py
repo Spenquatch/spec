@@ -9,9 +9,9 @@ project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
 try:
-    from spec_cli.utils.singleton_detection 
+    from spec_cli.utils.singleton_detection
 except ImportError as e:
-    print(f"ERROR: Cannot 
+    print(f"ERROR: Cannot
     sys.exit(1)
 
 def main() -> int:

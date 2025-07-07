@@ -44,7 +44,7 @@ echo
 echo "Checking Docker services..."
 if command -v docker >/dev/null 2>&1; then
     echo "Docker is available for real service testing"
-    
+
     # Check if required services are running
     echo "Checking required services status:"
     docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}" | grep -E "(test-|pytest-)" || echo "No test services found - will start if needed"
@@ -55,15 +55,15 @@ if command -v docker >/dev/null 2>&1; then
         -v $(pwd):/workspace \
         -w /workspace \
         python:3.11-slim sleep 300 || echo "Container already exists or creation failed"
-    
+
     # Wait for container to be ready
     echo "Waiting for container to be ready..."
     sleep 5
-    
+
     # Install dependencies in container
     echo "Installing test dependencies in Docker container..."
     docker exec test-pytest-runner pip install pytest pytest-cov || echo "Dependencies installation failed"
-    
+
     echo "Docker pytest environment ready"
 else
     echo "WARNING: Docker not available - using local pytest execution"
@@ -273,28 +273,28 @@ echo "Executing real pytest runs with Docker isolation:"
 # Execute real pytest to measure actual reliability
 if command -v docker >/dev/null 2>&1 && docker ps | grep -q test-pytest-runner; then
     echo "Using Docker container for isolated pytest execution..."
-    
+
     # Copy test files to container
     docker cp . test-pytest-runner:/test_workspace/
-    
+
     # Run actual pytest in container
     PYTEST_RESULT=$(docker exec test-pytest-runner bash -c "
         cd /test_workspace
         python -m pytest test_*.py -v --tb=short 2>&1 | grep -E '(PASSED|FAILED|ERROR|collected)'
     " || echo "PYTEST_EXECUTION_FAILED")
-    
+
     echo "Actual pytest execution results from Docker:"
     echo "$PYTEST_RESULT"
-    
+
     # Count results
     PASSED_COUNT=$(echo "$PYTEST_RESULT" | grep -c "PASSED" 2>/dev/null) || PASSED_COUNT=0
     FAILED_COUNT=$(echo "$PYTEST_RESULT" | grep -c "FAILED" 2>/dev/null) || FAILED_COUNT=0
     TOTAL_COUNT=$((PASSED_COUNT + FAILED_COUNT))
-    
+
     if [[ $TOTAL_COUNT -gt 0 ]]; then
         FAILURE_RATE=$(python -c "print(f'{${FAILED_COUNT} / ${TOTAL_COUNT}:.3f}')" 2>/dev/null || echo "0.000")
         echo "Measured failure rate from real execution: $FAILURE_RATE"
-        
+
         if [[ $(echo "$FAILURE_RATE < 0.1" | bc -l 2>/dev/null || echo "1") -eq 1 ]]; then
             echo "Status: PASS - Real pytest execution successful with acceptable failure rate"
             ((PASSED_TESTS++))
@@ -308,12 +308,12 @@ if command -v docker >/dev/null 2>&1 && docker ps | grep -q test-pytest-runner; 
     fi
 else
     echo "Using local pytest execution (Docker not available)..."
-    
+
     # Run local pytest
     PYTEST_LOCAL_RESULT=$(python -m pytest test_*.py -v --tb=short 2>&1 | grep -E '(PASSED|FAILED|collected)' || echo "LOCAL_PYTEST_FAILED")
     echo "Local pytest results:"
     echo "$PYTEST_LOCAL_RESULT"
-    
+
     if [[ $PYTEST_LOCAL_RESULT == *"PASSED"* ]]; then
         echo "Status: PASS - Local pytest execution successful"
         ((PASSED_TESTS++))
@@ -340,18 +340,18 @@ print(f'DEBUG: Files in directory: {os.listdir(\".\")}')
 try:
     from slice_2_4_test_marking import execute_test_marking_workflow, generate_reliability_report
     print('DEBUG: Import successful')
-    
+
     # Execute workflow to get real data
     test_files = [f for f in os.listdir('.') if f.startswith('test_') and f.endswith('.py')]
     categorization = {'test_migration_example.py': 'migration_related'}
     core_tests = ['test_core_functionality.py']
-    
+
     print(f'DEBUG: test_files={test_files}')
     print(f'DEBUG: core_tests={core_tests}')
-    
+
     result = execute_test_marking_workflow(test_files, categorization, core_tests)
     report = generate_reliability_report(result)
-    
+
     print(f'REPORT_GENERATED:True')
     print(f'REPORT_LENGTH:{len(report)}')
     print('REPORT_SAMPLE:')

@@ -180,17 +180,17 @@ class CacheProtocol(Protocol):
 class InMemoryCache:
     def __init__(self):
         self._cache = {}
-    
+
     def get(self, key: str) -> str:
         return self._cache.get(key, "")
-    
+
     def set(self, key: str, value: str) -> None:
         self._cache[key] = value
 
 class DataService:
     def __init__(self, cache: CacheProtocol):
         self.cache = cache
-    
+
     def process(self, data: str) -> str:
         return f"Processed: {data}"
 EOF
@@ -378,7 +378,7 @@ if [[ $PASSED_TESTS -eq $TOTAL_TESTS ]]; then
     echo "ALL MANUAL TESTS PASSED - Singleton detection system working correctly"
     echo ""
     echo "✓ Metaclass singleton patterns detected correctly"
-    echo "✓ Decorator singleton patterns detected correctly"  
+    echo "✓ Decorator singleton patterns detected correctly"
     echo "✓ Import singleton patterns detected correctly"
     echo "✓ Clean code validation (no false positives)"
     echo "✓ Multiple patterns detection in single file"

@@ -17,7 +17,7 @@ Based on comprehensive analysis of the existing test suite, the following migrat
 
 **Primary Singleton Access Patterns:**
 - `get_settings()` - Direct singleton settings access
-- `get_console()` - Direct singleton console access  
+- `get_console()` - Direct singleton console access
 - `reset_console()` - Singleton state manipulation
 - `spec_console.` - Direct singleton instance usage
 - `SpecSettings()` - Direct singleton class instantiation
@@ -91,7 +91,7 @@ def isolated_test_context(tmp_path):
    # OLD: Singleton access
    def test_old_pattern():
        settings = get_settings()  # Fails - singleton removed
-   
+
    # NEW: Context injection
    def test_new_pattern(spec_context):
        settings = spec_context.settings  # Context-based access
@@ -102,7 +102,7 @@ def isolated_test_context(tmp_path):
    # OLD: Singleton access
    def test_old_console():
        console = get_console()  # Fails - singleton removed
-   
+
    # NEW: Context injection
    def test_new_console(spec_context):
        console = spec_context.console  # Context-based access
@@ -113,7 +113,7 @@ def isolated_test_context(tmp_path):
    # OLD: Command with singleton dependencies
    def test_old_command():
        result = init_command(["--debug"])  # Fails - internal singleton access
-   
+
    # NEW: Command with context injection
    def test_new_command(spec_context):
        result = init_command(["--debug"], context=spec_context)
@@ -218,7 +218,7 @@ rg "get_settings|get_console|reset_console" tests/ --type py
 **Timeline Estimate:**
 - Phase 1: 1 slice (context fixture creation)
 - Phase 2: 2-3 slices (pattern migration)
-- Phase 3: 2 slices (test helper updates)  
+- Phase 3: 2 slices (test helper updates)
 - Phase 4: 1-2 slices (integration test updates)
 
 This migration will restore full test suite functionality while establishing the foundation for maintainable, isolated, context-based testing patterns.

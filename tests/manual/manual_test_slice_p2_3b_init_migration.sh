@@ -72,7 +72,7 @@ if "$PROJECT_DIR"/.venv/bin/python -m spec_cli init 2>&1; then
     echo ""
     echo "Checking created directories:"
     ls -la .spec .specs 2>/dev/null && echo "Directories created successfully" || echo "ERROR: Directories not created"
-    
+
     if [[ -d ".spec" && -d ".specs" ]]; then
         echo "Result: .spec and .specs directories created"
         echo "Status: PASS"
@@ -98,35 +98,35 @@ PYTHON_RESULT=$(cd "$PROJECT_DIR" && python -c "
 try:
     from spec_cli.cli.commands.init import init_command
     import inspect
-    
-    # Check signature has context parameter  
+
+    # Check signature has context parameter
     sig = inspect.signature(init_command.callback)
     params = list(sig.parameters.keys())
-    
+
     if 'context' in sig.parameters:
         print('SUCCESS: Context parameter found in signature')
         print(f'Parameters: {params}')
-        
+
         # Check if context is first parameter
         if params[0] == 'context':
             print('SUCCESS: Context is first parameter')
         else:
             print('ERROR: Context is not first parameter')
-            
+
         # Check for decorator application
         if hasattr(init_command, '__wrapped__'):
             print('SUCCESS: Decorator wrapper detected')
         else:
             print('WARNING: No decorator wrapper detected')
-            
+
         if hasattr(init_command, '__click_params__'):
             print('SUCCESS: Click parameters preserved')
         else:
             print('ERROR: Click parameters missing')
-            
+
     else:
         print('ERROR: Context parameter not found in signature')
-        
+
 except Exception as e:
     print(f'ERROR: {e}')
 " 2>&1)
@@ -150,31 +150,31 @@ echo "Executing:"
 DECORATOR_RESULT=$(cd "$PROJECT_DIR" && python -c "
 try:
     from spec_cli.cli.commands.init import init_command
-    
+
     # Check for context injection decorator application
     print(f'Function type: {type(init_command)}')
     print(f'Has callback: {hasattr(init_command, \"callback\")}')
     print(f'Has params: {hasattr(init_command, \"params\")}')
-    
+
     # Check docstring preservation
     callback_doc = getattr(init_command.callback, '__doc__', None) if hasattr(init_command, 'callback') else None
     if callback_doc and 'context: SpecContext' in callback_doc:
         print('SUCCESS: Docstring updated with context parameter')
     else:
         print('WARNING: Docstring may not be properly updated')
-        
+
     # Check for SpecContext import
     import inspect
     import spec_cli.cli.commands.init as init_module
     source = inspect.getsource(init_module)
-    
+
     if 'SpecContext' in source and 'context_injection' in source:
         print('SUCCESS: Required imports found in source')
     else:
         print('ERROR: Missing required imports')
-        
+
     print('SUCCESS: Decorator application verified')
-    
+
 except Exception as e:
     print(f'ERROR: {e}')
 " 2>&1)
@@ -209,7 +209,7 @@ if "$PROJECT_DIR"/.venv/bin/python -m spec_cli init --force 2>&1 | grep -q "Forc
     ((PASSED_TESTS++))
 else
     echo "Result: Force flag behavior failed"
-    echo "Status: FAIL"  
+    echo "Status: FAIL"
     ((FAILED_TESTS++))
 fi
 echo ""
@@ -246,24 +246,24 @@ echo "Executing:"
 MIGRATION_UTILS_RESULT=$(cd "$PROJECT_DIR" && python -c "
 try:
     from spec_cli.utils.migration_utils import migrate_command_signature, validate_migration_behavior
-    
+
     # Test basic migration
     def test_func(debug: bool, verbose: bool) -> str:
         return f'debug={debug}, verbose={verbose}'
-    
+
     # Migrate the function
     migrated = migrate_command_signature(test_func, 'context')
-    
+
     # Validate migration
     is_valid = validate_migration_behavior(test_func, migrated)
-    
+
     if is_valid:
         print('SUCCESS: Migration utilities working correctly')
-        
+
         # Test execution
         class MockContext:
             pass
-        
+
         result = migrated(MockContext(), True, False)
         if result == 'debug=True, verbose=False':
             print('SUCCESS: Migrated function execution works correctly')
@@ -271,7 +271,7 @@ try:
             print('ERROR: Migrated function execution failed')
     else:
         print('ERROR: Migration validation failed')
-        
+
 except Exception as e:
     print(f'ERROR: Migration utilities test failed: {e}')
 " 2>&1)

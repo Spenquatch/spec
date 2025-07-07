@@ -51,11 +51,11 @@ cat > test_module.py << 'EOF'
 
 def calculate_sum(a: int, b: int) -> int:
     """Calculate the sum of two numbers.
-    
+
     Args:
         a: First number
         b: Second number
-        
+
     Returns:
         Sum of a and b
     """
@@ -63,11 +63,11 @@ def calculate_sum(a: int, b: int) -> int:
 
 class Calculator:
     """Simple calculator class."""
-    
+
     def __init__(self):
         """Initialize calculator."""
         self.history = []
-    
+
     def add(self, x: float, y: float) -> float:
         """Add two numbers."""
         result = x + y
@@ -99,7 +99,7 @@ from pathlib import Path
 def main():
     """Main application entry point."""
     print("Hello from main!")
-    
+
     config_path = Path("config.json")
     if config_path.exists():
         print("Config found")
@@ -127,7 +127,7 @@ poetry run spec init
 # Execute gen command
 if poetry run spec gen test_module.py; then
     echo "Result: Gen command executed successfully"
-    
+
     # Check if files were generated
     if [[ -f ".specs/test_module.py/index.md" ]] && [[ -f ".specs/test_module.py/history.md" ]]; then
         echo "Generated files found:"
@@ -153,7 +153,7 @@ echo "Executing:"
 
 if poetry run spec gen utils.py --template default; then
     echo "Result: Gen command with template executed successfully"
-    
+
     if [[ -f ".specs/utils.py/index.md" ]]; then
         echo "Template-based generation successful"
         echo "Status: PASS"
@@ -177,7 +177,7 @@ echo "Executing:"
 # Generate again with conflict strategy
 if poetry run spec gen test_module.py --conflict-strategy backup; then
     echo "Result: Gen command with conflict strategy executed"
-    
+
     # Check if backup was created (if file existed)
     if [[ -f ".specs/test_module.py/index.md" ]]; then
         echo "Conflict strategy handled correctly"
@@ -201,7 +201,7 @@ echo "Executing:"
 
 if poetry run spec gen src/main.py --force; then
     echo "Result: Gen command with force flag executed"
-    
+
     if [[ -f ".specs/src/main.py/index.md" ]]; then
         echo "Force flag processed correctly"
         echo "Status: PASS"
@@ -241,7 +241,7 @@ if [[ $DRY_RUN_EXIT_CODE -eq 0 ]]; then
     # Check that dry-run output contains expected information
     if echo "$DRY_RUN_OUTPUT" | grep -q "Dry run" || echo "$DRY_RUN_OUTPUT" | grep -q "would be"; then
         echo "Dry-run output indicates preview mode"
-        
+
         # Verify no actual files were created
         if [[ ! -f ".specs/new_file.py/index.md" ]]; then
             echo "No files created during dry-run (correct behavior)"

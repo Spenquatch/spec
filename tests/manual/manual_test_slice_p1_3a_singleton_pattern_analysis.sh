@@ -18,13 +18,13 @@ run_test() {
     local test_name="$1"
     local expected_result="$2"
     local test_command="$3"
-    
+
     echo "Test: $test_name"
     echo "Expected: $expected_result"
     echo "Executing: $test_command"
-    
+
     TOTAL_TESTS=$((TOTAL_TESTS + 1))
-    
+
     if eval "$test_command"; then
         echo "Status: PASS"
         PASSED_TESTS=$((PASSED_TESTS + 1))
@@ -47,7 +47,7 @@ if [[ ! -f "spec_cli/utils/singleton.py" ]]; then
 fi
 
 if [[ ! -f "spec_cli/ui/progress_manager.py" ]]; then
-    echo "ERROR: progress_manager.py not found"  
+    echo "ERROR: progress_manager.py not found"
     exit 1
 fi
 
@@ -101,10 +101,10 @@ try:
     usages = analyze_singleton_usage(Path('spec_cli/ui/progress_manager.py'))
     progress_usages = [u for u in usages if 'ProgressManager' in u.singleton_name]
     print(f'PROGRESS_USAGES:{len(progress_usages)}')
-    
+
     usage_types = {u.usage_type for u in progress_usages}
     print(f'USAGE_TYPES:{sorted(usage_types)}')
-    
+
     if len(progress_usages) > 0:
         print('SUCCESS:ProgressManagerSingleton usage detected')
     else:
@@ -140,36 +140,36 @@ try:
         'spec_cli/ui/progress_manager.py',
         'spec_cli/ui/progress_utils.py'
     ]
-    
+
     for file_path_str in files_to_analyze:
         file_path = Path(file_path_str)
         if file_path.exists():
             usages = analyze_singleton_usage(file_path)
             all_usages.extend(usages)
-    
+
     # Generate access pattern report
     report = document_access_patterns('ProgressManagerSingleton', all_usages)
-    
+
     print(f'TOTAL_USAGES:{report.total_usages}')
     print(f'ACCESS_METHODS:{sorted(report.access_methods)}')
     print(f'REQUIREMENTS_COUNT:{len(report.wrapper_requirements)}')
-    
+
     # Check for specific requirements
     requirements_text = ' '.join(report.wrapper_requirements).lower()
-    
+
     has_thread_safety = 'thread' in requirements_text
     has_api_preservation = 'api' in requirements_text or 'interface' in requirements_text
     has_progress_specific = 'progress_manager' in requirements_text
-    
+
     print(f'HAS_THREAD_SAFETY:{has_thread_safety}')
-    print(f'HAS_API_PRESERVATION:{has_api_preservation}')  
+    print(f'HAS_API_PRESERVATION:{has_api_preservation}')
     print(f'HAS_PROGRESS_SPECIFIC:{has_progress_specific}')
-    
+
     if report.total_usages > 0 and len(report.wrapper_requirements) > 0:
         print('SUCCESS:Access pattern report generated')
     else:
         print('ERROR:Incomplete access pattern report')
-        
+
 except Exception as e:
     print(f'ERROR:{e}')
 ")
@@ -212,22 +212,22 @@ def test_function():
     return manager.get_progress_manager()
 ''')
         temp_path = f.name
-    
+
     # Analyze the temporary file
     usages = analyze_singleton_usage(Path(temp_path))
-    
+
     # Clean up
     os.unlink(temp_path)
-    
+
     singleton_names = {u.singleton_name for u in usages}
     print(f'CROSS_PLATFORM_SINGLETONS:{len(singleton_names)}')
     print(f'FOUND_NAMES:{sorted(singleton_names)}')
-    
+
     if 'ProgressManagerSingleton' in singleton_names and 'SingletonMeta' in singleton_names:
         print('SUCCESS:Cross-platform analysis working')
     else:
         print('ERROR:Cross-platform analysis failed')
-        
+
 except Exception as e:
     print(f'ERROR:{e}')
 ")
@@ -264,29 +264,29 @@ try:
         print('SUCCESS:FileNotFoundError handled correctly')
     except Exception as e:
         print(f'ERROR:Unexpected exception: {e}')
-    
+
     # Test 2: Syntax error fallback
     with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
         f.write('''
 # Invalid syntax but contains patterns
 class ProgressManagerSingleton(:  # Syntax error
     pass
-        
+
 get_progress_manager()
 ''')
         temp_path = f.name
-    
+
     usages = analyze_singleton_usage(Path(temp_path))
     os.unlink(temp_path)
-    
+
     singleton_names = {u.singleton_name for u in usages}
     if 'ProgressManagerSingleton' in singleton_names:
         print('SUCCESS:Syntax error fallback working')
     else:
         print('ERROR:Syntax error fallback failed')
-    
+
     print('SUCCESS:Error handling validation complete')
-        
+
 except Exception as e:
     print(f'ERROR:{e}')
 ")
@@ -302,7 +302,7 @@ fi
 echo ""
 
 # Test 6: End-to-End Analysis Workflow
-echo "Test 6: End-to-End Analysis Workflow" 
+echo "Test 6: End-to-End Analysis Workflow"
 echo "Expected: Complete analysis workflow from detection to requirements generation"
 echo "Executing:"
 E2E_WORKFLOW_TEST=$(python -c "
@@ -318,31 +318,31 @@ try:
         'spec_cli/ui/progress_manager.py',
         'spec_cli/ui/progress_utils.py'
     ]
-    
+
     all_usages = []
     files_analyzed = 0
-    
+
     for file_path_str in key_files:
         file_path = Path(file_path_str)
         if file_path.exists():
             usages = analyze_singleton_usage(file_path)
             all_usages.extend(usages)
             files_analyzed += 1
-    
+
     # Step 2: Generate comprehensive requirements
     progress_usages = [u for u in all_usages if 'ProgressManager' in u.singleton_name]
-    
+
     if progress_usages:
         report = document_access_patterns('ProgressManagerSingleton', all_usages)
-        
+
         # Step 3: Validate requirements for P1.3b
         requirements = report.wrapper_requirements
-        
+
         # Check for essential requirements
         has_thread_requirements = any('thread' in req.lower() for req in requirements)
         has_api_requirements = any('api' in req.lower() or 'interface' in req.lower() for req in requirements)
         has_progress_requirements = any('progress' in req.lower() for req in requirements)
-        
+
         print(f'FILES_ANALYZED:{files_analyzed}')
         print(f'TOTAL_USAGES:{len(all_usages)}')
         print(f'PROGRESS_USAGES:{len(progress_usages)}')
@@ -350,15 +350,15 @@ try:
         print(f'HAS_THREAD_REQ:{has_thread_requirements}')
         print(f'HAS_API_REQ:{has_api_requirements}')
         print(f'HAS_PROGRESS_REQ:{has_progress_requirements}')
-        
-        if (files_analyzed >= 2 and len(progress_usages) > 0 and 
+
+        if (files_analyzed >= 2 and len(progress_usages) > 0 and
             has_thread_requirements and has_api_requirements and has_progress_requirements):
             print('SUCCESS:End-to-end workflow complete')
         else:
             print('ERROR:Incomplete end-to-end workflow')
     else:
         print('ERROR:No ProgressManager usages found')
-        
+
 except Exception as e:
     print(f'ERROR:{e}')
 ")
@@ -379,14 +379,14 @@ echo "Expected: Requirements document exists and contains essential compatibilit
 echo "Executing:"
 if [[ -f "phases/analysis/singleton_compatibility_requirements.md" ]]; then
     echo "Requirements document found"
-    
+
     # Check document content
     if grep -q "ProgressManagerSingleton" phases/analysis/singleton_compatibility_requirements.md; then
         echo "Contains ProgressManagerSingleton analysis: YES"
-        
+
         if grep -q -i "thread.safety" phases/analysis/singleton_compatibility_requirements.md; then
             echo "Contains thread safety requirements: YES"
-            
+
             if grep -q "wrapper" phases/analysis/singleton_compatibility_requirements.md; then
                 echo "Contains wrapper requirements: YES"
                 echo "Status: PASS"
@@ -422,21 +422,21 @@ import time
 
 try:
     start_time = time.time()
-    
+
     # Analyze a moderately large file
     usages = analyze_singleton_usage(Path('spec_cli/ui/progress_manager.py'))
-    
+
     end_time = time.time()
     analysis_time = end_time - start_time
-    
+
     print(f'ANALYSIS_TIME:{analysis_time:.3f}s')
     print(f'USAGES_FOUND:{len(usages)}')
-    
+
     if analysis_time < 1.0:  # Should complete within 1 second
         print('SUCCESS:Performance within acceptable limits')
     else:
         print('WARNING:Analysis took longer than expected')
-        
+
 except Exception as e:
     print(f'ERROR:{e}')
 ")

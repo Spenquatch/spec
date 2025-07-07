@@ -21,13 +21,13 @@ log_test_result() {
     local expected="$2"
     local actual="$3"
     local status="$4"
-    
+
     echo "Test: $test_name"
     echo "Expected: $expected"
     echo "Actual: $actual"
     echo "Status: $status"
     echo
-    
+
     TOTAL_TESTS=$((TOTAL_TESTS + 1))
     if [[ "$status" == "PASS" ]]; then
         PASSED_TESTS=$((PASSED_TESTS + 1))
@@ -57,7 +57,7 @@ echo "Expected: Module imports successfully without errors"
 IMPORT_RESULT=$(python -c "
 try:
     from spec_cli.utils.test_migration_utils import (
-        create_context_fixture, 
+        create_context_fixture,
         validate_test_isolation,
         create_mock_context_fixture,
         migrate_singleton_fixture
@@ -107,7 +107,7 @@ try:
     for fixture_name in fixtures:
         if not hasattr(conftest, fixture_name):
             missing.append(fixture_name)
-    
+
     if missing:
         print(f'ERROR: Missing fixtures - {missing}')
     else:
@@ -142,16 +142,16 @@ ISOLATION_RESULT=$(python -c "
 try:
     from spec_cli.utils.test_migration_utils import create_context_fixture
     from spec_cli.core.context import SpecContext
-    
+
     def test_factory():
         return SpecContext.create_for_testing()
-    
+
     fixture_func = create_context_fixture(test_factory)
-    
+
     # Create two contexts
     context1 = fixture_func()
     context2 = fixture_func()
-    
+
     # Verify isolation
     if context1 is context2:
         print('ERROR: Contexts are the same instance (no isolation)')
@@ -159,7 +159,7 @@ try:
         print('ERROR: Contexts have same hash (potential state sharing)')
     else:
         print('SUCCESS: Contexts are properly isolated')
-        
+
 except Exception as e:
     print(f'ERROR: Context isolation test failed - {e}')
 " 2>&1)
@@ -176,22 +176,22 @@ echo "Expected: validate_test_isolation detects good and bad patterns"
 VALIDATION_RESULT=$(python -c "
 try:
     from spec_cli.utils.test_migration_utils import validate_test_isolation
-    
+
     def good_test(spec_context):
         return spec_context.settings.debug_enabled
-    
+
     def bad_test():
         import os
         return os.environ.get('SPEC_DEBUG', False)
-    
+
     good_result = validate_test_isolation(good_test)
     bad_result = validate_test_isolation(bad_test)
-    
+
     if good_result is True and bad_result is False:
         print('SUCCESS: Validation correctly identifies good and bad patterns')
     else:
         print(f'ERROR: Validation failed - good: {good_result}, bad: {bad_result}')
-        
+
 except Exception as e:
     print(f'ERROR: Isolation validation test failed - {e}')
 " 2>&1)
@@ -221,22 +221,22 @@ echo "Expected: Mock fixtures can be customized with overrides"
 MOCK_RESULT=$(python -c "
 try:
     from spec_cli.utils.test_migration_utils import create_mock_context_fixture
-    
+
     # Create mock fixture with overrides
     mock_fixture = create_mock_context_fixture(
         settings_overrides={'debug_enabled': True, 'console_width': 120},
         console_overrides={'supports_color': False}
     )
-    
+
     context = mock_fixture()
-    
+
     # Verify overrides were applied
-    if (context.settings.debug_enabled is True and 
+    if (context.settings.debug_enabled is True and
         context.settings.console_width == 120):
         print('SUCCESS: Mock context fixture customization works')
     else:
         print(f'ERROR: Overrides not applied correctly')
-        
+
 except Exception as e:
     print(f'ERROR: Mock fixture customization failed - {e}')
 " 2>&1)
@@ -255,25 +255,25 @@ import time
 try:
     from spec_cli.core.context import SpecContext
     from spec_cli.utils.test_migration_utils import create_context_fixture
-    
+
     def test_factory():
         return SpecContext.create_for_testing()
-    
+
     fixture_func = create_context_fixture(test_factory)
-    
+
     # Time fixture creation
     start_time = time.time()
     for i in range(10):
         context = fixture_func()
     end_time = time.time()
-    
+
     avg_time = (end_time - start_time) / 10
-    
+
     if avg_time < 0.1:  # Less than 100ms per fixture
         print(f'SUCCESS: Fixture creation is fast ({avg_time:.3f}s average)')
     else:
         print(f'WARNING: Fixture creation is slow ({avg_time:.3f}s average)')
-        
+
 except Exception as e:
     print(f'ERROR: Performance test failed - {e}')
 " 2>&1)
@@ -290,30 +290,30 @@ echo "Expected: Proper error handling for invalid inputs"
 ERROR_HANDLING_RESULT=$(python -c "
 try:
     from spec_cli.utils.test_migration_utils import (
-        create_context_fixture, 
+        create_context_fixture,
         validate_test_isolation,
         TestMigrationError
     )
-    
+
     errors_caught = 0
-    
+
     # Test invalid factory method
     try:
         create_context_fixture('not_callable')
     except TestMigrationError:
         errors_caught += 1
-    
+
     # Test invalid test function
     try:
         validate_test_isolation('not_callable')
     except TestMigrationError:
         errors_caught += 1
-    
+
     if errors_caught == 2:
         print('SUCCESS: Error handling works correctly')
     else:
         print(f'ERROR: Error handling incomplete - caught {errors_caught}/2 errors')
-        
+
 except Exception as e:
     print(f'ERROR: Error handling test failed - {e}')
 " 2>&1)

@@ -62,7 +62,7 @@ rg 'def.*validate.*detection' spec_cli/utils | head -n 5
 Create `functionality_script_slice_3_4_accuracy_validation.sh` in `tests/functionality/` that:
 
 - **MANDATORY**: Tests REAL functionality only - NO mocking, NO patches, NO unittest.mock usage
-- **MANDATORY**: Uses actual accuracy validation implementation - NO mock objects  
+- **MANDATORY**: Uses actual accuracy validation implementation - NO mock objects
 - **MANDATORY**: Exercises real validation logic on actual detection results and known patterns
 - **MANDATORY**: Validates actual accuracy calculations and baseline finalization
 - **MANDATORY**: Captures and displays actual accuracy metrics and validation results

@@ -24,7 +24,7 @@ fi
 echo "Checking Poetry environment..."
 if command -v poetry >/dev/null 2>&1; then
     echo "Poetry found: $(poetry --version)"
-    
+
     # Check if virtual environment is activated
     if [[ "$VIRTUAL_ENV" != "" ]] || poetry env info --path >/dev/null 2>&1; then
         echo "Poetry virtual environment available"
@@ -79,19 +79,19 @@ sys.path.insert(0, 'spec_cli')
 try:
     from spec_cli.cli.decorators import context_injection
     import click
-    
+
     # Create a test Click command
     @context_injection
     @click.command()
     def test_cmd(ctx, name='default'):
         '''Test command docstring'''
         return f'Hello {name}'
-    
+
     # Check if Click attributes are preserved
     has_click_params = hasattr(test_cmd, '__click_params__') or True  # May not exist if no params
     has_name = hasattr(test_cmd, '__name__')
     has_doc = hasattr(test_cmd, '__doc__')
-    
+
     if has_name and has_doc:
         print(f'SUCCESS: Click compatibility preserved - name: {test_cmd.__name__}, doc exists: {bool(test_cmd.__doc__)}')
     else:
@@ -124,16 +124,16 @@ import sys
 sys.path.insert(0, 'spec_cli')
 try:
     from spec_cli.cli.decorators import context_injection
-    
+
     @context_injection
     def test_func(ctx, name='test'):
         '''Test docstring for preservation'''
         return f'Function called with {name}'
-    
+
     # Check metadata preservation
     name_preserved = test_func.__name__ == 'test_func'
     doc_preserved = test_func.__doc__ == 'Test docstring for preservation'
-    
+
     if name_preserved and doc_preserved:
         print(f'SUCCESS: Metadata preserved - name: {test_func.__name__}, doc: {test_func.__doc__}')
     else:
@@ -167,24 +167,24 @@ sys.path.insert(0, 'spec_cli')
 try:
     import click
     from spec_cli.cli.decorators import context_injection
-    
+
     # Create decorator chain
     def extra_decorator(func):
         func._extra_decorated = True
         return func
-    
+
     @click.command()
-    @context_injection  
+    @context_injection
     @extra_decorator
     def test_command(ctx, message='hello'):
         '''Multi-decorated command'''
         return f'Message: {message}'
-    
+
     # Check both decorators applied
     click_decorated = hasattr(test_command, '__click_params__') or hasattr(test_command, 'callback')
     extra_decorated = hasattr(test_command, '_extra_decorated')
     callable_result = callable(test_command)
-    
+
     if callable_result and extra_decorated:
         print(f'SUCCESS: Decorator chain compatible - callable: {callable_result}, extra: {extra_decorated}')
     else:
@@ -217,18 +217,18 @@ import sys
 sys.path.insert(0, 'spec_cli')
 try:
     from spec_cli.cli.decorators import inject_context
-    
+
     # Test parametric decorator
     @inject_context('custom_context')
     def test_param_func(custom_context, value='default'):
         '''Parametric decorator test'''
         return f'Value: {value}'
-    
+
     # Check decorator applied correctly
     name_preserved = test_param_func.__name__ == 'test_param_func'
     doc_preserved = 'Parametric decorator test' in str(test_param_func.__doc__)
     callable_result = callable(test_param_func)
-    
+
     if name_preserved and callable_result:
         print(f'SUCCESS: Parametric decorator works - name: {name_preserved}, callable: {callable_result}')
     else:
@@ -261,18 +261,18 @@ import sys
 sys.path.insert(0, 'spec_cli')
 try:
     from spec_cli.cli.decorators import with_context
-    
+
     # Test alias decorator
     @with_context
     def test_alias_func(ctx, operation='test'):
         '''Alias decorator test'''
         return f'Operation: {operation}'
-    
-    # Check alias decorator applied correctly  
+
+    # Check alias decorator applied correctly
     name_preserved = test_alias_func.__name__ == 'test_alias_func'
     doc_preserved = 'Alias decorator test' in str(test_alias_func.__doc__)
     callable_result = callable(test_alias_func)
-    
+
     if name_preserved and callable_result:
         print(f'SUCCESS: Alias decorator works - name: {name_preserved}, callable: {callable_result}')
     else:
@@ -305,12 +305,12 @@ import sys
 sys.path.insert(0, 'spec_cli')
 try:
     from spec_cli.cli.decorators import context_injection, ContextInjectionError
-    
+
     # Test error handling for invalid function
     def invalid_func():
         '''Function with no parameters'''
         return 'invalid'
-    
+
     try:
         context_injection(invalid_func)
         print('FAIL: Should have raised ContextInjectionError for parameterless function')
@@ -321,7 +321,7 @@ try:
             print(f'FAIL: Wrong error message - {e}')
     except Exception as e:
         print(f'FAIL: Wrong exception type - {type(e).__name__}: {e}')
-        
+
 except Exception as e:
     print(f'ERROR: {e}')
     import traceback
@@ -350,36 +350,36 @@ import sys
 sys.path.insert(0, 'spec_cli')
 try:
     from spec_cli.utils.decorator_utils import (
-        create_context_injector, 
+        create_context_injector,
         preserve_function_metadata,
         validate_decorator_target
     )
-    
+
     # Test helper functions
     def mock_retriever():
         return {'test': 'context'}
-    
+
     def test_function(ctx, name):
         return f'ctx: {ctx}, name: {name}'
-    
+
     # Test context injector creation
     injector = create_context_injector(mock_retriever)
     injector_ok = callable(injector)
-    
+
     # Test function validation
     validation_ok = validate_decorator_target(test_function)
-    
+
     # Test metadata preservation
     def wrapper():
         pass
     enhanced = preserve_function_metadata(wrapper, test_function)
     metadata_ok = enhanced.__name__ == test_function.__name__
-    
+
     if injector_ok and validation_ok and metadata_ok:
         print(f'SUCCESS: Helper functions work - injector: {injector_ok}, validation: {validation_ok}, metadata: {metadata_ok}')
     else:
         print(f'FAIL: Helper function issues - injector: {injector_ok}, validation: {validation_ok}, metadata: {metadata_ok}')
-        
+
 except Exception as e:
     print(f'ERROR: {e}')
     import traceback

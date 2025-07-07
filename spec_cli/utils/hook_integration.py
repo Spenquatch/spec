@@ -10,12 +10,14 @@ from typing import Any
 
 from ..exceptions import SpecError
 
+
 class HookIntegrationError(SpecError):
     """Exception raised when hook integration fails."""
 
     def __init__(self, message: str, hook_config: dict[str, Any] | None = None) -> None:
         super().__init__(message)
         self.hook_config = hook_config
+
 
 @dataclass
 class HookIntegration:
@@ -26,6 +28,7 @@ class HookIntegration:
     hook_files: str
     hook_language: str
     hook_entry: str
+
 
 def create_pre_commit_hook(detection_tool: Path) -> str:
     """Create pre-commit hook configuration for singleton detection.
@@ -69,6 +72,7 @@ def create_pre_commit_hook(detection_tool: Path) -> str:
 """
 
     return hook_config
+
 
 def validate_hook_configuration(hook_config: dict[str, Any]) -> bool:
     """Validate pre-commit hook configuration structure.
@@ -129,6 +133,7 @@ def validate_hook_configuration(hook_config: dict[str, Any]) -> bool:
 
     return True
 
+
 def get_singleton_detection_hook() -> HookIntegration:
     """Get the singleton detection hook integration configuration.
 
@@ -146,6 +151,7 @@ def get_singleton_detection_hook() -> HookIntegration:
         hook_language="system",
         hook_entry="python scripts/check_singletons.py",
     )
+
 
 def create_hook_script(detection_module_path: Path) -> str:
     """Create executable hook script for singleton detection.

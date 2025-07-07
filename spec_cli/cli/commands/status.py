@@ -14,6 +14,7 @@ from ..decorators import context_injection
 from ..options import spec_command
 from ..utils import echo_status, get_spec_repository
 
+
 @spec_command()
 @click.option(
     "--health",
@@ -78,6 +79,7 @@ def status_command(
         context.console.print_error(f"Status check failed: {e}")
         raise click.ClickException(f"Status check failed: {e}") from e
 
+
 def _get_repository_status(repo: Any) -> dict[str, Any]:
     """Get repository status information."""
     spec_dir = Path(".spec")
@@ -110,6 +112,7 @@ def _get_repository_status(repo: Any) -> dict[str, Any]:
         },
     }
 
+
 def _get_git_status_data(repo: Any) -> dict[str, Any]:
     """Get git status data from repository.
 
@@ -127,6 +130,7 @@ def _get_git_status_data(repo: Any) -> dict[str, Any]:
         }
     except Exception:
         return {"staged": [], "modified": [], "untracked": []}
+
 
 def _get_repository_health(repo: Any) -> dict[str, Any]:
     """Get repository health information."""
@@ -178,6 +182,7 @@ def _get_repository_health(repo: Any) -> dict[str, Any]:
         )
 
     return health
+
 
 def _get_real_ai_status(context: SpecContext) -> dict[str, Any]:
     """Get real AI provider status information.
@@ -246,6 +251,7 @@ def _get_real_ai_status(context: SpecContext) -> dict[str, Any]:
             "error": "AI system unavailable",
         }
 
+
 def _get_processing_summary(context: SpecContext) -> dict[str, Any]:
     """Get processing capabilities summary."""
     return {
@@ -260,6 +266,7 @@ def _get_processing_summary(context: SpecContext) -> dict[str, Any]:
         },
         "ai_integration": _get_real_ai_status(context),
     }
+
 
 def _display_repository_status(status_info: dict[str, Any]) -> None:
     """Display repository status using Rich formatting."""
@@ -276,6 +283,7 @@ def _display_repository_status(status_info: dict[str, Any]) -> None:
     # Git status summary
     git_table = create_key_value_table(status_info["git"], "Git Status Summary")
     git_table.print()
+
 
 def _display_health_check(health_info: dict[str, Any]) -> None:
     """Display health check results."""
@@ -295,6 +303,7 @@ def _display_health_check(health_info: dict[str, Any]) -> None:
         table.add_status_item(component.replace("_", " ").title(), details, status_type)
 
     table.print()
+
 
 def _display_git_status(git_status: dict[str, Any]) -> None:
     """Display Git status information."""
@@ -316,6 +325,7 @@ def _display_git_status(git_status: dict[str, Any]) -> None:
 
     if not any(git_status.values()):
         echo_status("\nWorking directory clean", "success")
+
 
 def _display_processing_summary(summary_info: dict[str, Any]) -> None:
     """Display processing capabilities summary."""

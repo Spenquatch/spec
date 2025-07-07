@@ -44,24 +44,24 @@ from spec_cli.core.context import SpecContext
 try:
     # Create CLI context with real dependencies
     context = SpecContext.create_for_cli(Path('/tmp/test_project'))
-    
+
     # Verify it's a SpecContext instance
     is_spec_context = isinstance(context, SpecContext)
-    
+
     # Verify dependencies are real (not Mock objects)
     from unittest.mock import Mock
     settings_is_real = not isinstance(context.settings, Mock)
-    console_is_real = not isinstance(context.console, Mock) 
+    console_is_real = not isinstance(context.console, Mock)
     progress_is_real = not isinstance(context.progress, Mock)
-    
+
     # Verify settings configuration
     root_path_correct = str(context.settings.root_path) == '/tmp/test_project'
     spec_dir_correct = str(context.settings.spec_dir) == '/tmp/test_project/.spec'
-    
+
     # Test context operations
     context_hash = context.get_context_hash()
     hash_valid = isinstance(context_hash, str) and len(context_hash) > 0
-    
+
     print(f'CLI_CONTEXT_CREATED:{is_spec_context}')
     print(f'SETTINGS_REAL:{settings_is_real}')
     print(f'CONSOLE_REAL:{console_is_real}')
@@ -71,7 +71,7 @@ try:
     print(f'HASH_VALID:{hash_valid}')
     print(f'CONTEXT_HASH:{context_hash[:8]}...')
     print('SUCCESS:CLI_FACTORY_WORKING')
-    
+
 except Exception as e:
     print(f'ERROR:CLI_FACTORY_FAILED:{e}')
     sys.exit(1)
@@ -103,29 +103,29 @@ try:
     # Create testing context with mock dependencies
     overrides = {'debug_enabled': True, 'console_width': 120}
     context = SpecContext.create_for_testing(overrides)
-    
+
     # Verify it's a SpecContext instance
     is_spec_context = isinstance(context, SpecContext)
-    
+
     # Verify dependencies are mocks
     from unittest.mock import Mock
     settings_is_mock = isinstance(context.settings, Mock)
     console_is_mock = isinstance(context.console, Mock)
     progress_is_mock = isinstance(context.progress, Mock)
-    
+
     # Verify mock configuration
     debug_enabled = context.settings.debug_enabled == True
     console_width = context.settings.console_width == 120
-    
+
     # Test mock behavior
     console_width_method = context.console.get_width() == 80
     color_support = context.console.supports_color() == False
     operation_id = context.progress.start_operation('test') == 'test_op_001'
-    
+
     # Test context operations work with mocks
     context_hash = context.get_context_hash()
     hash_valid = isinstance(context_hash, str) and len(context_hash) > 0
-    
+
     print(f'TESTING_CONTEXT_CREATED:{is_spec_context}')
     print(f'SETTINGS_MOCK:{settings_is_mock}')
     print(f'CONSOLE_MOCK:{console_is_mock}')
@@ -138,7 +138,7 @@ try:
     print(f'HASH_VALID:{hash_valid}')
     print(f'CONTEXT_HASH:{context_hash[:8]}...')
     print('SUCCESS:TESTING_FACTORY_WORKING')
-    
+
 except Exception as e:
     print(f'ERROR:TESTING_FACTORY_FAILED:{e}')
     sys.exit(1)
@@ -171,34 +171,34 @@ try:
     # Create both types of contexts
     cli_context = SpecContext.create_for_cli(Path('/tmp/integration'))
     testing_context = SpecContext.create_for_testing({'debug_enabled': True})
-    
+
     # Verify both are SpecContext instances
-    both_spec_contexts = (isinstance(cli_context, SpecContext) and 
+    both_spec_contexts = (isinstance(cli_context, SpecContext) and
                          isinstance(testing_context, SpecContext))
-    
+
     # Verify they have different hashes (different configurations)
     cli_hash = cli_context.get_context_hash()
     testing_hash = testing_context.get_context_hash()
     different_hashes = cli_hash != testing_hash
-    
+
     # Test context replacement works for both
     from spec_cli.core.context import SpecConsoleInterface
     new_console = SpecConsoleInterface()
-    
+
     cli_with_new_console = cli_context.with_console(new_console)
     testing_with_new_console = testing_context.with_console(new_console)
-    
+
     replacement_works = (cli_with_new_console.console is new_console and
                         testing_with_new_console.console is new_console)
-    
+
     # Test immutability (original contexts unchanged)
     immutability_preserved = (cli_context.console is not new_console and
                              testing_context.console is not new_console)
-    
+
     # Test equality comparison
     cli_context_2 = SpecContext.create_for_cli(Path('/tmp/integration'))
     equality_works = cli_context == cli_context_2
-    
+
     print(f'BOTH_SPEC_CONTEXTS:{both_spec_contexts}')
     print(f'DIFFERENT_HASHES:{different_hashes}')
     print(f'REPLACEMENT_WORKS:{replacement_works}')
@@ -207,7 +207,7 @@ try:
     print(f'CLI_HASH:{cli_hash[:8]}...')
     print(f'TESTING_HASH:{testing_hash[:8]}...')
     print('SUCCESS:INTEGRATION_WORKING')
-    
+
 except Exception as e:
     print(f'ERROR:INTEGRATION_FAILED:{e}')
     sys.exit(1)
@@ -241,7 +241,7 @@ try:
     error_caught = False
     error_type_correct = False
     error_message_valid = False
-    
+
     try:
         # This should trigger validation error in factory_utils
         SpecContext.create_for_cli(Path('/tmp'), timeout=-1)
@@ -259,10 +259,10 @@ try:
     except Exception as e:
         print(f'UNEXPECTED_ERROR:{type(e).__name__}:{e}')
         print('FAIL:WRONG_ERROR_TYPE')
-    
+
     if not error_caught:
         print('FAIL:NO_ERROR_CAUGHT')
-        
+
 except Exception as e:
     print(f'ERROR:ERROR_HANDLING_TEST_FAILED:{e}')
     sys.exit(1)
@@ -295,28 +295,28 @@ from unittest.mock import Mock
 try:
     # Create CLI context - should have real dependencies
     cli_context = SpecContext.create_for_cli(Path('/tmp/env_test'))
-    
-    # Create testing context - should have mock dependencies  
+
+    # Create testing context - should have mock dependencies
     testing_context = SpecContext.create_for_testing()
-    
+
     # Verify CLI context characteristics
     cli_has_real_settings = not isinstance(cli_context.settings, Mock)
     cli_has_real_console = not isinstance(cli_context.console, Mock)
     cli_color_enabled = cli_context.settings.use_color == True  # Default for CLI
-    
+
     # Verify testing context characteristics
     testing_has_mock_settings = isinstance(testing_context.settings, Mock)
     testing_has_mock_console = isinstance(testing_context.console, Mock)
     testing_color_disabled = testing_context.settings.use_color == False  # Testing consistency
-    
+
     # Verify different behaviors
     cli_console_width = cli_context.console.get_width()
     testing_console_width = testing_context.console.get_width()
-    
+
     # CLI should call real method, testing should return configured mock value
-    width_behaviors_different = (isinstance(cli_console_width, int) and 
+    width_behaviors_different = (isinstance(cli_console_width, int) and
                                 testing_console_width == 80)  # Mock return value
-    
+
     print(f'CLI_REAL_SETTINGS:{cli_has_real_settings}')
     print(f'CLI_REAL_CONSOLE:{cli_has_real_console}')
     print(f'CLI_COLOR_ENABLED:{cli_color_enabled}')
@@ -327,7 +327,7 @@ try:
     print(f'CLI_CONSOLE_WIDTH:{cli_console_width}')
     print(f'TESTING_CONSOLE_WIDTH:{testing_console_width}')
     print('SUCCESS:ENVIRONMENT_SPECIFIC_WORKING')
-    
+
 except Exception as e:
     print(f'ERROR:ENVIRONMENT_TEST_FAILED:{e}')
     sys.exit(1)
@@ -363,22 +363,22 @@ try:
         test_path = Path('C:/temp/spec_test')
     else:
         test_path = Path('/tmp/spec_test')
-    
+
     # Create CLI context with platform-appropriate path
     context = SpecContext.create_for_cli(test_path)
-    
+
     # Verify path handling
     root_path_set = context.settings.root_path == test_path
     spec_dir_relative = context.settings.spec_dir == test_path / '.spec'
     specs_dir_relative = context.settings.specs_dir == test_path / '.specs'
-    
+
     # Test path operations work
     root_str = str(context.settings.root_path)
     spec_str = str(context.settings.spec_dir)
-    
+
     paths_are_strings = isinstance(root_str, str) and isinstance(spec_str, str)
     paths_not_empty = len(root_str) > 0 and len(spec_str) > 0
-    
+
     print(f'PLATFORM:{platform.system()}')
     print(f'TEST_PATH:{test_path}')
     print(f'ROOT_PATH_SET:{root_path_set}')
@@ -389,7 +389,7 @@ try:
     print(f'ROOT_PATH_STR:{root_str}')
     print(f'SPEC_DIR_STR:{spec_str}')
     print('SUCCESS:CROSS_PLATFORM_WORKING')
-    
+
 except Exception as e:
     print(f'ERROR:PLATFORM_TEST_FAILED:{e}')
     sys.exit(1)

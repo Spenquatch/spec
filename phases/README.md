@@ -4,16 +4,16 @@ This directory contains the complete phase decomposition for migrating spec-cli 
 
 ## Migration Overview
 
-**Feature**: Complete Singleton to Dependency Injection Architecture Migration  
-**Business Value**: Eliminate 58+ systematic test failures, 484+ singleton violations, and production reliability risks  
-**Technical Objective**: Replace global singleton pattern with immutable dependency injection throughout entire codebase  
+**Feature**: Complete Singleton to Dependency Injection Architecture Migration
+**Business Value**: Eliminate 58+ systematic test failures, 484+ singleton violations, and production reliability risks
+**Technical Objective**: Replace global singleton pattern with immutable dependency injection throughout entire codebase
 **Success Metrics**: 100% test reliability, zero singleton patterns, concurrent CLI operation support, improved maintainability
 
 ## Detection-Driven Migration Strategy
 
 Our singleton detection system identified violations in critical areas:
 - **Core UI Services**: ConsoleManager, ThemeManager, ProgressManager (58 violations)
-- **Configuration Services**: SettingsManager (23 violations) 
+- **Configuration Services**: SettingsManager (23 violations)
 - **Application Infrastructure**: Context, workflow, and service layers (180+ violations)
 - **Test Infrastructure**: Singleton-dependent fixtures and helpers (95+ violations)
 - **Third-party Dependencies**: External library singletons (128+ violations)
@@ -21,8 +21,8 @@ Our singleton detection system identified violations in critical areas:
 ## Phase Structure
 
 ### Phase 1: Context Infrastructure Foundation ✅ COMPLETED
-**Duration**: 2 days  
-**Objective**: Establish core dependency injection infrastructure  
+**Duration**: 2 days
+**Objective**: Establish core dependency injection infrastructure
 **Status**: Implementation complete, foundation established
 
 **Key Deliverables**:
@@ -31,13 +31,13 @@ Our singleton detection system identified violations in critical areas:
 - ✅ Backward compatibility layer for existing singleton usage
 
 **Slice Breakdown**:
-- **P1.1**: ✅ SpecContext Core Implementation 
-- **P1.2**: ✅ Factory Method Implementation 
-- **P1.3**: ✅ Compatibility Layer Foundation 
+- **P1.1**: ✅ SpecContext Core Implementation
+- **P1.2**: ✅ Factory Method Implementation
+- **P1.3**: ✅ Compatibility Layer Foundation
 
 ### Phase 2: CLI Integration and Command Migration ✅ COMPLETED
-**Duration**: 2 days  
-**Objective**: Integrate context system with Click CLI framework  
+**Duration**: 2 days
+**Objective**: Integrate context system with Click CLI framework
 **Status**: CLI commands migrated to dependency injection
 
 **Key Deliverables**:
@@ -47,12 +47,12 @@ Our singleton detection system identified violations in critical areas:
 
 **Slice Breakdown**:
 - **P2.1**: ✅ Click Framework Integration
-- **P2.2**: ✅ Command Decorator System  
+- **P2.2**: ✅ Command Decorator System
 - **P2.3**: ✅ Core Command Migration
 
 ### Phase 3: Detection Infrastructure and Prevention ✅ PARTIALLY COMPLETED
-**Duration**: 2 days  
-**Objective**: Build detection systems and prevent singleton reintroduction  
+**Duration**: 2 days
+**Objective**: Build detection systems and prevent singleton reintroduction
 **Status**: Detection system complete, prevention infrastructure in progress
 
 **Key Deliverables**:
@@ -70,13 +70,13 @@ Our singleton detection system identified violations in critical areas:
 - **P3.3b**: 📋 Context-Based Fixture Migration
 
 ### Phase 4: Core Service Singleton Elimination 📋 PLANNED
-**Duration**: 3 days  
-**Objective**: Systematically eliminate high-priority singleton services identified by detection system  
+**Duration**: 3 days
+**Objective**: Systematically eliminate high-priority singleton services identified by detection system
 **Status**: Planned based on detection system findings
 
 **Critical Violations to Address** (58 core service violations):
 - `spec_cli/ui/console.py` - ConsoleManager singleton (3 violations)
-- `spec_cli/ui/theme.py` - ThemeManager singleton (3 violations)  
+- `spec_cli/ui/theme.py` - ThemeManager singleton (3 violations)
 - `spec_cli/ui/progress_manager.py` - ProgressManagerSingleton (3 violations)
 - `spec_cli/config/settings.py` - SettingsManager singleton (3 violations)
 - Core workflow and context managers (46+ violations)
@@ -96,8 +96,8 @@ Our singleton detection system identified violations in critical areas:
 - **P4.3b**: Infrastructure Consumer Migration (update all infrastructure usage)
 
 ### Phase 5: Comprehensive Singleton Elimination 📋 PLANNED
-**Duration**: 4 days  
-**Objective**: Eliminate remaining 426+ singleton violations across entire codebase  
+**Duration**: 4 days
+**Objective**: Eliminate remaining 426+ singleton violations across entire codebase
 **Status**: Planned based on systematic detection analysis
 
 **Remaining Violations by Category**:
@@ -123,8 +123,8 @@ Our singleton detection system identified violations in critical areas:
 - **P5.4b**: Validation and Cleanup (ensure zero singleton patterns)
 
 ### Phase 6: Architecture Validation and Performance Optimization 📋 PLANNED
-**Duration**: 2 days  
-**Objective**: Validate complete singleton elimination and optimize dependency injection performance  
+**Duration**: 2 days
+**Objective**: Validate complete singleton elimination and optimize dependency injection performance
 **Status**: Planned for final validation
 
 **Key Deliverables**:
@@ -141,11 +141,11 @@ Our singleton detection system identified violations in critical areas:
 
 **Total Duration**: 13 days + 1 day buffer = 14 days
 
-**Days 1-2**: ✅ Phase 1 - Context Infrastructure Foundation (COMPLETED)  
-**Days 3-4**: ✅ Phase 2 - CLI Integration and Command Migration (COMPLETED)  
-**Days 5-6**: 🚧 Phase 3 - Detection Infrastructure and Prevention (IN PROGRESS)  
-**Days 7-9**: 📋 Phase 4 - Core Service Singleton Elimination (PLANNED)  
-**Days 10-13**: 📋 Phase 5 - Comprehensive Singleton Elimination (PLANNED)  
+**Days 1-2**: ✅ Phase 1 - Context Infrastructure Foundation (COMPLETED)
+**Days 3-4**: ✅ Phase 2 - CLI Integration and Command Migration (COMPLETED)
+**Days 5-6**: 🚧 Phase 3 - Detection Infrastructure and Prevention (IN PROGRESS)
+**Days 7-9**: 📋 Phase 4 - Core Service Singleton Elimination (PLANNED)
+**Days 10-13**: 📋 Phase 5 - Comprehensive Singleton Elimination (PLANNED)
 **Day 14**: 📋 Phase 6 - Architecture Validation and Performance Optimization (PLANNED)
 
 ## Slice Constraint Validation
@@ -153,15 +153,15 @@ Our singleton detection system identified violations in critical areas:
 ### P0-ABSOLUTE Compliance
 All phases and slices comply with ultra-focused agent constraints:
 
-**File Constraints**: Each slice affects ≤3 files maximum  
-**Class Constraints**: Each slice creates/modifies ≤2 classes maximum  
-**Complexity Constraints**: Each slice maintains ≤7 McCabe complexity per function  
+**File Constraints**: Each slice affects ≤3 files maximum
+**Class Constraints**: Each slice creates/modifies ≤2 classes maximum
+**Complexity Constraints**: Each slice maintains ≤7 McCabe complexity per function
 **Independence**: Each slice is independently implementable and testable
 
 ### Detection-Driven Implementation
-**Systematic Approach**: Use singleton detection system to identify all violations  
-**Priority-Based**: Address high-impact violations first (core services, then infrastructure)  
-**Validation-Driven**: Verify elimination with detection system after each phase  
+**Systematic Approach**: Use singleton detection system to identify all violations
+**Priority-Based**: Address high-impact violations first (core services, then infrastructure)
+**Validation-Driven**: Verify elimination with detection system after each phase
 **Zero-Tolerance**: Achieve complete singleton elimination, not partial migration
 
 ## Success Metrics by Phase

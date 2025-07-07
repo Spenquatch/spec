@@ -22,7 +22,7 @@ from ..utils.error_handler import ErrorHandler
 from .console import get_console
 from .progress_bar import SpecProgressBar
 from .spinner import SpinnerManager
-from ..core.context import SpecContext
+
 
 @dataclass
 class ProgressState:
@@ -49,6 +49,7 @@ class ProgressState:
         if self.start_time is None:
             return None
         return time.time() - self.start_time
+
 
 class ProgressManager:
     """Coordinates progress display and integrates with progress events."""
@@ -409,6 +410,7 @@ class ProgressManager:
 
         debug_logger.log("INFO", "ProgressManager cleaned up")
 
+
 class ProgressManagerSingleton:
     """Manages global progress manager instances."""
 
@@ -449,14 +451,17 @@ class ProgressManagerSingleton:
             self._progress_manager = None
             debug_logger.log("INFO", "Global progress manager reset")
 
+
 # Convenience functions for getting progress manager
 def get_progress_manager() -> ProgressManager:
     """Get the global progress manager instance."""
     return ProgressManagerSingleton().get_progress_manager()
 
+
 def set_progress_manager(manager: ProgressManager) -> None:
     """Set the global progress manager."""
     ProgressManagerSingleton().set_progress_manager(manager)
+
 
 def reset_progress_manager() -> None:
     """Reset the global progress manager."""

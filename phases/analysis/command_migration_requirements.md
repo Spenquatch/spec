@@ -1,7 +1,7 @@
 # Command Migration Requirements: CLI Dependency Injection
 
-**Generated**: 2025-07-05  
-**Analysis Source**: P2.3a Command Structure Analysis  
+**Generated**: 2025-07-05
+**Analysis Source**: P2.3a Command Structure Analysis
 **Target Slices**: P2.3b (init), P2.3c (status)
 
 ## Executive Summary
@@ -12,13 +12,13 @@ Analysis of 31 CLI files revealed 42 singleton usage patterns across 10 commands
 
 ### Command Overview
 - **Total files analyzed**: 31
-- **Commands found**: 10 
+- **Commands found**: 10
 - **Click patterns**: 10 (command decorators)
 - **Singleton usage patterns**: 42 instances
 
 ### Core Commands Identified
 1. `init_command` - spec_cli/cli/commands/init.py:16
-2. `status_command` - spec_cli/cli/commands/status.py:26  
+2. `status_command` - spec_cli/cli/commands/status.py:26
 3. `add_command` - spec_cli/cli/commands/add.py:14
 4. `gen_command` - spec_cli/cli/commands/gen.py:31
 5. `show_command` - spec_cli/cli/commands/show.py:23
@@ -28,17 +28,17 @@ Analysis of 31 CLI files revealed 42 singleton usage patterns across 10 commands
 ### Critical Patterns Requiring Migration
 
 #### 1. SpecGitRepository Direct Instantiation
-**Pattern**: `SpecGitRepository()`  
+**Pattern**: `SpecGitRepository()`
 **Locations**:
 - spec_cli/cli/options.py:138
-- spec_cli/cli/utils.py:157  
+- spec_cli/cli/utils.py:157
 - spec_cli/cli/utils.py:218
 - spec_cli/cli/commands/init.py:24
 
 **Migration Priority**: HIGH - Core repository access
 
 #### 2. Console Factory Functions
-**Pattern**: `get_console()`  
+**Pattern**: `get_console()`
 **Locations**:
 - spec_cli/cli/app.py:103
 - spec_cli/cli/commands/show.py:42, 90, 138
@@ -47,7 +47,7 @@ Analysis of 31 CLI files revealed 42 singleton usage patterns across 10 commands
 
 **Migration Priority**: HIGH - User interface dependency
 
-#### 3. Repository Factory Functions  
+#### 3. Repository Factory Functions
 **Pattern**: `get_spec_repository()`
 **Locations**:
 - spec_cli/cli/commands/show.py:54
@@ -57,7 +57,7 @@ Analysis of 31 CLI files revealed 42 singleton usage patterns across 10 commands
 **Migration Priority**: HIGH - Repository operations
 
 #### 4. Progress Manager Factory
-**Pattern**: `get_progress_manager()`  
+**Pattern**: `get_progress_manager()`
 **Locations**:
 - spec_cli/cli/utils.py:180
 
@@ -75,12 +75,12 @@ repo = SpecGitRepository()
 
 **Required Dependencies**:
 - `SpecGitRepository` instance
-- `debug_logger` (already injected via decorators)  
+- `debug_logger` (already injected via decorators)
 - `echo_status` function (utility dependency)
 
 **Migration Strategy**:
 1. Add `repo: SpecGitRepository` parameter to function signature
-2. Update `@spec_command()` decorator to provide repository instance  
+2. Update `@spec_command()` decorator to provide repository instance
 3. Remove direct instantiation line 24
 4. Verify initialization logic works with injected instance
 
@@ -95,7 +95,7 @@ repo = SpecGitRepository()
 ```python
 # Line 34: Factory function call
 console = get_console()
-# Line 38: Factory function call  
+# Line 38: Factory function call
 repo = get_spec_repository()
 ```
 
@@ -113,7 +113,7 @@ repo = get_spec_repository()
 **Test Scenarios**:
 - Repository status display
 - Health check mode
-- Git status integration  
+- Git status integration
 - Processing summary display
 
 ## Context Injection Implementation
@@ -128,9 +128,9 @@ The `@spec_command()` decorator needs enhancement to provide dependency injectio
 def command_function(debug: bool, verbose: bool): pass
 
 # Target: Enhanced with DI
-@spec_command()  
+@spec_command()
 def command_function(
-    debug: bool, 
+    debug: bool,
     verbose: bool,
     console: Console,
     repository: SpecGitRepository
@@ -141,14 +141,14 @@ def command_function(
 
 Factory functions requiring replacement:
 - `get_spec_repository()` -> injected `repository` parameter
-- `get_console()` -> injected `console` parameter  
+- `get_console()` -> injected `console` parameter
 - `get_progress_manager()` -> injected `progress_manager` parameter (if needed)
 
 ## Testing Strategy
 
 ### Unit Test Requirements
 1. **Command Analysis Testing**: Verify analysis correctly identifies patterns
-2. **Injection Mock Testing**: Test commands with mocked dependencies  
+2. **Injection Mock Testing**: Test commands with mocked dependencies
 3. **Integration Testing**: Verify end-to-end functionality post-migration
 
 ### Migration Validation
@@ -163,7 +163,7 @@ Factory functions requiring replacement:
 - **User Interface**: Console output must maintain formatting
 - **Error Handling**: Exception paths must work with DI
 
-### Medium Risk Areas  
+### Medium Risk Areas
 - **Progress Tracking**: Progress manager integration
 - **Debug Logging**: Logging context preservation
 
@@ -176,9 +176,9 @@ Factory functions requiring replacement:
 ### Phase 1: Foundation (P2.3b - init command)
 1. Enhance `@spec_command()` decorator for DI
 2. Migrate `init_command` as proof of concept
-3. Verify initialization workflows  
+3. Verify initialization workflows
 
-### Phase 2: Status Operations (P2.3c - status command)  
+### Phase 2: Status Operations (P2.3c - status command)
 1. Extend DI support for Console injection
 2. Migrate `status_command` with dual dependencies
 3. Verify status display functionality
@@ -192,11 +192,11 @@ Factory functions requiring replacement:
 
 ### P2.3b Success Criteria
 - `init_command` uses injected `SpecGitRepository`
-- No direct instantiation in init command  
+- No direct instantiation in init command
 - All initialization tests pass
 - Error handling preserved
 
-### P2.3c Success Criteria  
+### P2.3c Success Criteria
 - `status_command` uses injected `Console` and `SpecGitRepository`
 - No factory function calls in status command
 - Status display functionality preserved
@@ -204,6 +204,6 @@ Factory functions requiring replacement:
 
 ### Overall Migration Success
 - Zero direct singleton instantiation in target commands
-- All existing functionality preserved  
+- All existing functionality preserved
 - Test coverage maintained at 90%+
 - Performance baseline maintained

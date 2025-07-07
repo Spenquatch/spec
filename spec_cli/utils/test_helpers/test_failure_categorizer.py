@@ -13,6 +13,7 @@ from spec_cli.logging.debug import debug_logger
 
 from ..error_utils import SpecAnalysisError
 
+
 class FailureType(Enum):
     """Categories of test failures for systematic analysis."""
 
@@ -25,6 +26,7 @@ class FailureType(Enum):
     REAL_LOGIC_ERROR = "real_logic_error"
     UNKNOWN = "unknown"
 
+
 class FailurePriority(Enum):
     """Priority levels for test failure remediation."""
 
@@ -32,6 +34,7 @@ class FailurePriority(Enum):
     HIGH = "high"  # Major functionality broken
     MEDIUM = "medium"  # Isolated feature issues
     LOW = "low"  # Minor or cosmetic issues
+
 
 @dataclass
 class FailureInfo:
@@ -46,6 +49,7 @@ class FailureInfo:
     remediation_notes: str = ""
     related_failures: list[str] = field(default_factory=list)
 
+
 @dataclass
 class FailureCategory:
     """A category of related test failures."""
@@ -57,8 +61,10 @@ class FailureCategory:
     remediation_strategy: str = ""
     estimated_effort: str = ""
 
+
 class FailureCategorizationError(SpecAnalysisError):
     """Error during test failure categorization."""
+
 
 def categorize_test_failure(failure_info: dict[str, Any]) -> FailureCategory:
     """Categorize a test failure by type and priority.
@@ -124,6 +130,7 @@ def categorize_test_failure(failure_info: dict[str, Any]) -> FailureCategory:
             f"Failed to categorize test failure: {e}"
         ) from e
 
+
 def _analyze_failure_type(error_message: str, stack_trace: str) -> FailureType:
     """Analyze error patterns to determine failure type."""
     combined_text = f"{error_message} {stack_trace}".lower()
@@ -179,6 +186,7 @@ def _analyze_failure_type(error_message: str, stack_trace: str) -> FailureType:
 
     return FailureType.UNKNOWN
 
+
 def _determine_failure_priority(
     failure_type: FailureType, test_name: str, file_path: Path
 ) -> FailurePriority:
@@ -208,6 +216,7 @@ def _determine_failure_priority(
 
     # Default medium priority
     return FailurePriority.MEDIUM
+
 
 def _generate_remediation_notes(failure_type: FailureType) -> str:
     """Generate remediation notes based on failure type."""
@@ -246,6 +255,7 @@ def _generate_remediation_notes(failure_type: FailureType) -> str:
     }
     return remediation_map.get(failure_type, "No specific remediation notes available.")
 
+
 def _get_remediation_strategy(failure_type: FailureType) -> str:
     """Get high-level remediation strategy for failure type."""
     strategy_map = {
@@ -259,6 +269,7 @@ def _get_remediation_strategy(failure_type: FailureType) -> str:
         FailureType.UNKNOWN: "Manual investigation required",
     }
     return strategy_map.get(failure_type, "Unknown strategy")
+
 
 def _estimate_remediation_effort(failure_type: FailureType) -> str:
     """Estimate effort required for remediation."""

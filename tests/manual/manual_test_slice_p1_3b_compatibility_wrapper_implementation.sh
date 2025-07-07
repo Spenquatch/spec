@@ -52,7 +52,7 @@ from spec_cli.utils.compatibility_utils import create_singleton_wrapper
 class TestSingleton:
     def __init__(self):
         self.value = 'test_value'
-    
+
     def get_value(self):
         return self.value
 
@@ -72,7 +72,7 @@ else
 fi
 echo
 
-# Test 2: ProgressManagerWrapper functionality 
+# Test 2: ProgressManagerWrapper functionality
 echo "Test 2: ProgressManagerWrapper Functionality"
 echo "Expected: ProgressManagerWrapper delegates to mock singleton correctly"
 echo "Executing:"
@@ -86,10 +86,10 @@ class MockProgressManagerSingleton:
     def __init__(self):
         self.manager = Mock()
         self.manager.start_task.return_value = 'task_123'
-    
+
     def get_progress_manager(self):
         return self.manager
-    
+
     def set_progress_manager(self, new_manager):
         self.manager = new_manager
 
@@ -155,22 +155,22 @@ from spec_cli.utils.compatibility_utils import SingletonCompatibilityWrapper
 class StatefulSingleton:
     def __init__(self):
         self.counter = 0
-    
+
     def increment(self):
         self.counter += 1
         return self.counter
-    
+
     def get_counter(self):
         return self.counter
 
 try:
     wrapper = SingletonCompatibilityWrapper(StatefulSingleton)
-    
+
     # Test method calls modify singleton state
     count1 = wrapper.increment()
     count2 = wrapper.increment()
     final_count = wrapper.get_counter()
-    
+
     success = (count1 == 1 and count2 == 2 and final_count == 2)
     print(f'SUCCESS:delegation_test:counts={count1},{count2},{final_count}:success={success}')
 except Exception as e:
@@ -197,26 +197,26 @@ from spec_cli.core.compatibility import ProgressManagerWrapper
 class ErroringSingleton:
     def __init__(self):
         pass
-    
+
     def working_method(self):
         return 'success'
-    
+
     def failing_method(self):
         raise ValueError('Singleton error')
 
 try:
     wrapper = ProgressManagerWrapper(ErroringSingleton)
-    
+
     # Test working method
     success_result = wrapper.working_method()
-    
+
     # Test error propagation
     try:
         wrapper.failing_method()
         error_handled = False
     except ValueError as e:
         error_handled = 'Singleton error' in str(e)
-    
+
     success = (success_result == 'success' and error_handled)
     print(f'SUCCESS:error_handling:working={success_result}:error_handled={error_handled}:success={success}')
 except Exception as e:
@@ -246,7 +246,7 @@ class ThreadSafeSingleton:
     def __init__(self):
         self.counter = 0
         self.lock = threading.Lock()
-    
+
     def safe_increment(self):
         with self.lock:
             current = self.counter
@@ -257,28 +257,28 @@ class ThreadSafeSingleton:
 try:
     wrapper = SingletonCompatibilityWrapper(ThreadSafeSingleton)
     results = []
-    
+
     def worker():
         for _ in range(3):
             result = wrapper.safe_increment()
             results.append(result)
-    
+
     # Start 2 threads
     threads = []
     for _ in range(2):
         thread = threading.Thread(target=worker)
         threads.append(thread)
         thread.start()
-    
+
     # Wait for completion
     for thread in threads:
         thread.join()
-    
+
     # Check results
     expected_count = 6  # 2 threads * 3 increments
     actual_count = len(results)
     max_value = max(results) if results else 0
-    
+
     success = (actual_count == expected_count and max_value == expected_count)
     print(f'SUCCESS:thread_safety:count={actual_count}:max={max_value}:success={success}')
 except Exception as e:
@@ -306,7 +306,7 @@ from unittest.mock import patch, Mock
 class GlobalTestSingleton:
     def __init__(self):
         self.accessed = True
-    
+
     def get_progress_manager(self):
         return Mock(global_access=True)
 
@@ -314,7 +314,7 @@ try:
     with patch('spec_cli.ui.progress_manager.ProgressManagerSingleton', GlobalTestSingleton):
         wrapper = get_progress_manager_compatibility()
         manager = wrapper.get_progress_manager()
-        
+
         has_global_access = hasattr(manager, 'global_access') and manager.global_access
         print(f'SUCCESS:global_access:wrapper_available=True:global_access={has_global_access}')
 except Exception as e:
@@ -344,12 +344,12 @@ try:
     original = Mock()
     original.test_method = Mock(return_value='test_result')
     original.test_attribute = 'test_value'
-    
+
     # Create wrapper with same interface
     wrapper = Mock()
     wrapper.test_method = Mock(return_value='test_result')
     wrapper.test_attribute = 'test_value'
-    
+
     validation_result = validate_wrapper_behavior(wrapper, original)
     print(f'SUCCESS:validation:result={validation_result}')
 except Exception as e:
@@ -377,30 +377,30 @@ from unittest.mock import Mock, patch
 class P1_3aCompliantSingleton:
     def __init__(self):
         self.manager = Mock()
-    
+
     def get_progress_manager(self):
         return self.manager
-    
+
     def set_progress_manager(self, manager):
         self.manager = manager
-    
+
     def reset(self):
         self.manager = Mock()
 
 try:
     wrapper = ProgressManagerWrapper(P1_3aCompliantSingleton)
-    
+
     # Test P1.3a requirements
     has_get_manager = hasattr(wrapper, 'get_progress_manager')
-    has_set_manager = hasattr(wrapper, 'set_progress_manager') 
+    has_set_manager = hasattr(wrapper, 'set_progress_manager')
     has_reset = hasattr(wrapper, 'reset_progress_manager')
     has_thread_safety = hasattr(wrapper, '_lock')
-    
+
     # Test functionality
     manager = wrapper.get_progress_manager()
     custom_manager = Mock()
     wrapper.set_progress_manager(custom_manager)
-    
+
     all_requirements = all([has_get_manager, has_set_manager, has_reset, has_thread_safety])
     print(f'SUCCESS:p1_3a_compliance:requirements={all_requirements}:manager_access=True')
 except Exception as e:
@@ -429,7 +429,7 @@ class MigrationReadySingleton:
     def __init__(self):
         self.mode = 'singleton'
         self.di_ready = True
-    
+
     def get_progress_manager(self):
         return Mock(mode=self.mode, di_ready=self.di_ready)
 
@@ -437,10 +437,10 @@ try:
     with patch('spec_cli.ui.progress_manager.ProgressManagerSingleton', MigrationReadySingleton):
         wrapper = get_progress_manager_compatibility()
         manager = wrapper.get_progress_manager()
-        
+
         migration_ready = (manager.mode == 'singleton' and manager.di_ready == True)
         supports_di_bridge = hasattr(wrapper, 'set_progress_manager')
-        
+
         success = migration_ready and supports_di_bridge
         print(f'SUCCESS:migration_readiness:ready={migration_ready}:di_bridge={supports_di_bridge}:success={success}')
 except Exception as e:

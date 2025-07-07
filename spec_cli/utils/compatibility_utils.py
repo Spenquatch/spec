@@ -12,6 +12,7 @@ from typing import Any
 from ..exceptions import CompatibilityError
 from ..logging.debug import debug_logger
 
+
 def create_singleton_wrapper(
     singleton_class: type[Any],
     fallback_enabled: bool = True,
@@ -72,6 +73,7 @@ def create_singleton_wrapper(
         raise CompatibilityError(
             f"Failed to create wrapper for {singleton_class.__name__}: {e}"
         ) from e
+
 
 def validate_wrapper_behavior(wrapper: Any, original: Any) -> bool:
     """Validate that wrapper behavior matches original singleton behavior.
@@ -136,6 +138,7 @@ def validate_wrapper_behavior(wrapper: Any, original: Any) -> bool:
     except Exception as e:
         debug_logger.log("ERROR", "Wrapper behavior validation failed", error=str(e))
         return False
+
 
 class SingletonCompatibilityWrapper:
     """Compatibility wrapper that bridges singleton and dependency injection patterns."""
@@ -252,6 +255,7 @@ class SingletonCompatibilityWrapper:
                 "Reset compatibility wrapper state",
                 singleton_class=self._singleton_class.__name__,
             )
+
 
 def _get_default_context_key(singleton_class: type[Any]) -> str:
     """Get default context key for singleton class.

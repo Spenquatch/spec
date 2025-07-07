@@ -216,7 +216,7 @@ sys.path.insert(0, '../')
 try:
     from spec_cli.utils.migration_utils import get_migration_requirements
     from spec_cli.cli.commands.status import status_command
-    
+
     # Test that migration utilities work with status command
     reqs = get_migration_requirements(status_command.__wrapped__)
     if reqs['function_name'] == 'status_command':

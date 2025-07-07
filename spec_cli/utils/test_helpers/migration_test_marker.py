@@ -226,10 +226,12 @@ def _find_import_insertion_point(lines: list[str]) -> int:
             continue
 
         # If we hit an import or class/function, insert before it
-        if (stripped.startswith("import ") or
-            stripped.startswith("from ") or
-            stripped.startswith("class ") or
-            stripped.startswith("def ")):
+        if (
+            stripped.startswith("import ")
+            or stripped.startswith("from ")
+            or stripped.startswith("class ")
+            or stripped.startswith("def ")
+        ):
             return i
 
     # If no imports found, insert at the end of any docstrings

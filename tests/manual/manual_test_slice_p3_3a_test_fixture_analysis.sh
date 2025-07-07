@@ -98,7 +98,7 @@ try:
         print(f'Isolation issues: {len(report.isolation_issues)}')
         print(f'Migration candidates: {len(report.context_migration_candidates)}')
         print(f'Migration requirements: {len(report.migration_requirements)}')
-        
+
         # Show analysis summary
         if report.analysis_summary:
             print('Analysis Summary:')
@@ -167,19 +167,19 @@ from spec_cli.utils.test_analysis import analyze_test_fixtures
 try:
     test_dir = Path('$TEST_DIR')
     report = analyze_test_fixtures(test_dir)
-    
+
     print(f'SUCCESS: Sample analysis completed')
     print(f'Total fixtures: {report.total_fixtures}')
     print(f'Singleton dependent: {len(report.singleton_dependent_fixtures)}')
     print(f'Isolation issues: {len(report.isolation_issues)}')
-    
+
     # Check specific fixtures
     fixture_names = [f.name for f in report.singleton_dependent_fixtures]
     if 'singleton_settings_fixture' in fixture_names:
         print('Found singleton_settings_fixture in dependencies')
-    if 'console_isolation_fixture' in fixture_names:  
+    if 'console_isolation_fixture' in fixture_names:
         print('Found console_isolation_fixture in dependencies')
-        
+
     # Check migration requirements
     if report.migration_requirements:
         print('Migration requirements generated:')
@@ -187,7 +187,7 @@ try:
             print(f'  {name}: {req}')
     else:
         print('No migration requirements generated')
-        
+
 except Exception as e:
     print(f'ERROR: {e}')
     import traceback
@@ -196,7 +196,7 @@ except Exception as e:
 
 echo "Result: $SAMPLE_ANALYSIS"
 if [[ $SAMPLE_ANALYSIS == *"SUCCESS"* ]]; then
-    echo "Status: PASS" 
+    echo "Status: PASS"
     ((PASSED_TESTS++))
 else
     echo "Status: FAIL"
@@ -213,7 +213,7 @@ if [[ -f "phases/analysis/test_fixture_migration_requirements.md" ]]; then
     DOC_SIZE=$(wc -l < "phases/analysis/test_fixture_migration_requirements.md")
     if [[ $DOC_SIZE -gt 50 ]]; then
         DOC_CHECK_RESULT="SUCCESS: Documentation file exists with $DOC_SIZE lines of content"
-        
+
         # Check for key sections
         if grep -q "Migration Requirements" "phases/analysis/test_fixture_migration_requirements.md"; then
             DOC_CHECK_RESULT="$DOC_CHECK_RESULT - Contains Migration Requirements section"
@@ -236,7 +236,7 @@ if [[ $DOC_CHECK_RESULT == *"SUCCESS"* ]]; then
     echo "Status: PASS"
     ((PASSED_TESTS++))
 else
-    echo "Status: FAIL" 
+    echo "Status: FAIL"
     ((FAILED_TESTS++))
 fi
 ((TOTAL_TESTS++))

@@ -21,13 +21,13 @@ log_test_result() {
     local expected="$2"
     local actual="$3"
     local status="$4"
-    
+
     echo "Test: $test_name"
     echo "Expected: $expected"
     echo "Actual: $actual"
     echo "Status: $status"
     echo
-    
+
     TOTAL_TESTS=$((TOTAL_TESTS + 1))
     if [[ "$status" == "PASS" ]]; then
         PASSED_TESTS=$((PASSED_TESTS + 1))
@@ -53,23 +53,23 @@ echo "Expected: File exists with required functions and proper structure"
 if [[ -f "spec_cli/utils/test_migration_utils.py" ]]; then
     # Check for required function definitions
     FUNCTIONS_FOUND=0
-    
+
     if grep -q "def create_context_fixture" spec_cli/utils/test_migration_utils.py; then
         FUNCTIONS_FOUND=$((FUNCTIONS_FOUND + 1))
     fi
-    
+
     if grep -q "def validate_test_isolation" spec_cli/utils/test_migration_utils.py; then
         FUNCTIONS_FOUND=$((FUNCTIONS_FOUND + 1))
     fi
-    
+
     if grep -q "def create_mock_context_fixture" spec_cli/utils/test_migration_utils.py; then
         FUNCTIONS_FOUND=$((FUNCTIONS_FOUND + 1))
     fi
-    
+
     if grep -q "def migrate_singleton_fixture" spec_cli/utils/test_migration_utils.py; then
         FUNCTIONS_FOUND=$((FUNCTIONS_FOUND + 1))
     fi
-    
+
     if [[ $FUNCTIONS_FOUND -eq 4 ]]; then
         FILE_RESULT="SUCCESS: Migration utils file contains all 4 required functions"
         log_test_result "Migration utils structure" "All required functions present" "$FILE_RESULT" "PASS"
@@ -88,23 +88,23 @@ echo "Expected: Conftest contains context-based fixtures"
 
 if [[ -f "tests/conftest.py" ]]; then
     CONFTEST_FIXTURES=0
-    
+
     if grep -q "def spec_context" tests/conftest.py; then
         CONFTEST_FIXTURES=$((CONFTEST_FIXTURES + 1))
     fi
-    
+
     if grep -q "def isolated_test_context" tests/conftest.py; then
         CONFTEST_FIXTURES=$((CONFTEST_FIXTURES + 1))
     fi
-    
+
     if grep -q "def mock_spec_settings" tests/conftest.py; then
         CONFTEST_FIXTURES=$((CONFTEST_FIXTURES + 1))
     fi
-    
+
     if grep -q "SpecContext.create_for_testing" tests/conftest.py; then
         CONFTEST_FIXTURES=$((CONFTEST_FIXTURES + 1))
     fi
-    
+
     if [[ $CONFTEST_FIXTURES -eq 4 ]]; then
         CONFTEST_RESULT="SUCCESS: Conftest contains all expected context fixtures"
         log_test_result "Conftest fixtures" "Context fixtures present" "$CONFTEST_RESULT" "PASS"
@@ -124,26 +124,26 @@ echo "Expected: Unit test file contains comprehensive test coverage"
 UNIT_TEST_FILE="tests/unit/utils/test_test_migration_utils.py"
 if [[ -f "$UNIT_TEST_FILE" ]]; then
     TEST_CLASSES=0
-    
+
     if grep -q "class TestCreateContextFixture" "$UNIT_TEST_FILE"; then
         TEST_CLASSES=$((TEST_CLASSES + 1))
     fi
-    
+
     if grep -q "class TestValidateTestIsolation" "$UNIT_TEST_FILE"; then
         TEST_CLASSES=$((TEST_CLASSES + 1))
     fi
-    
+
     if grep -q "class TestCreateMockContextFixture" "$UNIT_TEST_FILE"; then
         TEST_CLASSES=$((TEST_CLASSES + 1))
     fi
-    
+
     if grep -q "class TestMigrateSingletonFixture" "$UNIT_TEST_FILE"; then
         TEST_CLASSES=$((TEST_CLASSES + 1))
     fi
-    
+
     # Count total test methods
     TEST_METHODS=$(grep -c "def test_" "$UNIT_TEST_FILE" || echo "0")
-    
+
     if [[ $TEST_CLASSES -eq 4 ]] && [[ $TEST_METHODS -ge 15 ]]; then
         UNIT_TEST_RESULT="SUCCESS: Unit test file has $TEST_CLASSES test classes and $TEST_METHODS test methods"
         log_test_result "Unit test structure" "Comprehensive test coverage" "$UNIT_TEST_RESULT" "PASS"
@@ -164,7 +164,7 @@ INTEGRATION_TEST_FILE="tests/integration/test_context_based_fixture_migration.py
 if [[ -f "$INTEGRATION_TEST_FILE" ]]; then
     if grep -q "class TestContextBasedFixtureMigration" "$INTEGRATION_TEST_FILE"; then
         INTEGRATION_METHODS=$(grep -c "def test_" "$INTEGRATION_TEST_FILE" || echo "0")
-        
+
         if [[ $INTEGRATION_METHODS -ge 5 ]]; then
             INTEGRATION_RESULT="SUCCESS: Integration test file has $INTEGRATION_METHODS test methods"
             log_test_result "Integration test structure" "Complete integration tests" "$INTEGRATION_RESULT" "PASS"

@@ -88,11 +88,11 @@ echo "Executing:"
 CLEANUP_UTILS_FILE="spec_cli/utils/cleanup_utils.py"
 if [[ -f "$CLEANUP_UTILS_FILE" ]]; then
     echo "Result: cleanup_utils.py exists"
-    
+
     # Check for required functions
     REQUIRED_FUNCTIONS=("safe_file_removal" "validate_no_references" "cleanup_singleton_infrastructure" "cleanup_compatibility_layer")
     ALL_FUNCTIONS_FOUND=true
-    
+
     for func in "${REQUIRED_FUNCTIONS[@]}"; do
         if grep -q "def $func" "$CLEANUP_UTILS_FILE"; then
             echo "  - Function $func: FOUND"
@@ -101,7 +101,7 @@ if [[ -f "$CLEANUP_UTILS_FILE" ]]; then
             ALL_FUNCTIONS_FOUND=false
         fi
     done
-    
+
     if $ALL_FUNCTIONS_FOUND; then
         echo "Status: PASS"
         ((PASSED_TESTS++))
@@ -124,17 +124,17 @@ try:
     from spec_cli.utils.cleanup_utils import safe_file_removal, validate_no_references
     from pathlib import Path
     import tempfile
-    
+
     # Test safe_file_removal with non-existent file
     with tempfile.TemporaryDirectory() as temp_dir:
         test_path = Path(temp_dir) / 'test.txt'
         result = safe_file_removal(test_path)
         assert result is False
-    
+
     # Test validate_no_references
     violations = validate_no_references(Path('.'), ['nonexistent_module'])
     assert isinstance(violations, list)
-    
+
     print('SUCCESS: All cleanup utilities work correctly')
 except Exception as e:
     print(f'ERROR: {e}')

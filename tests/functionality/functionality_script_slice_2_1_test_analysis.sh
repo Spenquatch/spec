@@ -81,7 +81,7 @@ from spec_cli.utils.test_helpers.test_failure_categorizer import categorize_test
 # Test with real Rich compatibility error
 rich_failure = {
     'test_name': 'tests/unit/ui/test_console.py::TestConsole::test_rich_output',
-    'file_path': 'tests/unit/ui/test_console.py', 
+    'file_path': 'tests/unit/ui/test_console.py',
     'error_message': 'rich.console.Console object has no attribute print_text',
     'stack_trace': 'Console rendering failed'
 }
@@ -187,7 +187,7 @@ test_failures = [
     },
     {
         'test_name': 'tests/unit/core/test_main.py::TestCore::test_import',
-        'file_path': 'tests/unit/core/test_main.py', 
+        'file_path': 'tests/unit/core/test_main.py',
         'error_message': 'ImportError: cannot import name missing_function',
         'stack_trace': 'Import resolution failed'
     },

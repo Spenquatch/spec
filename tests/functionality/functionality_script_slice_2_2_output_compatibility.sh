@@ -38,7 +38,7 @@ echo "Prerequisites verified"
 echo "Checking Docker services..."
 if command -v docker >/dev/null 2>&1; then
     echo "Docker is available for isolated CLI testing"
-    
+
     # Check if required services are running
     echo "Checking Docker service status:"
     docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}" || echo "No containers currently running"
@@ -58,11 +58,11 @@ if command -v docker >/dev/null 2>&1; then
 
     echo "Waiting for CLI container to be ready..."
     sleep 5
-    
+
     # Install dependencies in container
     echo "Installing dependencies in Docker container..."
     docker exec test-cli-container pip install pytest click rich >/dev/null 2>&1 || echo "Dependencies installation attempted"
-    
+
     echo "Docker CLI testing environment ready"
 else
     echo "ERROR: Docker not available - functionality scripts require Docker for isolated CLI testing"
@@ -301,12 +301,12 @@ from slice_2_2_output_compatibility import OutputCompatibilityResolver
 try:
     resolver = OutputCompatibilityResolver()
     start_time = time.time()
-    
+
     # Process 100 outputs to measure performance
     for i in range(100):
         test_output = f'[bold]Test {i}[/bold] completed'
         resolver.resolve_output_compatibility(test_output, 'plain')
-    
+
     end_time = time.time()
     elapsed_ms = (end_time - start_time) * 1000
     print(f'SUCCESS:elapsed_ms={elapsed_ms:.2f}')

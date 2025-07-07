@@ -91,10 +91,10 @@ def init_command(context, directory: str = '.') -> None:
 try:
     result1 = analyze_function_signature(cli_command)
     result2 = analyze_function_signature(init_command)
-    
+
     ctx_detected = result1.has_click_context
     context_detected = result2.has_click_context
-    
+
     print(f'SUCCESS:ctx_detected={ctx_detected},context_detected={context_detected},ctx_params={len(result1.parameters)},context_params={len(result2.parameters)}')
 except Exception as e:
     print(f'ERROR:{e}')
@@ -108,7 +108,7 @@ else
 fi
 
 # Test 3: Decorator Compatibility Validation
-echo "Test 3: Decorator Compatibility Validation" 
+echo "Test 3: Decorator Compatibility Validation"
 echo "Expected: Compatible functions return True, incompatible functions return False"
 echo "Executing:"
 
@@ -130,7 +130,7 @@ try:
     compat1 = validate_decorator_compatibility(compatible_function)
     compat2 = validate_decorator_compatibility(incompatible_function)
     compat3 = validate_decorator_compatibility(varargs_only)
-    
+
     print(f'SUCCESS:compatible={compat1},incompatible={compat2},varargs_only={compat3}')
 except Exception as e:
     print(f'ERROR:{e}')
@@ -160,10 +160,10 @@ try:
         analysis_error = False
     except DecoratorAnalysisError:
         analysis_error = True
-    
+
     # Test compatibility with non-callable (should return False, not raise)
     compat_result = validate_decorator_compatibility('not_a_function')
-    
+
     print(f'SUCCESS:analysis_error_raised={analysis_error},compatibility_returns_false={compat_result is False}')
 except Exception as e:
     print(f'ERROR:{e}')
@@ -191,16 +191,16 @@ def typed_function(ctx, name: str, count: int = 5, flag: bool = False) -> str:
 
 try:
     result = analyze_function_signature(typed_function)
-    
+
     name_param = result.parameters.get('name', {})
     count_param = result.parameters.get('count', {})
     flag_param = result.parameters.get('flag', {})
-    
+
     name_type = name_param.get('annotation') == \"<class 'str'>\"
     count_default = count_param.get('default') == 5
     flag_default = flag_param.get('default') is False
     return_type = result.return_annotation == \"<class 'str'>\"
-    
+
     print(f'SUCCESS:name_typed={name_type},count_default={count_default},flag_default={flag_default},return_typed={return_type}')
 except Exception as e:
     print(f'ERROR:{e}')
@@ -235,17 +235,17 @@ functions.append(test_func_{i})
 
 try:
     start_time = time.time()
-    
+
     # Test signature analysis performance
     for func in functions:
         analyze_function_signature(func)
-    
-    # Test compatibility validation performance  
+
+    # Test compatibility validation performance
     for func in functions:
         validate_decorator_compatibility(func)
-    
+
     total_time = time.time() - start_time
-    
+
     performance_ok = total_time < 0.1
     print(f'SUCCESS:total_time={total_time:.4f},performance_ok={performance_ok},function_count={len(functions)}')
 except Exception as e:
@@ -283,20 +283,20 @@ try:
     # Test regular function
     result1 = analyze_function_signature(regular_function)
     compat1 = validate_decorator_compatibility(regular_function)
-    
+
     # Test lambda function
     result2 = analyze_function_signature(lambda_function)
     compat2 = validate_decorator_compatibility(lambda_function)
-    
+
     # Test method
     test_instance = TestClass()
     result3 = analyze_function_signature(test_instance.method)
     compat3 = validate_decorator_compatibility(test_instance.method)
-    
+
     regular_ok = result1.error_message is None and compat1
     lambda_ok = result2.error_message is None and compat2
     method_ok = result3.error_message is None and compat3
-    
+
     print(f'SUCCESS:regular={regular_ok},lambda={lambda_ok},method={method_ok}')
 except Exception as e:
     print(f'ERROR:{e}')
@@ -336,18 +336,18 @@ try:
     for cmd in cli_commands:
         result = analyze_function_signature(cmd)
         compat = validate_decorator_compatibility(cmd)
-        
+
         results.append({
             'name': result.function_name,
             'has_context': result.has_click_context,
             'compatible': compat,
             'param_count': len(result.parameters)
         })
-    
+
     all_have_context = all(r['has_context'] for r in results)
     all_compatible = all(r['compatible'] for r in results)
     reasonable_params = all(r['param_count'] <= 5 for r in results)
-    
+
     print(f'SUCCESS:all_have_context={all_have_context},all_compatible={all_compatible},reasonable_params={reasonable_params},command_count={len(results)}')
 except Exception as e:
     print(f'ERROR:{e}')
