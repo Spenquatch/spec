@@ -1,13 +1,17 @@
 """Configuration manager singleton."""
 
+def singleton(cls):
+    instances = {}
+    def get_instance(*args, **kwargs):
+        if cls not in instances:
+            instances[cls] = cls(*args, **kwargs)
+        return instances[cls]
+    return get_instance
+
+@singleton
 class ConfigManager:
-    _instance = None
-
-    def __new__(cls):
-        if cls._instance is None:
-            cls._instance = super().__new__(cls)
-            cls._instance.config = {}
-        return cls._instance
-
+    def __init__(self):
+        self.config = {}
+    
     def get_config(self, key):
         return self.config.get(key)

@@ -55,7 +55,7 @@ try:
                 "confidence_score": 0.95
             }
         ],
-        coverage_percentage=85.0,
+        coverage_percentage=90.0,
         estimated_effort_hours=35,
         risk_assessment="medium",
         implementation_steps=["Step 1", "Step 2", "Step 3"]
@@ -70,7 +70,8 @@ try:
     print(f"Validated Patterns Count: {len(baseline.validated_patterns)}")
     print(f"Migration Readiness: {baseline.migration_readiness}")
     print(f"Approval Status: {baseline.approval_status}")
-    print(f"Completeness Score: {baseline.completeness_metrics.get(\"completeness_score\", 0):.3f}")
+    completeness_score = baseline.completeness_metrics.get("completeness_score", 0)
+    print(f"Completeness Score: {completeness_score:.3f}")
     print(f"Baseline Timestamp: {baseline.baseline_timestamp}")
     
 except Exception as e:

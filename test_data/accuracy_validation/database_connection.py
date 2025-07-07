@@ -1,16 +1,13 @@
 """Database connection singleton."""
 
-_connection = None
+from singleton import SingletonMeta
 
-def get_connection():
-    global _connection
-    if _connection is None:
-        _connection = DatabaseConnection()
-    return _connection
-
-class DatabaseConnection:
+class DatabaseConnection(metaclass=SingletonMeta):
     def __init__(self):
         self.connected = True
-
+    
     def query(self, sql):
         return "result"
+        
+def get_connection():
+    return DatabaseConnection()
