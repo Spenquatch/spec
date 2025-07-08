@@ -1,19 +1,24 @@
 """Rich diff display utilities."""
 
 from typing import Any
+from typing import Any as ConsoleType
 
 from rich.columns import Columns
 from rich.panel import Panel
 
-from ....core.context_bridge import debug_logger, get_console
+from ....core.context_bridge import debug_logger
 
 
 class DiffViewer:
     """Rich-based diff viewer with syntax highlighting."""
 
-    def __init__(self) -> None:
-        """Initialize diff viewer with Rich console."""
-        self.console = get_console()
+    def __init__(self, console: ConsoleType) -> None:
+        """Initialize diff viewer with Rich console.
+
+        Args:
+            console: Console instance for output
+        """
+        self.console = console
 
     def display_file_diff(
         self,
@@ -172,24 +177,46 @@ class DiffViewer:
 
 
 # Convenience functions
-def create_diff_view() -> DiffViewer:
-    """Create a new diff viewer instance."""
-    return DiffViewer()
+def create_diff_view(console: ConsoleType) -> DiffViewer:
+    """Create a new diff viewer instance.
+    
+    Args:
+        console: Console instance for output
+        
+    Returns:
+        DiffViewer instance
+    """
+    return DiffViewer(console)
 
 
 def display_file_diff(
     filename: str,
+    console: ConsoleType,
     old_content: str | None = None,
     new_content: str | None = None,
     diff_lines: list[str] | None = None,
     syntax: str = "text",
 ) -> None:
-    """Display a file diff with Rich formatting."""
-    viewer = DiffViewer()
+    """Display a file diff with Rich formatting.
+    
+    Args:
+        filename: Name of the file
+        console: Console instance for output
+        old_content: Original file content
+        new_content: New file content
+        diff_lines: Pre-formatted diff lines
+        syntax: Syntax highlighting language
+    """
+    viewer = DiffViewer(console)
     viewer.display_file_diff(filename, old_content, new_content, diff_lines, syntax)
 
 
-def display_unified_diff(diff_lines: list[str]) -> None:
-    """Display unified diff format."""
-    viewer = DiffViewer()
+def display_unified_diff(diff_lines: list[str], console: ConsoleType) -> None:
+    """Display unified diff format.
+    
+    Args:
+        diff_lines: Pre-formatted diff lines
+        console: Console instance for output
+    """
+    viewer = DiffViewer(console)
     viewer._display_unified_diff(diff_lines)

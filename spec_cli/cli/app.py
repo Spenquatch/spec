@@ -10,7 +10,6 @@ from typing import Any
 import click
 
 from ..core.context import SpecContext
-from ..core.context_bridge import get_console
 from ..utils.cli_setup_utils import (
     CLISetupError,
     initialize_cli_context,
@@ -207,8 +206,8 @@ def main(args: list[str] | None = None) -> None:
         # Handle keyboard interrupt gracefully
         _invoke_app(args)
     except KeyboardInterrupt:
-        console = get_console()
-        console.print_status("Operation cancelled by user.", "warning")
+        # Use simple print for keyboard interrupt to avoid import complexity
+        print("Operation cancelled by user.")
         sys.exit(130)  # Standard exit code for Ctrl+C
     except click.ClickException as e:
         # Click exceptions are already formatted

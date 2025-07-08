@@ -55,7 +55,7 @@ def diff_command(
 
     try:
         # Get repository
-        repo = get_spec_repository()
+        repo = get_spec_repository(context.settings)
 
         # Convert file arguments
         target_files = list(files) if files else None
@@ -91,7 +91,7 @@ def diff_command(
             if no_color:
                 _display_plain_diff(diff_data, context)
             else:
-                format_diff_output(diff_data)
+                format_diff_output(diff_data, context.console)
 
         debug_logger.log(
             "INFO",

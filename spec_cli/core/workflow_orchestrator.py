@@ -18,7 +18,7 @@ from pathlib import Path
 from typing import Any
 
 from ..config.settings import SpecSettings
-from ..core.context_bridge import debug_logger, get_settings
+from ..core.context_bridge import debug_logger
 from ..exceptions import SpecWorkflowError
 from ..file_system.directory_manager import DirectoryManager
 from ..templates.generator import SpecContentGenerator
@@ -39,12 +39,11 @@ from .workflow_state import (
 class SpecWorkflowOrchestrator:
     """Orchestrates high-level spec generation workflows."""
 
-    def __init__(self, settings: SpecSettings | None = None):
+    def __init__(self, settings: SpecSettings):
         """Initialize the workflow orchestrator with configuration and dependencies.
 
         Args:
-            settings: Optional SpecSettings instance. If None, uses default settings
-                     from get_settings()
+            settings: SpecSettings instance for configuration
 
         The orchestrator sets up all required components for workflow execution:
         - State checker for repository health validation
@@ -53,7 +52,9 @@ class SpecWorkflowOrchestrator:
         - Content generator for spec document creation
         - Directory manager for file system operations
         """
-        self.settings = settings or get_settings()
+        if settings is None:
+            raise ValueError("SpecWorkflowOrchestrator requires a settings instance")
+        self.settings = settings
         self.state_checker = RepositoryStateChecker(self.settings)
         self.workflow_validator = WorkflowValidator(self.settings, self.state_checker)
         self.commit_manager = SpecCommitManager(self.settings)

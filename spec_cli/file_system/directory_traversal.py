@@ -10,6 +10,7 @@ from collections.abc import Generator
 from pathlib import Path
 from typing import Any
 
+from ..config.settings import SpecSettings
 from ..core.context_bridge import debug_logger
 from ..exceptions import SpecFileError, SpecValidationError
 from ..utils.path_utils import normalize_path, safe_relative_to
@@ -21,15 +22,19 @@ from .ignore_patterns import IgnorePatternMatcher
 class DirectoryTraversal:
     """Handles intelligent directory traversal with filtering and analysis."""
 
-    def __init__(self, root_path: Path):
+    def __init__(self, root_path: Path, settings: SpecSettings):
         """Initialize the DirectoryTraversal.
 
         Args:
             root_path: Root directory for traversal operations
+            settings: SpecSettings instance (required)
 
         """
+        if settings is None:
+            raise ValueError("DirectoryTraversal requires a settings instance")
         self.root_path = root_path
-        self.ignore_matcher = IgnorePatternMatcher()
+        self.settings = settings
+        self.ignore_matcher = IgnorePatternMatcher(self.settings)
         self.type_detector = FileTypeDetector()
         self.metadata_extractor = FileMetadataExtractor()
 

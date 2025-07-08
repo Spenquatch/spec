@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Any
 
 from ..config.settings import SpecSettings
-from ..core.context_bridge import debug_logger, get_settings
+from ..core.context_bridge import debug_logger
 from ..exceptions import SpecFileError
 
 
@@ -85,13 +85,15 @@ class FileCacheEntry:
 class FileCacheManager:
     """Manages persistent file cache for change detection."""
 
-    def __init__(self, settings: SpecSettings | None = None):
+    def __init__(self, settings: SpecSettings):
         """Initialize the file cache manager.
 
         Args:
-            settings: Optional SpecSettings instance. Uses default settings if None.
+            settings: SpecSettings instance (required)
         """
-        self.settings = settings or get_settings()
+        if settings is None:
+            raise ValueError("FileCacheManager requires a settings instance")
+        self.settings = settings
         self.cache_file = self.settings.spec_dir / "cache.json"
         self._cache: dict[str, FileCacheEntry] = {}
         self._cache_loaded = False

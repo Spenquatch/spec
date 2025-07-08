@@ -240,17 +240,10 @@ class TestBatchFileProcessor:
             "INFO", "BatchFileProcessor initialized"
         )
 
-    @patch("spec_cli.file_processing.batch_processor.get_settings")
-    def test_init_without_settings(self, mock_get_settings) -> None:
-        """Test initialization without settings (uses default)."""
-        # Use real settings instead of mock to avoid attribute issues
-        real_settings = SpecSettings()
-        mock_get_settings.return_value = real_settings
-
-        processor = BatchFileProcessor()
-
-        assert processor.settings == real_settings
-        mock_get_settings.assert_called_once()
+    def test_init_without_settings(self) -> None:
+        """Test initialization without settings raises ValueError."""
+        with pytest.raises(ValueError, match="BatchFileProcessor requires a settings instance"):
+            BatchFileProcessor(None)
 
     def test_process_files_empty_list(
         self, mock_settings: Mock, mock_dependencies: Any
@@ -695,12 +688,13 @@ class TestConvenienceFunctions:
         mock_processor_class.return_value = mock_processor
 
         file_paths = [Path("file1.py")]
+        settings = Mock(spec=SpecSettings)
         kwargs = {"max_files": 10, "force_regenerate": True}
 
-        result = process_files_batch(file_paths, **kwargs)
+        result = process_files_batch(file_paths, settings, **kwargs)
 
         assert result == mock_result
-        mock_processor_class.assert_called_once()
+        mock_processor_class.assert_called_once_with(settings)
 
         # Verify BatchProcessingOptions was created with kwargs
         args, _ = mock_processor.process_files.call_args
@@ -719,11 +713,12 @@ class TestConvenienceFunctions:
         mock_processor_class.return_value = mock_processor
 
         file_paths = [Path("file1.py")]
+        settings = Mock(spec=SpecSettings)
 
-        result = estimate_processing_time(file_paths)
+        result = estimate_processing_time(file_paths, settings)
 
         assert result == expected_estimate
-        mock_processor_class.assert_called_once()
+        mock_processor_class.assert_called_once_with(settings)
         mock_processor.estimate_batch_processing.assert_called_once_with(file_paths)
 
 

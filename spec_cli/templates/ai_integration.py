@@ -12,12 +12,9 @@ from functools import wraps
 from pathlib import Path
 from typing import Any
 
-from ..ai.config.loader import AIConfigLoader
 from ..ai.providers.base import GenerationRequest
-from ..ai.providers.manager import ProviderManager
-from ..config.loader import ConfigurationLoader
 from ..config.settings import SpecSettings
-from ..core.context_bridge import debug_logger, get_settings
+from ..core.context_bridge import debug_logger
 from ..exceptions import SpecTemplateError
 
 
@@ -236,17 +233,24 @@ class MockAIProvider(AIContentProvider):
 class AIContentManager:
     """Manages AI content generation with provider registration and fallback strategies."""
 
-    def __init__(self, settings: SpecSettings | None = None):
+    def __init__(self, settings: SpecSettings):
         """Initialize the AI content manager.
 
         Args:
-            settings: Optional spec settings (uses global settings if None)
+            settings: Spec settings instance (required)
         """
-        self.settings = settings or get_settings()
+        if settings is None:
+            raise ValueError("AIContentManager requires a settings instance")
+        self.settings = settings
         self.providers: dict[str, AIContentProvider] = {}
 
         # Load AI configuration
         try:
+            # Import here to avoid circular imports
+            from ..ai.config.loader import AIConfigLoader
+            from ..ai.providers.manager import ProviderManager
+            from ..config.loader import ConfigurationLoader
+
             # Use current working directory as root_path
             root_path = Path.cwd()
             config_loader = ConfigurationLoader(root_path)
@@ -700,9 +704,11 @@ class AITemplateIntegrator:
         """Initialize the AI template integrator.
 
         Args:
-            ai_manager: Optional AI content manager (uses global if None)
+            ai_manager: AI content manager instance (required)
         """
-        self.ai_manager = ai_manager or ai_content_manager
+        if ai_manager is None:
+            raise ValueError("AITemplateIntegrator requires an AIContentManager instance")
+        self.ai_manager = ai_manager
         debug_logger.log("INFO", "AITemplateIntegrator initialized")
 
     def enhance_template(
@@ -986,14 +992,15 @@ def validate_enhancement(
         raise SpecTemplateError(error_msg) from e
 
 
-# Global AI content manager instance
-ai_content_manager = AIContentManager()
+# Global AI content manager instance - DEPRECATED: Use factory function instead
+# ai_content_manager = AIContentManager()  # Requires settings parameter
 
 
 # Convenience function for ask_llm pattern
 @retry_with_backoff(max_retries=3, base_delay=1.0)
 def ask_llm(
     prompt: str,
+    settings: SpecSettings,
     context: dict[str, Any] | None = None,
     max_tokens: int = 1000,
     provider_name: str | None = None,
@@ -1005,6 +1012,7 @@ def ask_llm(
 
     Args:
         prompt: The prompt/question to send to the LLM
+        settings: SpecSettings instance (required)
         context: Optional context information
         max_tokens: Maximum tokens to generate
         provider_name: Specific provider to use (None for default)
@@ -1024,6 +1032,9 @@ def ask_llm(
     )
 
     try:
+        # Create AI content manager with settings
+        ai_content_manager = AIContentManager(settings)
+        
         if not ai_content_manager.enabled:
             return "[LLM query disabled - enable AI to get generated responses]"
 

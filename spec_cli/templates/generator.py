@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Any
 
 from ..config.settings import SpecSettings
-from ..core.context_bridge import debug_logger, get_settings
+from ..core.context_bridge import debug_logger
 from ..exceptions import SpecFileError, SpecTemplateError
 from ..file_system.directory_manager import DirectoryManager
 from ..file_system.file_metadata import FileMetadataExtractor
@@ -26,14 +26,16 @@ from .substitution import TemplateSubstitution
 class SpecContentGenerator:
     """Generates spec content files using template substitution."""
 
-    def __init__(self, settings: SpecSettings | None = None):
+    def __init__(self, settings: SpecSettings):
         """Initialize the spec content generator.
 
         Args:
-            settings: Optional spec settings (uses global settings if None)
+            settings: Spec settings instance (required)
         """
-        self.settings = settings or get_settings()
-        self.substitution = TemplateSubstitution()
+        if settings is None:
+            raise ValueError("SpecContentGenerator requires a settings instance")
+        self.settings = settings
+        self.substitution = TemplateSubstitution(settings)
         self.directory_manager = DirectoryManager(self.settings)
         self.metadata_extractor = FileMetadataExtractor()
 
@@ -557,10 +559,11 @@ class SpecContentGenerator:
             }
 
 
-# Convenience function for backward compatibility
+# Convenience function - DEPRECATED: Requires settings parameter
 def generate_spec_content(
     file_path: Path,
     template: TemplateConfig,
+    settings: SpecSettings,
     custom_variables: dict[str, Any] | None = None,
 ) -> dict[str, Path]:
     """Generate spec content (backward compatibility function).
@@ -568,10 +571,11 @@ def generate_spec_content(
     Args:
         file_path: Path to source file
         template: Template configuration
+        settings: Spec settings instance (required)
         custom_variables: Optional custom variables
 
     Returns:
         Dictionary mapping file types to created file paths
     """
-    generator = SpecContentGenerator()
+    generator = SpecContentGenerator(settings)
     return generator.generate_spec_content(file_path, template, custom_variables)

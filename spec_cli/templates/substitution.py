@@ -11,7 +11,7 @@ from datetime import datetime
 from typing import Any
 
 from ..config.settings import SpecSettings
-from ..core.context_bridge import debug_logger, get_settings
+from ..core.context_bridge import debug_logger
 from ..exceptions import SpecTemplateError
 
 
@@ -20,18 +20,20 @@ class TemplateSubstitution:
 
     def __init__(
         self,
+        settings: SpecSettings,
         open_delimiter: str = "{{",
         close_delimiter: str = "}}",
-        settings: SpecSettings | None = None,
     ):
         """Initialize the template substitution engine.
 
         Args:
+            settings: Spec settings instance (required)
             open_delimiter: Opening delimiter for variables (default: '{{')
             close_delimiter: Closing delimiter for variables (default: '}}')
-            settings: Optional spec settings (uses global settings if None)
         """
-        self.settings = settings or get_settings()
+        if settings is None:
+            raise ValueError("TemplateSubstitution requires a settings instance")
+        self.settings = settings
         self.open_delimiter = open_delimiter
         self.close_delimiter = close_delimiter
 

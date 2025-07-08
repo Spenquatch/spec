@@ -23,14 +23,9 @@ class TestPathResolverMicro001:
         self.path_resolver = PathResolver(self.mock_settings)
 
     def test_init_with_default_settings(self):
-        """Test PathResolver initialization with default settings"""
-        with patch(
-            "spec_cli.file_system.path_resolver.get_settings"
-        ) as mock_get_settings:
-            mock_get_settings.return_value = self.mock_settings
-            resolver = PathResolver()
-            assert resolver.settings == self.mock_settings
-            mock_get_settings.assert_called_once()
+        """Test PathResolver initialization requires settings"""
+        with pytest.raises(TypeError, match="missing 1 required positional argument"):
+            PathResolver()
 
     def test_init_with_custom_settings(self):
         """Test PathResolver initialization with custom settings"""

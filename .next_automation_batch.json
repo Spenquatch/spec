@@ -1,8 +1,0 @@
-{
-  "batch_number": 4,
-  "files": [
-    "spec_cli/git/repository.py",
-    "spec_cli/git/path_converter.py"
-  ],
-  "file_count": 2
-}

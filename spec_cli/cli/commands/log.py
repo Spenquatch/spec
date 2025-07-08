@@ -48,7 +48,7 @@ def log_command(
     """
     try:
         # Get repository
-        repo = get_spec_repository()
+        repo = get_spec_repository(context.settings)
 
         # Convert file arguments
         target_files = list(files) if files else None
@@ -101,7 +101,7 @@ def log_command(
         show_message(f"Showing {len(commits)} commits {context_desc}:", "info")
 
         # Format and display commits
-        format_commit_log(commits, compact=oneline)
+        format_commit_log(commits, context.console, compact=oneline)
 
         debug_logger.log(
             "INFO", "Log command completed", commits=len(commits), files=target_files

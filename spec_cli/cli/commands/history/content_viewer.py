@@ -2,12 +2,13 @@
 
 from pathlib import Path
 from typing import Any
+from typing import Any as ConsoleType
 
 from rich.markdown import Markdown
 from rich.panel import Panel
 from rich.syntax import Syntax
 
-from ....core.context_bridge import debug_logger, get_console
+from ....core.context_bridge import debug_logger
 
 # DataFormatter not used in this module
 
@@ -15,9 +16,13 @@ from ....core.context_bridge import debug_logger, get_console
 class ContentViewer:
     """Rich-based content viewer with syntax highlighting."""
 
-    def __init__(self) -> None:
-        """Initialize content viewer with Rich console."""
-        self.console = get_console()
+    def __init__(self, console: ConsoleType) -> None:
+        """Initialize content viewer with Rich console.
+
+        Args:
+            console: Console instance for output
+        """
+        self.console = console
 
     # No need for data formatter in this class
 
@@ -224,23 +229,45 @@ class ContentViewer:
 
 
 # Convenience functions
-def display_spec_content(spec_data: dict[str, Any], show_metadata: bool = True) -> None:
-    """Display spec file content with metadata."""
-    viewer = ContentViewer()
+def display_spec_content(spec_data: dict[str, Any], console: ConsoleType, show_metadata: bool = True) -> None:
+    """Display spec file content with metadata.
+
+    Args:
+        spec_data: Spec data to display
+        console: Console instance for output
+        show_metadata: Whether to show metadata
+    """
+    viewer = ContentViewer(console)
     viewer.display_spec_content(spec_data, show_metadata)
 
 
 def display_file_content(
     file_path: Path,
+    console: ConsoleType,
     content: str | None = None,
     line_numbers: bool = True,
     syntax_highlight: bool = True,
 ) -> None:
-    """Display file content with Rich formatting."""
-    viewer = ContentViewer()
+    """Display file content with Rich formatting.
+
+    Args:
+        file_path: Path to file
+        console: Console instance for output
+        content: File content (read from file if None)
+        line_numbers: Whether to show line numbers
+        syntax_highlight: Whether to apply syntax highlighting
+    """
+    viewer = ContentViewer(console)
     viewer.display_file_content(file_path, content, line_numbers, syntax_highlight)
 
 
-def create_content_display() -> ContentViewer:
-    """Create a new content viewer instance."""
-    return ContentViewer()
+def create_content_display(console: ConsoleType) -> ContentViewer:
+    """Create a new content viewer instance.
+
+    Args:
+        console: Console instance for output
+
+    Returns:
+        ContentViewer instance
+    """
+    return ContentViewer(console)

@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from typing import Any
 
 from ..config.settings import SpecSettings
-from ..core.context_bridge import debug_logger, get_settings
+from ..core.context_bridge import debug_logger
 from ..exceptions import SpecError
 from ..utils.error_handler import ErrorHandler
 
@@ -20,9 +20,17 @@ class BaseCommand(ABC):
         """Initialize base command with settings and error handling.
 
         Args:
-            settings: Optional settings override (defaults to global settings)
+            settings: Settings instance (required for context-based dependency injection)
+
+        Raises:
+            ValueError: If no settings instance is provided
         """
-        self.settings = settings or get_settings()
+        if settings is None:
+            raise ValueError(
+                f"{self.__class__.__name__} requires settings instance. "
+                "Use context injection decorators or pass settings explicitly."
+            )
+        self.settings = settings
         self.error_handler = ErrorHandler(
             {"module": "cli", "component": self.get_command_name()}
         )

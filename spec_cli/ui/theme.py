@@ -194,16 +194,17 @@ class SpecTheme:
         }
 
     @classmethod
-    def from_settings(cls, settings: SpecSettings | None = None) -> "SpecTheme":
+    def from_settings(cls, settings: SpecSettings) -> "SpecTheme":
         """Create theme from settings configuration.
 
         Args:
-            settings: Optional settings object
+            settings: Settings object (required)
 
         Returns:
             SpecTheme instance configured from settings
         """
-        settings = settings or get_settings()
+        if settings is None:
+            raise ValueError("from_settings requires a settings instance")
 
         # Try to get color scheme from settings
         color_scheme_name = getattr(settings, "ui_color_scheme", "default")
@@ -233,7 +234,9 @@ class ThemeManager:
             Current SpecTheme instance
         """
         if self._current_theme is None:
-            self._current_theme = SpecTheme.from_settings()
+            from ..config.settings import SpecSettings
+            default_settings = SpecSettings()
+            self._current_theme = SpecTheme.from_settings(default_settings)
             debug_logger.log("INFO", "Global theme initialized")
 
         return self._current_theme

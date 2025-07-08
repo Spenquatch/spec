@@ -142,6 +142,8 @@ def regen_command(
 
         # Create and execute workflow
         workflow = create_regeneration_workflow(
+            settings=context.settings,
+            console=context.console,
             template_name=template,
             conflict_strategy=conflict_strategy,
             auto_commit=auto_commit,

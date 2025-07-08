@@ -14,7 +14,7 @@ from rich.live import Live
 from rich.spinner import Spinner
 from rich.text import Text
 
-from ..core.context_bridge import debug_logger, get_console
+from ..core.context_bridge import debug_logger
 
 
 class SpecSpinner:
@@ -32,12 +32,14 @@ class SpecSpinner:
         Args:
             text: Text to display with spinner
             spinner_style: Spinner animation style
-            console: Console to use (uses global if None)
+            console: Console to use for output (required)
             speed: Animation speed multiplier
         """
         self.text = text
         self.spinner_style = spinner_style
-        self.console = console or get_console().console
+        if console is None:
+            raise ValueError("SpecSpinner requires a console instance")
+        self.console = console
         self.speed = speed
 
         self.spinner = Spinner(spinner_style, speed=speed)
@@ -149,7 +151,9 @@ class SpinnerManager:
         Args:
             console: Console to use for all spinners
         """
-        self.console = console or get_console().console
+        if console is None:
+            raise ValueError("SpinnerManager requires a console instance")
+        self.console = console
         self.spinners: dict[str, SpecSpinner] = {}
         self._active_spinner: str | None = None
 
@@ -286,45 +290,54 @@ class SpinnerManager:
 
 
 # Convenience functions
-def create_spinner(text: str = "Loading...", **kwargs: Any) -> SpecSpinner:
+def create_spinner(text: str = "Loading...", console: Console | None = None, **kwargs: Any) -> SpecSpinner:
     """Create a new spinner with default settings.
 
     Args:
         text: Text to display with spinner
+        console: Console instance for output
         **kwargs: Configuration options for SpecSpinner
 
     Returns:
         Configured SpecSpinner instance
     """
-    return SpecSpinner(text=text, **kwargs)
+    if console is None:
+        raise ValueError("create_spinner requires a console instance")
+    return SpecSpinner(text=text, console=console, **kwargs)
 
 
 def timed_spinner(
-    text: str = "Loading...", timeout: float = 30.0, **kwargs: Any
+    text: str = "Loading...", timeout: float = 30.0, console: Console | None = None, **kwargs: Any
 ) -> TimedSpinner:
     """Create a timed spinner.
 
     Args:
         text: Text to display with spinner
         timeout: Maximum time to run (seconds)
+        console: Console instance for output
         **kwargs: Additional configuration options
 
     Returns:
         TimedSpinner instance
     """
-    return TimedSpinner(text=text, timeout=timeout, **kwargs)
+    if console is None:
+        raise ValueError("timed_spinner requires a console instance")
+    return TimedSpinner(text=text, timeout=timeout, console=console, **kwargs)
 
 
 @contextmanager
 def spinner_context(
-    text: str = "Loading...", **kwargs: Any
+    text: str = "Loading...", console: Console | None = None, **kwargs: Any
 ) -> Generator[SpecSpinner, None, None]:
     """Context manager for simple spinner usage.
 
     Args:
         text: Text to display with spinner
+        console: Console instance for output
         **kwargs: Configuration options for SpecSpinner
     """
-    spinner = create_spinner(text, **kwargs)
+    if console is None:
+        raise ValueError("spinner_context requires a console instance")
+    spinner = create_spinner(text, console=console, **kwargs)
     with spinner:
         yield spinner

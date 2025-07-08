@@ -19,7 +19,7 @@ from rich.progress import (
     TimeRemainingColumn,
 )
 
-from ..core.context_bridge import debug_logger, get_console
+from ..core.context_bridge import debug_logger
 
 
 class SpecProgressBar:
@@ -38,7 +38,7 @@ class SpecProgressBar:
         """Initialize the progress bar.
 
         Args:
-            console: Console to use (uses global if None)
+            console: Console to use for output (required)
             show_percentage: Whether to show percentage
             show_time_elapsed: Whether to show elapsed time
             show_time_remaining: Whether to show remaining time
@@ -46,7 +46,9 @@ class SpecProgressBar:
             auto_refresh: Whether to auto-refresh display
             refresh_per_second: Refresh rate
         """
-        self.console = console or get_console().console
+        if console is None:
+            raise ValueError("SpecProgressBar requires a console instance")
+        self.console = console
         self.show_percentage = show_percentage
         self.show_time_elapsed = show_time_elapsed
         self.show_time_remaining = show_time_remaining

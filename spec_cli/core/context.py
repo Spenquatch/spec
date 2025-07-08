@@ -459,12 +459,13 @@ class SpecContext:
                 )
 
             # Create CLI settings with real configuration using actual implementations
-            from ..core.context_bridge import get_console, get_settings
+            from ..config.settings import SpecSettings
+            from ..ui.console import SpecConsole
             from ..ui.progress_manager import ProgressManager
 
-            cli_settings = get_settings()
-            cli_console = get_console()
-            cli_progress = ProgressManager()
+            cli_settings = SpecSettings()  # Direct instantiation instead of singleton
+            cli_console = SpecConsole()
+            cli_progress = ProgressManager(console=cli_console.console)
 
             debug_logger.log(
                 "DEBUG",

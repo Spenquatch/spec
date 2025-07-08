@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Any
 
 from ..config.settings import SpecSettings
-from ..core.context_bridge import debug_logger, get_settings
+from ..core.context_bridge import debug_logger
 from ..exceptions import SpecFileError, SpecPermissionError, SpecValidationError
 from ..utils.path_utils import ensure_directory, ensure_path_permissions
 from .ignore_patterns import IgnorePatternMatcher
@@ -22,14 +22,16 @@ from .path_resolver import PathResolver
 class DirectoryManager:
     """Manages spec directory creation, structure, and safety operations."""
 
-    def __init__(self, settings: SpecSettings | None = None):
+    def __init__(self, settings: SpecSettings):
         """Initialize the DirectoryManager.
 
         Args:
-            settings: Optional spec settings (defaults to global settings)
+            settings: SpecSettings instance (required)
 
         """
-        self.settings = settings or get_settings()
+        if settings is None:
+            raise ValueError("DirectoryManager requires a settings instance")
+        self.settings = settings
         self.path_resolver = PathResolver(self.settings)
         self.ignore_matcher = IgnorePatternMatcher(self.settings)
 

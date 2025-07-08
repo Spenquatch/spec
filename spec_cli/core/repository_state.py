@@ -17,7 +17,7 @@ from enum import Enum
 from typing import Any
 
 from ..config.settings import SpecSettings
-from ..core.context_bridge import debug_logger, get_settings
+from ..core.context_bridge import debug_logger
 from ..git.repository import SpecGitRepository
 
 
@@ -44,17 +44,18 @@ class BranchStatus(Enum):
 class RepositoryStateChecker:
     """Checks and validates spec repository state and health."""
 
-    def __init__(self, settings: SpecSettings | None = None):
+    def __init__(self, settings: SpecSettings):
         """Initialize the repository state checker with configuration.
 
         Args:
-            settings: Optional SpecSettings instance. If None, uses default settings
-                     from get_settings()
+            settings: SpecSettings instance for configuration
 
         The state checker sets up the Git repository interface for performing
         comprehensive health checks and state validation operations.
         """
-        self.settings = settings or get_settings()
+        if settings is None:
+            raise ValueError("RepositoryStateChecker requires a settings instance")
+        self.settings = settings
         self.git_repo = SpecGitRepository(self.settings)
 
         debug_logger.log("INFO", "RepositoryStateChecker initialized")

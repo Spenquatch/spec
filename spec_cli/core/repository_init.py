@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import Any, cast
 
 from ..config.settings import SpecSettings
-from ..core.context_bridge import debug_logger, get_settings
+from ..core.context_bridge import debug_logger
 from ..file_system.directory_manager import DirectoryManager
 from ..git.repository import SpecGitRepository
 from .repository_state import RepositoryHealth, RepositoryStateChecker
@@ -26,19 +26,20 @@ from .repository_state import RepositoryHealth, RepositoryStateChecker
 class SpecRepositoryInitializer:
     """Handles spec repository initialization and setup."""
 
-    def __init__(self, settings: SpecSettings | None = None):
+    def __init__(self, settings: SpecSettings):
         """Initialize the repository initializer with configuration and dependencies.
 
         Args:
-            settings: Optional SpecSettings instance. If None, uses default settings
-                     from get_settings()
+            settings: SpecSettings instance for configuration
 
         The initializer sets up all required components for repository operations:
         - Git repository interface for .spec operations
         - Directory manager for .specs structure
         - State checker for repository health validation
         """
-        self.settings = settings or get_settings()
+        if settings is None:
+            raise ValueError("SpecRepositoryInitializer requires a settings instance")
+        self.settings = settings
         self.git_repo = SpecGitRepository(self.settings)
         self.directory_manager = DirectoryManager(self.settings)
         self.state_checker = RepositoryStateChecker(self.settings)

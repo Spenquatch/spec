@@ -31,14 +31,11 @@ class AddCommand(BaseCommand):
         super().__init__(effective_settings)
         self.context = context
 
-        # Set console from context or create fallback
+        # Set console from context
         if context and hasattr(context, "console") and context.console:
             self.console = context.console
         else:
-            # Fallback to facade bridge for backward compatibility
-            from ...core.context_bridge import get_console
-
-            self.console = get_console()
+            raise ValueError("AddCommand requires a SpecContext with console")
 
     def execute(self, **kwargs: Any) -> dict[str, Any]:
         """Execute the add command.

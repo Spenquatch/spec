@@ -4,9 +4,10 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
+from typing import Any as ConsoleType
 
 from ....config.settings import SpecSettings
-from ....core.context_bridge import debug_logger, get_console, get_settings
+from ....core.context_bridge import debug_logger, get_settings
 from ....exceptions import SpecGenerationError, SpecValidationError
 from ....file_processing.conflict_resolver import ConflictResolutionStrategy
 from ....git.repository import SpecGitRepository
@@ -44,6 +45,8 @@ class GenerationWorkflow:
 
     def __init__(
         self,
+        settings: SpecSettings,
+        console: ConsoleType,
         template_name: str = "default",
         conflict_strategy: ConflictResolutionStrategy = ConflictResolutionStrategy.BACKUP_AND_REPLACE,
         auto_commit: bool = False,
@@ -52,21 +55,26 @@ class GenerationWorkflow:
         """Initialize generation workflow.
 
         Args:
+            settings: Spec settings instance (required)
+            console: Console instance for output
             template_name: Template to use for generation
             conflict_strategy: How to handle existing files
             auto_commit: Whether to automatically commit generated files
             commit_message: Commit message if auto_commit is True
         """
+        if settings is None:
+            raise ValueError("GenerationWorkflow requires a settings instance")
+        self.settings = settings
+        self.console = console
         self.template_name = template_name
         self.conflict_strategy = conflict_strategy
         self.auto_commit = auto_commit
         self.commit_message = commit_message
 
         # Initialize components
-        self.generator = SpecContentGenerator()
-        self.git_repo = SpecGitRepository()
-        self.progress_manager = get_progress_manager()
-        self.console = get_console()
+        self.generator = SpecContentGenerator(settings)
+        self.git_repo = SpecGitRepository(settings)
+        self.progress_manager = get_progress_manager(console)
 
         debug_logger.log(
             "INFO",
@@ -299,11 +307,9 @@ class GenerationWorkflow:
     def _get_spec_files_for_source(self, source_file: Path) -> dict[str, Path]:
         """Get spec file paths for a source file."""
         # Use centralized path resolver method
-        from ....core.context_bridge import get_settings
         from ....file_system.path_resolver import PathResolver
 
-        settings = get_settings()
-        path_resolver = PathResolver(settings)
+        path_resolver = PathResolver(self.settings)
 
         return path_resolver.get_spec_files_for_source(source_file)
 
@@ -410,16 +416,18 @@ class RegenerationWorkflow(GenerationWorkflow):
 class AddWorkflow:
     """Workflow for adding files to spec tracking."""
 
-    def __init__(self, force: bool = False, settings: SpecSettings | None = None):
+    def __init__(self, force: bool = False, settings: SpecSettings = None):
         """Initialize add workflow.
 
         Args:
             force: Whether to force add ignored files
-            settings: Spec settings for directory paths
+            settings: Spec settings for directory paths (required)
         """
+        if settings is None:
+            raise ValueError("AddWorkflow requires a settings instance")
         self.force = force
-        self.settings = settings or get_settings()
-        self.git_repo = SpecGitRepository()
+        self.settings = settings
+        self.git_repo = SpecGitRepository(self.settings)
 
         debug_logger.log("INFO", "AddWorkflow initialized", force=force)
 
@@ -481,7 +489,11 @@ class AddWorkflow:
 
 # Factory functions
 def create_generation_workflow(**kwargs: Any) -> GenerationWorkflow:
-    """Create a generation workflow with configuration."""
+    """Create a generation workflow with configuration.
+
+    Args:
+        **kwargs: Configuration parameters including console
+    """
     return GenerationWorkflow(**kwargs)
 
 

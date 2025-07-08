@@ -19,7 +19,7 @@ from datetime import datetime
 from typing import Any
 
 from ..config.settings import SpecSettings
-from ..core.context_bridge import debug_logger, get_settings
+from ..core.context_bridge import debug_logger
 from ..exceptions import SpecGitError
 from ..git.repository import SpecGitRepository
 from ..utils.error_utils import (
@@ -33,18 +33,19 @@ from .repository_state import RepositoryStateChecker
 class SpecCommitManager:
     """Manages Git commit operations for spec repository."""
 
-    def __init__(self, settings: SpecSettings | None = None):
+    def __init__(self, settings: SpecSettings):
         """Initialize the commit manager with configuration and dependencies.
 
         Args:
-            settings: Optional SpecSettings instance. If None, uses default settings
-                     from get_settings()
+            settings: SpecSettings instance for configuration
 
         The commit manager sets up all required components for Git operations:
         - Git repository interface for executing Git commands
         - State checker for repository health and operation safety validation
         """
-        self.settings = settings or get_settings()
+        if settings is None:
+            raise ValueError("SpecCommitManager requires a settings instance")
+        self.settings = settings
         self.git_repo = SpecGitRepository(self.settings)
         self.state_checker = RepositoryStateChecker(self.settings)
 

@@ -10,7 +10,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
 
-from ..core.context_bridge import debug_logger, get_console
+from ..core.context_bridge import debug_logger
 from ..file_processing.progress_events import (
     ProcessingStage,
     ProgressEvent,
@@ -57,12 +57,14 @@ class ProgressManager:
         self,
         progress_reporter_instance: ProgressReporter | None = None,
         auto_display: bool = True,
+        console = None,
     ) -> None:
         """Initialize progress manager.
 
         Args:
             progress_reporter_instance: Progress event reporter to use
             auto_display: Whether to automatically show/hide progress displays
+            console: Console instance for display output
         """
         self.progress_reporter = progress_reporter_instance or progress_reporter
         self.auto_display = auto_display
@@ -72,11 +74,16 @@ class ProgressManager:
         self.progress_states: dict[str, ProgressState] = {}
         self.active_operations: dict[str, str] = {}  # operation_id -> display_type
 
+        # Console dependency injection
+        if console is None:
+            raise ValueError("ProgressManager requires a console instance")
+        self.console = console
+
         # Display components
         self.progress_bar = SpecProgressBar(
-            show_percentage=True, show_time_remaining=True, auto_refresh=True
+            show_percentage=True, show_time_remaining=True, auto_refresh=True, console=console
         )
-        self.spinner_manager = SpinnerManager()
+        self.spinner_manager = SpinnerManager(console=console)
 
         # Event handling
         self._event_handlers: dict[ProgressEventType, list[Callable[..., Any]]] = {}
@@ -169,8 +176,7 @@ class ProgressManager:
         self._cleanup_operation(operation_id)
 
         # Show completion message
-        console = get_console()
-        console.print_status(event.message or "Batch operation completed", "success")
+        self.console.print_status(event.message or "Batch operation completed", "success")
 
         debug_logger.log("INFO", "Batch operation completed", operation_id=operation_id)
 
@@ -181,8 +187,7 @@ class ProgressManager:
             self._cleanup_operation(operation_id)
 
         # Show error message
-        console = get_console()
-        console.print_status(event.message or "Batch operation failed", "error")
+        self.console.print_status(event.message or "Batch operation failed", "error")
 
         debug_logger.log("ERROR", "Batch operation failed")
 
@@ -418,16 +423,21 @@ class ProgressManagerSingleton:
         self._progress_manager: ProgressManager | None = None
         self._lock = threading.Lock()
 
-    def get_progress_manager(self) -> ProgressManager:
+    def get_progress_manager(self, console=None) -> ProgressManager:
         """Get the global progress manager instance.
 
+        Args:
+            console: Console instance to use for progress display
+            
         Returns:
             Global ProgressManager instance
         """
         if self._progress_manager is None:
             with self._lock:
                 if self._progress_manager is None:
-                    self._progress_manager = ProgressManager()
+                    if console is None:
+                        raise ValueError("ProgressManagerSingleton requires console parameter on first call")
+                    self._progress_manager = ProgressManager(console=console)
                     debug_logger.log("INFO", "Global progress manager initialized")
 
         return self._progress_manager
@@ -452,9 +462,16 @@ class ProgressManagerSingleton:
 
 
 # Convenience functions for getting progress manager
-def get_progress_manager() -> ProgressManager:
-    """Get the global progress manager instance."""
-    return ProgressManagerSingleton().get_progress_manager()
+def get_progress_manager(console=None) -> ProgressManager:
+    """Get the global progress manager instance.
+    
+    Args:
+        console: Console instance required for first initialization
+        
+    Returns:
+        Global ProgressManager instance
+    """
+    return ProgressManagerSingleton().get_progress_manager(console)
 
 
 def set_progress_manager(manager: ProgressManager) -> None:

@@ -9,7 +9,6 @@ from .ai_integration import (
     AIContentManager,
     AIContentProvider,
     MockAIProvider,
-    ai_content_manager,
     ask_llm,
     retry_with_backoff,
 )
@@ -37,7 +36,6 @@ __all__ = [
     "AIContentProvider",
     "MockAIProvider",
     "AIContentManager",
-    "ai_content_manager",
     "ask_llm",
     "retry_with_backoff",
     "PromptGenerator",

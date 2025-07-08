@@ -9,7 +9,7 @@ consistent cross-platform behavior.
 from pathlib import Path
 
 from ..config.settings import SpecSettings
-from ..core.context_bridge import debug_logger, get_settings
+from ..core.context_bridge import debug_logger
 from ..exceptions import SpecFileError, SpecValidationError
 from ..utils.path_utils import normalize_path, remove_specs_prefix, safe_relative_to
 
@@ -21,14 +21,16 @@ class PathResolver:
     validation, and conversion between different path contexts.
     """
 
-    def __init__(self, settings: SpecSettings | None = None):
+    def __init__(self, settings: SpecSettings):
         """Initialize the PathResolver.
 
         Args:
-            settings: Optional spec settings (defaults to global settings)
+            settings: SpecSettings instance (required)
 
         """
-        self.settings = settings or get_settings()
+        if settings is None:
+            raise ValueError("PathResolver requires a settings instance")
+        self.settings = settings
 
     def resolve_input_path(self, path_str: str) -> Path:
         """Resolve and validate an input path for spec operations.

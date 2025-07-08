@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Any, cast
 
 from ..config.settings import SpecSettings
-from ..core.context_bridge import debug_logger, get_settings
+from ..core.context_bridge import debug_logger
 from ..utils.error_utils import create_error_context, handle_os_error
 from .aggregators.result_aggregator import BatchResultAggregator
 from .change_detector import FileChangeDetector
@@ -108,13 +108,15 @@ class BatchProcessingResult:
 class BatchFileProcessor:
     """Processes multiple files in batch with progress tracking and error recovery."""
 
-    def __init__(self, settings: SpecSettings | None = None):
+    def __init__(self, settings: SpecSettings):
         """Initialize batch file processor.
 
         Args:
-            settings: Optional spec settings to use, defaults to global settings
+            settings: Spec settings instance (required)
         """
-        self.settings = settings or get_settings()
+        if settings is None:
+            raise ValueError("BatchFileProcessor requires a settings instance")
+        self.settings = settings
         self.change_detector = FileChangeDetector(self.settings)
         self.conflict_resolver = ConflictResolver(self.settings)
         self.progress_reporter = progress_reporter
@@ -478,14 +480,18 @@ class BatchFileProcessor:
 
 
 # Convenience functions
-def process_files_batch(file_paths: list[Path], **kwargs: Any) -> BatchProcessingResult:
-    """Process files in batch using default processor."""
-    processor = BatchFileProcessor()
+def process_files_batch(
+    file_paths: list[Path], settings: SpecSettings, **kwargs: Any
+) -> BatchProcessingResult:
+    """Process files in batch using provided settings."""
+    processor = BatchFileProcessor(settings)
     options = BatchProcessingOptions(**kwargs)
     return processor.process_files(file_paths, options)
 
 
-def estimate_processing_time(file_paths: list[Path]) -> dict[str, Any]:
+def estimate_processing_time(
+    file_paths: list[Path], settings: SpecSettings
+) -> dict[str, Any]:
     """Estimate processing time for given file paths."""
-    processor = BatchFileProcessor()
+    processor = BatchFileProcessor(settings)
     return processor.estimate_batch_processing(file_paths)

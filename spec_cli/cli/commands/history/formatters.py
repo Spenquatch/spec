@@ -2,8 +2,7 @@
 
 from datetime import datetime
 from typing import Any
-
-from ....core.context_bridge import get_console
+from typing import Any as ConsoleType
 
 # DataFormatter not used in this module
 from ....ui.tables import SpecTable
@@ -12,9 +11,13 @@ from ....ui.tables import SpecTable
 class GitLogFormatter:
     """Formats Git log output with Rich styling."""
 
-    def __init__(self) -> None:
-        """Initialize Git log formatter with Rich console."""
-        self.console = get_console()
+    def __init__(self, console: ConsoleType) -> None:
+        """Initialize Git log formatter with Rich console.
+
+        Args:
+            console: Console instance for output formatting
+        """
+        self.console = console
 
     # No need for data formatter in this class
 
@@ -38,7 +41,7 @@ class GitLogFormatter:
 
     def _format_compact_log(self, commits: list[dict[str, Any]]) -> None:
         """Format compact commit log as table."""
-        table = SpecTable(title="Commit History (Compact)")
+        table = SpecTable(title="Commit History (Compact)", console=self.console)
         table.add_column("Hash", style="yellow", width=10)
         table.add_column("Date", style="dim", width=12)
         table.add_column("Author", style="cyan", width=15)
@@ -123,9 +126,13 @@ class GitLogFormatter:
 class GitDiffFormatter:
     """Formats Git diff output with Rich styling."""
 
-    def __init__(self) -> None:
-        """Initialize Git diff formatter with Rich console."""
-        self.console = get_console()
+    def __init__(self, console: ConsoleType) -> None:
+        """Initialize Git diff formatter with Rich console.
+
+        Args:
+            console: Console instance for output formatting
+        """
+        self.console = console
 
     def format_diff_output(self, diff_data: dict[str, Any]) -> None:
         """Format and display diff output.
@@ -192,9 +199,13 @@ class GitDiffFormatter:
 class CommitFormatter:
     """Formats commit information and statistics."""
 
-    def __init__(self) -> None:
-        """Initialize commit formatter with Rich console."""
-        self.console = get_console()
+    def __init__(self, console: ConsoleType) -> None:
+        """Initialize commit formatter with Rich console.
+
+        Args:
+            console: Console instance for output formatting
+        """
+        self.console = console
 
     def format_commit_info(self, commit_data: dict[str, Any]) -> None:
         """Format detailed commit information.
@@ -203,7 +214,7 @@ class CommitFormatter:
             commit_data: Commit data from Git
         """
         # Basic commit info
-        table = SpecTable(title="Commit Information")
+        table = SpecTable(title="Commit Information", console=self.console)
         table.add_column("Property", style="label", ratio=1)
         table.add_column("Value", style="value", ratio=2)
 
@@ -232,7 +243,7 @@ class CommitFormatter:
         """Format commit statistics."""
         self.console.print("\n[bold cyan]Statistics:[/bold cyan]")
 
-        stats_table = SpecTable()
+        stats_table = SpecTable(console=self.console)
         stats_table.add_column("Metric", style="label")
         stats_table.add_column("Count", style="value")
 
@@ -244,19 +255,35 @@ class CommitFormatter:
 
 
 # Convenience functions
-def format_commit_log(commits: list[dict[str, Any]], compact: bool = False) -> None:
-    """Format commit log with Rich styling."""
-    formatter = GitLogFormatter()
+def format_commit_log(commits: list[dict[str, Any]], console: ConsoleType, compact: bool = False) -> None:
+    """Format commit log with Rich styling.
+
+    Args:
+        commits: List of commit dictionaries
+        console: Console instance for output
+        compact: Whether to use compact format
+    """
+    formatter = GitLogFormatter(console)
     formatter.format_commit_log(commits, compact)
 
 
-def format_diff_output(diff_data: dict[str, Any]) -> None:
-    """Format diff output with Rich styling."""
-    formatter = GitDiffFormatter()
+def format_diff_output(diff_data: dict[str, Any], console: ConsoleType) -> None:
+    """Format diff output with Rich styling.
+
+    Args:
+        diff_data: Diff data from Git
+        console: Console instance for output
+    """
+    formatter = GitDiffFormatter(console)
     formatter.format_diff_output(diff_data)
 
 
-def format_commit_info(commit_data: dict[str, Any]) -> None:
-    """Format commit information with Rich styling."""
-    formatter = CommitFormatter()
+def format_commit_info(commit_data: dict[str, Any], console: ConsoleType) -> None:
+    """Format commit information with Rich styling.
+
+    Args:
+        commit_data: Commit data from Git
+        console: Console instance for output
+    """
+    formatter = CommitFormatter(console)
     formatter.format_commit_info(commit_data)

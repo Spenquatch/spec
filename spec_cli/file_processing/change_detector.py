@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Any
 
 from ..config.settings import SpecSettings
-from ..core.context_bridge import debug_logger, get_settings
+from ..core.context_bridge import debug_logger
 from ..exceptions import SpecFileError
 from ..file_system.file_metadata import FileMetadataExtractor
 from ..file_system.ignore_patterns import IgnorePatternMatcher
@@ -22,13 +22,15 @@ from .file_cache import FileCacheEntry, FileCacheManager
 class FileChangeDetector:
     """Detects file changes using hash comparison and caching."""
 
-    def __init__(self, settings: SpecSettings | None = None):
+    def __init__(self, settings: SpecSettings):
         """Initialize the file change detector.
 
         Args:
-            settings: Optional SpecSettings instance. Uses default settings if None.
+            settings: SpecSettings instance (required)
         """
-        self.settings = settings or get_settings()
+        if settings is None:
+            raise ValueError("FileChangeDetector requires a settings instance")
+        self.settings = settings
         self.cache_manager = FileCacheManager(self.settings)
         self.metadata_extractor = FileMetadataExtractor()
         self.ignore_matcher = IgnorePatternMatcher(self.settings)

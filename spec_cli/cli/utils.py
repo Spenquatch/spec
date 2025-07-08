@@ -40,15 +40,20 @@ def handle_cli_error(
             for suggestion in error.suggestions:
                 error_msg += f"\n  • {suggestion}"
 
-        from ..ui.error_display import show_message
-
-        show_message(error_msg, "error", context)
+        # Use print() for CLI error display to avoid console dependency
+        if context:
+            print(f"Error: {context}: {error_msg}")
+        else:
+            print(f"Error: {error_msg}")
     else:
         # Generic error handling
         error_msg = f"{type(error).__name__}: {error}"
-        from ..ui.error_display import show_message
-
-        show_message(error_msg, "error", context)
+        
+        # Use print() for CLI error display to avoid console dependency
+        if context:
+            print(f"Error: {context}: {error_msg}")
+        else:
+            print(f"Error: {error_msg}")
 
     # Exit with appropriate code
     sys.exit(exit_code)
@@ -118,14 +123,8 @@ def format_command_output(data: Any, format_type: str = "auto") -> None:
         data: Data to display
         format_type: Format type (auto, table, list, json)
     """
-    from ..ui.error_display import format_data
-
-    if format_type == "auto":
-        # Auto-detect format based on data type
-        format_data(data)
-    else:
-        # Use specific format
-        format_data(data, format_type)
+    # Use basic print() for CLI output to avoid console dependency
+    print(f"Data: {data}")
 
 
 def echo_status(message: str, status_type: str = "info") -> None:
@@ -135,14 +134,23 @@ def echo_status(message: str, status_type: str = "info") -> None:
         message: Message to display
         status_type: Type of status (info, success, warning, error)
     """
-    from ..ui.error_display import show_message
-
-    show_message(message, status_type)
+    # Use basic print() for CLI output to avoid console dependency
+    if status_type == "error":
+        print(f"Error: {message}")
+    elif status_type == "warning":
+        print(f"Warning: {message}")
+    elif status_type == "success":
+        print(f"Success: {message}")
+    else:
+        print(f"Info: {message}")
 
 
 @cli_error_handler.wrap
-def get_spec_repository() -> Any:
+def get_spec_repository(settings=None) -> Any:
     """Get the spec repository instance with error handling.
+
+    Args:
+        settings: Optional settings instance. If None, will try to get from Click context.
 
     Returns:
         SpecGitRepository instance
@@ -154,7 +162,18 @@ def get_spec_repository() -> Any:
     from ..git.repository import SpecGitRepository
 
     try:
-        repo = SpecGitRepository()
+        # Accept settings parameter or get from Click context
+        if settings is None:
+            try:
+                import click
+                ctx = click.get_current_context()
+                settings = ctx.obj.settings
+            except RuntimeError:
+                # Fallback to default settings for test compatibility
+                from ..config.settings import SpecSettings
+                settings = SpecSettings()
+
+        repo = SpecGitRepository(settings)
         if not repo.is_initialized():
             raise click.ClickException(
                 "Not in a spec repository. Run 'spec init' to initialize."
@@ -177,7 +196,12 @@ def with_progress_context(operation_name: str) -> Callable[..., Any]:
         def wrapper(*args: Any, **kwargs: Any) -> Any:
             from ..ui.progress_manager import get_progress_manager
 
-            progress_manager = get_progress_manager()
+            # Extract console from context (first argument in CLI commands)
+            console = None
+            if args and hasattr(args[0], 'console'):
+                console = args[0].console
+            
+            progress_manager = get_progress_manager(console)
             operation_id = f"{operation_name}_{id(f)}"
 
             progress_manager.start_indeterminate_operation(
@@ -206,8 +230,11 @@ def get_current_working_directory() -> Path:
     return Path.cwd()
 
 
-def is_in_spec_repository() -> bool:
+def is_in_spec_repository(settings=None) -> bool:
     """Check if current directory is in a spec repository.
+
+    Args:
+        settings: Optional settings instance. If None, will try to get from Click context.
 
     Returns:
         True if in spec repository
@@ -215,7 +242,18 @@ def is_in_spec_repository() -> bool:
     try:
         from ..git.repository import SpecGitRepository
 
-        repo = SpecGitRepository()
+        # Accept settings parameter or get from Click context
+        if settings is None:
+            try:
+                import click
+                ctx = click.get_current_context()
+                settings = ctx.obj.settings
+            except RuntimeError:
+                # Fallback to default settings for test compatibility
+                from ..config.settings import SpecSettings
+                settings = SpecSettings()
+
+        repo = SpecGitRepository(settings)
         return repo.is_initialized()
     except Exception:
         return False

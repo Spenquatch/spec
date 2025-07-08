@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Any, cast
 
 from ..config.settings import SpecSettings
-from ..core.context_bridge import debug_logger, get_settings
+from ..core.context_bridge import debug_logger
 from ..exceptions import SpecFileError
 from ..file_system.directory_manager import DirectoryManager
 from ..utils.error_utils import create_error_context, handle_os_error
@@ -134,13 +134,15 @@ class ConflictResolutionResult:
 class ConflictResolver:
     """Resolves file conflicts using configurable strategies."""
 
-    def __init__(self, settings: SpecSettings | None = None):
+    def __init__(self, settings: SpecSettings):
         """Initialize the conflict resolver.
 
         Args:
-            settings: Optional SpecSettings instance. Uses default settings if None.
+            settings: SpecSettings instance (required)
         """
-        self.settings = settings or get_settings()
+        if settings is None:
+            raise ValueError("ConflictResolver requires a settings instance")
+        self.settings = settings
         self.directory_manager = DirectoryManager(self.settings)
         self.change_detector = FileChangeDetector(self.settings)
         self.content_merger = ContentMerger()

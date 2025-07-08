@@ -19,6 +19,7 @@ with patch.dict(
         "transformers": Mock(),
     },
 ):
+    from spec_cli.config.settings import SpecSettings
     from spec_cli.exceptions import SpecTemplateError
     from spec_cli.templates.ai_integration import (
         AIContentManager,
@@ -46,11 +47,10 @@ class TestAITemplateIntegrator:
         assert integrator.ai_manager is ai_manager
 
     def test_integrator_initialization_default_manager(self):
-        """Test AITemplateIntegrator initialization with default manager."""
-        integrator = AITemplateIntegrator()
-
-        # Should use global ai_content_manager
-        assert integrator.ai_manager is not None
+        """Test AITemplateIntegrator initialization requires manager."""
+        # Should raise ValueError when no manager provided
+        with pytest.raises(ValueError, match="AITemplateIntegrator requires an AIContentManager instance"):
+            AITemplateIntegrator()
 
     def test_enhance_template_success_standard_level(self):
         """Test successful template enhancement with standard level."""
@@ -869,7 +869,8 @@ class TestIntegrationScenarios:
 
         try:
             # Create real AI content manager with mock provider
-            ai_manager = AIContentManager()
+            mock_settings = Mock(spec=SpecSettings)
+            ai_manager = AIContentManager(mock_settings)
             ai_manager.enabled = True
 
             # Register mock provider

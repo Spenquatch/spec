@@ -12,7 +12,7 @@ from rich.console import Console
 from rich.table import Table
 from rich.text import Text
 
-from ..core.context_bridge import debug_logger, get_console
+from ..core.context_bridge import debug_logger
 from .styles import SpecStyles
 
 
@@ -38,7 +38,9 @@ class SpecTable:
             expand: Whether to expand table to full width
             console: Console to use for display
         """
-        self.console = console or get_console().console
+        if console is None:
+            raise ValueError("SpecTable requires a console instance")
+        self.console = console
         self.title = title
         self.show_header = show_header
         self.show_lines = show_lines
@@ -285,19 +287,22 @@ class ComparisonTable(SpecTable):
 
 # Utility functions
 def create_file_table(
-    files: list[Path], title: str = "Files", **kwargs: Any
+    files: list[Path], title: str = "Files", console: Console | None = None, **kwargs: Any
 ) -> FileListTable:
     """Create a table for displaying file information.
 
     Args:
         files: List of file paths
         title: Table title
+        console: Console instance for output
         **kwargs: Additional table options
 
     Returns:
         Configured FileListTable
     """
-    table = FileListTable(title=title, **kwargs)
+    if console is None:
+        raise ValueError("create_file_table requires a console instance")
+    table = FileListTable(title=title, console=console, **kwargs)
 
     for file_path in files:
         file_type = "directory" if file_path.is_dir() else "file"
@@ -313,19 +318,22 @@ def create_file_table(
 
 
 def create_status_table(
-    data: dict[str, Any], title: str = "Status", **kwargs: Any
+    data: dict[str, Any], title: str = "Status", console: Console | None = None, **kwargs: Any
 ) -> StatusTable:
     """Create a table for displaying status information.
 
     Args:
         data: Dictionary of status data
         title: Table title
+        console: Console instance for output
         **kwargs: Additional table options
 
     Returns:
         Configured StatusTable
     """
-    table = StatusTable(title=title, **kwargs)
+    if console is None:
+        raise ValueError("create_status_table requires a console instance")
+    table = StatusTable(title=title, console=console, **kwargs)
 
     for key, value in data.items():
         # Determine status based on value type and content
@@ -374,17 +382,20 @@ def print_simple_table(
     table.print()
 
 
-def create_key_value_table(data: dict[str, Any], title: str | None = None) -> SpecTable:
+def create_key_value_table(data: dict[str, Any], title: str | None = None, console: Console | None = None) -> SpecTable:
     """Create a key-value table from a dictionary.
 
     Args:
         data: Dictionary of key-value pairs
         title: Optional table title
+        console: Console instance for output
 
     Returns:
         SpecTable instance with key-value data
     """
-    table = SpecTable(title=title)
+    if console is None:
+        raise ValueError("create_key_value_table requires a console instance")
+    table = SpecTable(title=title, console=console)
     table.add_column("Key", style="label", width=20)
     table.add_column("Value", style="value")
 

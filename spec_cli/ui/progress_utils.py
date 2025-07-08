@@ -143,18 +143,19 @@ def timed_operation(
             )
 
 
-def create_file_progress_tracker(files: list[Path]) -> Callable[[Path], None]:
+def create_file_progress_tracker(files: list[Path], console=None) -> Callable[[Path], None]:
     """Create a progress tracker for file operations.
 
     Args:
         files: List of files to track
+        console: Optional console instance for progress display
 
     Returns:
         Function to call when a file is processed
     """
     total_files = len(files)
     completed_files = 0
-    progress_manager = get_progress_manager()
+    progress_manager = get_progress_manager(console)
 
     operation_id = f"file_operation_{int(time.time())}"
     progress_manager.start_indeterminate_operation(
@@ -186,6 +187,7 @@ class ProgressTracker:
         operation_name: str,
         total_items: int | None = None,
         auto_finish: bool = True,
+        console=None,
     ) -> None:
         """Initialize progress tracker.
 
@@ -193,6 +195,7 @@ class ProgressTracker:
             operation_name: Name of the operation
             total_items: Total number of items (None for indeterminate)
             auto_finish: Whether to auto-finish when total is reached
+            console: Optional console instance for progress display
         """
         self.operation_name = operation_name
         self.total_items = total_items
@@ -200,7 +203,7 @@ class ProgressTracker:
 
         self.completed_items = 0
         self.start_time: float | None = None
-        self.progress_manager = get_progress_manager()
+        self.progress_manager = get_progress_manager(console)
         self.operation_id = f"{operation_name}_{int(time.time())}"
 
         debug_logger.log(

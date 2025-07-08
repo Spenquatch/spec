@@ -9,7 +9,7 @@ from abc import ABC, abstractmethod
 from typing import Any
 
 from ..config.settings import SpecSettings
-from ..core.context_bridge import debug_logger, get_settings
+from ..core.context_bridge import debug_logger
 from ..utils.error_utils import create_error_context, handle_subprocess_error
 from .operations import GitOperations
 from .path_converter import GitPathConverter
@@ -91,13 +91,15 @@ class GitRepository(ABC):
 class SpecGitRepository(GitRepository):
     """Git repository implementation for spec operations with isolated repository."""
 
-    def __init__(self, settings: SpecSettings | None = None):
+    def __init__(self, settings: SpecSettings):
         """Initialize spec Git repository with configuration settings.
 
         Args:
-            settings: Optional spec settings, defaults to global settings if None
+            settings: SpecSettings instance for configuration
         """
-        self.settings = settings or get_settings()
+        if settings is None:
+            raise ValueError("SpecGitRepository requires a settings instance")
+        self.settings = settings
         self.operations = GitOperations(
             spec_dir=self.settings.spec_dir,
             specs_dir=self.settings.specs_dir,

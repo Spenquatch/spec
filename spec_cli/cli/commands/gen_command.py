@@ -64,14 +64,11 @@ class GenCommand(BaseCommand):
         super().__init__(effective_settings)
         self.context = context
 
-        # Set console from context or create fallback
+        # Set console from context
         if context and hasattr(context, "console") and context.console:
             self.console = context.console
         else:
-            # Fallback to facade bridge for backward compatibility
-            from ...core.context_bridge import get_console
-
-            self.console = get_console()
+            raise ValueError("GenCommand requires a SpecContext with console")
 
     def execute(self, **kwargs: Any) -> dict[str, Any]:
         """Execute the gen command with AI-first approach and template fallback.
@@ -129,10 +126,10 @@ class GenCommand(BaseCommand):
 
         # Interactive configuration
         if interactive:
-            template = select_template(template)
+            template = select_template(self.console, template)
 
             # Confirm configuration
-            if not confirm_generation(expanded_files, template, conflict_enum):
+            if not confirm_generation(expanded_files, template, conflict_enum, self.console):
                 show_message("Generation cancelled by user", "info")
                 return self.create_result(False, "Generation cancelled by user")
 
@@ -593,7 +590,7 @@ class GenCommand(BaseCommand):
                 }
 
                 # Substitute template variables
-                substitution = TemplateSubstitution()
+                substitution = TemplateSubstitution(self.settings)
                 history_content = substitution.substitute(
                     history_template, history_variables
                 )

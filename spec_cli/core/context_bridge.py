@@ -214,12 +214,12 @@ def validate_facade_bridge() -> bool:
         # Test debug logger facade
         debug_logger.log("INFO", "Facade bridge test")
 
-        # Test console facade
-        console = get_console()
+        # Test console facade through facade
+        console = _original_get_console()
         console.print("Facade bridge console test")
 
-        # Test settings facade
-        get_settings()
+        # Test settings facade through facade
+        _original_get_settings()
 
         # Test theme facade
         theme = get_current_theme()

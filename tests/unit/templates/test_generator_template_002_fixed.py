@@ -45,18 +45,10 @@ class TestSpecContentGeneratorBasic:
         generator = SpecContentGenerator(mock_settings)
         assert generator.settings == mock_settings
 
-    @patch("spec_cli.templates.generator.get_settings")
-    def test_init_with_default_settings(self, mock_get_settings):
-        """Test generator initialization with default settings."""
-        mock_settings = Mock(spec=SpecSettings)
-        mock_settings.ignore_file = Path(".specignore")
-        mock_settings.specs_dir = Path(".specs")
-        mock_settings.project_root = Path(".")
-        mock_settings.ignore_patterns = []
-        mock_get_settings.return_value = mock_settings
-
-        generator = SpecContentGenerator()
-        assert generator.settings == mock_settings
+    def test_init_requires_settings(self):
+        """Test generator initialization requires settings parameter."""
+        with pytest.raises(ValueError, match="SpecContentGenerator requires a settings instance"):
+            SpecContentGenerator(None)
 
 
 class TestPrepareSubstitutionsUnit:
@@ -258,13 +250,16 @@ class TestConvenienceFunctionUnit:
             version="1.0",
         )
 
+        # Create mock settings
+        mock_settings = Mock(spec=SpecSettings)
+
         file_path = Path("test_file.py")
         custom_vars = {"purpose": "testing"}
 
-        result = generate_spec_content(file_path, template, custom_vars)
+        result = generate_spec_content(file_path, template, mock_settings, custom_vars)
 
         # Verify generator was created and called correctly
-        mock_generator_class.assert_called_once()
+        mock_generator_class.assert_called_once_with(mock_settings)
         mock_generator.generate_spec_content.assert_called_once_with(
             file_path, template, custom_vars
         )

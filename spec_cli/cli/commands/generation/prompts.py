@@ -1,19 +1,28 @@
 """Interactive prompts for generation commands."""
 
 from pathlib import Path
+from typing import Any as ConsoleType
 
 import click
 
-from ....core.context_bridge import get_console
-from ....file_processing.conflict_resolver import ConflictResolutionStrategy
+from ....config.settings import SpecSettings
+from ....core.context_bridge import get_settings
+from ....file_processing.conflict_resolver import (
+    ConflictResolutionStrategy,
+    ConflictResolver,
+)
 
 
 class TemplateSelector:
     """Interactive template selection."""
 
-    def __init__(self) -> None:
-        """Initialize template selector with console interface."""
-        self.console = get_console()
+    def __init__(self, console: ConsoleType) -> None:
+        """Initialize template selector with console interface.
+
+        Args:
+            console: Console instance for interactive prompts
+        """
+        self.console = console
 
     def select_template(self, current_template: str | None = None) -> str:
         """Prompt user to select a template.
@@ -84,9 +93,13 @@ class TemplateSelector:
 class ConflictResolver:
     """Interactive conflict resolution."""
 
-    def __init__(self) -> None:
-        """Initialize conflict resolver with console interface."""
-        self.console = get_console()
+    def __init__(self, console: ConsoleType) -> None:
+        """Initialize conflict resolver with console interface.
+
+        Args:
+            console: Console instance for interactive prompts
+        """
+        self.console = console
 
     def resolve_conflicts(
         self,
@@ -175,11 +188,19 @@ class ConflictResolver:
 class GenerationPrompts:
     """Comprehensive generation prompts."""
 
-    def __init__(self) -> None:
-        """Initialize generation prompts with selector, resolver, and console."""
-        self.template_selector = TemplateSelector()
-        self.conflict_resolver = ConflictResolver()
-        self.console = get_console()
+    def __init__(self, console: ConsoleType, settings: SpecSettings) -> None:
+        """Initialize generation prompts with selector, resolver, and console.
+
+        Args:
+            console: Console instance for interactive prompts
+            settings: Settings instance (required)
+        """
+        if settings is None:
+            raise ValueError("GenerationPrompts requires a settings instance")
+        self.settings = settings
+        self.template_selector = TemplateSelector(console)
+        self.conflict_resolver = ConflictResolver(console)
+        self.console = console
 
     def confirm_generation(
         self,
@@ -286,9 +307,17 @@ class GenerationPrompts:
 
 
 # Convenience functions
-def select_template(current_template: str | None = None) -> str:
-    """Select template interactively."""
-    selector = TemplateSelector()
+def select_template(console: ConsoleType, current_template: str | None = None) -> str:
+    """Select template interactively.
+
+    Args:
+        console: Console instance for interactive prompts
+        current_template: Current template name
+
+    Returns:
+        Selected template name
+    """
+    selector = TemplateSelector(console)
     return selector.select_template(current_template)
 
 
@@ -296,9 +325,24 @@ def resolve_conflicts(
     source_file: Path,
     existing_files: list[Path],
     suggested_strategy: ConflictResolutionStrategy,
+    console: ConsoleType,
+    settings: SpecSettings,
 ) -> ConflictResolutionStrategy:
-    """Resolve conflicts interactively."""
-    resolver = ConflictResolver()
+    """Resolve conflicts interactively.
+
+    Args:
+        source_file: Source file path
+        existing_files: List of existing files
+        suggested_strategy: Suggested resolution strategy
+        console: Console instance for interactive prompts
+        settings: Settings instance (required)
+
+    Returns:
+        Selected conflict resolution strategy
+    """
+    if settings is None:
+        raise ValueError("resolve_conflicts requires a settings instance")
+    resolver = ConflictResolver(console)
     return resolver.resolve_conflicts(source_file, existing_files, suggested_strategy)
 
 
@@ -306,7 +350,18 @@ def confirm_generation(
     source_files: list[Path],
     template_name: str,
     conflict_strategy: ConflictResolutionStrategy,
+    console: ConsoleType,
 ) -> bool:
-    """Confirm generation operation."""
-    prompts = GenerationPrompts()
+    """Confirm generation operation.
+
+    Args:
+        source_files: List of source files
+        template_name: Template name
+        conflict_strategy: Conflict resolution strategy
+        console: Console instance for interactive prompts
+
+    Returns:
+        True if confirmed, False otherwise
+    """
+    prompts = GenerationPrompts(console)
     return prompts.confirm_generation(source_files, template_name, conflict_strategy)

@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any
 
 from ..ai.providers.base import GenerationRequest
+from ..config.settings import SpecSettings
 from ..core.context_bridge import debug_logger
 from ..exceptions import SpecTemplateError
 from ..utils.error_handler import default_error_handler
@@ -55,16 +56,20 @@ class TemplateResult:
 class AIEnhancedTemplate:
     """Enhanced template processor with AI prompt generation capabilities."""
 
-    def __init__(self, template_path: Path | None = None):
+    def __init__(self, settings: SpecSettings, template_path: Path | None = None):
         """Initialize AI-enhanced template processor.
 
         Args:
+            settings: Spec settings instance (required)
             template_path: Optional path to specific template file
         """
+        if settings is None:
+            raise ValueError("AIEnhancedTemplate requires a settings instance")
+        self.settings = settings
         self.template_path = normalize_path(template_path) if template_path else None
-        self.template_loader = TemplateLoader()
+        self.template_loader = TemplateLoader(settings)
         self.prompt_generator = PromptGenerator()
-        self.substitution = TemplateSubstitution()
+        self.substitution = TemplateSubstitution(settings)
 
         debug_logger.log(
             "INFO",

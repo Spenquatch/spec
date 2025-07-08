@@ -65,12 +65,10 @@ class TestSpecContentGenerator:
         generator = SpecContentGenerator(self.settings)
         assert generator.settings == self.settings
 
-    @patch("spec_cli.templates.generator.get_settings")
-    def test_init_default_settings(self, mock_get_settings):
-        """Test generator initialization with default settings."""
-        mock_get_settings.return_value = self.settings
-        generator = SpecContentGenerator()
-        assert generator.settings == self.settings
+    def test_init_requires_settings(self):
+        """Test generator initialization requires settings parameter."""
+        with pytest.raises(ValueError, match="SpecContentGenerator requires a settings instance"):
+            SpecContentGenerator(None)
 
     def test_get_template_defaults(self):
         """Test template default variable extraction."""

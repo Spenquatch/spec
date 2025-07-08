@@ -28,7 +28,7 @@ def init_command(context: SpecContext, debug: bool, verbose: bool, force: bool) 
     """
     try:
         # Create repository instance
-        repo = SpecGitRepository()
+        repo = SpecGitRepository(context.settings)
         current_dir = Path.cwd()
 
         # Check if already initialized

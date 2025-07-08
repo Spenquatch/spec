@@ -53,7 +53,7 @@ def commit_command(
     """
     try:
         # Get repository
-        repo = get_spec_repository()
+        repo = get_spec_repository(context.settings)
 
         # Get current status
         staged_files = repo.get_staged_files()

@@ -48,7 +48,6 @@ def new_process_files(context: SpecContext):
 
     max_file_size = settings.max_file_size
     debug_mode = settings.debug_enabled
-    output_format = settings.output_format
 
     for file_path in settings.input_files:
         if file_path.stat().st_size > max_file_size:

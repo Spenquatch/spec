@@ -52,7 +52,7 @@ def show_command(
         # Get repository if commit is specified
         repo = None
         if commit:
-            repo = get_spec_repository()
+            repo = get_spec_repository(context.settings)
 
         # Process each file
         for i, file_path in enumerate(file_paths):

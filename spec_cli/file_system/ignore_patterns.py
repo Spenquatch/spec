@@ -11,20 +11,22 @@ from re import Pattern
 from typing import Any
 
 from ..config.settings import SpecSettings
-from ..core.context_bridge import debug_logger, get_settings
+from ..core.context_bridge import debug_logger
 
 
 class IgnorePatternMatcher:
     """Handles .specignore pattern matching with gitignore-style syntax."""
 
-    def __init__(self, settings: SpecSettings | None = None):
+    def __init__(self, settings: SpecSettings):
         """Initialize the IgnorePatternMatcher.
 
         Args:
-            settings: Optional spec settings (defaults to global settings)
+            settings: SpecSettings instance (required)
 
         """
-        self.settings = settings or get_settings()
+        if settings is None:
+            raise ValueError("IgnorePatternMatcher requires a settings instance")
+        self.settings = settings
         self.patterns: list[Pattern[str]] = []
         self.raw_patterns: list[str] = []
         self.negation_patterns: list[Pattern[str]] = []

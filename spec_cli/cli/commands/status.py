@@ -39,7 +39,7 @@ def status_command(
     """
     try:
         # Get repository (validates initialization)
-        repo = get_spec_repository()
+        repo = get_spec_repository(context.settings)
 
         if health:
             # Show health check

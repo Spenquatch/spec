@@ -131,11 +131,19 @@ def validate_spec_repository(
     ctx: click.Context, param: click.Parameter, value: Any
 ) -> Any:
     """Validate that we're in a spec repository."""
+    import click
     from ..exceptions import SpecRepositoryError
     from ..git.repository import SpecGitRepository
 
     try:
-        repo = SpecGitRepository()
+        # Get settings from Click context
+        settings = ctx.obj.settings if ctx.obj else None
+        if not settings:
+            raise click.ClickException(
+                "Settings not available in Click context"
+            )
+        
+        repo = SpecGitRepository(settings)
         if not repo.is_initialized():
             raise click.ClickException(
                 "Not in a spec repository. Run 'spec init' to initialize."

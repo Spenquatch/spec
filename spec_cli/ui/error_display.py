@@ -13,7 +13,7 @@ from rich.panel import Panel
 from rich.syntax import Syntax
 from rich.traceback import Traceback
 
-from ..core.context_bridge import debug_logger, get_console
+from ..core.context_bridge import debug_logger
 from ..exceptions import SpecError
 from ..utils.error_handler import ErrorHandler
 from .styles import SpecStyles
@@ -40,7 +40,9 @@ class ErrorPanel:
         self.error = error
         self.title = title or self._get_error_title(error)
         self.show_traceback = show_traceback
-        self.console = console or get_console().console
+        if console is None:
+            raise ValueError("ErrorPanel requires a console instance")
+        self.console = console
         self.error_handler = ErrorHandler({"component": "ui_display"})
 
         debug_logger.log(
@@ -216,7 +218,9 @@ class DiagnosticDisplay:
         Args:
             console: Console to use for output
         """
-        self.console = console or get_console().console
+        if console is None:
+            raise ValueError("DiagnosticDisplay requires a console instance")
+        self.console = console
         self.error_handler = ErrorHandler({"component": "diagnostic_display"})
 
     def show_system_info(self, info: dict[str, Any]) -> None:
@@ -314,7 +318,9 @@ class StackTraceFormatter:
         Args:
             console: Console for output
         """
-        self.console = console or get_console().console
+        if console is None:
+            raise ValueError("StackTraceFormatter requires a console instance")
+        self.console = console
         self.error_handler = ErrorHandler({"component": "stack_trace_formatter"})
 
     def format_exception(
@@ -374,6 +380,8 @@ def show_error(
         show_traceback: Whether to show traceback
         console: Console to use
     """
+    if console is None:
+        raise ValueError("show_error requires a console instance")
     error_panel = ErrorPanel(error, title, show_traceback, console)
     error_panel.print()
 
@@ -390,7 +398,8 @@ def show_warning(
         details: Optional additional details
         console: Console to use
     """
-    console = console or get_console().console
+    if console is None:
+        raise ValueError("show_warning requires a console instance")
 
     content = SpecStyles.warning(message)
     if details:
@@ -418,7 +427,8 @@ def show_success(
         details: Optional additional details
         console: Console to use
     """
-    console = console or get_console().console
+    if console is None:
+        raise ValueError("show_success requires a console instance")
 
     content = SpecStyles.success(message)
     if details:
@@ -446,7 +456,8 @@ def show_info(
         details: Optional additional details
         console: Console to use
     """
-    console = console or get_console().console
+    if console is None:
+        raise ValueError("show_info requires a console instance")
 
     content = SpecStyles.info(message)
     if details:
@@ -472,7 +483,9 @@ def show_message(
         message_type: Type of message (success, warning, error, info)
         context: Optional context information
     """
-    _console = get_console()
+    # show_message now requires console to be passed via other functions
+    # This function should not be used directly without console injection
+    raise ValueError("show_message requires console dependency injection - use show_info, show_warning, show_success, or show_error with console parameter")
 
     if context:
         full_message = f"{context}: {message}"
@@ -489,15 +502,17 @@ def show_message(
         show_info(full_message)
 
 
-def format_data(data: Any, title: str | None = None, format_type: str = "auto") -> None:
+def format_data(data: Any, title: str | None = None, format_type: str = "auto", console: Console | None = None) -> None:
     """Format and display data using Rich formatting.
 
     Args:
         data: Data to display
         title: Optional title for the data
         format_type: Format type (auto, table, json)
+        console: Console instance for output
     """
-    console = get_console()
+    if console is None:
+        raise ValueError("format_data requires a console instance - use console parameter")
 
     if title:
         console.print(f"\n[bold cyan]{title}[/bold cyan]")

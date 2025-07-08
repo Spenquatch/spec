@@ -12,7 +12,7 @@ from typing import Any
 import yaml
 
 from ..config.settings import SpecSettings
-from ..core.context_bridge import debug_logger, get_settings
+from ..core.context_bridge import debug_logger
 from ..exceptions import SpecTemplateError
 from ..utils.path_utils import ensure_directory, normalize_path
 from .config import TemplateConfig, TemplateValidator
@@ -22,13 +22,15 @@ from .defaults import get_default_template_config
 class TemplateLoader:
     """Loads template configuration from files with fallback to defaults."""
 
-    def __init__(self, settings: SpecSettings | None = None):
+    def __init__(self, settings: SpecSettings):
         """Initialize the template loader.
 
         Args:
-            settings: Optional spec settings (uses global settings if None)
+            settings: Spec settings instance (required)
         """
-        self.settings = settings or get_settings()
+        if settings is None:
+            raise ValueError("TemplateLoader requires a settings instance")
+        self.settings = settings
         self.validator = TemplateValidator()
         debug_logger.log(
             "INFO",
@@ -288,11 +290,11 @@ class TemplateLoader:
 
 
 # Convenience function for backward compatibility
-def load_template(settings: SpecSettings | None = None) -> TemplateConfig:
+def load_template(settings: SpecSettings) -> TemplateConfig:
     """Load template configuration (convenience function).
 
     Args:
-        settings: Optional SpecSettings instance
+        settings: SpecSettings instance (required)
 
     Returns:
         TemplateConfig instance
