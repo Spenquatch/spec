@@ -1,34 +1,34 @@
 {
-  "batch_number": 9,
+  "batch_number": 10,
   "total_batches": "TBD",
   "instances": [
     {
-      "instance_id": "func_singleton_039",
-      "file_path": "spec_cli/core/repository_init.py",
+      "instance_id": "func_singleton_044",
+      "file_path": "spec_cli/core/context_bridge.py",
       "pattern_type": "get_settings",
       "priority": "high"
     },
     {
-      "instance_id": "func_singleton_040",
-      "file_path": "spec_cli/core/workflow_orchestrator.py",
+      "instance_id": "func_singleton_045",
+      "file_path": "spec_cli/core/context_bridge.py",
       "pattern_type": "get_settings",
       "priority": "high"
     },
     {
-      "instance_id": "func_singleton_041",
-      "file_path": "spec_cli/core/workflow_orchestrator.py",
+      "instance_id": "func_singleton_046",
+      "file_path": "spec_cli/core/context_bridge.py",
       "pattern_type": "get_settings",
       "priority": "high"
     },
     {
-      "instance_id": "func_singleton_042",
-      "file_path": "spec_cli/core/commit_manager.py",
+      "instance_id": "func_singleton_047",
+      "file_path": "spec_cli/core/repository_state.py",
       "pattern_type": "get_settings",
       "priority": "high"
     },
     {
-      "instance_id": "func_singleton_043",
-      "file_path": "spec_cli/core/commit_manager.py",
+      "instance_id": "func_singleton_048",
+      "file_path": "spec_cli/core/repository_state.py",
       "pattern_type": "get_settings",
       "priority": "high"
     }

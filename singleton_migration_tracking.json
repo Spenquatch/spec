@@ -3,7 +3,7 @@
     "metadata": {
       "version": "1.0",
       "total_instances": 1019,
-      "completed": 45,
+      "completed": 50,
       "in_progress": 0,
       "not_migrated": 1003,
       "blocked": 13,
@@ -23,9 +23,9 @@
       },
       "functional_singletons": {
         "total": 72,
-        "migrated": 38,
-        "not_migrated": 34,
-        "completion_rate": "52%"
+        "migrated": 43,
+        "not_migrated": 29,
+        "completion_rate": "59%"
       },
       "import_singletons": {
         "total": 940,
@@ -504,40 +504,40 @@
             "line_number": 41,
             "pattern_type": "get_settings",
             "priority": "high",
-            "current_state": "not_migrated",
-            "completion_date": null
+            "current_state": "migrated",
+            "completion_date": "2025-07-07T23:22:01.087514"
           },
           "func_singleton_040": {
             "file_path": "spec_cli/core/workflow_orchestrator.py",
             "line_number": 47,
             "pattern_type": "get_settings",
             "priority": "high",
-            "current_state": "not_migrated",
-            "completion_date": null
+            "current_state": "migrated",
+            "completion_date": "2025-07-07T23:22:01.087520"
           },
           "func_singleton_041": {
             "file_path": "spec_cli/core/workflow_orchestrator.py",
             "line_number": 56,
             "pattern_type": "get_settings",
             "priority": "high",
-            "current_state": "not_migrated",
-            "completion_date": null
+            "current_state": "migrated",
+            "completion_date": "2025-07-07T23:22:01.087522"
           },
           "func_singleton_042": {
             "file_path": "spec_cli/core/commit_manager.py",
             "line_number": 41,
             "pattern_type": "get_settings",
             "priority": "high",
-            "current_state": "not_migrated",
-            "completion_date": null
+            "current_state": "migrated",
+            "completion_date": "2025-07-07T23:22:01.087523"
           },
           "func_singleton_043": {
             "file_path": "spec_cli/core/commit_manager.py",
             "line_number": 47,
             "pattern_type": "get_settings",
             "priority": "high",
-            "current_state": "not_migrated",
-            "completion_date": null
+            "current_state": "migrated",
+            "completion_date": "2025-07-07T23:22:01.087525"
           },
           "func_singleton_044": {
             "file_path": "spec_cli/core/context_bridge.py",
