@@ -2,16 +2,16 @@
 
 import click
 
+from ...core.context import SpecContext
 from ...logging.debug import debug_logger
-from ...ui.console import get_console
 from ...ui.error_display import show_message
-from ..options import optional_files_argument, spec_command
+from ..decorators import context_injection
 from ..utils import get_spec_repository
 from .history import format_commit_log
 
 
-@spec_command()
-@optional_files_argument
+@click.command()
+@click.argument("files", nargs=-1)
 @click.option(
     "--limit", "-n", type=int, default=10, help="Limit number of commits to show"
 )
@@ -21,9 +21,9 @@ from .history import format_commit_log
 @click.option("--author", help="Filter commits by author")
 @click.option("--grep", help="Filter commits by message content")
 @click.option("--stat", is_flag=True, help="Show file change statistics")
+@context_injection
 def log_command(
-    debug: bool,
-    verbose: bool,
+    context: SpecContext,
     files: tuple[str, ...],
     limit: int,
     oneline: bool,
@@ -46,8 +46,6 @@ def log_command(
         spec log --author "John Doe"     # By specific author
         spec log src/main.py            # History for specific file
     """
-    _console = get_console()
-
     try:
         # Get repository
         repo = get_spec_repository()
@@ -83,9 +81,9 @@ def log_command(
 
         # Display header
         if target_files:
-            context = f"for {', '.join(target_files)}"
+            context_desc = f"for {', '.join(target_files)}"
         else:
-            context = "for repository"
+            context_desc = "for repository"
 
         filter_desc = []
         if since:
@@ -98,9 +96,9 @@ def log_command(
             filter_desc.append(f"containing '{grep}'")
 
         if filter_desc:
-            context += f" ({', '.join(filter_desc)})"
+            context_desc += f" ({', '.join(filter_desc)})"
 
-        show_message(f"Showing {len(commits)} commits {context}:", "info")
+        show_message(f"Showing {len(commits)} commits {context_desc}:", "info")
 
         # Format and display commits
         format_commit_log(commits, compact=oneline)

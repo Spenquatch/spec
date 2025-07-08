@@ -5,6 +5,7 @@ import sys
 import types
 import warnings
 from pathlib import Path
+from typing import Any
 
 import click
 
@@ -90,9 +91,9 @@ def app(ctx: click.Context, version: bool) -> None:
         from .commands.help import _display_main_help
 
         # Get SpecContext from Click context storage
-        spec_context = ctx.meta.get("spec_context")
-        if isinstance(spec_context, SpecContext):
-            _display_main_help(spec_context)
+        stored_context: Any = ctx.meta.get("spec_context")
+        if isinstance(stored_context, SpecContext):
+            _display_main_help(stored_context)
         else:
             # Fallback to simple message if context not available
             click.echo("Spec CLI - Use 'spec help' for command information")
@@ -162,9 +163,9 @@ def create_cli_app(root_path: Path | None = None) -> click.Group:
             from .commands.help import _display_main_help
 
             # Get SpecContext from Click context storage
-            spec_context = ctx.meta.get("spec_context")
-            if isinstance(spec_context, SpecContext):
-                _display_main_help(spec_context)
+            stored_context: Any = ctx.meta.get("spec_context")
+            if isinstance(stored_context, SpecContext):
+                _display_main_help(stored_context)
             else:
                 # Fallback to simple message if context not available
                 click.echo("Spec CLI - Use 'spec help' for command information")

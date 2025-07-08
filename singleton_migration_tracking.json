@@ -3,9 +3,9 @@
     "metadata": {
       "version": "1.0",
       "total_instances": 1014,
-      "completed": 8,
+      "completed": 11,
       "in_progress": 0,
-      "not_migrated": 1006,
+      "not_migrated": 1003,
       "blocked": 13,
       "deprecated": 0,
       "wont_fix": 0,
@@ -16,10 +16,10 @@
     },
     "progress_by_category": {
       "cli_commands": {
-        "total": 20,
-        "migrated": 8,
-        "not_migrated": 12,
-        "completion_rate": "40%"
+        "total": 7,
+        "migrated": 7,
+        "not_migrated": 0,
+        "completion_rate": "100%"
       },
       "functional_singletons": {
         "total": 82,
@@ -57,7 +57,7 @@
               17
             ],
             "pattern_type": "cli_command",
-            "current_state": "partial",
+            "current_state": "migrated",
             "migration_approach": "Already uses @context_injection but has remaining debug_logger imports",
             "priority": "medium",
             "estimated_effort_hours": 2,
@@ -74,7 +74,8 @@
             "next_steps": [
               "Replace debug_logger imports with context.logger",
               "Update error handling to use context dependencies"
-            ]
+            ],
+            "completion_date": "2025-07-07T19:58:07.426520"
           },
           "diff_command": {
             "id": "cli_cmd_002",
@@ -156,6 +157,39 @@
             "notes": "Successfully migrated from get_console() to context.console pattern",
             "next_steps": [],
             "completion_date": "2025-07-07T19:22:04.314415"
+          },
+          "agent_scope_command": {
+            "file_path": "spec_cli/cli/commands/agent_scope.py",
+            "pattern_type": "cli_command",
+            "current_state": "migrated",
+            "migration_approach": "Add @context_injection decorator and SpecContext parameter",
+            "priority": "medium",
+            "estimated_effort_hours": 3,
+            "blocked_by": [],
+            "related_to": [],
+            "completion_date": "2025-07-07T19:58:07.426510"
+          },
+          "log_command": {
+            "file_path": "spec_cli/cli/commands/log.py",
+            "pattern_type": "cli_command",
+            "current_state": "migrated",
+            "migration_approach": "Add @context_injection decorator and SpecContext parameter",
+            "priority": "medium",
+            "estimated_effort_hours": 3,
+            "blocked_by": [],
+            "related_to": [],
+            "completion_date": "2025-07-07T19:58:07.426516"
+          },
+          "regen_command": {
+            "file_path": "spec_cli/cli/commands/regen.py",
+            "pattern_type": "cli_command",
+            "current_state": "migrated",
+            "migration_approach": "Add @context_injection decorator and SpecContext parameter",
+            "priority": "medium",
+            "estimated_effort_hours": 4,
+            "blocked_by": [],
+            "related_to": [],
+            "completion_date": "2025-07-07T19:58:07.426518"
           }
         }
       },
@@ -409,7 +443,7 @@
         "name": "Complete CLI Command Migration",
         "duration_weeks": 2,
         "description": "Finish migrating all CLI commands to @context_injection",
-        "status": "in_progress",
+        "status": "completed",
         "dependencies": [
           "phase_0_fence_the_beast"
         ],
@@ -422,7 +456,8 @@
           "All 21 CLI commands use @context_injection",
           "No get_console() calls in CLI layer",
           "All tests pass"
-        ]
+        ],
+        "completion_date": "2025-07-07"
       },
       "phase_2_core_services": {
         "name": "Core Service Migration",

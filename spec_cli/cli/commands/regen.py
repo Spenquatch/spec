@@ -4,23 +4,18 @@ from pathlib import Path
 
 import click
 
+from ...core.context import SpecContext
 from ...file_processing.conflict_resolver import ConflictResolutionStrategy
 from ...logging.debug import debug_logger
-from ...ui.console import get_console
 from ...ui.error_display import show_message
 from ...utils.path_utils import safe_relative_to
-from ..options import (
-    dry_run_option,
-    force_option,
-    optional_files_argument,
-    spec_command,
-)
+from ..decorators import context_injection
 from ..utils import get_user_confirmation, validate_file_paths
 from .generation import create_regeneration_workflow, validate_generation_input
 
 
-@spec_command()
-@optional_files_argument
+@click.command()
+@click.argument("files", nargs=-1)
 @click.option("--all", is_flag=True, help="Regenerate all existing spec files")
 @click.option(
     "--template",
@@ -35,11 +30,13 @@ from .generation import create_regeneration_workflow, validate_generation_input
 )
 @click.option("--commit", is_flag=True, help="Automatically commit regenerated files")
 @click.option("--message", "-m", help="Commit message (implies --commit)")
-@force_option
-@dry_run_option
+@click.option("--force", is_flag=True, help="Force operation without confirmation")
+@click.option(
+    "--dry-run", is_flag=True, help="Show what would be done without executing"
+)
+@context_injection
 def regen_command(
-    debug: bool,
-    verbose: bool,
+    context: SpecContext,
     files: tuple[str, ...],
     all: bool,
     template: str,
@@ -60,8 +57,6 @@ def regen_command(
         spec regen --template comprehensive  # Use different template
         spec regen --no-preserve-history     # Recreate history files
     """
-    console = get_console()
-
     try:
         # Determine source files
         if all:
@@ -104,24 +99,26 @@ def regen_command(
         if not validation_result["valid"]:
             show_message("Validation failed:", "error")
             for error in validation_result["errors"]:
-                console.print(f"  • [red]{error}[/red]")
+                context.console.print(f"  • [red]{error}[/red]")
             return
 
         # Show what will be regenerated
-        console.print("\n[bold cyan]Regeneration Preview:[/bold cyan]")
-        console.print(f"Template: [yellow]{template}[/yellow]")
-        console.print(f"Preserve history: [yellow]{preserve_history}[/yellow]")
-        console.print(f"Files to regenerate: [yellow]{len(files_with_specs)}[/yellow]")
+        context.console.print("\n[bold cyan]Regeneration Preview:[/bold cyan]")
+        context.console.print(f"Template: [yellow]{template}[/yellow]")
+        context.console.print(f"Preserve history: [yellow]{preserve_history}[/yellow]")
+        context.console.print(
+            f"Files to regenerate: [yellow]{len(files_with_specs)}[/yellow]"
+        )
 
         if len(files_with_specs) <= 10:
-            console.print("\nFiles:")
+            context.console.print("\nFiles:")
             for file_path in files_with_specs:
-                console.print(f"  • [path]{file_path}[/path]")
+                context.console.print(f"  • [path]{file_path}[/path]")
         else:
-            console.print("\nFiles:")
+            context.console.print("\nFiles:")
             for file_path in files_with_specs[:5]:
-                console.print(f"  • [path]{file_path}[/path]")
-            console.print(f"  ... and {len(files_with_specs) - 5} more")
+                context.console.print(f"  • [path]{file_path}[/path]")
+            context.console.print(f"  ... and {len(files_with_specs) - 5} more")
 
         # Confirmation
         if not force and not dry_run:
@@ -134,7 +131,9 @@ def regen_command(
 
         # Dry run mode
         if dry_run:
-            _show_regen_dry_run_preview(files_with_specs, template, preserve_history)
+            _show_regen_dry_run_preview(
+                context, files_with_specs, template, preserve_history
+            )
             return
 
         # Set up auto-commit
@@ -247,10 +246,12 @@ def _filter_files_with_specs(source_files: list[Path]) -> list[Path]:
 
 
 def _show_regen_dry_run_preview(
-    source_files: list[Path], template: str, preserve_history: bool
+    context: SpecContext,
+    source_files: list[Path],
+    template: str,
+    preserve_history: bool,
 ) -> None:
     """Show dry run preview of regeneration."""
-    console = get_console()
 
     def get_spec_files_for_source(source_file: Path) -> dict[str, Path]:
         try:
@@ -265,22 +266,26 @@ def _show_regen_dry_run_preview(
         spec_dir = Path(".specs") / relative_path
         return {"index": spec_dir / "index.md", "history": spec_dir / "history.md"}
 
-    console.print("\n[bold cyan]Regeneration Dry Run Preview:[/bold cyan]")
-    console.print(f"Template: [yellow]{template}[/yellow]")
-    console.print(f"Preserve history: [yellow]{preserve_history}[/yellow]")
-    console.print(f"Files to regenerate: [yellow]{len(source_files)}[/yellow]\n")
+    context.console.print("\n[bold cyan]Regeneration Dry Run Preview:[/bold cyan]")
+    context.console.print(f"Template: [yellow]{template}[/yellow]")
+    context.console.print(f"Preserve history: [yellow]{preserve_history}[/yellow]")
+    context.console.print(
+        f"Files to regenerate: [yellow]{len(source_files)}[/yellow]\n"
+    )
 
     for source_file in source_files:
         spec_files = get_spec_files_for_source(source_file)
 
-        console.print(f"[bold]{source_file}[/bold]")
+        context.console.print(f"[bold]{source_file}[/bold]")
         for file_type, spec_file in spec_files.items():
             if spec_file.exists():
                 if file_type == "history" and preserve_history:
                     action = "[green]preserve[/green]"
                 else:
                     action = "[yellow]regenerate[/yellow]"
-                console.print(f"  • {file_type}: [path]{spec_file}[/path] ({action})")
-        console.print()
+                context.console.print(
+                    f"  • {file_type}: [path]{spec_file}[/path] ({action})"
+                )
+        context.console.print()
 
     show_message("This is a dry run. No files would be modified.", "info")

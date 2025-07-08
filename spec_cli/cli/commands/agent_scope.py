@@ -5,14 +5,14 @@ from typing import Any
 
 import click
 
+from ...core.context import SpecContext
 from ...logging.debug import debug_logger
 from ...utils.path_utils import resolve_project_root, safe_relative_to
 from ...utils.platform_utils import get_environment_info
-from ..options import spec_command
-from ..utils import echo_status
+from ..decorators import context_injection
 
 
-@spec_command()
+@click.command()
 @click.option(
     "--query", "-q", required=True, help="Search query to find relevant code context"
 )
@@ -26,9 +26,9 @@ from ..utils import echo_status
 @click.option(
     "--exclude", "-e", multiple=True, help="Patterns to exclude from file discovery"
 )
+@context_injection
 def agent_scope_command(
-    debug: bool,
-    verbose: bool,
+    context: SpecContext,
     query: str,
     context_window: int,
     exclude: tuple[str, ...],
@@ -39,8 +39,7 @@ def agent_scope_command(
     preparing context for AI agent consumption.
 
     Args:
-        debug: Enable debug logging
-        verbose: Enable verbose output
+        context: SpecContext providing console and settings access
         query: Search query for relevant context
         context_window: Token limit for context window
         exclude: File patterns to exclude from discovery
@@ -52,17 +51,18 @@ def agent_scope_command(
         )
 
         if result["success"]:
-            echo_status(f"✓ {result['message']}")
-            if verbose and result.get("data"):
+            context.console.print_status(f"✓ {result['message']}", "success")
+            if context.settings.verbose and result.get("data"):
                 metadata = result["data"].get("project_metadata", {})
-                echo_status(
-                    f"  Project root: {metadata.get('project_root', 'Unknown')}"
+                context.console.print_status(
+                    f"  Project root: {metadata.get('project_root', 'Unknown')}", "info"
                 )
-                echo_status(
-                    f"  Files discovered: {metadata.get('total_files_discovered', 0)}"
+                context.console.print_status(
+                    f"  Files discovered: {metadata.get('total_files_discovered', 0)}",
+                    "info",
                 )
         else:
-            echo_status(f"✗ {result['error']}")
+            context.console.print_status(f"✗ {result['error']}", "error")
             raise click.ClickException(result["error"])
 
     except Exception as e:

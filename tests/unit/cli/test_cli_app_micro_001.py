@@ -41,10 +41,23 @@ class TestCLIAppMicro001:
     def test_app_without_subcommand_shows_main_help(self):
         """Test app command without subcommand displays main help."""
         with patch("spec_cli.cli.commands.help._display_main_help") as mock_help:
-            result = self.cli_runner.run_command(app, [])
+            # Mock the CLI context setup to avoid failures in isolated filesystem
+            with patch("spec_cli.cli.app.initialize_cli_context") as mock_init:
+                with patch("spec_cli.cli.app.setup_click_context_storage") as mock_setup:
+                    # Mock successful context creation
+                    from spec_cli.core.context import SpecContext
+                    mock_context = Mock(spec=SpecContext)
+                    mock_init.return_value = mock_context
 
-            result.assert_success()
-            mock_help.assert_called_once()
+                    # Setup the mock to store context in Click context meta
+                    def setup_storage(ctx, spec_context):
+                        ctx.meta["spec_context"] = spec_context
+                    mock_setup.side_effect = setup_storage
+
+                    result = self.cli_runner.run_command(app, [])
+
+                    result.assert_success()
+                    mock_help.assert_called_once_with(mock_context)
 
     def test_app_with_valid_subcommand_routes_correctly(self):
         """Test app command with valid subcommand routes correctly."""
