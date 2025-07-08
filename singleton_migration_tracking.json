@@ -3,7 +3,7 @@
     "metadata": {
       "version": "1.0",
       "total_instances": 1019,
-      "completed": 35,
+      "completed": 40,
       "in_progress": 0,
       "not_migrated": 1003,
       "blocked": 13,
@@ -23,9 +23,9 @@
       },
       "functional_singletons": {
         "total": 72,
-        "migrated": 28,
-        "not_migrated": 44,
-        "completion_rate": "38%"
+        "migrated": 33,
+        "not_migrated": 39,
+        "completion_rate": "45%"
       },
       "import_singletons": {
         "total": 940,
@@ -424,40 +424,40 @@
             "line_number": 54,
             "pattern_type": "get_console",
             "priority": "high",
-            "current_state": "not_migrated",
-            "completion_date": null
+            "current_state": "migrated",
+            "completion_date": "2025-07-07T23:01:18.145213"
           },
           "func_singleton_030": {
             "file_path": "spec_cli/cli/commands/add_command.py",
             "line_number": 23,
             "pattern_type": "get_console",
             "priority": "high",
-            "current_state": "not_migrated",
-            "completion_date": null
+            "current_state": "migrated",
+            "completion_date": "2025-07-07T23:01:18.145220"
           },
           "func_singleton_031": {
             "file_path": "spec_cli/cli/commands/generation/prompts.py",
             "line_number": 16,
             "pattern_type": "get_console",
             "priority": "high",
-            "current_state": "not_migrated",
-            "completion_date": null
+            "current_state": "migrated",
+            "completion_date": "2025-07-07T23:01:18.145222"
           },
           "func_singleton_032": {
             "file_path": "spec_cli/cli/commands/generation/prompts.py",
             "line_number": 89,
             "pattern_type": "get_console",
             "priority": "high",
-            "current_state": "not_migrated",
-            "completion_date": null
+            "current_state": "migrated",
+            "completion_date": "2025-07-07T23:01:18.145223"
           },
           "func_singleton_033": {
             "file_path": "spec_cli/cli/commands/generation/prompts.py",
             "line_number": 182,
             "pattern_type": "get_console",
             "priority": "high",
-            "current_state": "not_migrated",
-            "completion_date": null
+            "current_state": "migrated",
+            "completion_date": "2025-07-07T23:01:18.145225"
           },
           "func_singleton_034": {
             "file_path": "spec_cli/cli/commands/generation/workflows.py",

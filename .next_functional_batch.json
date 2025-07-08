@@ -1,35 +1,35 @@
 {
-  "batch_number": 7,
+  "batch_number": 8,
   "total_batches": "TBD",
   "instances": [
     {
-      "instance_id": "func_singleton_029",
-      "file_path": "spec_cli/cli/commands/diff.py",
+      "instance_id": "func_singleton_034",
+      "file_path": "spec_cli/cli/commands/generation/workflows.py",
       "pattern_type": "get_console",
       "priority": "high"
     },
     {
-      "instance_id": "func_singleton_030",
-      "file_path": "spec_cli/cli/commands/add_command.py",
+      "instance_id": "func_singleton_035",
+      "file_path": "spec_cli/cli/decorators.py",
       "pattern_type": "get_console",
       "priority": "high"
     },
     {
-      "instance_id": "func_singleton_031",
-      "file_path": "spec_cli/cli/commands/generation/prompts.py",
-      "pattern_type": "get_console",
+      "instance_id": "func_singleton_036",
+      "file_path": "spec_cli/ui/console.py",
+      "pattern_type": "get_settings",
       "priority": "high"
     },
     {
-      "instance_id": "func_singleton_032",
-      "file_path": "spec_cli/cli/commands/generation/prompts.py",
-      "pattern_type": "get_console",
+      "instance_id": "func_singleton_037",
+      "file_path": "spec_cli/ui/theme.py",
+      "pattern_type": "get_settings",
       "priority": "high"
     },
     {
-      "instance_id": "func_singleton_033",
-      "file_path": "spec_cli/cli/commands/generation/prompts.py",
-      "pattern_type": "get_console",
+      "instance_id": "func_singleton_038",
+      "file_path": "spec_cli/core/repository_init.py",
+      "pattern_type": "get_settings",
       "priority": "high"
     }
   ]

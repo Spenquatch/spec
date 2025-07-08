@@ -4,8 +4,8 @@ from pathlib import Path
 
 import click
 
+from ....core.context_bridge import get_console
 from ....file_processing.conflict_resolver import ConflictResolutionStrategy
-from ....ui.console import get_console
 
 
 class TemplateSelector:

@@ -1,42 +1,34 @@
 {
-  "batch_number": 6,
+  "batch_number": 7,
   "transformation_approach": "facade_bridge",
   "changes_log": [
     {
-      "file": "spec_cli/cli/commands/history/content_viewer.py",
-      "instance_id": "func_singleton_024",
+      "file": "spec_cli/cli/commands/add_command.py",
+      "instance_id": "func_singleton_030",
+      "changes": [
+        "Replaced console import with facade bridge: from ...ui.console import get_console -> from ...core.context_bridge import get_console"
+      ],
+      "transformation_type": "facade_bridge"
+    },
+    {
+      "file": "spec_cli/cli/commands/generation/prompts.py",
+      "instance_id": "func_singleton_031",
       "changes": [
         "Replaced console import with facade bridge: from ....ui.console import get_console -> from ....core.context_bridge import get_console"
       ],
       "transformation_type": "facade_bridge"
     },
     {
-      "file": "spec_cli/cli/commands/history/formatters.py",
-      "instance_id": "func_singleton_025",
+      "file": "spec_cli/cli/commands/generation/prompts.py",
+      "instance_id": "func_singleton_032",
       "changes": [
         "Replaced console import with facade bridge: from ....ui.console import get_console -> from ....core.context_bridge import get_console"
       ],
       "transformation_type": "facade_bridge"
     },
     {
-      "file": "spec_cli/cli/commands/history/formatters.py",
-      "instance_id": "func_singleton_026",
-      "changes": [
-        "Replaced console import with facade bridge: from ....ui.console import get_console -> from ....core.context_bridge import get_console"
-      ],
-      "transformation_type": "facade_bridge"
-    },
-    {
-      "file": "spec_cli/cli/commands/history/formatters.py",
-      "instance_id": "func_singleton_027",
-      "changes": [
-        "Replaced console import with facade bridge: from ....ui.console import get_console -> from ....core.context_bridge import get_console"
-      ],
-      "transformation_type": "facade_bridge"
-    },
-    {
-      "file": "spec_cli/cli/commands/history/diff_viewer.py",
-      "instance_id": "func_singleton_028",
+      "file": "spec_cli/cli/commands/generation/prompts.py",
+      "instance_id": "func_singleton_033",
       "changes": [
         "Replaced console import with facade bridge: from ....ui.console import get_console -> from ....core.context_bridge import get_console"
       ],
