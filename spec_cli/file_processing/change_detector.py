@@ -10,7 +10,8 @@ import time
 from pathlib import Path
 from typing import Any
 
-from ..config.settings import SpecSettings, get_settings
+from ..config.settings import SpecSettings
+from ..core.context_bridge import get_settings
 from ..exceptions import SpecFileError
 from ..file_system.file_metadata import FileMetadataExtractor
 from ..file_system.ignore_patterns import IgnorePatternMatcher

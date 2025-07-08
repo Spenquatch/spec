@@ -1,34 +1,34 @@
 {
-  "batch_number": 11,
+  "batch_number": 13,
   "total_batches": "TBD",
   "instances": [
     {
-      "instance_id": "func_singleton_049",
-      "file_path": "spec_cli/core/context.py",
+      "instance_id": "func_singleton_059",
+      "file_path": "spec_cli/cli/base_command.py",
       "pattern_type": "get_settings",
       "priority": "high"
     },
     {
-      "instance_id": "func_singleton_050",
-      "file_path": "spec_cli/file_processing/batch_processor.py",
+      "instance_id": "func_singleton_060",
+      "file_path": "spec_cli/cli/commands/generation/workflows.py",
       "pattern_type": "get_settings",
       "priority": "high"
     },
     {
-      "instance_id": "func_singleton_051",
-      "file_path": "spec_cli/file_processing/conflict_resolver.py",
+      "instance_id": "func_singleton_061",
+      "file_path": "spec_cli/cli/commands/generation/workflows.py",
       "pattern_type": "get_settings",
       "priority": "high"
     },
     {
-      "instance_id": "func_singleton_052",
-      "file_path": "spec_cli/file_processing/file_cache.py",
+      "instance_id": "func_singleton_062",
+      "file_path": "spec_cli/cli/decorators.py",
       "pattern_type": "get_settings",
       "priority": "high"
     },
     {
-      "instance_id": "func_singleton_053",
-      "file_path": "spec_cli/file_processing/change_detector.py",
+      "instance_id": "func_singleton_063",
+      "file_path": "spec_cli/templates/substitution.py",
       "pattern_type": "get_settings",
       "priority": "high"
     }
