@@ -11,7 +11,7 @@ from typing import Any, Protocol
 
 # Import original singletons (these imports may fail if singletons don't exist yet)
 try:
-    from ..core.context_bridge import debug_logger as _original_debug_logger
+    from ..logging.debug import debug_logger as _original_debug_logger
 except ImportError:
     _original_debug_logger = None  # type: ignore[assignment]
 

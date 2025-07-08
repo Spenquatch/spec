@@ -1,68 +1,66 @@
 {
-  "total_functional_singletons": 84,
+  "total_functional_singletons": 35,
   "pattern_summary": {
     "get_console": {
-      "total_instances": 41,
-      "files_affected": 22,
+      "total_instances": 19,
+      "files_affected": 9,
       "file_details": {
         "spec_cli/ui/console.py": {
-          "count": 2,
+          "count": 1,
           "lines": [
-            247,
-            249
+            248
           ]
         },
         "spec_cli/ui/progress_manager.py": {
           "count": 2,
           "lines": [
-            173,
-            185
+            172,
+            184
           ]
         },
         "spec_cli/ui/error_display.py": {
           "count": 8,
           "lines": [
-            44,
-            220,
-            318,
-            394,
-            422,
-            450,
-            476,
-            501
+            43,
+            219,
+            317,
+            393,
+            421,
+            449,
+            475,
+            500
           ]
         },
         "spec_cli/ui/tables.py": {
           "count": 1,
           "lines": [
-            42
+            41
           ]
         },
         "spec_cli/ui/progress_bar.py": {
           "count": 1,
           "lines": [
-            50
+            49
           ]
         },
         "spec_cli/ui/spinner.py": {
           "count": 2,
           "lines": [
-            41,
-            153
+            40,
+            152
           ]
         },
         "spec_cli/core/context_bridge.py": {
-          "count": 3,
+          "count": 2,
           "lines": [
-            112,
-            118,
-            160
+            123,
+            218
           ]
         },
         "spec_cli/core/context.py": {
           "count": 1,
           "lines": [
-            467
+            466
           ]
         },
         "spec_cli/utils/test_migration_utils.py": {
@@ -70,102 +68,17 @@
           "lines": [
             179
           ]
-        },
-        "spec_cli/cli/app.py": {
-          "count": 1,
-          "lines": [
-            196
-          ]
-        },
-        "spec_cli/cli/decorators.py": {
-          "count": 1,
-          "lines": [
-            69
-          ]
-        },
-        "spec_cli/cli/commands/show.py": {
-          "count": 3,
-          "lines": [
-            42,
-            90,
-            138
-          ]
-        },
-        "spec_cli/cli/commands/gen_command.py": {
-          "count": 1,
-          "lines": [
-            56
-          ]
-        },
-        "spec_cli/cli/commands/log.py": {
-          "count": 1,
-          "lines": [
-            49
-          ]
-        },
-        "spec_cli/cli/commands/regen.py": {
-          "count": 2,
-          "lines": [
-            63,
-            253
-          ]
-        },
-        "spec_cli/cli/commands/diff.py": {
-          "count": 1,
-          "lines": [
-            54
-          ]
-        },
-        "spec_cli/cli/commands/add_command.py": {
-          "count": 1,
-          "lines": [
-            23
-          ]
-        },
-        "spec_cli/cli/commands/history/content_viewer.py": {
-          "count": 1,
-          "lines": [
-            21
-          ]
-        },
-        "spec_cli/cli/commands/history/formatters.py": {
-          "count": 3,
-          "lines": [
-            17,
-            128,
-            197
-          ]
-        },
-        "spec_cli/cli/commands/history/diff_viewer.py": {
-          "count": 1,
-          "lines": [
-            17
-          ]
-        },
-        "spec_cli/cli/commands/generation/prompts.py": {
-          "count": 3,
-          "lines": [
-            16,
-            89,
-            182
-          ]
-        },
-        "spec_cli/cli/commands/generation/workflows.py": {
-          "count": 1,
-          "lines": [
-            70
-          ]
         }
       }
     },
     "get_settings": {
-      "total_instances": 32,
-      "files_affected": 24,
+      "total_instances": 16,
+      "files_affected": 11,
       "file_details": {
         "spec_cli/ui/console.py": {
           "count": 1,
           "lines": [
-            221
+            220
           ]
         },
         "spec_cli/ui/theme.py": {
@@ -196,11 +109,10 @@
           ]
         },
         "spec_cli/core/context_bridge.py": {
-          "count": 3,
+          "count": 2,
           "lines": [
-            133,
-            139,
-            164
+            160,
+            222
           ]
         },
         "spec_cli/core/repository_state.py": {
@@ -213,7 +125,7 @@
         "spec_cli/core/context.py": {
           "count": 1,
           "lines": [
-            466
+            465
           ]
         },
         "spec_cli/file_processing/batch_processor.py": {
@@ -233,256 +145,11 @@
           "lines": [
             94
           ]
-        },
-        "spec_cli/file_processing/change_detector.py": {
-          "count": 1,
-          "lines": [
-            31
-          ]
-        },
-        "spec_cli/file_system/ignore_patterns.py": {
-          "count": 1,
-          "lines": [
-            27
-          ]
-        },
-        "spec_cli/file_system/path_resolver.py": {
-          "count": 1,
-          "lines": [
-            31
-          ]
-        },
-        "spec_cli/file_system/directory_manager.py": {
-          "count": 1,
-          "lines": [
-            32
-          ]
-        },
-        "spec_cli/utils/test_migration_utils.py": {
-          "count": 2,
-          "lines": [
-            178,
-            342
-          ]
-        },
-        "spec_cli/cli/base_command.py": {
-          "count": 1,
-          "lines": [
-            25
-          ]
-        },
-        "spec_cli/cli/decorators.py": {
-          "count": 1,
-          "lines": [
-            68
-          ]
-        },
-        "spec_cli/cli/commands/generation/workflows.py": {
-          "count": 2,
-          "lines": [
-            306,
-            422
-          ]
-        },
-        "spec_cli/templates/substitution.py": {
-          "count": 1,
-          "lines": [
-            34
-          ]
-        },
-        "spec_cli/templates/generator.py": {
-          "count": 1,
-          "lines": [
-            35
-          ]
-        },
-        "spec_cli/templates/loader.py": {
-          "count": 1,
-          "lines": [
-            31
-          ]
-        },
-        "spec_cli/templates/ai_integration.py": {
-          "count": 1,
-          "lines": [
-            245
-          ]
-        },
-        "spec_cli/git/repository.py": {
-          "count": 1,
-          "lines": [
-            100
-          ]
-        }
-      }
-    },
-    "get_progress_manager": {
-      "total_instances": 8,
-      "files_affected": 6,
-      "file_details": {
-        "spec_cli/ui/progress_manager.py": {
-          "count": 2,
-          "lines": [
-            456,
-            458
-          ]
-        },
-        "spec_cli/ui/progress_utils.py": {
-          "count": 2,
-          "lines": [
-            157,
-            203
-          ]
-        },
-        "spec_cli/utils/compatibility_utils.py": {
-          "count": 1,
-          "lines": [
-            38
-          ]
-        },
-        "spec_cli/utils/pattern_analysis.py": {
-          "count": 1,
-          "lines": [
-            426
-          ]
-        },
-        "spec_cli/cli/utils.py": {
-          "count": 1,
-          "lines": [
-            180
-          ]
-        },
-        "spec_cli/cli/commands/generation/workflows.py": {
-          "count": 1,
-          "lines": [
-            69
-          ]
-        }
-      }
-    },
-    "get_logger": {
-      "total_instances": 3,
-      "files_affected": 3,
-      "file_details": {
-        "spec_cli/ai/context/extractor.py": {
-          "count": 1,
-          "lines": [
-            18
-          ]
-        },
-        "spec_cli/ai/context/ranking.py": {
-          "count": 1,
-          "lines": [
-            15
-          ]
-        },
-        "spec_cli/ai/context/processing.py": {
-          "count": 1,
-          "lines": [
-            19
-          ]
         }
       }
     }
   },
-  "high_priority_files": [
-    [
-      "spec_cli/ui/error_display.py",
-      8
-    ],
-    [
-      "spec_cli/core/context_bridge.py",
-      6
-    ],
-    [
-      "spec_cli/ui/progress_manager.py",
-      4
-    ],
-    [
-      "spec_cli/cli/commands/generation/workflows.py",
-      4
-    ],
-    [
-      "spec_cli/ui/console.py",
-      3
-    ],
-    [
-      "spec_cli/utils/test_migration_utils.py",
-      3
-    ],
-    [
-      "spec_cli/cli/commands/show.py",
-      3
-    ],
-    [
-      "spec_cli/cli/commands/history/formatters.py",
-      3
-    ],
-    [
-      "spec_cli/cli/commands/generation/prompts.py",
-      3
-    ]
-  ],
-  "migration_candidates": [
-    {
-      "pattern_type": "get_console",
-      "file_path": "spec_cli/ui/console.py",
-      "line_number": 247,
-      "priority": "high"
-    },
-    {
-      "pattern_type": "get_console",
-      "file_path": "spec_cli/ui/console.py",
-      "line_number": 249,
-      "priority": "high"
-    },
-    {
-      "pattern_type": "get_console",
-      "file_path": "spec_cli/ui/progress_manager.py",
-      "line_number": 173,
-      "priority": "high"
-    },
-    {
-      "pattern_type": "get_console",
-      "file_path": "spec_cli/ui/progress_manager.py",
-      "line_number": 185,
-      "priority": "high"
-    },
-    {
-      "pattern_type": "get_console",
-      "file_path": "spec_cli/ui/error_display.py",
-      "line_number": 44,
-      "priority": "high"
-    },
-    {
-      "pattern_type": "get_console",
-      "file_path": "spec_cli/ui/error_display.py",
-      "line_number": 220,
-      "priority": "high"
-    },
-    {
-      "pattern_type": "get_console",
-      "file_path": "spec_cli/ui/error_display.py",
-      "line_number": 318,
-      "priority": "high"
-    },
-    {
-      "pattern_type": "get_console",
-      "file_path": "spec_cli/ui/error_display.py",
-      "line_number": 394,
-      "priority": "high"
-    },
-    {
-      "pattern_type": "get_console",
-      "file_path": "spec_cli/ui/error_display.py",
-      "line_number": 422,
-      "priority": "high"
-    },
-    {
-      "pattern_type": "get_console",
-      "file_path": "spec_cli/ui/error_display.py",
-      "line_number": 450,
-      "priority": "high"
-    }
-  ]
+  "migration_status": "incomplete",
+  "patterns_remaining": 35,
+  "last_updated": "2025-07-08"
 }

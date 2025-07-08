@@ -6,7 +6,8 @@ from typing import Any
 
 from ...ai.providers.manager import create_workflow_result
 from ...config.settings import SpecSettings
-from ...core.context_bridge import debug_logger, get_console
+from ...core.context import SpecContext
+from ...core.context_bridge import debug_logger
 from ...exceptions import SpecError
 from ...file_processing.conflict_resolver import ConflictResolutionStrategy
 from ...file_system.directory_manager import DirectoryManager
@@ -49,10 +50,28 @@ def generate_with_ai(
 class GenCommand(BaseCommand):
     """Command to generate documentation for source files."""
 
-    def __init__(self, settings: SpecSettings | None = None):
-        """Initialize gen command."""
-        super().__init__(settings)
-        self.console = get_console()
+    def __init__(
+        self, context: SpecContext | None = None, settings: SpecSettings | None = None
+    ):
+        """Initialize gen command.
+
+        Args:
+            context: SpecContext with dependencies (console, settings, progress)
+            settings: Legacy settings for backward compatibility
+        """
+        # Use context settings if available, otherwise fall back to provided settings
+        effective_settings = context.settings if context else settings
+        super().__init__(effective_settings)
+        self.context = context
+
+        # Set console from context or create fallback
+        if context and hasattr(context, "console") and context.console:
+            self.console = context.console
+        else:
+            # Fallback to facade bridge for backward compatibility
+            from ...core.context_bridge import get_console
+
+            self.console = get_console()
 
     def execute(self, **kwargs: Any) -> dict[str, Any]:
         """Execute the gen command with AI-first approach and template fallback.

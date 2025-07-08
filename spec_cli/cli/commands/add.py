@@ -1,10 +1,7 @@
 """Spec add command implementation."""
 
-from typing import cast
-
 import click
 
-from ...config.settings import SpecSettings
 from ...core.context import SpecContext
 from ..decorators import context_injection
 from ..options import dry_run_option, files_argument, force_option, spec_command
@@ -52,7 +49,7 @@ def add_command(
             raise click.BadParameter("No valid file paths provided")
 
         # Create and execute command
-        command = AddCommand(settings=cast(SpecSettings, context.settings))
+        command = AddCommand(context=context)
         result = command.safe_execute(files=file_paths, force=force, dry_run=dry_run)
 
         # Exit with appropriate code

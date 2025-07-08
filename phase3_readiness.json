@@ -4,7 +4,7 @@
   "cli_commands_migrated": "7/7 (100%)",
   "next_phase": "Phase 3: Functional Singleton Migration",
   "ready_for_phase_3": true,
-  "functional_singletons_remaining": 82,
+  "functional_singletons_remaining": 35,
   "batch_state": "cleared",
   "prerequisites_met": {
     "phase_1_complete": true,

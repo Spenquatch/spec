@@ -1,10 +1,7 @@
 """Spec gen command implementation."""
 
-from typing import cast
-
 import click
 
-from ...config.settings import SpecSettings
 from ...core.context import SpecContext
 from ..decorators import context_injection
 from ..options import dry_run_option, files_argument, force_option, spec_command
@@ -80,7 +77,7 @@ def gen_command(
             raise click.BadParameter("No valid source files provided")
 
         # Create and execute command
-        command = GenCommand(settings=cast(SpecSettings, context.settings))
+        command = GenCommand(context=context)
         result = command.safe_execute(
             files=source_files,
             template=template,

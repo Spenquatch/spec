@@ -4,7 +4,8 @@ from pathlib import Path
 from typing import Any
 
 from ...config.settings import SpecSettings
-from ...core.context_bridge import debug_logger, get_console
+from ...core.context import SpecContext
+from ...core.context_bridge import debug_logger
 from ...exceptions import SpecError
 from ...git.repository import SpecGitRepository
 from ...ui.error_display import show_message
@@ -16,10 +17,28 @@ from .generation import create_add_workflow
 class AddCommand(BaseCommand):
     """Command to add spec files to Git tracking."""
 
-    def __init__(self, settings: SpecSettings | None = None):
-        """Initialize add command."""
-        super().__init__(settings)
-        self.console = get_console()
+    def __init__(
+        self, context: SpecContext | None = None, settings: SpecSettings | None = None
+    ):
+        """Initialize add command.
+
+        Args:
+            context: SpecContext with dependencies (console, settings, progress)
+            settings: Legacy settings for backward compatibility
+        """
+        # Use context settings if available, otherwise fall back to provided settings
+        effective_settings = context.settings if context else settings
+        super().__init__(effective_settings)
+        self.context = context
+
+        # Set console from context or create fallback
+        if context and hasattr(context, "console") and context.console:
+            self.console = context.console
+        else:
+            # Fallback to facade bridge for backward compatibility
+            from ...core.context_bridge import get_console
+
+            self.console = get_console()
 
     def execute(self, **kwargs: Any) -> dict[str, Any]:
         """Execute the add command.

@@ -1,0 +1,205 @@
+{
+  "batch_number": 1,
+  "batch_type": "functional_singletons",
+  "total_patterns": 35,
+  "instances": [
+    {
+      "file_path": "spec_cli/ui/console.py",
+      "line_number": 248,
+      "pattern_type": "get_console"
+    },
+    {
+      "file_path": "spec_cli/ui/progress_manager.py",
+      "line_number": 172,
+      "pattern_type": "get_console"
+    },
+    {
+      "file_path": "spec_cli/ui/progress_manager.py",
+      "line_number": 184,
+      "pattern_type": "get_console"
+    },
+    {
+      "file_path": "spec_cli/ui/error_display.py",
+      "line_number": 43,
+      "pattern_type": "get_console"
+    },
+    {
+      "file_path": "spec_cli/ui/error_display.py",
+      "line_number": 219,
+      "pattern_type": "get_console"
+    },
+    {
+      "file_path": "spec_cli/ui/error_display.py",
+      "line_number": 317,
+      "pattern_type": "get_console"
+    },
+    {
+      "file_path": "spec_cli/ui/error_display.py",
+      "line_number": 393,
+      "pattern_type": "get_console"
+    },
+    {
+      "file_path": "spec_cli/ui/error_display.py",
+      "line_number": 421,
+      "pattern_type": "get_console"
+    },
+    {
+      "file_path": "spec_cli/ui/error_display.py",
+      "line_number": 449,
+      "pattern_type": "get_console"
+    },
+    {
+      "file_path": "spec_cli/ui/error_display.py",
+      "line_number": 475,
+      "pattern_type": "get_console"
+    },
+    {
+      "file_path": "spec_cli/ui/error_display.py",
+      "line_number": 500,
+      "pattern_type": "get_console"
+    },
+    {
+      "file_path": "spec_cli/ui/tables.py",
+      "line_number": 41,
+      "pattern_type": "get_console"
+    },
+    {
+      "file_path": "spec_cli/ui/progress_bar.py",
+      "line_number": 49,
+      "pattern_type": "get_console"
+    },
+    {
+      "file_path": "spec_cli/ui/spinner.py",
+      "line_number": 40,
+      "pattern_type": "get_console"
+    },
+    {
+      "file_path": "spec_cli/ui/spinner.py",
+      "line_number": 152,
+      "pattern_type": "get_console"
+    },
+    {
+      "file_path": "spec_cli/core/context_bridge.py",
+      "line_number": 123,
+      "pattern_type": "get_console"
+    },
+    {
+      "file_path": "spec_cli/core/context_bridge.py",
+      "line_number": 218,
+      "pattern_type": "get_console"
+    },
+    {
+      "file_path": "spec_cli/core/context.py",
+      "line_number": 466,
+      "pattern_type": "get_console"
+    },
+    {
+      "file_path": "spec_cli/utils/test_migration_utils.py",
+      "line_number": 179,
+      "pattern_type": "get_console"
+    },
+    {
+      "file_path": "spec_cli/ui/console.py",
+      "line_number": 220,
+      "pattern_type": "get_settings"
+    },
+    {
+      "file_path": "spec_cli/ui/theme.py",
+      "line_number": 206,
+      "pattern_type": "get_settings"
+    },
+    {
+      "file_path": "spec_cli/core/repository_init.py",
+      "line_number": 34,
+      "pattern_type": "get_settings"
+    },
+    {
+      "file_path": "spec_cli/core/repository_init.py",
+      "line_number": 41,
+      "pattern_type": "get_settings"
+    },
+    {
+      "file_path": "spec_cli/core/workflow_orchestrator.py",
+      "line_number": 47,
+      "pattern_type": "get_settings"
+    },
+    {
+      "file_path": "spec_cli/core/workflow_orchestrator.py",
+      "line_number": 56,
+      "pattern_type": "get_settings"
+    },
+    {
+      "file_path": "spec_cli/core/commit_manager.py",
+      "line_number": 41,
+      "pattern_type": "get_settings"
+    },
+    {
+      "file_path": "spec_cli/core/commit_manager.py",
+      "line_number": 47,
+      "pattern_type": "get_settings"
+    },
+    {
+      "file_path": "spec_cli/core/context_bridge.py",
+      "line_number": 160,
+      "pattern_type": "get_settings"
+    },
+    {
+      "file_path": "spec_cli/core/context_bridge.py",
+      "line_number": 222,
+      "pattern_type": "get_settings"
+    },
+    {
+      "file_path": "spec_cli/core/repository_state.py",
+      "line_number": 52,
+      "pattern_type": "get_settings"
+    },
+    {
+      "file_path": "spec_cli/core/repository_state.py",
+      "line_number": 57,
+      "pattern_type": "get_settings"
+    },
+    {
+      "file_path": "spec_cli/core/context.py",
+      "line_number": 465,
+      "pattern_type": "get_settings"
+    },
+    {
+      "file_path": "spec_cli/file_processing/batch_processor.py",
+      "line_number": 117,
+      "pattern_type": "get_settings"
+    },
+    {
+      "file_path": "spec_cli/file_processing/conflict_resolver.py",
+      "line_number": 143,
+      "pattern_type": "get_settings"
+    },
+    {
+      "file_path": "spec_cli/file_processing/file_cache.py",
+      "line_number": 94,
+      "pattern_type": "get_settings"
+    }
+  ],
+  "target_files": [
+    "spec_cli/core/commit_manager.py",
+    "spec_cli/ui/spinner.py",
+    "spec_cli/ui/console.py",
+    "spec_cli/ui/error_display.py",
+    "spec_cli/ui/theme.py",
+    "spec_cli/ui/progress_bar.py",
+    "spec_cli/ui/progress_manager.py",
+    "spec_cli/core/context_bridge.py",
+    "spec_cli/core/repository_init.py",
+    "spec_cli/core/workflow_orchestrator.py",
+    "spec_cli/utils/test_migration_utils.py",
+    "spec_cli/core/context.py",
+    "spec_cli/ui/tables.py",
+    "spec_cli/core/repository_state.py",
+    "spec_cli/file_processing/batch_processor.py",
+    "spec_cli/file_processing/conflict_resolver.py",
+    "spec_cli/file_processing/file_cache.py"
+  ],
+  "created_date": "2025-07-08",
+  "phase": "phase_3",
+  "status": "ready",
+  "migration_strategy": "facade_bridge_pattern"
+}
