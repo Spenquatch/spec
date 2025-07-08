@@ -127,6 +127,17 @@ def get_console() -> Any:
         ) -> None:
             print(f"[{status.upper()}] {message}")
 
+        def get_time(self) -> float:
+            """Mock get_time method for Rich compatibility."""
+            import time
+
+            return time.time()
+
+        def log(self, *args, **kwargs: Any) -> None:
+            """Mock log method for Rich compatibility."""
+            # Rich uses this for internal logging, just ignore
+            pass
+
         @property
         def console(self) -> Any:
             """Mock console property to match SpecConsole interface."""

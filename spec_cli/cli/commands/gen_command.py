@@ -6,6 +6,7 @@ from typing import Any
 
 from ...ai.providers.manager import create_workflow_result
 from ...config.settings import SpecSettings
+from ...core.context_bridge import get_console
 from ...exceptions import SpecError
 from ...file_processing.conflict_resolver import ConflictResolutionStrategy
 from ...file_system.directory_manager import DirectoryManager
@@ -15,7 +16,6 @@ from ...templates.ai_enhanced import AIEnhancedTemplate
 from ...templates.generator import SpecContentGenerator
 from ...templates.loader import load_template
 from ...templates.substitution import TemplateSubstitution
-from ...ui.console import get_console
 from ...ui.error_display import show_message
 from ...utils.path_utils import normalize_path
 from ..base_command import BaseCommand

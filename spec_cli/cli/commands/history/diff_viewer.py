@@ -5,8 +5,8 @@ from typing import Any
 from rich.columns import Columns
 from rich.panel import Panel
 
+from ....core.context_bridge import get_console
 from ....logging.debug import debug_logger
-from ....ui.console import get_console
 
 
 class DiffViewer:

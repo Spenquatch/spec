@@ -3,7 +3,7 @@
 from datetime import datetime
 from typing import Any
 
-from ....ui.console import get_console
+from ....core.context_bridge import get_console
 
 # DataFormatter not used in this module
 from ....ui.tables import SpecTable

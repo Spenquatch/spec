@@ -459,8 +459,7 @@ class SpecContext:
                 )
 
             # Create CLI settings with real configuration using actual implementations
-            from ..config.settings import get_settings
-            from ..ui.console import get_console
+            from ..core.context_bridge import get_console, get_settings
             from ..ui.progress_manager import ProgressManager
 
             cli_settings = get_settings()

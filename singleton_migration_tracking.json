@@ -2,8 +2,8 @@
   "migration_tracking": {
     "metadata": {
       "version": "1.0",
-      "total_instances": 1014,
-      "completed": 16,
+      "total_instances": 1019,
+      "completed": 35,
       "in_progress": 0,
       "not_migrated": 1003,
       "blocked": 13,
@@ -23,9 +23,9 @@
       },
       "functional_singletons": {
         "total": 72,
-        "migrated": 8,
-        "not_migrated": 64,
-        "completion_rate": "11%"
+        "migrated": 28,
+        "not_migrated": 44,
+        "completion_rate": "38%"
       },
       "import_singletons": {
         "total": 940,
@@ -194,69 +194,582 @@
         }
       },
       "functional_singletons": {
-        "description": "Functions that return singleton instances (get_console, get_settings, etc.)",
-        "priority": "medium",
-        "migration_approach": "Replace with context.property access after facade implementation",
-        "estimated_effort_days": 15,
-        "facade_strategy": "Implement context bridge pattern as recommended by expert",
         "instances": {
-          "get_console_usage": {
-            "id": "func_singleton_001",
-            "file_path": "spec_cli/cli/commands/diff.py",
-            "qualified_symbol": "spec_cli.ui.console.get_console",
-            "line_numbers": [
-              8,
-              51,
-              108
-            ],
-            "pattern_type": "functional_singleton_call",
-            "current_state": "not_migrated",
-            "migration_approach": "Replace with context.console after facade bridge",
+          "func_singleton_001": {
+            "file_path": "spec_cli/ui/console.py",
+            "line_number": 247,
+            "pattern_type": "get_console",
             "priority": "high",
-            "estimated_effort_hours": 1,
-            "blocked_by": [
-              "facade_bridge_implementation"
-            ],
-            "related_to": [
-              "cli_cmd_002"
-            ],
-            "metrics": {
-              "touch_count": 8,
-              "last_touched": "2025-06-15"
-            },
-            "notes": "High-touch file, should be migrated early",
-            "next_steps": [
-              "Wait for facade bridge implementation",
-              "Replace get_console() with context.console"
-            ]
+            "current_state": "migrated",
+            "completion_date": "2025-07-07T21:50:44"
           },
-          "get_settings_usage": {
-            "id": "func_singleton_002",
-            "file_path": "spec_cli/config/settings.py",
-            "qualified_symbol": "spec_cli.config.settings.get_settings",
-            "line_numbers": [
-              45,
-              67,
-              89
-            ],
-            "pattern_type": "functional_singleton_definition",
-            "current_state": "not_migrated",
-            "migration_approach": "Replace with SpecContext.settings property",
+          "func_singleton_002": {
+            "file_path": "spec_cli/ui/console.py",
+            "line_number": 249,
+            "pattern_type": "get_console",
             "priority": "high",
-            "estimated_effort_hours": 3,
-            "blocked_by": [],
-            "related_to": [
-              "settings_manager_singleton"
-            ],
-            "metrics": {
-              "touch_count": 25,
-              "last_touched": "2025-07-01"
-            },
-            "notes": "Core settings access - high impact migration",
-            "next_steps": [
-              "Implement facade bridge for get_settings()",
-              "Update all call sites to use context.settings"
-            ]
+            "current_state": "migrated",
+            "completion_date": "2025-07-07T21:50:44"
+          },
+          "func_singleton_003": {
+            "file_path": "spec_cli/ui/progress_manager.py",
+            "line_number": 173,
+            "pattern_type": "get_console",
+            "priority": "high",
+            "current_state": "migrated",
+            "completion_date": "2025-07-07T21:50:44"
+          },
+          "func_singleton_004": {
+            "file_path": "spec_cli/ui/progress_manager.py",
+            "line_number": 185,
+            "pattern_type": "get_console",
+            "priority": "high",
+            "current_state": "migrated",
+            "completion_date": "2025-07-07T21:50:44"
+          },
+          "func_singleton_005": {
+            "file_path": "spec_cli/ui/error_display.py",
+            "line_number": 44,
+            "pattern_type": "get_console",
+            "priority": "high",
+            "current_state": "migrated",
+            "completion_date": "2025-07-07T21:50:44"
+          },
+          "func_singleton_006": {
+            "file_path": "spec_cli/ui/error_display.py",
+            "line_number": 220,
+            "pattern_type": "get_console",
+            "priority": "high",
+            "current_state": "migrated",
+            "completion_date": "2025-07-07T21:50:44"
+          },
+          "func_singleton_007": {
+            "file_path": "spec_cli/ui/error_display.py",
+            "line_number": 318,
+            "pattern_type": "get_console",
+            "priority": "high",
+            "current_state": "migrated",
+            "completion_date": "2025-07-07T21:50:44"
+          },
+          "func_singleton_008": {
+            "file_path": "spec_cli/ui/error_display.py",
+            "line_number": 394,
+            "pattern_type": "get_console",
+            "priority": "high",
+            "current_state": "migrated",
+            "completion_date": "2025-07-07T21:50:44"
+          },
+          "func_singleton_009": {
+            "file_path": "spec_cli/ui/error_display.py",
+            "line_number": 422,
+            "pattern_type": "get_console",
+            "priority": "high",
+            "current_state": "migrated",
+            "completion_date": "2025-07-07T22:14:42.866835"
+          },
+          "func_singleton_010": {
+            "file_path": "spec_cli/ui/error_display.py",
+            "line_number": 450,
+            "pattern_type": "get_console",
+            "priority": "high",
+            "current_state": "migrated",
+            "completion_date": "2025-07-07T22:14:42.866841"
+          },
+          "func_singleton_011": {
+            "file_path": "spec_cli/ui/error_display.py",
+            "line_number": 476,
+            "pattern_type": "get_console",
+            "priority": "high",
+            "current_state": "migrated",
+            "completion_date": "2025-07-07T22:14:42.866843"
+          },
+          "func_singleton_012": {
+            "file_path": "spec_cli/ui/error_display.py",
+            "line_number": 501,
+            "pattern_type": "get_console",
+            "priority": "high",
+            "current_state": "migrated",
+            "completion_date": "2025-07-07T22:14:42.866844"
+          },
+          "func_singleton_013": {
+            "file_path": "spec_cli/ui/tables.py",
+            "line_number": 42,
+            "pattern_type": "get_console",
+            "priority": "high",
+            "current_state": "migrated",
+            "completion_date": "2025-07-07T22:14:42.866846"
+          },
+          "func_singleton_014": {
+            "file_path": "spec_cli/ui/progress_bar.py",
+            "line_number": 50,
+            "pattern_type": "get_console",
+            "priority": "high",
+            "current_state": "migrated",
+            "completion_date": "2025-07-07T22:28:06.947592"
+          },
+          "func_singleton_015": {
+            "file_path": "spec_cli/ui/spinner.py",
+            "line_number": 41,
+            "pattern_type": "get_console",
+            "priority": "high",
+            "current_state": "migrated",
+            "completion_date": "2025-07-07T22:28:06.947600"
+          },
+          "func_singleton_016": {
+            "file_path": "spec_cli/ui/spinner.py",
+            "line_number": 153,
+            "pattern_type": "get_console",
+            "priority": "high",
+            "current_state": "migrated",
+            "completion_date": "2025-07-07T22:28:06.947602"
+          },
+          "func_singleton_017": {
+            "file_path": "spec_cli/core/context_bridge.py",
+            "line_number": 112,
+            "pattern_type": "get_console",
+            "priority": "high",
+            "current_state": "migrated",
+            "completion_date": "2025-07-07T22:28:06.947603"
+          },
+          "func_singleton_018": {
+            "file_path": "spec_cli/core/context_bridge.py",
+            "line_number": 118,
+            "pattern_type": "get_console",
+            "priority": "high",
+            "current_state": "migrated",
+            "completion_date": "2025-07-07T22:28:06.947605"
+          },
+          "func_singleton_019": {
+            "file_path": "spec_cli/core/context_bridge.py",
+            "line_number": 160,
+            "pattern_type": "get_console",
+            "priority": "high",
+            "current_state": "migrated",
+            "completion_date": "2025-07-07T22:39:51.184729"
+          },
+          "func_singleton_020": {
+            "file_path": "spec_cli/core/context.py",
+            "line_number": 467,
+            "pattern_type": "get_console",
+            "priority": "high",
+            "current_state": "migrated",
+            "completion_date": "2025-07-07T22:39:51.184735"
+          },
+          "func_singleton_021": {
+            "file_path": "spec_cli/utils/test_migration_utils.py",
+            "line_number": 179,
+            "pattern_type": "get_console",
+            "priority": "high",
+            "current_state": "migrated",
+            "completion_date": "2025-07-07T22:39:51.184737"
+          },
+          "func_singleton_022": {
+            "file_path": "spec_cli/cli/app.py",
+            "line_number": 210,
+            "pattern_type": "get_console",
+            "priority": "high",
+            "current_state": "migrated",
+            "completion_date": "2025-07-07T22:39:51.184738"
+          },
+          "func_singleton_023": {
+            "file_path": "spec_cli/cli/commands/gen_command.py",
+            "line_number": 56,
+            "pattern_type": "get_console",
+            "priority": "high",
+            "current_state": "migrated",
+            "completion_date": "2025-07-07T22:39:51.184740"
+          },
+          "func_singleton_024": {
+            "file_path": "spec_cli/cli/commands/history/content_viewer.py",
+            "line_number": 21,
+            "pattern_type": "get_console",
+            "priority": "high",
+            "current_state": "migrated",
+            "completion_date": "2025-07-07T22:50:35.099517"
+          },
+          "func_singleton_025": {
+            "file_path": "spec_cli/cli/commands/history/formatters.py",
+            "line_number": 17,
+            "pattern_type": "get_console",
+            "priority": "high",
+            "current_state": "migrated",
+            "completion_date": "2025-07-07T22:50:35.099527"
+          },
+          "func_singleton_026": {
+            "file_path": "spec_cli/cli/commands/history/formatters.py",
+            "line_number": 128,
+            "pattern_type": "get_console",
+            "priority": "high",
+            "current_state": "migrated",
+            "completion_date": "2025-07-07T22:50:35.099528"
+          },
+          "func_singleton_027": {
+            "file_path": "spec_cli/cli/commands/history/formatters.py",
+            "line_number": 197,
+            "pattern_type": "get_console",
+            "priority": "high",
+            "current_state": "migrated",
+            "completion_date": "2025-07-07T22:50:35.099530"
+          },
+          "func_singleton_028": {
+            "file_path": "spec_cli/cli/commands/history/diff_viewer.py",
+            "line_number": 17,
+            "pattern_type": "get_console",
+            "priority": "high",
+            "current_state": "migrated",
+            "completion_date": "2025-07-07T22:50:35.099531"
+          },
+          "func_singleton_029": {
+            "file_path": "spec_cli/cli/commands/diff.py",
+            "line_number": 54,
+            "pattern_type": "get_console",
+            "priority": "high",
+            "current_state": "not_migrated",
+            "completion_date": null
+          },
+          "func_singleton_030": {
+            "file_path": "spec_cli/cli/commands/add_command.py",
+            "line_number": 23,
+            "pattern_type": "get_console",
+            "priority": "high",
+            "current_state": "not_migrated",
+            "completion_date": null
+          },
+          "func_singleton_031": {
+            "file_path": "spec_cli/cli/commands/generation/prompts.py",
+            "line_number": 16,
+            "pattern_type": "get_console",
+            "priority": "high",
+            "current_state": "not_migrated",
+            "completion_date": null
+          },
+          "func_singleton_032": {
+            "file_path": "spec_cli/cli/commands/generation/prompts.py",
+            "line_number": 89,
+            "pattern_type": "get_console",
+            "priority": "high",
+            "current_state": "not_migrated",
+            "completion_date": null
+          },
+          "func_singleton_033": {
+            "file_path": "spec_cli/cli/commands/generation/prompts.py",
+            "line_number": 182,
+            "pattern_type": "get_console",
+            "priority": "high",
+            "current_state": "not_migrated",
+            "completion_date": null
+          },
+          "func_singleton_034": {
+            "file_path": "spec_cli/cli/commands/generation/workflows.py",
+            "line_number": 70,
+            "pattern_type": "get_console",
+            "priority": "high",
+            "current_state": "not_migrated",
+            "completion_date": null
+          },
+          "func_singleton_035": {
+            "file_path": "spec_cli/cli/decorators.py",
+            "line_number": 69,
+            "pattern_type": "get_console",
+            "priority": "high",
+            "current_state": "not_migrated",
+            "completion_date": null
+          },
+          "func_singleton_036": {
+            "file_path": "spec_cli/ui/console.py",
+            "line_number": 221,
+            "pattern_type": "get_settings",
+            "priority": "high",
+            "current_state": "not_migrated",
+            "completion_date": null
+          },
+          "func_singleton_037": {
+            "file_path": "spec_cli/ui/theme.py",
+            "line_number": 206,
+            "pattern_type": "get_settings",
+            "priority": "high",
+            "current_state": "not_migrated",
+            "completion_date": null
+          },
+          "func_singleton_038": {
+            "file_path": "spec_cli/core/repository_init.py",
+            "line_number": 34,
+            "pattern_type": "get_settings",
+            "priority": "high",
+            "current_state": "not_migrated",
+            "completion_date": null
+          },
+          "func_singleton_039": {
+            "file_path": "spec_cli/core/repository_init.py",
+            "line_number": 41,
+            "pattern_type": "get_settings",
+            "priority": "high",
+            "current_state": "not_migrated",
+            "completion_date": null
+          },
+          "func_singleton_040": {
+            "file_path": "spec_cli/core/workflow_orchestrator.py",
+            "line_number": 47,
+            "pattern_type": "get_settings",
+            "priority": "high",
+            "current_state": "not_migrated",
+            "completion_date": null
+          },
+          "func_singleton_041": {
+            "file_path": "spec_cli/core/workflow_orchestrator.py",
+            "line_number": 56,
+            "pattern_type": "get_settings",
+            "priority": "high",
+            "current_state": "not_migrated",
+            "completion_date": null
+          },
+          "func_singleton_042": {
+            "file_path": "spec_cli/core/commit_manager.py",
+            "line_number": 41,
+            "pattern_type": "get_settings",
+            "priority": "high",
+            "current_state": "not_migrated",
+            "completion_date": null
+          },
+          "func_singleton_043": {
+            "file_path": "spec_cli/core/commit_manager.py",
+            "line_number": 47,
+            "pattern_type": "get_settings",
+            "priority": "high",
+            "current_state": "not_migrated",
+            "completion_date": null
+          },
+          "func_singleton_044": {
+            "file_path": "spec_cli/core/context_bridge.py",
+            "line_number": 133,
+            "pattern_type": "get_settings",
+            "priority": "high",
+            "current_state": "not_migrated",
+            "completion_date": null
+          },
+          "func_singleton_045": {
+            "file_path": "spec_cli/core/context_bridge.py",
+            "line_number": 139,
+            "pattern_type": "get_settings",
+            "priority": "high",
+            "current_state": "not_migrated",
+            "completion_date": null
+          },
+          "func_singleton_046": {
+            "file_path": "spec_cli/core/context_bridge.py",
+            "line_number": 164,
+            "pattern_type": "get_settings",
+            "priority": "high",
+            "current_state": "not_migrated",
+            "completion_date": null
+          },
+          "func_singleton_047": {
+            "file_path": "spec_cli/core/repository_state.py",
+            "line_number": 52,
+            "pattern_type": "get_settings",
+            "priority": "high",
+            "current_state": "not_migrated",
+            "completion_date": null
+          },
+          "func_singleton_048": {
+            "file_path": "spec_cli/core/repository_state.py",
+            "line_number": 57,
+            "pattern_type": "get_settings",
+            "priority": "high",
+            "current_state": "not_migrated",
+            "completion_date": null
+          },
+          "func_singleton_049": {
+            "file_path": "spec_cli/core/context.py",
+            "line_number": 466,
+            "pattern_type": "get_settings",
+            "priority": "high",
+            "current_state": "not_migrated",
+            "completion_date": null
+          },
+          "func_singleton_050": {
+            "file_path": "spec_cli/file_processing/batch_processor.py",
+            "line_number": 117,
+            "pattern_type": "get_settings",
+            "priority": "high",
+            "current_state": "not_migrated",
+            "completion_date": null
+          },
+          "func_singleton_051": {
+            "file_path": "spec_cli/file_processing/conflict_resolver.py",
+            "line_number": 143,
+            "pattern_type": "get_settings",
+            "priority": "high",
+            "current_state": "not_migrated",
+            "completion_date": null
+          },
+          "func_singleton_052": {
+            "file_path": "spec_cli/file_processing/file_cache.py",
+            "line_number": 94,
+            "pattern_type": "get_settings",
+            "priority": "high",
+            "current_state": "not_migrated",
+            "completion_date": null
+          },
+          "func_singleton_053": {
+            "file_path": "spec_cli/file_processing/change_detector.py",
+            "line_number": 31,
+            "pattern_type": "get_settings",
+            "priority": "high",
+            "current_state": "not_migrated",
+            "completion_date": null
+          },
+          "func_singleton_054": {
+            "file_path": "spec_cli/file_system/ignore_patterns.py",
+            "line_number": 27,
+            "pattern_type": "get_settings",
+            "priority": "high",
+            "current_state": "not_migrated",
+            "completion_date": null
+          },
+          "func_singleton_055": {
+            "file_path": "spec_cli/file_system/path_resolver.py",
+            "line_number": 31,
+            "pattern_type": "get_settings",
+            "priority": "high",
+            "current_state": "not_migrated",
+            "completion_date": null
+          },
+          "func_singleton_056": {
+            "file_path": "spec_cli/file_system/directory_manager.py",
+            "line_number": 32,
+            "pattern_type": "get_settings",
+            "priority": "high",
+            "current_state": "not_migrated",
+            "completion_date": null
+          },
+          "func_singleton_057": {
+            "file_path": "spec_cli/utils/test_migration_utils.py",
+            "line_number": 178,
+            "pattern_type": "get_settings",
+            "priority": "high",
+            "current_state": "not_migrated",
+            "completion_date": null
+          },
+          "func_singleton_058": {
+            "file_path": "spec_cli/utils/test_migration_utils.py",
+            "line_number": 342,
+            "pattern_type": "get_settings",
+            "priority": "high",
+            "current_state": "not_migrated",
+            "completion_date": null
+          },
+          "func_singleton_059": {
+            "file_path": "spec_cli/cli/base_command.py",
+            "line_number": 25,
+            "pattern_type": "get_settings",
+            "priority": "high",
+            "current_state": "not_migrated",
+            "completion_date": null
+          },
+          "func_singleton_060": {
+            "file_path": "spec_cli/cli/commands/generation/workflows.py",
+            "line_number": 306,
+            "pattern_type": "get_settings",
+            "priority": "high",
+            "current_state": "not_migrated",
+            "completion_date": null
+          },
+          "func_singleton_061": {
+            "file_path": "spec_cli/cli/commands/generation/workflows.py",
+            "line_number": 422,
+            "pattern_type": "get_settings",
+            "priority": "high",
+            "current_state": "not_migrated",
+            "completion_date": null
+          },
+          "func_singleton_062": {
+            "file_path": "spec_cli/cli/decorators.py",
+            "line_number": 68,
+            "pattern_type": "get_settings",
+            "priority": "high",
+            "current_state": "not_migrated",
+            "completion_date": null
+          },
+          "func_singleton_063": {
+            "file_path": "spec_cli/templates/substitution.py",
+            "line_number": 34,
+            "pattern_type": "get_settings",
+            "priority": "high",
+            "current_state": "not_migrated",
+            "completion_date": null
+          },
+          "func_singleton_064": {
+            "file_path": "spec_cli/templates/generator.py",
+            "line_number": 35,
+            "pattern_type": "get_settings",
+            "priority": "high",
+            "current_state": "not_migrated",
+            "completion_date": null
+          },
+          "func_singleton_065": {
+            "file_path": "spec_cli/templates/loader.py",
+            "line_number": 31,
+            "pattern_type": "get_settings",
+            "priority": "high",
+            "current_state": "not_migrated",
+            "completion_date": null
+          },
+          "func_singleton_066": {
+            "file_path": "spec_cli/templates/ai_integration.py",
+            "line_number": 245,
+            "pattern_type": "get_settings",
+            "priority": "high",
+            "current_state": "not_migrated",
+            "completion_date": null
+          },
+          "func_singleton_067": {
+            "file_path": "spec_cli/git/repository.py",
+            "line_number": 100,
+            "pattern_type": "get_settings",
+            "priority": "high",
+            "current_state": "not_migrated",
+            "completion_date": null
+          },
+          "func_singleton_068": {
+            "file_path": "spec_cli/ui/console.py",
+            "line_number": 34,
+            "pattern_type": "get_current_theme",
+            "priority": "medium",
+            "current_state": "not_migrated",
+            "completion_date": null
+          },
+          "func_singleton_069": {
+            "file_path": "spec_cli/ui/theme.py",
+            "line_number": 260,
+            "pattern_type": "get_current_theme",
+            "priority": "medium",
+            "current_state": "not_migrated",
+            "completion_date": null
+          },
+          "func_singleton_070": {
+            "file_path": "spec_cli/ui/theme.py",
+            "line_number": 262,
+            "pattern_type": "get_current_theme",
+            "priority": "medium",
+            "current_state": "not_migrated",
+            "completion_date": null
+          },
+          "func_singleton_071": {
+            "file_path": "spec_cli/ui/styles.py",
+            "line_number": 258,
+            "pattern_type": "get_current_theme",
+            "priority": "medium",
+            "current_state": "not_migrated",
+            "completion_date": null
+          },
+          "func_singleton_072": {
+            "file_path": "spec_cli/ui/styles.py",
+            "line_number": 288,
+            "pattern_type": "get_current_theme",
+            "priority": "medium",
+            "current_state": "not_migrated",
+            "completion_date": null
           }
         }
       },

@@ -1,17 +1,35 @@
 {
-  "batch_number": 3,
-  "total_batches": 14,
+  "batch_number": 7,
+  "total_batches": "TBD",
   "instances": [
     {
-      "instance_id": "get_console_usage",
+      "instance_id": "func_singleton_029",
       "file_path": "spec_cli/cli/commands/diff.py",
-      "pattern_type": "functional_singleton_call",
+      "pattern_type": "get_console",
       "priority": "high"
     },
     {
-      "instance_id": "get_settings_usage",
-      "file_path": "spec_cli/config/settings.py",
-      "pattern_type": "functional_singleton_definition",
+      "instance_id": "func_singleton_030",
+      "file_path": "spec_cli/cli/commands/add_command.py",
+      "pattern_type": "get_console",
+      "priority": "high"
+    },
+    {
+      "instance_id": "func_singleton_031",
+      "file_path": "spec_cli/cli/commands/generation/prompts.py",
+      "pattern_type": "get_console",
+      "priority": "high"
+    },
+    {
+      "instance_id": "func_singleton_032",
+      "file_path": "spec_cli/cli/commands/generation/prompts.py",
+      "pattern_type": "get_console",
+      "priority": "high"
+    },
+    {
+      "instance_id": "func_singleton_033",
+      "file_path": "spec_cli/cli/commands/generation/prompts.py",
+      "pattern_type": "get_console",
       "priority": "high"
     }
   ]

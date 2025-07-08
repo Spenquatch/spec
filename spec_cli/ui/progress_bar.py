@@ -19,8 +19,8 @@ from rich.progress import (
     TimeRemainingColumn,
 )
 
+from ..core.context_bridge import get_console
 from ..logging.debug import debug_logger
-from .console import get_console
 
 
 class SpecProgressBar:

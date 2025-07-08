@@ -10,7 +10,7 @@ from typing import Any
 import click
 
 from ..core.context import SpecContext
-from ..ui.console import get_console
+from ..core.context_bridge import get_console
 from ..utils.cli_setup_utils import (
     CLISetupError,
     initialize_cli_context,
