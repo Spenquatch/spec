@@ -16,7 +16,8 @@ from ..ai.config.loader import AIConfigLoader
 from ..ai.providers.base import GenerationRequest
 from ..ai.providers.manager import ProviderManager
 from ..config.loader import ConfigurationLoader
-from ..config.settings import SpecSettings, get_settings
+from ..config.settings import SpecSettings
+from ..core.context_bridge import get_settings
 from ..exceptions import SpecTemplateError
 from ..logging.debug import debug_logger
 

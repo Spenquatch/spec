@@ -11,7 +11,8 @@ from typing import Any
 
 import yaml
 
-from ..config.settings import SpecSettings, get_settings
+from ..config.settings import SpecSettings
+from ..core.context_bridge import get_settings
 from ..exceptions import SpecTemplateError
 from ..logging.debug import debug_logger
 from ..utils.path_utils import ensure_directory, normalize_path

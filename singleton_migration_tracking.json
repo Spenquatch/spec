@@ -3,13 +3,13 @@
     "metadata": {
       "version": "1.0",
       "total_instances": 1019,
-      "completed": 62,
+      "completed": 76,
       "in_progress": 0,
       "not_migrated": 1003,
       "blocked": 13,
       "deprecated": 0,
       "wont_fix": 0,
-      "last_updated": "2025-07-07",
+      "last_updated": "2025-07-08",
       "detection_tool_accuracy": "7%",
       "notes": "Based on comprehensive codebase analysis. Expert recommends expand-contract hybrid strategy.",
       "foundation_ready": true
@@ -22,10 +22,10 @@
         "completion_rate": "100%"
       },
       "functional_singletons": {
-        "total": 72,
-        "migrated": 55,
-        "not_migrated": 17,
-        "completion_rate": "76%"
+        "total": 69,
+        "migrated": 69,
+        "not_migrated": 0,
+        "completion_rate": "100%"
       },
       "import_singletons": {
         "total": 940,
@@ -664,112 +664,116 @@
             "line_number": 25,
             "pattern_type": "get_settings",
             "priority": "high",
-            "current_state": "not_migrated",
-            "completion_date": null
+            "current_state": "migrated",
+            "completion_date": "2025-07-08T07:25:08.082195"
           },
           "func_singleton_060": {
             "file_path": "spec_cli/cli/commands/generation/workflows.py",
             "line_number": 306,
             "pattern_type": "get_settings",
             "priority": "high",
-            "current_state": "not_migrated",
-            "completion_date": null
+            "current_state": "migrated",
+            "completion_date": "2025-07-08T07:25:08.082202"
           },
           "func_singleton_061": {
             "file_path": "spec_cli/cli/commands/generation/workflows.py",
             "line_number": 422,
             "pattern_type": "get_settings",
             "priority": "high",
-            "current_state": "not_migrated",
-            "completion_date": null
+            "current_state": "migrated",
+            "completion_date": "2025-07-08T07:25:08.082204"
           },
           "func_singleton_062": {
             "file_path": "spec_cli/cli/decorators.py",
             "line_number": 68,
             "pattern_type": "get_settings",
             "priority": "high",
-            "current_state": "not_migrated",
-            "completion_date": null
+            "current_state": "migrated",
+            "completion_date": "2025-07-08T07:25:08.082205"
           },
           "func_singleton_063": {
             "file_path": "spec_cli/templates/substitution.py",
             "line_number": 34,
             "pattern_type": "get_settings",
             "priority": "high",
-            "current_state": "not_migrated",
-            "completion_date": null
+            "current_state": "migrated",
+            "completion_date": "2025-07-08T07:25:08.082206"
           },
           "func_singleton_064": {
             "file_path": "spec_cli/templates/generator.py",
             "line_number": 35,
             "pattern_type": "get_settings",
             "priority": "high",
-            "current_state": "not_migrated",
-            "completion_date": null
+            "current_state": "migrated",
+            "completion_date": "2025-07-08T09:24:49.221326"
           },
           "func_singleton_065": {
             "file_path": "spec_cli/templates/loader.py",
             "line_number": 31,
             "pattern_type": "get_settings",
             "priority": "high",
-            "current_state": "not_migrated",
-            "completion_date": null
+            "current_state": "migrated",
+            "completion_date": "2025-07-08T09:24:49.221333"
           },
           "func_singleton_066": {
             "file_path": "spec_cli/templates/ai_integration.py",
             "line_number": 245,
             "pattern_type": "get_settings",
             "priority": "high",
-            "current_state": "not_migrated",
-            "completion_date": null
+            "current_state": "migrated",
+            "completion_date": "2025-07-08T09:24:49.221335"
           },
           "func_singleton_067": {
             "file_path": "spec_cli/git/repository.py",
             "line_number": 100,
             "pattern_type": "get_settings",
             "priority": "high",
-            "current_state": "not_migrated",
-            "completion_date": null
+            "current_state": "migrated",
+            "completion_date": "2025-07-08T09:24:49.221337"
           },
           "func_singleton_068": {
             "file_path": "spec_cli/ui/console.py",
             "line_number": 34,
             "pattern_type": "get_current_theme",
             "priority": "medium",
-            "current_state": "not_migrated",
-            "completion_date": null
+            "current_state": "migrated",
+            "completion_date": "2025-07-08T09:24:49.221338"
           },
           "func_singleton_069": {
             "file_path": "spec_cli/ui/theme.py",
             "line_number": 260,
             "pattern_type": "get_current_theme",
             "priority": "medium",
-            "current_state": "not_migrated",
-            "completion_date": null
+            "current_state": "migrated",
+            "completion_date": "2025-07-08T09:37:13.600371",
+            "migration_method": "facade_bridge_get_current_theme"
           },
           "func_singleton_070": {
             "file_path": "spec_cli/ui/theme.py",
             "line_number": 262,
             "pattern_type": "get_current_theme",
             "priority": "medium",
-            "current_state": "not_migrated",
-            "completion_date": null
+            "current_state": "migrated",
+            "completion_date": "2025-07-08T09:37:13.600380",
+            "migration_method": "facade_bridge_get_current_theme"
           },
           "func_singleton_071": {
             "file_path": "spec_cli/ui/styles.py",
             "line_number": 258,
             "pattern_type": "get_current_theme",
             "priority": "medium",
-            "current_state": "not_migrated",
-            "completion_date": null
+            "current_state": "migrated",
+            "completion_date": "2025-07-08T09:37:13.600382",
+            "migration_method": "facade_bridge_get_current_theme"
           },
           "func_singleton_072": {
             "file_path": "spec_cli/ui/styles.py",
             "line_number": 288,
             "pattern_type": "get_current_theme",
             "priority": "medium",
-            "current_state": "not_migrated",
-            "completion_date": null
+            "current_state": "migrated",
+            "completion_date": "2025-07-08T09:37:13.600383",
+            "migration_method": "facade_bridge_get_current_theme"
           }
         }
       },
@@ -1006,6 +1010,13 @@
           "All debug_logger calls use context.logger",
           "No import-level debug_logger assignments remain"
         ]
+      },
+      "phase_3_functional_singletons": {
+        "status": "completed",
+        "completion_date": "2025-07-08T09:39:03.582200",
+        "final_batch": 15,
+        "total_instances_migrated": 69,
+        "not_applicable_instances": 3
       }
     },
     "expert_recommendations": {

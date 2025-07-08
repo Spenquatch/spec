@@ -1,36 +1,30 @@
 {
-  "batch_number": 13,
+  "batch_number": 15,
   "total_batches": "TBD",
   "instances": [
     {
-      "instance_id": "func_singleton_059",
-      "file_path": "spec_cli/cli/base_command.py",
-      "pattern_type": "get_settings",
-      "priority": "high"
+      "instance_id": "func_singleton_069",
+      "file_path": "spec_cli/ui/theme.py",
+      "pattern_type": "get_current_theme",
+      "priority": "medium"
     },
     {
-      "instance_id": "func_singleton_060",
-      "file_path": "spec_cli/cli/commands/generation/workflows.py",
-      "pattern_type": "get_settings",
-      "priority": "high"
+      "instance_id": "func_singleton_070",
+      "file_path": "spec_cli/ui/theme.py",
+      "pattern_type": "get_current_theme",
+      "priority": "medium"
     },
     {
-      "instance_id": "func_singleton_061",
-      "file_path": "spec_cli/cli/commands/generation/workflows.py",
-      "pattern_type": "get_settings",
-      "priority": "high"
+      "instance_id": "func_singleton_071",
+      "file_path": "spec_cli/ui/styles.py",
+      "pattern_type": "get_current_theme",
+      "priority": "medium"
     },
     {
-      "instance_id": "func_singleton_062",
-      "file_path": "spec_cli/cli/decorators.py",
-      "pattern_type": "get_settings",
-      "priority": "high"
-    },
-    {
-      "instance_id": "func_singleton_063",
-      "file_path": "spec_cli/templates/substitution.py",
-      "pattern_type": "get_settings",
-      "priority": "high"
+      "instance_id": "func_singleton_072",
+      "file_path": "spec_cli/ui/styles.py",
+      "pattern_type": "get_current_theme",
+      "priority": "medium"
     }
   ]
 }

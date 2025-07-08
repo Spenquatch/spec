@@ -3,7 +3,8 @@
 from abc import ABC, abstractmethod
 from typing import Any
 
-from ..config.settings import SpecSettings, get_settings
+from ..config.settings import SpecSettings
+from ..core.context_bridge import get_settings
 from ..exceptions import SpecError
 from ..logging.debug import debug_logger
 from ..utils.error_handler import ErrorHandler

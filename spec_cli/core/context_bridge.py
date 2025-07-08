@@ -25,6 +25,11 @@ try:
 except ImportError:
     _original_get_settings = None  # type: ignore[assignment]
 
+try:
+    from ..ui.theme import get_current_theme as _original_get_current_theme
+except ImportError:
+    _original_get_current_theme = None  # type: ignore[assignment]
+
 # Thread-safe context management
 _context_lock = threading.Lock()
 _migration_context: Any | None = None
@@ -161,6 +166,29 @@ def get_settings() -> Any:
     return MockSettings()
 
 
+def get_current_theme() -> Any:
+    """Facade for theme access during migration."""
+    context = get_migration_context()
+    if context and hasattr(context, "theme"):
+        return context.theme
+    elif _original_get_current_theme is not None:
+        return _original_get_current_theme()
+
+    # Return mock theme for testing
+    class MockTheme:  # type: ignore[unreachable]
+        def get_style(self, style_name: str) -> str:
+            return ""
+
+        def get_emoji_replacements(self) -> dict[str, str]:
+            return {}
+
+        @property
+        def theme(self) -> Any:
+            return self
+
+    return MockTheme()
+
+
 # Export facade instances
 debug_logger = DebugLoggerFacade()
 
@@ -179,6 +207,10 @@ def validate_facade_bridge() -> bool:
         # Test settings facade
         get_settings()
 
+        # Test theme facade
+        theme = get_current_theme()
+        theme.get_style("test")
+
         return True
     except Exception as e:
         print(f"Facade bridge validation failed: {e}")
@@ -192,5 +224,6 @@ def get_facade_status() -> dict[str, Any]:
         "original_debug_logger": _original_debug_logger is not None,
         "original_get_console": _original_get_console is not None,
         "original_get_settings": _original_get_settings is not None,
+        "original_get_current_theme": _original_get_current_theme is not None,
         "facade_operational": validate_facade_bridge(),
     }
