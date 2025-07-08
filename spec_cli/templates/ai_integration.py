@@ -1034,7 +1034,7 @@ def ask_llm(
     try:
         # Create AI content manager with settings
         ai_content_manager = AIContentManager(settings)
-        
+
         if not ai_content_manager.enabled:
             return "[LLM query disabled - enable AI to get generated responses]"
 

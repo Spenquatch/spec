@@ -179,10 +179,10 @@ class DiffViewer:
 # Convenience functions
 def create_diff_view(console: ConsoleType) -> DiffViewer:
     """Create a new diff viewer instance.
-    
+
     Args:
         console: Console instance for output
-        
+
     Returns:
         DiffViewer instance
     """
@@ -198,7 +198,7 @@ def display_file_diff(
     syntax: str = "text",
 ) -> None:
     """Display a file diff with Rich formatting.
-    
+
     Args:
         filename: Name of the file
         console: Console instance for output
@@ -213,7 +213,7 @@ def display_file_diff(
 
 def display_unified_diff(diff_lines: list[str], console: ConsoleType) -> None:
     """Display unified diff format.
-    
+
     Args:
         diff_lines: Pre-formatted diff lines
         console: Console instance for output

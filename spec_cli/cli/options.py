@@ -132,6 +132,7 @@ def validate_spec_repository(
 ) -> Any:
     """Validate that we're in a spec repository."""
     import click
+
     from ..exceptions import SpecRepositoryError
     from ..git.repository import SpecGitRepository
 
@@ -142,7 +143,7 @@ def validate_spec_repository(
             raise click.ClickException(
                 "Settings not available in Click context"
             )
-        
+
         repo = SpecGitRepository(settings)
         if not repo.is_initialized():
             raise click.ClickException(

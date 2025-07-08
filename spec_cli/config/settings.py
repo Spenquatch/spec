@@ -168,9 +168,6 @@ class SettingsManager:
 
 
 # Convenience functions for getting settings and console
-def get_settings(root_path: Path | None = None) -> SpecSettings:
-    """Get global settings instance."""
-    return SettingsManager().get_settings(root_path)
 
 
 def get_console(root_path: Path | None = None) -> Console:

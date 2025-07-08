@@ -114,58 +114,6 @@ class DebugLoggerFacade:
             raise AttributeError(f"No logger available for attribute: {name}")
 
 
-def get_console() -> Any:
-    """Facade for console access during migration."""
-    context = get_migration_context()
-    if context and hasattr(context, "console"):
-        return context.console
-    elif _original_get_console is not None:
-        return _original_get_console()
-
-    # Return a mock console for testing
-    class MockConsole:  # type: ignore[unreachable]
-        def print(self, *args, **kwargs: Any) -> None:
-            print(*args)
-
-        def print_status(
-            self, message: str, status: str = "info", **kwargs: Any
-        ) -> None:
-            print(f"[{status.upper()}] {message}")
-
-        def get_time(self) -> float:
-            """Mock get_time method for Rich compatibility."""
-            import time
-
-            return time.time()
-
-        def log(self, *args, **kwargs: Any) -> None:
-            """Mock log method for Rich compatibility."""
-            # Rich uses this for internal logging, just ignore
-            pass
-
-        @property
-        def console(self) -> Any:
-            """Mock console property to match SpecConsole interface."""
-            return self
-
-    return MockConsole()
-
-
-def get_settings() -> Any:
-    """Facade for settings access during migration."""
-    context = get_migration_context()
-    if context and hasattr(context, "settings"):
-        return context.settings
-    elif _original_get_settings is not None:
-        return _original_get_settings()
-
-    # Return empty settings for testing
-    class MockSettings:  # type: ignore[unreachable]
-        pass
-
-    return MockSettings()
-
-
 def get_current_theme() -> Any:
     """Facade for theme access during migration."""
     context = get_migration_context()
@@ -213,13 +161,6 @@ def validate_facade_bridge() -> bool:
     try:
         # Test debug logger facade
         debug_logger.log("INFO", "Facade bridge test")
-
-        # Test console facade through facade
-        console = _original_get_console()
-        console.print("Facade bridge console test")
-
-        # Test settings facade through facade
-        _original_get_settings()
 
         # Test theme facade
         theme = get_current_theme()

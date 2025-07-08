@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 from unittest.mock import Mock, patch
 
+import pytest
 from rich.console import Console
 from rich.panel import Panel
 from rich.traceback import Traceback
@@ -38,12 +39,12 @@ class TestErrorPanel:
 
     def test_init_with_defaults(self) -> None:
         """Test ErrorPanel initialization with default parameters."""
-        panel = ErrorPanel(self.test_error)
+        panel = ErrorPanel(self.test_error, console=self.mock_console)
 
         assert panel.error == self.test_error
         assert panel.show_traceback is True
         assert panel.title == "[warning]ValueError[/warning]"
-        assert panel.console is not None
+        assert panel.console == self.mock_console
 
     def test_init_with_custom_parameters(self) -> None:
         """Test ErrorPanel initialization with custom parameters."""
@@ -61,14 +62,14 @@ class TestErrorPanel:
 
     def test_get_error_title_spec_error(self) -> None:
         """Test _get_error_title for SpecError types."""
-        panel = ErrorPanel(self.spec_error)
+        panel = ErrorPanel(self.spec_error, console=self.mock_console)
         title = panel._get_error_title(self.spec_error)
 
         assert title == "[error]SpecError[/error]"
 
     def test_get_error_title_value_error(self) -> None:
         """Test _get_error_title for ValueError types."""
-        panel = ErrorPanel(self.test_error)
+        panel = ErrorPanel(self.test_error, console=self.mock_console)
         title = panel._get_error_title(self.test_error)
 
         assert title == "[warning]ValueError[/warning]"
@@ -76,7 +77,7 @@ class TestErrorPanel:
     def test_get_error_title_type_error(self) -> None:
         """Test _get_error_title for TypeError types."""
         type_error = TypeError("Type error")
-        panel = ErrorPanel(type_error)
+        panel = ErrorPanel(type_error, console=self.mock_console)
         title = panel._get_error_title(type_error)
 
         assert title == "[warning]TypeError[/warning]"
@@ -84,7 +85,7 @@ class TestErrorPanel:
     def test_get_error_title_generic_error(self) -> None:
         """Test _get_error_title for generic exceptions."""
         runtime_error = RuntimeError("Runtime error")
-        panel = ErrorPanel(runtime_error)
+        panel = ErrorPanel(runtime_error, console=self.mock_console)
         title = panel._get_error_title(runtime_error)
 
         assert title == "[error]Error[/error]"
@@ -220,12 +221,10 @@ class TestDiagnosticDisplay:
         display = DiagnosticDisplay(console=self.mock_console)
         assert display.console == self.mock_console
 
-    def test_init_default_console(self) -> None:
-        """Test DiagnosticDisplay initialization with default console."""
-        with patch("spec_cli.ui.error_display.get_console") as mock_get_console:
-            mock_get_console.return_value.console = self.mock_console
-            display = DiagnosticDisplay()
-            assert display.console == self.mock_console
+    def test_init_requires_console(self) -> None:
+        """Test DiagnosticDisplay initialization requires console."""
+        with pytest.raises(ValueError, match="DiagnosticDisplay requires a console instance"):
+            DiagnosticDisplay()
 
     def test_show_system_info(self) -> None:
         """Test show_system_info displays system information correctly."""
@@ -364,9 +363,9 @@ class TestUtilityFunctions:
             mock_panel_instance = Mock()
             mock_error_panel.return_value = mock_panel_instance
 
-            show_error(test_error)
+            show_error(test_error, console=self.mock_console)
 
-            mock_error_panel.assert_called_once_with(test_error, None, True, None)
+            mock_error_panel.assert_called_once_with(test_error, None, True, self.mock_console)
             mock_panel_instance.print.assert_called_once()
 
     def test_show_error_with_parameters(self) -> None:
@@ -391,41 +390,32 @@ class TestUtilityFunctions:
         """Test show_warning with basic message."""
         message = "Warning message"
 
-        with patch("spec_cli.ui.error_display.get_console") as mock_get_console:
-            mock_get_console.return_value.console = self.mock_console
+        show_warning(message, console=self.mock_console)
 
-            show_warning(message)
-
-            self.mock_console.print.assert_called_once()
-            args = self.mock_console.print.call_args[0]
-            assert isinstance(args[0], Panel)
+        self.mock_console.print.assert_called_once()
+        args = self.mock_console.print.call_args[0]
+        assert isinstance(args[0], Panel)
 
     def test_show_warning_with_details(self) -> None:
         """Test show_warning with details."""
         message = "Warning message"
         details = "Additional warning details"
 
-        with patch("spec_cli.ui.error_display.get_console") as mock_get_console:
-            mock_get_console.return_value.console = self.mock_console
+        show_warning(message, details=details, console=self.mock_console)
 
-            show_warning(message, details=details, console=self.mock_console)
-
-            self.mock_console.print.assert_called_once()
-            args = self.mock_console.print.call_args[0]
-            assert isinstance(args[0], Panel)
+        self.mock_console.print.assert_called_once()
+        args = self.mock_console.print.call_args[0]
+        assert isinstance(args[0], Panel)
 
     def test_show_success_basic(self) -> None:
         """Test show_success with basic message."""
         message = "Success message"
 
-        with patch("spec_cli.ui.error_display.get_console") as mock_get_console:
-            mock_get_console.return_value.console = self.mock_console
+        show_success(message, console=self.mock_console)
 
-            show_success(message)
-
-            self.mock_console.print.assert_called_once()
-            args = self.mock_console.print.call_args[0]
-            assert isinstance(args[0], Panel)
+        self.mock_console.print.assert_called_once()
+        args = self.mock_console.print.call_args[0]
+        assert isinstance(args[0], Panel)
 
     def test_show_success_with_details(self) -> None:
         """Test show_success with details."""
@@ -442,14 +432,11 @@ class TestUtilityFunctions:
         """Test show_info with basic message."""
         message = "Info message"
 
-        with patch("spec_cli.ui.error_display.get_console") as mock_get_console:
-            mock_get_console.return_value.console = self.mock_console
+        show_info(message, console=self.mock_console)
 
-            show_info(message)
-
-            self.mock_console.print.assert_called_once()
-            args = self.mock_console.print.call_args[0]
-            assert isinstance(args[0], Panel)
+        self.mock_console.print.assert_called_once()
+        args = self.mock_console.print.call_args[0]
+        assert isinstance(args[0], Panel)
 
     def test_show_info_with_details(self) -> None:
         """Test show_info with details."""
@@ -463,63 +450,54 @@ class TestUtilityFunctions:
         assert isinstance(args[0], Panel)
 
     def test_show_message_success_type(self) -> None:
-        """Test show_message with success type."""
+        """Test show_message with success type raises ValueError."""
         message = "Test message"
 
-        with patch("spec_cli.ui.error_display.show_success") as mock_show_success:
+        with pytest.raises(ValueError, match="show_message requires console dependency injection"):
             show_message(message, message_type="success")
-            mock_show_success.assert_called_once_with("Test message")
 
     def test_show_message_warning_type(self) -> None:
-        """Test show_message with warning type."""
+        """Test show_message with warning type raises ValueError."""
         message = "Test message"
 
-        with patch("spec_cli.ui.error_display.show_warning") as mock_show_warning:
+        with pytest.raises(ValueError, match="show_message requires console dependency injection"):
             show_message(message, message_type="warning")
-            mock_show_warning.assert_called_once_with("Test message")
 
     def test_show_message_error_type(self) -> None:
-        """Test show_message with error type."""
+        """Test show_message with error type raises ValueError."""
         message = "Test message"
 
-        with patch("spec_cli.ui.error_display.show_error") as mock_show_error:
+        with pytest.raises(ValueError, match="show_message requires console dependency injection"):
             show_message(message, message_type="error")
-            mock_show_error.assert_called_once()
-            args = mock_show_error.call_args[0]
-            assert str(args[0]) == "Test message"
 
     def test_show_message_info_type(self) -> None:
-        """Test show_message with info type."""
+        """Test show_message with info type raises ValueError."""
         message = "Test message"
 
-        with patch("spec_cli.ui.error_display.show_info") as mock_show_info:
+        with pytest.raises(ValueError, match="show_message requires console dependency injection"):
             show_message(message, message_type="info")
-            mock_show_info.assert_called_once_with("Test message")
 
     def test_show_message_with_context(self) -> None:
-        """Test show_message with context."""
+        """Test show_message with context raises ValueError."""
         message = "Test message"
         context = "Operation context"
 
-        with patch("spec_cli.ui.error_display.show_info") as mock_show_info:
+        with pytest.raises(ValueError, match="show_message requires console dependency injection"):
             show_message(message, context=context)
-            mock_show_info.assert_called_once_with("Operation context: Test message")
 
     def test_format_data_auto_dict(self) -> None:
         """Test format_data with dictionary (auto format)."""
         data = {"key1": "value1", "key2": "value2"}
 
-        with patch("spec_cli.ui.error_display.get_console") as mock_get_console:
-            mock_console = Mock()
-            mock_get_console.return_value = mock_console
+        mock_console = Mock()
 
-            with patch(
-                "spec_cli.ui.tables.create_key_value_table"
-            ) as mock_create_table:
+        with patch(
+            "spec_cli.ui.tables.create_key_value_table"
+        ) as mock_create_table:
                 mock_table = Mock()
                 mock_create_table.return_value = mock_table
 
-                format_data(data, title="Test Data")
+                format_data(data, title="Test Data", console=mock_console)
 
                 mock_create_table.assert_called_once_with(data, "Test Data")
                 mock_table.print.assert_called_once()
@@ -528,25 +506,21 @@ class TestUtilityFunctions:
         """Test format_data with list (auto format)."""
         data = ["item1", "item2", "item3"]
 
-        with patch("spec_cli.ui.error_display.get_console") as mock_get_console:
-            mock_console = Mock()
-            mock_get_console.return_value = mock_console
+        mock_console = Mock()
 
-            format_data(data)
+        format_data(data, console=mock_console)
 
-            assert mock_console.print.call_count == len(data)
+        assert mock_console.print.call_count == len(data)
 
     def test_format_data_auto_string(self) -> None:
         """Test format_data with string (auto format)."""
         data = "Test string data"
 
-        with patch("spec_cli.ui.error_display.get_console") as mock_get_console:
-            mock_console = Mock()
-            mock_get_console.return_value = mock_console
+        mock_console = Mock()
 
-            format_data(data, title="Test Title")
+        format_data(data, title="Test Title", console=mock_console)
 
-            mock_console.print.assert_called()
+        mock_console.print.assert_called()
 
     def test_format_code_snippet_basic(self) -> None:
         """Test format_code_snippet with basic parameters."""
@@ -617,18 +591,16 @@ class TestErrorHandling:
 
     def test_format_data_with_none(self) -> None:
         """Test format_data with None value."""
-        with patch("spec_cli.ui.error_display.get_console") as mock_get_console:
-            mock_console = Mock()
-            mock_get_console.return_value = mock_console
+        mock_console = Mock(spec=Console)
 
-            format_data(None)
+        format_data(None, console=mock_console)
 
-            mock_console.print.assert_called_with("None")
+        mock_console.print.assert_called_with("None")
 
     def test_show_message_unknown_type(self) -> None:
         """Test show_message with unknown message type."""
         message = "Test message"
 
-        with patch("spec_cli.ui.error_display.show_info") as mock_show_info:
+        # show_message now requires console dependency injection
+        with pytest.raises(ValueError, match="show_message requires console dependency injection"):
             show_message(message, message_type="unknown")
-            mock_show_info.assert_called_once_with("Test message")

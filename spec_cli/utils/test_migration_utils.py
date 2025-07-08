@@ -339,7 +339,8 @@ def migrate_singleton_fixture(legacy_fixture_func: Callable) -> Callable:
     Example:
         @pytest.fixture
         def legacy_settings():
-            return get_settings()  # Singleton access
+            # OLD: return get_settings()  # Singleton access (deprecated)
+            return SpecContext.create_for_testing().settings  # Modern DI pattern
 
         # Migrate to context-based
         new_settings = migrate_singleton_fixture(legacy_settings)

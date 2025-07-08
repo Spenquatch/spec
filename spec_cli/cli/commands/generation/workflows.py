@@ -7,7 +7,7 @@ from typing import Any
 from typing import Any as ConsoleType
 
 from ....config.settings import SpecSettings
-from ....core.context_bridge import debug_logger, get_settings
+from ....core.context_bridge import debug_logger
 from ....exceptions import SpecGenerationError, SpecValidationError
 from ....file_processing.conflict_resolver import ConflictResolutionStrategy
 from ....git.repository import SpecGitRepository

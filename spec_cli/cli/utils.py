@@ -48,7 +48,7 @@ def handle_cli_error(
     else:
         # Generic error handling
         error_msg = f"{type(error).__name__}: {error}"
-        
+
         # Use print() for CLI error display to avoid console dependency
         if context:
             print(f"Error: {context}: {error_msg}")
@@ -200,7 +200,7 @@ def with_progress_context(operation_name: str) -> Callable[..., Any]:
             console = None
             if args and hasattr(args[0], 'console'):
                 console = args[0].console
-            
+
             progress_manager = get_progress_manager(console)
             operation_id = f"{operation_name}_{id(f)}"
 

@@ -11,11 +11,23 @@ import pytest
 
 from spec_cli.cli.commands.add_command import AddCommand
 from spec_cli.config.settings import SpecSettings
+from spec_cli.core.context import SpecContext
 from spec_cli.exceptions import SpecError
 
 
 class TestAddCommandExecuteMicro004:
     """Unit tests for AddCommand.execute method - Micro-Agent Implementation."""
+
+    @pytest.fixture
+    def spec_context(self):
+        """Create spec context for testing."""
+        context = SpecContext.create_for_testing()
+        context.settings.specs_dir = Path(".specs")
+        context.settings.root_path = Path(".")
+        context.settings.spec_dir = Path(".spec")
+        context.settings.index_file = Path(".spec-index")
+        context.settings.debug_enabled = False
+        return context
 
     def setup_method(self):
         """Setup using mock settings and dependencies."""
@@ -26,7 +38,6 @@ class TestAddCommandExecuteMicro004:
         self.mock_settings.index_file = Path(".spec-index")
         self.mock_settings.debug_enabled = False
 
-    @patch("spec_cli.cli.commands.add_command.get_console")
     @patch("spec_cli.cli.commands.add_command.SpecGitRepository")
     @patch("spec_cli.cli.commands.add_command.create_add_workflow")
     @patch("spec_cli.cli.commands.add_command.show_message")
@@ -37,12 +48,10 @@ class TestAddCommandExecuteMicro004:
         mock_show_message,
         mock_create_workflow,
         mock_repo_class,
-        mock_get_console,
+        spec_context,
     ):
         """Test execute with valid files succeeds and returns success result."""
-        # Setup mocks
-        mock_console = Mock()
-        mock_get_console.return_value = mock_console
+        # Setup mocks - console comes from spec_context
 
         mock_repo = Mock()
         mock_repo_class.return_value = mock_repo
@@ -56,7 +65,7 @@ class TestAddCommandExecuteMicro004:
         }
         mock_create_workflow.return_value = mock_workflow
 
-        command = AddCommand(self.mock_settings)
+        command = AddCommand(spec_context)
 
         # Mock file operations
         with patch.object(command, "validate_repository_state"):
@@ -96,16 +105,13 @@ class TestAddCommandExecuteMicro004:
             [Path("file1.md"), Path("file2.md")]
         )
 
-    @patch("spec_cli.cli.commands.add_command.get_console")
     @patch("spec_cli.cli.commands.add_command.show_message")
     def test_execute_with_no_expanded_files_returns_success_with_no_files_message(
-        self, mock_show_message, mock_get_console
+        self, mock_show_message, spec_context
     ):
         """Test execute with no expanded files returns success with informative message."""
-        mock_console = Mock()
-        mock_get_console.return_value = mock_console
 
-        command = AddCommand(self.mock_settings)
+        command = AddCommand(spec_context)
 
         with patch.object(command, "validate_repository_state"):
             with patch.object(command, "_expand_spec_files") as mock_expand:
@@ -120,16 +126,13 @@ class TestAddCommandExecuteMicro004:
             "No spec files found in the specified paths", "warning"
         )
 
-    @patch("spec_cli.cli.commands.add_command.get_console")
     @patch("spec_cli.cli.commands.add_command.show_message")
     def test_execute_with_no_spec_files_returns_success_with_gen_suggestion(
-        self, mock_show_message, mock_get_console
+        self, mock_show_message, spec_context
     ):
         """Test execute with no spec files suggests using 'spec gen' command."""
-        mock_console = Mock()
-        mock_get_console.return_value = mock_console
 
-        command = AddCommand(self.mock_settings)
+        command = AddCommand(spec_context)
 
         with patch.object(command, "validate_repository_state"):
             with patch.object(command, "_expand_spec_files") as mock_expand:
@@ -146,16 +149,14 @@ class TestAddCommandExecuteMicro004:
             "warning",
         )
 
-    @patch("spec_cli.cli.commands.add_command.get_console")
     @patch("spec_cli.cli.commands.add_command.show_message")
     def test_execute_with_dry_run_returns_preview_without_adding_files(
-        self, mock_show_message, mock_get_console
+        self, mock_show_message, spec_context
     ):
         """Test execute with dry_run=True shows preview without adding files."""
-        mock_console = Mock()
-        mock_get_console.return_value = mock_console
+        # Console comes from spec_context
 
-        command = AddCommand(self.mock_settings)
+        command = AddCommand(spec_context)
 
         with patch.object(command, "validate_repository_state"):
             with patch.object(command, "_expand_spec_files") as mock_expand:
@@ -182,20 +183,18 @@ class TestAddCommandExecuteMicro004:
             "This is a dry run. No files would be added.", "info"
         )
 
-    @patch("spec_cli.cli.commands.add_command.get_console")
     @patch("spec_cli.cli.commands.add_command.SpecGitRepository")
     @patch("spec_cli.cli.commands.add_command.show_message")
     def test_execute_with_all_files_already_tracked_returns_success_message(
-        self, mock_show_message, mock_repo_class, mock_get_console
+        self, mock_show_message, mock_repo_class, spec_context
     ):
         """Test execute with all files already tracked returns informative message."""
-        mock_console = Mock()
-        mock_get_console.return_value = mock_console
+        # Console comes from spec_context
 
         mock_repo = Mock()
         mock_repo_class.return_value = mock_repo
 
-        command = AddCommand(self.mock_settings)
+        command = AddCommand(spec_context)
 
         with patch.object(command, "validate_repository_state"):
             with patch.object(command, "_expand_spec_files") as mock_expand:
@@ -219,7 +218,6 @@ class TestAddCommandExecuteMicro004:
             "All specified files are already tracked and up to date", "info"
         )
 
-    @patch("spec_cli.cli.commands.add_command.get_console")
     @patch("spec_cli.cli.commands.add_command.SpecGitRepository")
     @patch("spec_cli.cli.commands.add_command.create_add_workflow")
     @patch("spec_cli.cli.commands.add_command.show_message")
@@ -230,11 +228,10 @@ class TestAddCommandExecuteMicro004:
         mock_show_message,
         mock_create_workflow,
         mock_repo_class,
-        mock_get_console,
+        spec_context,
     ):
         """Test execute with workflow failure returns failure result."""
-        mock_console = Mock()
-        mock_get_console.return_value = mock_console
+        # Console comes from spec_context
 
         mock_repo = Mock()
         mock_repo_class.return_value = mock_repo
@@ -248,7 +245,7 @@ class TestAddCommandExecuteMicro004:
         }
         mock_create_workflow.return_value = mock_workflow
 
-        command = AddCommand(self.mock_settings)
+        command = AddCommand(spec_context)
 
         with patch.object(command, "validate_repository_state"):
             with patch.object(command, "_expand_spec_files") as mock_expand:
@@ -270,15 +267,13 @@ class TestAddCommandExecuteMicro004:
         assert result["success"] is False
         assert "Added 0 files" in result["message"]
 
-    @patch("spec_cli.cli.commands.add_command.get_console")
     def test_execute_with_repository_validation_failure_raises_exception(
-        self, mock_get_console
+        self, spec_context
     ):
         """Test execute with repository validation failure raises exception."""
-        mock_console = Mock()
-        mock_get_console.return_value = mock_console
+        # Console comes from spec_context
 
-        command = AddCommand(self.mock_settings)
+        command = AddCommand(spec_context)
 
         with patch.object(command, "validate_repository_state") as mock_validate:
             mock_validate.side_effect = SpecError("Repository not initialized")
@@ -286,19 +281,17 @@ class TestAddCommandExecuteMicro004:
             with pytest.raises(SpecError, match="Repository not initialized"):
                 command.execute(files=[Path("file1.md")])
 
-    @patch("spec_cli.cli.commands.add_command.get_console")
     @patch("spec_cli.cli.commands.add_command.SpecGitRepository")
     def test_execute_creates_repository_with_settings(
-        self, mock_repo_class, mock_get_console
+        self, mock_repo_class, spec_context
     ):
         """Test execute creates SpecGitRepository with correct settings."""
-        mock_console = Mock()
-        mock_get_console.return_value = mock_console
+        # Console comes from spec_context
 
         mock_repo = Mock()
         mock_repo_class.return_value = mock_repo
 
-        command = AddCommand(self.mock_settings)
+        command = AddCommand(spec_context)
 
         with patch.object(command, "validate_repository_state"):
             with patch.object(command, "_expand_spec_files") as mock_expand:
@@ -308,15 +301,13 @@ class TestAddCommandExecuteMicro004:
 
         mock_repo_class.assert_called_once_with(self.mock_settings)
 
-    @patch("spec_cli.cli.commands.add_command.get_console")
     @patch("spec_cli.cli.commands.add_command.SpecGitRepository")
     @patch("spec_cli.cli.commands.add_command.create_add_workflow")
     def test_execute_creates_workflow_with_force_and_settings(
-        self, mock_create_workflow, mock_repo_class, mock_get_console
+        self, mock_create_workflow, mock_repo_class, spec_context
     ):
         """Test execute creates workflow with correct force flag and settings."""
-        mock_console = Mock()
-        mock_get_console.return_value = mock_console
+        # Console comes from spec_context
 
         mock_repo = Mock()
         mock_repo_class.return_value = mock_repo
@@ -330,7 +321,7 @@ class TestAddCommandExecuteMicro004:
         }
         mock_create_workflow.return_value = mock_workflow
 
-        command = AddCommand(self.mock_settings)
+        command = AddCommand(spec_context)
 
         with patch.object(command, "validate_repository_state"):
             with patch.object(command, "_expand_spec_files") as mock_expand:
@@ -353,21 +344,19 @@ class TestAddCommandExecuteMicro004:
             force=True, settings=self.mock_settings
         )
 
-    @patch("spec_cli.cli.commands.add_command.get_console")
     @patch("spec_cli.cli.commands.add_command.SpecGitRepository")
     @patch("spec_cli.cli.commands.add_command.show_message")
     @patch("spec_cli.cli.commands.add_command.debug_logger")
     def test_execute_logs_completion_information(
-        self, mock_debug_logger, mock_show_message, mock_repo_class, mock_get_console
+        self, mock_debug_logger, mock_show_message, mock_repo_class, spec_context
     ):
         """Test execute logs completion information with correct context."""
-        mock_console = Mock()
-        mock_get_console.return_value = mock_console
+        # Console comes from spec_context
 
         mock_repo = Mock()
         mock_repo_class.return_value = mock_repo
 
-        command = AddCommand(self.mock_settings)
+        command = AddCommand(spec_context)
 
         with patch.object(command, "validate_repository_state"):
             with patch.object(command, "_expand_spec_files") as mock_expand:

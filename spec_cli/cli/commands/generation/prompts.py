@@ -6,7 +6,6 @@ from typing import Any as ConsoleType
 import click
 
 from ....config.settings import SpecSettings
-from ....core.context_bridge import get_settings
 from ....file_processing.conflict_resolver import (
     ConflictResolutionStrategy,
     ConflictResolver,

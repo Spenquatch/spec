@@ -14,6 +14,8 @@ This test module achieves 40% coverage target for UI progress display functional
 import time
 from unittest.mock import Mock, patch
 
+from rich.console import Console
+
 from spec_cli.file_processing.progress_events import (
     ProcessingStage,
     ProgressEvent,
@@ -113,8 +115,9 @@ class TestProgressManagerInitialization:
         """Test ProgressManager initialization with default settings."""
         mock_reporter_instance = Mock(spec=ProgressReporter)
         mock_progress_reporter.return_value = mock_reporter_instance
+        mock_console = Mock(spec=Console)
 
-        manager = ProgressManager()
+        manager = ProgressManager(console=mock_console)
 
         # Verify initialization
         assert manager.progress_reporter == mock_progress_reporter
@@ -124,7 +127,7 @@ class TestProgressManagerInitialization:
 
         # Verify component creation
         mock_progress_bar.assert_called_once_with(
-            show_percentage=True, show_time_remaining=True, auto_refresh=True
+            show_percentage=True, show_time_remaining=True, auto_refresh=True, console=mock_console
         )
         mock_spinner_manager.assert_called_once()
         mock_error_handler.assert_called_once_with({"component": "progress_manager"})
@@ -138,8 +141,9 @@ class TestProgressManagerInitialization:
         """Test ProgressManager initialization with custom settings."""
         custom_reporter = Mock(spec=ProgressReporter)
 
+        mock_console = Mock(spec=Console)
         manager = ProgressManager(
-            progress_reporter_instance=custom_reporter, auto_display=False
+            console=mock_console, progress_reporter_instance=custom_reporter, auto_display=False
         )
 
         assert manager.progress_reporter == custom_reporter
@@ -154,7 +158,8 @@ class TestProgressManagerInitialization:
         """Test that event handling is properly set up during initialization."""
         mock_reporter = Mock(spec=ProgressReporter)
 
-        manager = ProgressManager(progress_reporter_instance=mock_reporter)
+        mock_console = Mock(spec=Console)
+        manager = ProgressManager(console=mock_console, progress_reporter_instance=mock_reporter)
 
         # Verify reporter listener was added
         mock_reporter.add_listener.assert_called_once()
@@ -179,13 +184,14 @@ class TestProgressManagerEventHandling:
     def setup_method(self):
         """Set up test fixtures."""
         self.mock_reporter = Mock(spec=ProgressReporter)
+        self.mock_console = Mock(spec=Console)
         with (
             patch("spec_cli.ui.progress_manager.SpecProgressBar"),
             patch("spec_cli.ui.progress_manager.SpinnerManager"),
             patch("spec_cli.ui.progress_manager.ErrorHandler"),
         ):
             self.manager = ProgressManager(
-                progress_reporter_instance=self.mock_reporter
+                console=self.mock_console, progress_reporter_instance=self.mock_reporter
             )
 
     def test_handle_progress_event_success(self):
@@ -445,12 +451,13 @@ class TestProgressManagerSingleton:
         """Test getting progress manager on first call."""
         mock_manager = Mock()
         mock_progress_manager_class.return_value = mock_manager
+        mock_console = Mock(spec=Console)
 
         singleton = ProgressManagerSingleton()
-        result = singleton.get_progress_manager()
+        result = singleton.get_progress_manager(console=mock_console)
 
         assert result == mock_manager
-        mock_progress_manager_class.assert_called_once()
+        mock_progress_manager_class.assert_called_once_with(console=mock_console)
 
     @patch("spec_cli.ui.progress_manager.ProgressManager")
     def test_get_progress_manager_subsequent_calls(self, mock_progress_manager_class):
@@ -458,16 +465,17 @@ class TestProgressManagerSingleton:
         mock_manager = Mock()
         mock_progress_manager_class.return_value = mock_manager
 
+        mock_console = Mock(spec=Console)
         singleton = ProgressManagerSingleton()
 
         # First call
-        result1 = singleton.get_progress_manager()
-        # Second call
+        result1 = singleton.get_progress_manager(console=mock_console)
+        # Second call - no console needed after first call
         result2 = singleton.get_progress_manager()
 
         assert result1 == result2
         # Constructor should only be called once
-        mock_progress_manager_class.assert_called_once()
+        mock_progress_manager_class.assert_called_once_with(console=mock_console)
 
     def test_set_progress_manager(self):
         """Test setting custom progress manager."""

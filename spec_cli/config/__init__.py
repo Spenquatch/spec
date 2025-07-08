@@ -9,14 +9,12 @@ from .settings import (
     SettingsManager,
     SpecSettings,
     get_console,
-    get_settings,
 )
 from .validation import ConfigurationValidator
 
 __all__ = [
     "SpecSettings",
     "SettingsManager",
-    "get_settings",
     "get_console",
     "ConfigurationLoader",
     "ConfigurationValidator",

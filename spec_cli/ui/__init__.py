@@ -4,7 +4,13 @@ This package provides console theming, progress tracking, and the foundation
 for error display and formatting components.
 """
 
-from .console import SpecConsole, get_console, reset_console, set_console, spec_console
+from .console import (
+    SpecConsole,
+    create_console,
+    reset_console,
+    set_console,
+    spec_console,
+)
 from .error_display import (
     DiagnosticDisplay,
     ErrorPanel,
@@ -70,7 +76,7 @@ from .theme import (
 
 __all__ = [
     # Console and theming
-    "get_console",
+    "create_console",
     "spec_console",
     "SpecConsole",
     "set_console",

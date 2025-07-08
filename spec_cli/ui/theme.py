@@ -10,7 +10,7 @@ from enum import Enum
 from rich.theme import Theme
 
 from ..config.settings import SpecSettings
-from ..core.context_bridge import debug_logger, get_settings
+from ..core.context_bridge import debug_logger
 
 
 class ColorScheme(Enum):
@@ -235,6 +235,7 @@ class ThemeManager:
         """
         if self._current_theme is None:
             from ..config.settings import SpecSettings
+
             default_settings = SpecSettings()
             self._current_theme = SpecTheme.from_settings(default_settings)
             debug_logger.log("INFO", "Global theme initialized")

@@ -384,18 +384,17 @@ class TestConsoleManager:
         manager = ConsoleManager()
         manager.reset_console()
 
-    @patch("spec_cli.ui.console.get_settings")
     @patch("spec_cli.ui.console.debug_logger")
-    def test_console_manager_get_console_creates_new(self, mock_logger, mock_settings):
+    def test_console_manager_get_console_creates_new(self, mock_logger):
         """Test ConsoleManager creates new console when none exists."""
         # Arrange
-        mock_settings.return_value = Mock(no_color=False)
+        mock_settings = Mock(no_color=False)
 
         # Act
         with patch("spec_cli.ui.console.SpecConsole") as mock_spec_console:
             mock_instance = Mock()
             mock_spec_console.return_value = mock_instance
-            manager = ConsoleManager()  # Create manager inside patch
+            manager = ConsoleManager(settings=mock_settings)  # Pass settings directly
             console = manager.get_console()
 
         # Assert
@@ -453,48 +452,42 @@ class TestGlobalConsoleFunctions:
         if hasattr(ConsoleManager, "_instances"):
             ConsoleManager._instances.clear()
 
-    @patch("spec_cli.ui.console.ConsoleManager")
-    def test_get_console_function(self, mock_manager_class):
+    @patch("spec_cli.ui.console.create_console")
+    def test_get_console_function(self, mock_create_console):
         """Test get_console convenience function."""
         # Arrange
-        mock_manager = Mock()
         mock_console = Mock(spec=SpecConsole)
-        mock_manager.get_console.return_value = mock_console
-        mock_manager_class.return_value = mock_manager
+        mock_create_console.return_value = mock_console
 
         # Act
         result = get_console()
 
         # Assert
         assert result == mock_console
-        mock_manager.get_console.assert_called_once()
+        mock_create_console.assert_called_once_with(cache=True)
 
-    @patch("spec_cli.ui.console.ConsoleManager")
-    def test_set_console_function(self, mock_manager_class):
+    @patch("spec_cli.ui.console.debug_logger")
+    def test_set_console_function(self, mock_logger):
         """Test set_console convenience function."""
         # Arrange
-        mock_manager = Mock()
-        mock_manager_class.return_value = mock_manager
         test_console = Mock(spec=SpecConsole)
 
         # Act
         set_console(test_console)
 
         # Assert
-        mock_manager.set_console.assert_called_once_with(test_console)
+        # Verify the console was cached (can't directly check global variable, so use logger call)
+        mock_logger.log.assert_called_once_with("INFO", "Global console updated")
 
+    @patch("spec_cli.ui.console.debug_logger")
+    def test_reset_console_function(self, mock_logger):
         """Test reset_console convenience function."""
-        # Arrange
-        with patch("spec_cli.ui.console.ConsoleManager") as mock_manager_class:
-            mock_manager = Mock()
-            mock_manager_class.return_value = mock_manager
+        # Act
+        reset_console()
 
-            # Act
-            reset_console()
-
-            # Assert
-            mock_manager.reset_console.assert_called_once()
-            # Import the actual class for comparison
+        # Assert
+        # Verify the console cache was reset (can't directly check global variable, so use logger call)
+        mock_logger.log.assert_called_once_with("INFO", "Global console reset")
 
     def test_spec_console_alias_function(self):
         """Test spec_console alias points to get_console."""
