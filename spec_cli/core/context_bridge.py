@@ -127,6 +127,11 @@ def get_console() -> Any:
         ) -> None:
             print(f"[{status.upper()}] {message}")
 
+        @property
+        def console(self) -> Any:
+            """Mock console property to match SpecConsole interface."""
+            return self
+
     return MockConsole()
 
 

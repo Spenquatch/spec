@@ -3,7 +3,7 @@
     "metadata": {
       "version": "1.0",
       "total_instances": 1014,
-      "completed": 11,
+      "completed": 16,
       "in_progress": 0,
       "not_migrated": 1003,
       "blocked": 13,
@@ -22,10 +22,10 @@
         "completion_rate": "100%"
       },
       "functional_singletons": {
-        "total": 82,
-        "migrated": 0,
-        "not_migrated": 82,
-        "completion_rate": "0%"
+        "total": 72,
+        "migrated": 8,
+        "not_migrated": 64,
+        "completion_rate": "11%"
       },
       "import_singletons": {
         "total": 940,

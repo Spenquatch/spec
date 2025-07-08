@@ -1,0 +1,18 @@
+{
+  "batch_number": 3,
+  "total_batches": 14,
+  "instances": [
+    {
+      "instance_id": "get_console_usage",
+      "file_path": "spec_cli/cli/commands/diff.py",
+      "pattern_type": "functional_singleton_call",
+      "priority": "high"
+    },
+    {
+      "instance_id": "get_settings_usage",
+      "file_path": "spec_cli/config/settings.py",
+      "pattern_type": "functional_singleton_definition",
+      "priority": "high"
+    }
+  ]
+}
