@@ -15,7 +15,7 @@ from unittest.mock import patch
 
 from click.testing import CliRunner
 
-from ...logging.debug import debug_logger
+from ...core.context_bridge import debug_logger
 
 
 class CLICommandRunner:

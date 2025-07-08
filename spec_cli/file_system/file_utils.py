@@ -10,8 +10,8 @@ import os
 from datetime import datetime
 from pathlib import Path
 
+from ..core.context_bridge import debug_logger
 from ..exceptions import SpecFileError
-from ..logging.debug import debug_logger
 
 
 def ensure_file_readable(file_path: Path) -> bool:

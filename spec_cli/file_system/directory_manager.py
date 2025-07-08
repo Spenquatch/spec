@@ -12,9 +12,8 @@ from pathlib import Path
 from typing import Any
 
 from ..config.settings import SpecSettings
-from ..core.context_bridge import get_settings
+from ..core.context_bridge import debug_logger, get_settings
 from ..exceptions import SpecFileError, SpecPermissionError, SpecValidationError
-from ..logging.debug import debug_logger
 from ..utils.path_utils import ensure_directory, ensure_path_permissions
 from .ignore_patterns import IgnorePatternMatcher
 from .path_resolver import PathResolver

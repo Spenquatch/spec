@@ -19,10 +19,9 @@ from datetime import datetime
 from typing import Any
 
 from ..config.settings import SpecSettings
-from ..core.context_bridge import get_settings
+from ..core.context_bridge import debug_logger, get_settings
 from ..exceptions import SpecGitError
 from ..git.repository import SpecGitRepository
-from ..logging.debug import debug_logger
 from ..utils.error_utils import (
     create_error_context,
     handle_os_error,

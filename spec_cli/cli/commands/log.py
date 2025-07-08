@@ -3,7 +3,7 @@
 import click
 
 from ...core.context import SpecContext
-from ...logging.debug import debug_logger
+from ...core.context_bridge import debug_logger
 from ...ui.error_display import show_message
 from ..decorators import context_injection
 from ..utils import get_spec_repository

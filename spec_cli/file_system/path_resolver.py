@@ -9,9 +9,8 @@ consistent cross-platform behavior.
 from pathlib import Path
 
 from ..config.settings import SpecSettings
-from ..core.context_bridge import get_settings
+from ..core.context_bridge import debug_logger, get_settings
 from ..exceptions import SpecFileError, SpecValidationError
-from ..logging.debug import debug_logger
 from ..utils.path_utils import normalize_path, remove_specs_prefix, safe_relative_to
 
 

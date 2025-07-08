@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Any
 from unittest.mock import Mock
 
-from ..logging.debug import debug_logger
+from ..core.context_bridge import debug_logger
 from ..utils.context_utils import create_context_hash, validate_context_immutability
 from ..utils.error_utils import create_error_context
 from ..utils.factory_utils import validate_factory_inputs

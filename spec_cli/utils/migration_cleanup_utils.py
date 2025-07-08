@@ -8,8 +8,8 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 
+from ..core.context_bridge import debug_logger
 from ..exceptions import InfrastructureRemovalError
-from ..logging.debug import debug_logger
 from .cleanup_utils import validate_no_references
 from .error_utils import create_error_context
 from .singleton_detection import SingletonPatternDetector

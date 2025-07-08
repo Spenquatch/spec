@@ -9,8 +9,8 @@ of workflow failures.
 from pathlib import Path
 from typing import Any
 
+from ...core.context_bridge import debug_logger
 from ...exceptions import SpecWorkflowError
-from ...logging.debug import debug_logger
 from ...utils.error_utils import create_error_context
 from ..commit_manager import SpecCommitManager
 

@@ -9,7 +9,7 @@ for individual file processing.
 from pathlib import Path
 from typing import Any, cast
 
-from ..logging.debug import debug_logger
+from ..core.context_bridge import debug_logger
 from ..templates.generator import SpecContentGenerator
 from ..templates.loader import load_template
 from ..utils.error_utils import create_error_context, handle_os_error

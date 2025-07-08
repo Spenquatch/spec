@@ -11,11 +11,10 @@ from pathlib import Path
 from typing import Any
 
 from ..config.settings import SpecSettings
-from ..core.context_bridge import get_settings
+from ..core.context_bridge import debug_logger, get_settings
 from ..exceptions import SpecFileError
 from ..file_system.file_metadata import FileMetadataExtractor
 from ..file_system.ignore_patterns import IgnorePatternMatcher
-from ..logging.debug import debug_logger
 from ..utils.path_utils import safe_relative_to
 from .file_cache import FileCacheEntry, FileCacheManager
 

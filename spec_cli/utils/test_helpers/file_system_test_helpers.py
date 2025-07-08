@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import Any
 from unittest.mock import Mock, patch
 
-from ...logging.debug import debug_logger
+from ...core.context_bridge import debug_logger
 from ...utils.path_utils import normalize_path_separators
 
 

@@ -4,10 +4,9 @@ from pathlib import Path
 from typing import Any
 
 from ...config.settings import SpecSettings
-from ...core.context_bridge import get_console
+from ...core.context_bridge import debug_logger, get_console
 from ...exceptions import SpecError
 from ...git.repository import SpecGitRepository
-from ...logging.debug import debug_logger
 from ...ui.error_display import show_message
 from ...utils.path_utils import safe_relative_to
 from ..base_command import BaseCommand

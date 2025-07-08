@@ -6,12 +6,11 @@ from typing import Any
 
 from ...ai.providers.manager import create_workflow_result
 from ...config.settings import SpecSettings
-from ...core.context_bridge import get_console
+from ...core.context_bridge import debug_logger, get_console
 from ...exceptions import SpecError
 from ...file_processing.conflict_resolver import ConflictResolutionStrategy
 from ...file_system.directory_manager import DirectoryManager
 from ...file_system.path_resolver import PathResolver
-from ...logging.debug import debug_logger
 from ...templates.ai_enhanced import AIEnhancedTemplate
 from ...templates.generator import SpecContentGenerator
 from ...templates.loader import load_template

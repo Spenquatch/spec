@@ -8,8 +8,7 @@ from typing import Any
 
 from rich.console import Console
 
-from ..core.context_bridge import get_current_theme, get_settings
-from ..logging.debug import debug_logger
+from ..core.context_bridge import debug_logger, get_current_theme, get_settings
 from .theme import SpecTheme
 
 

@@ -6,7 +6,7 @@ from typing import Any
 
 import click
 
-from ..logging.debug import debug_logger
+from ..core.context_bridge import debug_logger
 
 
 # Common option decorators

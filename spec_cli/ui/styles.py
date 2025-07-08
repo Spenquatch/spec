@@ -9,8 +9,7 @@ from pathlib import Path
 from rich.style import Style
 from rich.text import Text
 
-from ..core.context_bridge import get_current_theme
-from ..logging.debug import debug_logger
+from ..core.context_bridge import debug_logger, get_current_theme
 
 
 class SpecStyles:

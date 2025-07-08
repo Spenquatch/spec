@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from ..logging.debug import debug_logger
+from ..core.context_bridge import debug_logger
 from .error_utils import create_error_context
 
 

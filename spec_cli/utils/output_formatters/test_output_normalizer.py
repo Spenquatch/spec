@@ -8,7 +8,7 @@ plain text output modes.
 import re
 from typing import Any
 
-from ...logging.debug import debug_logger
+from ...core.context_bridge import debug_logger
 
 
 def normalize_output_for_testing(output: str, mode: str = "auto") -> str:

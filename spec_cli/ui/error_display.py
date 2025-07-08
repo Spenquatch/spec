@@ -13,9 +13,8 @@ from rich.panel import Panel
 from rich.syntax import Syntax
 from rich.traceback import Traceback
 
-from ..core.context_bridge import get_console
+from ..core.context_bridge import debug_logger, get_console
 from ..exceptions import SpecError
-from ..logging.debug import debug_logger
 from ..utils.error_handler import ErrorHandler
 from .styles import SpecStyles
 

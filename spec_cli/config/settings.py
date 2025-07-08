@@ -11,8 +11,8 @@ from pathlib import Path
 from rich.console import Console
 from rich.theme import Theme
 
+from ..core.context_bridge import debug_logger
 from ..exceptions import SpecConfigurationError
-from ..logging.debug import debug_logger
 from ..utils.path_utils import normalize_path, resolve_project_root
 
 # Rich theme for consistent styling throughout the application

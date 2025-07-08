@@ -9,7 +9,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Any
 
-from spec_cli.logging.debug import debug_logger
+from spec_cli.core.context_bridge import debug_logger
 
 from ..error_utils import SpecAnalysisError
 

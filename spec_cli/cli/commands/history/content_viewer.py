@@ -7,8 +7,7 @@ from rich.markdown import Markdown
 from rich.panel import Panel
 from rich.syntax import Syntax
 
-from ....core.context_bridge import get_console
-from ....logging.debug import debug_logger
+from ....core.context_bridge import debug_logger, get_console
 
 # DataFormatter not used in this module
 

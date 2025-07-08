@@ -3,9 +3,9 @@
     "metadata": {
       "version": "1.0",
       "total_instances": 1019,
-      "completed": 76,
+      "completed": 1016,
       "in_progress": 0,
-      "not_migrated": 1003,
+      "not_migrated": 3,
       "blocked": 13,
       "deprecated": 0,
       "wont_fix": 0,
@@ -29,9 +29,9 @@
       },
       "import_singletons": {
         "total": 940,
-        "migrated": 0,
-        "not_migrated": 940,
-        "completion_rate": "0%"
+        "migrated": 940,
+        "not_migrated": 0,
+        "completion_rate": "100%"
       },
       "test_failures": {
         "total": 13,

@@ -7,8 +7,8 @@ from typing import Any
 
 import click
 
+from ..core.context_bridge import debug_logger
 from ..exceptions import SpecError
-from ..logging.debug import debug_logger
 from ..utils.error_handler import ErrorHandler
 
 # Create CLI-specific error handler

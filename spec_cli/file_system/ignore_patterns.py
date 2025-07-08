@@ -11,8 +11,7 @@ from re import Pattern
 from typing import Any
 
 from ..config.settings import SpecSettings
-from ..core.context_bridge import get_settings
-from ..logging.debug import debug_logger
+from ..core.context_bridge import debug_logger, get_settings
 
 
 class IgnorePatternMatcher:

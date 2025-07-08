@@ -11,7 +11,7 @@ from typing import Any, Protocol
 
 # Import original singletons (these imports may fail if singletons don't exist yet)
 try:
-    from ..logging.debug import debug_logger as _original_debug_logger
+    from ..core.context_bridge import debug_logger as _original_debug_logger
 except ImportError:
     _original_debug_logger = None  # type: ignore[assignment]
 
@@ -184,7 +184,21 @@ def get_current_theme() -> Any:
 
         @property
         def theme(self) -> Any:
-            return self
+            """Return a mock Rich theme object."""
+
+            class MockRichTheme:
+                styles = {}
+
+            return MockRichTheme()
+
+        @property
+        def color_scheme(self) -> Any:
+            """Return a mock color scheme."""
+
+            class MockColorScheme:
+                value = "default"
+
+            return MockColorScheme()
 
     return MockTheme()
 

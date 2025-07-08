@@ -3,8 +3,8 @@
 import click
 
 from ...core.context import SpecContext
+from ...core.context_bridge import debug_logger
 from ...git.repository import SpecGitRepository
-from ...logging.debug import debug_logger
 from ...ui.tables import StatusTable
 from ..decorators import context_injection
 from ..options import message_option, spec_command

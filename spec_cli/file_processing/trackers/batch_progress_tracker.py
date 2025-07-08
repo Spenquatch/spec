@@ -9,7 +9,7 @@ import time
 from pathlib import Path
 from typing import Any
 
-from ...logging.debug import debug_logger
+from ...core.context_bridge import debug_logger
 from ..progress_events import ProgressReporter
 
 

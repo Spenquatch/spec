@@ -9,8 +9,8 @@ import subprocess
 from pathlib import Path
 from subprocess import CompletedProcess
 
+from ..core.context_bridge import debug_logger
 from ..exceptions import SpecGitError
-from ..logging.debug import debug_logger
 from ..utils.error_utils import handle_subprocess_error
 from ..utils.security_validators import validate_git_command
 

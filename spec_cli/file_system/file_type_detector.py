@@ -8,7 +8,7 @@ technologies, data formats, and configuration files.
 
 from pathlib import Path
 
-from ..logging.debug import debug_logger
+from ..core.context_bridge import debug_logger
 
 
 class FileTypeDetector:

@@ -1,0 +1,16 @@
+{
+  "batch_number": 4,
+  "files_processed": 2,
+  "files_modified": 2,
+  "transformations_applied": 2,
+  "modified_files": [
+    {
+      "file": "spec_cli/git/repository.py",
+      "transformations": 1
+    },
+    {
+      "file": "spec_cli/git/path_converter.py",
+      "transformations": 1
+    }
+  ]
+}

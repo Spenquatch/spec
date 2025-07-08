@@ -15,8 +15,8 @@ from pathlib import Path
 from typing import Any
 
 from ...config.settings import SpecSettings
+from ...core.context_bridge import debug_logger
 from ...exceptions import SpecWorkflowError
-from ...logging.debug import debug_logger
 from ...templates.generator import SpecContentGenerator
 from ...templates.loader import load_template
 from ...utils.error_handler import ErrorHandler

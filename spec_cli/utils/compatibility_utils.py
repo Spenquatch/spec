@@ -9,8 +9,8 @@ import re
 import threading
 from typing import Any
 
+from ..core.context_bridge import debug_logger
 from ..exceptions import CompatibilityError
-from ..logging.debug import debug_logger
 
 
 def create_singleton_wrapper(

@@ -6,8 +6,8 @@ to support migration planning and priority ranking.
 
 from dataclasses import dataclass
 
+from ...core.context_bridge import debug_logger
 from ...exceptions import SpecError
-from ...logging.debug import debug_logger
 from ..singleton_detection import SingletonViolation
 
 

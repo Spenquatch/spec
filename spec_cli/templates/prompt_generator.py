@@ -8,8 +8,8 @@ import re
 from dataclasses import dataclass, field
 from typing import Any
 
+from ..core.context_bridge import debug_logger
 from ..exceptions import SpecTemplateError
-from ..logging.debug import debug_logger
 
 
 @dataclass

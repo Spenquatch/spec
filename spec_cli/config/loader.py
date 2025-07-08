@@ -10,8 +10,8 @@ from typing import Any
 
 import yaml
 
+from ..core.context_bridge import debug_logger
 from ..exceptions import SpecConfigurationError
-from ..logging.debug import debug_logger
 from ..utils.error_handler import ErrorHandler
 
 # Handle tomllib import for multiple Python versions

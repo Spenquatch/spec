@@ -10,8 +10,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from ...core.context_bridge import debug_logger
 from ...exceptions import SpecError
-from ...logging.debug import debug_logger
 from ..singleton_detection import SingletonPatternDetector, SingletonViolation
 
 

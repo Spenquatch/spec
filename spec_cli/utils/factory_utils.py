@@ -9,7 +9,7 @@ import os
 import sys
 from typing import Any
 
-from ..logging.debug import debug_logger
+from ..core.context_bridge import debug_logger
 
 
 def detect_environment_type() -> str:
