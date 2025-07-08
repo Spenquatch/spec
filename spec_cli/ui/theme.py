@@ -9,7 +9,8 @@ from enum import Enum
 
 from rich.theme import Theme
 
-from ..config.settings import SpecSettings, get_settings
+from ..config.settings import SpecSettings
+from ..core.context_bridge import get_settings
 from ..logging.debug import debug_logger
 
 

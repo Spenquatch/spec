@@ -1,34 +1,34 @@
 {
-  "batch_number": 8,
+  "batch_number": 9,
   "total_batches": "TBD",
   "instances": [
     {
-      "instance_id": "func_singleton_034",
-      "file_path": "spec_cli/cli/commands/generation/workflows.py",
-      "pattern_type": "get_console",
-      "priority": "high"
-    },
-    {
-      "instance_id": "func_singleton_035",
-      "file_path": "spec_cli/cli/decorators.py",
-      "pattern_type": "get_console",
-      "priority": "high"
-    },
-    {
-      "instance_id": "func_singleton_036",
-      "file_path": "spec_cli/ui/console.py",
-      "pattern_type": "get_settings",
-      "priority": "high"
-    },
-    {
-      "instance_id": "func_singleton_037",
-      "file_path": "spec_cli/ui/theme.py",
-      "pattern_type": "get_settings",
-      "priority": "high"
-    },
-    {
-      "instance_id": "func_singleton_038",
+      "instance_id": "func_singleton_039",
       "file_path": "spec_cli/core/repository_init.py",
+      "pattern_type": "get_settings",
+      "priority": "high"
+    },
+    {
+      "instance_id": "func_singleton_040",
+      "file_path": "spec_cli/core/workflow_orchestrator.py",
+      "pattern_type": "get_settings",
+      "priority": "high"
+    },
+    {
+      "instance_id": "func_singleton_041",
+      "file_path": "spec_cli/core/workflow_orchestrator.py",
+      "pattern_type": "get_settings",
+      "priority": "high"
+    },
+    {
+      "instance_id": "func_singleton_042",
+      "file_path": "spec_cli/core/commit_manager.py",
+      "pattern_type": "get_settings",
+      "priority": "high"
+    },
+    {
+      "instance_id": "func_singleton_043",
+      "file_path": "spec_cli/core/commit_manager.py",
       "pattern_type": "get_settings",
       "priority": "high"
     }

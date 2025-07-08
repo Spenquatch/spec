@@ -61,8 +61,7 @@ def _get_spec_context_from_click() -> SpecContext:
         )
         if spec_context is None:
             # Create default context if not found with real implementations
-            from ..config.settings import get_settings
-            from ..ui.console import get_console
+            from ..core.context_bridge import get_console, get_settings
             from ..ui.progress_manager import ProgressManager
 
             settings = get_settings()

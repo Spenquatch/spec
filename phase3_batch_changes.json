@@ -1,36 +1,30 @@
 {
-  "batch_number": 7,
+  "batch_number": 8,
   "transformation_approach": "facade_bridge",
   "changes_log": [
     {
-      "file": "spec_cli/cli/commands/add_command.py",
-      "instance_id": "func_singleton_030",
+      "file": "spec_cli/cli/commands/generation/workflows.py",
+      "instance_id": "func_singleton_034",
       "changes": [
-        "Replaced console import with facade bridge: from ...ui.console import get_console -> from ...core.context_bridge import get_console"
+        "Replaced console import with facade bridge: from \\.\\.\\.\\.ui\\.console import get_console -> from ....core.context_bridge import get_console",
+        "Replaced settings import with facade bridge: from \\.\\.\\.\\.config\\.settings import SpecSettings, get_settings -> from ....config.settings import SpecSettings\nfrom ....core.context_bridge import get_settings",
+        "Replaced settings import with facade bridge: from \\.\\.\\.\\.config\\.settings import get_settings -> from ....core.context_bridge import get_settings"
       ],
       "transformation_type": "facade_bridge"
     },
     {
-      "file": "spec_cli/cli/commands/generation/prompts.py",
-      "instance_id": "func_singleton_031",
+      "file": "spec_cli/ui/theme.py",
+      "instance_id": "func_singleton_037",
       "changes": [
-        "Replaced console import with facade bridge: from ....ui.console import get_console -> from ....core.context_bridge import get_console"
+        "Replaced settings import with facade bridge: from \\.\\.config\\.settings import SpecSettings, get_settings -> from ..config.settings import SpecSettings\nfrom ..core.context_bridge import get_settings"
       ],
       "transformation_type": "facade_bridge"
     },
     {
-      "file": "spec_cli/cli/commands/generation/prompts.py",
-      "instance_id": "func_singleton_032",
+      "file": "spec_cli/core/repository_init.py",
+      "instance_id": "func_singleton_038",
       "changes": [
-        "Replaced console import with facade bridge: from ....ui.console import get_console -> from ....core.context_bridge import get_console"
-      ],
-      "transformation_type": "facade_bridge"
-    },
-    {
-      "file": "spec_cli/cli/commands/generation/prompts.py",
-      "instance_id": "func_singleton_033",
-      "changes": [
-        "Replaced console import with facade bridge: from ....ui.console import get_console -> from ....core.context_bridge import get_console"
+        "Replaced settings import with facade bridge: from \\.\\.config\\.settings import SpecSettings, get_settings -> from ..config.settings import SpecSettings\nfrom ..core.context_bridge import get_settings"
       ],
       "transformation_type": "facade_bridge"
     }

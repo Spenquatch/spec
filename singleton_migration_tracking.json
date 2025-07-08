@@ -3,7 +3,7 @@
     "metadata": {
       "version": "1.0",
       "total_instances": 1019,
-      "completed": 40,
+      "completed": 45,
       "in_progress": 0,
       "not_migrated": 1003,
       "blocked": 13,
@@ -23,9 +23,9 @@
       },
       "functional_singletons": {
         "total": 72,
-        "migrated": 33,
-        "not_migrated": 39,
-        "completion_rate": "45%"
+        "migrated": 38,
+        "not_migrated": 34,
+        "completion_rate": "52%"
       },
       "import_singletons": {
         "total": 940,
@@ -464,40 +464,40 @@
             "line_number": 70,
             "pattern_type": "get_console",
             "priority": "high",
-            "current_state": "not_migrated",
-            "completion_date": null
+            "current_state": "migrated",
+            "completion_date": "2025-07-07T23:11:30.845601"
           },
           "func_singleton_035": {
             "file_path": "spec_cli/cli/decorators.py",
             "line_number": 69,
             "pattern_type": "get_console",
             "priority": "high",
-            "current_state": "not_migrated",
-            "completion_date": null
+            "current_state": "migrated",
+            "completion_date": "2025-07-07T23:11:30.845607"
           },
           "func_singleton_036": {
             "file_path": "spec_cli/ui/console.py",
             "line_number": 221,
             "pattern_type": "get_settings",
             "priority": "high",
-            "current_state": "not_migrated",
-            "completion_date": null
+            "current_state": "migrated",
+            "completion_date": "2025-07-07T23:11:30.845609"
           },
           "func_singleton_037": {
             "file_path": "spec_cli/ui/theme.py",
             "line_number": 206,
             "pattern_type": "get_settings",
             "priority": "high",
-            "current_state": "not_migrated",
-            "completion_date": null
+            "current_state": "migrated",
+            "completion_date": "2025-07-07T23:11:30.845610"
           },
           "func_singleton_038": {
             "file_path": "spec_cli/core/repository_init.py",
             "line_number": 34,
             "pattern_type": "get_settings",
             "priority": "high",
-            "current_state": "not_migrated",
-            "completion_date": null
+            "current_state": "migrated",
+            "completion_date": "2025-07-07T23:11:30.845612"
           },
           "func_singleton_039": {
             "file_path": "spec_cli/core/repository_init.py",

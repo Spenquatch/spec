@@ -16,7 +16,8 @@ Key responsibilities:
 from pathlib import Path
 from typing import Any, cast
 
-from ..config.settings import SpecSettings, get_settings
+from ..config.settings import SpecSettings
+from ..core.context_bridge import get_settings
 from ..file_system.directory_manager import DirectoryManager
 from ..git.repository import SpecGitRepository
 from ..logging.debug import debug_logger

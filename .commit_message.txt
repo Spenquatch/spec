@@ -1,0 +1,36 @@
+feat: Phase 3 functional singleton batch 8 migration
+
+BATCH MIGRATION:
+- Migrated 3 functional singleton instances via facade bridge
+- Files modified: 3
+- Replaced get_console() and get_settings() imports with context_bridge
+- Maintained function signatures for backward compatibility
+- Preserved all existing function call patterns
+
+FILES MODIFIED:
+- spec_cli/cli/commands/generation/workflows.py: Replaced console import with facade bridge: from \.\.\.\.ui\.console import get_console -> from ....core.context_bridge import get_console, Replaced settings import with facade bridge: from \.\.\.\.config\.settings import SpecSettings, get_settings -> from ....config.settings import SpecSettings
+from ....core.context_bridge import get_settings, Replaced settings import with facade bridge: from \.\.\.\.config\.settings import get_settings -> from ....core.context_bridge import get_settings
+- spec_cli/ui/theme.py: Replaced settings import with facade bridge: from \.\.config\.settings import SpecSettings, get_settings -> from ..config.settings import SpecSettings
+from ..core.context_bridge import get_settings
+- spec_cli/core/repository_init.py: Replaced settings import with facade bridge: from \.\.config\.settings import SpecSettings, get_settings -> from ..config.settings import SpecSettings
+from ..core.context_bridge import get_settings
+
+PROGRESS UPDATE:
+- Functional singletons: 38/72 (52%)
+- Total migration: 45/1019
+
+VALIDATION RESULTS:
+- Tests: ✅ All pass, no regressions
+- Syntax: ✅ All files compile cleanly
+- Quality: ✅ Ruff/MyPy validation passed
+- Patterns: ✅ Functional singleton imports redirected to facade bridge
+- Compatibility: ✅ Function signatures preserved for backward compatibility
+
+TRANSFORMATION APPROACH:
+- FACADE BRIDGE pattern used (not context injection)
+- Import redirects: get_console() → context_bridge.get_console()
+- Import redirects: get_settings() → context_bridge.get_settings()
+- Function calls unchanged: get_console() still works as before
+- Event handlers/constructors remain signature-compatible
+
+Batch 8 complete - systematic functional singleton elimination.

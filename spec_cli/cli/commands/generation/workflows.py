@@ -5,13 +5,13 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from ....config.settings import SpecSettings, get_settings
+from ....config.settings import SpecSettings
+from ....core.context_bridge import get_console, get_settings
 from ....exceptions import SpecGenerationError, SpecValidationError
 from ....file_processing.conflict_resolver import ConflictResolutionStrategy
 from ....git.repository import SpecGitRepository
 from ....logging.debug import debug_logger
 from ....templates.generator import SpecContentGenerator
-from ....ui.console import get_console
 from ....ui.progress_manager import get_progress_manager
 from ....utils.path_utils import safe_relative_to
 
@@ -300,7 +300,7 @@ class GenerationWorkflow:
     def _get_spec_files_for_source(self, source_file: Path) -> dict[str, Path]:
         """Get spec file paths for a source file."""
         # Use centralized path resolver method
-        from ....config.settings import get_settings
+        from ....core.context_bridge import get_settings
         from ....file_system.path_resolver import PathResolver
 
         settings = get_settings()
