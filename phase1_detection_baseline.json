@@ -1,9 +1,0 @@
-{
-  "scan_timestamp": "0.1957406997680664",
-  "total_patterns": 3,
-  "files_scanned": 179,
-  "accuracy_percentage": 1.675977653631285,
-  "patterns_by_type": {
-    "import_from_singleton": 3
-  }
-}
