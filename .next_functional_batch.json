@@ -1,34 +1,34 @@
 {
-  "batch_number": 10,
+  "batch_number": 11,
   "total_batches": "TBD",
   "instances": [
     {
-      "instance_id": "func_singleton_044",
-      "file_path": "spec_cli/core/context_bridge.py",
+      "instance_id": "func_singleton_049",
+      "file_path": "spec_cli/core/context.py",
       "pattern_type": "get_settings",
       "priority": "high"
     },
     {
-      "instance_id": "func_singleton_045",
-      "file_path": "spec_cli/core/context_bridge.py",
+      "instance_id": "func_singleton_050",
+      "file_path": "spec_cli/file_processing/batch_processor.py",
       "pattern_type": "get_settings",
       "priority": "high"
     },
     {
-      "instance_id": "func_singleton_046",
-      "file_path": "spec_cli/core/context_bridge.py",
+      "instance_id": "func_singleton_051",
+      "file_path": "spec_cli/file_processing/conflict_resolver.py",
       "pattern_type": "get_settings",
       "priority": "high"
     },
     {
-      "instance_id": "func_singleton_047",
-      "file_path": "spec_cli/core/repository_state.py",
+      "instance_id": "func_singleton_052",
+      "file_path": "spec_cli/file_processing/file_cache.py",
       "pattern_type": "get_settings",
       "priority": "high"
     },
     {
-      "instance_id": "func_singleton_048",
-      "file_path": "spec_cli/core/repository_state.py",
+      "instance_id": "func_singleton_053",
+      "file_path": "spec_cli/file_processing/change_detector.py",
       "pattern_type": "get_settings",
       "priority": "high"
     }

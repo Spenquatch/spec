@@ -3,7 +3,7 @@
     "metadata": {
       "version": "1.0",
       "total_instances": 1019,
-      "completed": 50,
+      "completed": 52,
       "in_progress": 0,
       "not_migrated": 1003,
       "blocked": 13,
@@ -23,9 +23,9 @@
       },
       "functional_singletons": {
         "total": 72,
-        "migrated": 43,
-        "not_migrated": 29,
-        "completion_rate": "59%"
+        "migrated": 45,
+        "not_migrated": 27,
+        "completion_rate": "62%"
       },
       "import_singletons": {
         "total": 940,
@@ -544,40 +544,40 @@
             "line_number": 133,
             "pattern_type": "get_settings",
             "priority": "high",
-            "current_state": "not_migrated",
-            "completion_date": null
+            "current_state": "not_applicable",
+            "completion_date": "2025-07-07T23:36:39.566546"
           },
           "func_singleton_045": {
             "file_path": "spec_cli/core/context_bridge.py",
             "line_number": 139,
             "pattern_type": "get_settings",
             "priority": "high",
-            "current_state": "not_migrated",
-            "completion_date": null
+            "current_state": "not_applicable",
+            "completion_date": "2025-07-07T23:36:39.566557"
           },
           "func_singleton_046": {
             "file_path": "spec_cli/core/context_bridge.py",
             "line_number": 164,
             "pattern_type": "get_settings",
             "priority": "high",
-            "current_state": "not_migrated",
-            "completion_date": null
+            "current_state": "not_applicable",
+            "completion_date": "2025-07-07T23:36:39.566559"
           },
           "func_singleton_047": {
             "file_path": "spec_cli/core/repository_state.py",
             "line_number": 52,
             "pattern_type": "get_settings",
             "priority": "high",
-            "current_state": "not_migrated",
-            "completion_date": null
+            "current_state": "migrated",
+            "completion_date": "2025-07-07T23:36:39.566560"
           },
           "func_singleton_048": {
             "file_path": "spec_cli/core/repository_state.py",
             "line_number": 57,
             "pattern_type": "get_settings",
             "priority": "high",
-            "current_state": "not_migrated",
-            "completion_date": null
+            "current_state": "migrated",
+            "completion_date": "2025-07-07T23:36:39.566562"
           },
           "func_singleton_049": {
             "file_path": "spec_cli/core/context.py",
