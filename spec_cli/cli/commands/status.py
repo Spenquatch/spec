@@ -50,7 +50,7 @@ def status_command(
             # Show regular status
             echo_status("Checking repository status...", "info")
             status_info = _get_repository_status(repo)
-            _display_repository_status(status_info)
+            _display_repository_status(status_info, context)
 
         # Show Git status if requested
         if git:
@@ -268,20 +268,29 @@ def _get_processing_summary(context: SpecContext) -> dict[str, Any]:
     }
 
 
-def _display_repository_status(status_info: dict[str, Any]) -> None:
+def _display_repository_status(
+    status_info: dict[str, Any], context: SpecContext
+) -> None:
     """Display repository status using Rich formatting."""
+    # Use SpecConsole directly to preserve theming
+    console = context.console
+
     # Repository information
     repo_table = create_key_value_table(
-        status_info["repository"], "Repository Information"
+        status_info["repository"], "Repository Information", console=console
     )
     repo_table.print()
 
     # File counts
-    files_table = create_key_value_table(status_info["files"], "File Statistics")
+    files_table = create_key_value_table(
+        status_info["files"], "File Statistics", console=console
+    )
     files_table.print()
 
     # Git status summary
-    git_table = create_key_value_table(status_info["git"], "Git Status Summary")
+    git_table = create_key_value_table(
+        status_info["git"], "Git Status Summary", console=console
+    )
     git_table.print()
 
 

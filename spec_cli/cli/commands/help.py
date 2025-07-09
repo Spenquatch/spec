@@ -36,7 +36,7 @@ def _display_main_help(context: SpecContext) -> None:
     )
 
     # Commands table
-    table = SpecTable(title="Available Commands")
+    table = SpecTable(title="Available Commands", console=console)
     table.add_column("Command", style="yellow", width=12)
     table.add_column("Description", style="white")
     table.add_column("Usage Example", style="dim", width=30)
@@ -88,7 +88,7 @@ def _display_command_help(command: str, context: SpecContext) -> None:
 
     # Options
     if help_data.get("options"):
-        options_table = SpecTable(title="Options")
+        options_table = SpecTable(title="Options", console=console)
         options_table.add_column("Option", style="yellow")
         options_table.add_column("Description", style="white")
         options_table.add_column("Default", style="dim", width=10)

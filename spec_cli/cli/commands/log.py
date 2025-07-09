@@ -4,7 +4,6 @@ import click
 
 from ...core.context import SpecContext
 from ...core.context_bridge import debug_logger
-from ...ui.error_display import show_message
 from ..decorators import context_injection
 from ..utils import get_spec_repository
 from .history import format_commit_log
@@ -72,11 +71,11 @@ def log_command(
 
         if not commits:
             if target_files:
-                show_message(
+                context.console.print_message(
                     f"No commits found for files: {', '.join(target_files)}", "info"
                 )
             else:
-                show_message("No commits found in repository", "info")
+                context.console.print_message("No commits found in repository", "info")
             return
 
         # Display header
@@ -98,7 +97,9 @@ def log_command(
         if filter_desc:
             context_desc += f" ({', '.join(filter_desc)})"
 
-        show_message(f"Showing {len(commits)} commits {context_desc}:", "info")
+        context.console.print_message(
+            f"Showing {len(commits)} commits {context_desc}:", "info"
+        )
 
         # Format and display commits
         format_commit_log(commits, context.console, compact=oneline)

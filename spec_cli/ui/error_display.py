@@ -115,7 +115,7 @@ class ErrorPanel:
         return Panel(
             content,
             title=self.title,
-            border_style="error",
+            border_style="red",
             padding=(1, 2),
             expand=False,
         )
@@ -241,7 +241,7 @@ class DiagnosticDisplay:
         panel = Panel(
             content,
             title=SpecStyles.title("System Information"),
-            border_style="info",
+            border_style="blue",
             padding=(1, 2),
         )
 
@@ -274,7 +274,7 @@ class DiagnosticDisplay:
         panel = Panel(
             content,
             title=SpecStyles.title("Configuration"),
-            border_style="config",
+            border_style="cyan",
             padding=(1, 2),
         )
 
@@ -302,7 +302,7 @@ class DiagnosticDisplay:
         panel = Panel(
             content,
             title=SpecStyles.title("File Details"),
-            border_style="file",
+            border_style="cyan",
             padding=(1, 2),
         )
 
@@ -389,14 +389,14 @@ def show_error(
 def show_warning(
     message: str,
     details: str | None = None,
-    console: Console | None = None,
+    console: Any | None = None,
 ) -> None:
     """Show a warning message.
 
     Args:
         message: Warning message
         details: Optional additional details
-        console: Console to use
+        console: Console to use (can be SpecConsole or Rich Console)
     """
     if console is None:
         raise ValueError("show_warning requires a console instance")
@@ -408,17 +408,27 @@ def show_warning(
     panel = Panel(
         content,
         title=SpecStyles.warning("Warning"),
-        border_style="warning",
+        border_style="yellow",
         padding=(1, 2),
     )
 
-    console.print(panel)
+    # Use SpecConsole if available, otherwise extract themed console
+    if hasattr(console, "_console"):
+        # SpecConsole object - use its themed console
+        console._console.print(panel)
+    elif hasattr(console, "print"):
+        # Direct Console object - use SpecConsole print method for theming
+        console.print(panel)
+    else:
+        raise ValueError(
+            f"Console object {type(console)} is not compatible with show_warning"
+        )
 
 
 def show_success(
     message: str,
     details: str | None = None,
-    console: Console | None = None,
+    console: Any | None = None,
 ) -> None:
     """Show a success message.
 
@@ -437,7 +447,7 @@ def show_success(
     panel = Panel(
         content,
         title=SpecStyles.success("Success"),
-        border_style="success",
+        border_style="green",
         padding=(1, 2),
     )
 
@@ -447,7 +457,7 @@ def show_success(
 def show_info(
     message: str,
     details: str | None = None,
-    console: Console | None = None,
+    console: Any | None = None,
 ) -> None:
     """Show an info message.
 
@@ -466,7 +476,7 @@ def show_info(
     panel = Panel(
         content,
         title=SpecStyles.info("Information"),
-        border_style="info",
+        border_style="blue",
         padding=(1, 2),
     )
 
@@ -488,20 +498,6 @@ def show_message(
     raise ValueError(
         "show_message requires console dependency injection - use show_info, show_warning, show_success, or show_error with console parameter"
     )
-
-    if context:
-        full_message = f"{context}: {message}"
-    else:
-        full_message = message
-
-    if message_type == "success":
-        show_success(full_message)
-    elif message_type == "warning":
-        show_warning(full_message)
-    elif message_type == "error":
-        show_error(Exception(full_message))
-    else:  # info or default
-        show_info(full_message)
 
 
 def format_data(

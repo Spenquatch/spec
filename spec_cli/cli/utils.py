@@ -146,7 +146,7 @@ def echo_status(message: str, status_type: str = "info") -> None:
 
 
 @cli_error_handler.wrap
-def get_spec_repository(settings=None) -> Any:
+def get_spec_repository(settings: Any | None = None) -> Any:
     """Get the spec repository instance with error handling.
 
     Args:
@@ -232,7 +232,7 @@ def get_current_working_directory() -> Path:
     return Path.cwd()
 
 
-def is_in_spec_repository(settings=None) -> bool:
+def is_in_spec_repository(settings: Any | None = None) -> bool:
     """Check if current directory is in a spec repository.
 
     Args:

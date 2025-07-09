@@ -144,7 +144,7 @@ def timed_operation(
 
 
 def create_file_progress_tracker(
-    files: list[Path], console=None
+    files: list[Path], console: Any | None = None
 ) -> Callable[[Path], None]:
     """Create a progress tracker for file operations.
 
@@ -189,7 +189,7 @@ class ProgressTracker:
         operation_name: str,
         total_items: int | None = None,
         auto_finish: bool = True,
-        console=None,
+        console: Any | None = None,
     ) -> None:
         """Initialize progress tracker.
 

@@ -57,7 +57,7 @@ class ProgressManager:
         self,
         progress_reporter_instance: ProgressReporter | None = None,
         auto_display: bool = True,
-        console=None,
+        console: Any | None = None,
     ) -> None:
         """Initialize progress manager.
 
@@ -469,7 +469,7 @@ class ProgressManagerSingleton:
         self._manager_lock = threading.Lock()
         self._initialized = True
 
-    def get_progress_manager(self, console=None) -> ProgressManager:
+    def get_progress_manager(self, console: Any | None = None) -> ProgressManager:
         """Get the global progress manager instance.
 
         Args:
@@ -510,7 +510,7 @@ class ProgressManagerSingleton:
 
 
 # Convenience functions for getting progress manager
-def get_progress_manager(console=None) -> ProgressManager:
+def get_progress_manager(console: Any | None = None) -> ProgressManager:
     """Get the global progress manager instance.
 
     Args:

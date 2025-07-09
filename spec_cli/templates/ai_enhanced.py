@@ -422,14 +422,16 @@ class AIEnhancedTemplate:
 
 
 def create_ai_enhanced_template(
+    settings: SpecSettings,
     template_path: Path | None = None,
 ) -> AIEnhancedTemplate:
     """Create AI-enhanced template processor.
 
     Args:
+        settings: Spec settings instance (required)
         template_path: Optional path to specific template file
 
     Returns:
         AIEnhancedTemplate: Configured template processor
     """
-    return AIEnhancedTemplate(template_path)
+    return AIEnhancedTemplate(settings, template_path)

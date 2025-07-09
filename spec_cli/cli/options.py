@@ -105,6 +105,8 @@ def spec_command(name: str | None = None, **kwargs: Any) -> Callable[..., Any]:
 
         # Add error handling wrapper
         def wrapper(*args: Any, **kwargs: Any) -> Any:
+            import click  # Import click locally to avoid scoping issues
+
             from .utils import handle_cli_error
 
             try:

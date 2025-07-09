@@ -16,7 +16,6 @@ from ...templates.ai_enhanced import AIEnhancedTemplate
 from ...templates.generator import SpecContentGenerator
 from ...templates.loader import load_template
 from ...templates.substitution import TemplateSubstitution
-from ...ui.error_display import show_message
 from ...utils.path_utils import normalize_path
 from ..base_command import BaseCommand
 from ..utils import get_user_confirmation
@@ -106,12 +105,16 @@ class GenCommand(BaseCommand):
         expanded_files = self._expand_source_files(files)
 
         if not expanded_files:
-            show_message("No processable files found in the specified paths", "warning")
+            self.console.print_warning(
+                "No processable files found in the specified paths"
+            )
             return self.create_result(
                 True, "No files to process", data={"generated": []}
             )
 
-        show_message(f"Found {len(expanded_files)} files to process", "info")
+        self.console.print_message(
+            f"Found {len(expanded_files)} files to process", "info"
+        )
 
         # Configure conflict strategy
         strategy_map = {
@@ -130,9 +133,9 @@ class GenCommand(BaseCommand):
 
             # Confirm configuration
             if not confirm_generation(
-                expanded_files, template, conflict_enum, self.console
+                expanded_files, template, conflict_enum, self.console, self.settings
             ):
-                show_message("Generation cancelled by user", "info")
+                self.console.print_message("Generation cancelled by user", "info")
                 return self.create_result(False, "Generation cancelled by user")
 
         # Validate inputs
@@ -141,7 +144,7 @@ class GenCommand(BaseCommand):
         )
 
         if not validation_result["valid"]:
-            show_message("Validation failed:", "error")
+            self.console.print_error("Validation failed:")
             for error in validation_result["errors"]:
                 self.console.print(f"  • [red]{error}[/red]")
 
@@ -150,14 +153,14 @@ class GenCommand(BaseCommand):
 
         # Show warnings if any
         if validation_result["warnings"]:
-            show_message("Warnings:", "warning")
+            self.console.print_warning("Warnings:")
             for warning in validation_result["warnings"]:
                 self.console.print(f"  • [yellow]{warning}[/yellow]")
 
             if not force and not get_user_confirmation(
                 "Continue despite warnings?", default=True
             ):
-                show_message("Generation cancelled", "info")
+                self.console.print_message("Generation cancelled", "info")
                 return self.create_result(False, "Generation cancelled due to warnings")
 
         # Dry run mode
@@ -205,13 +208,12 @@ class GenCommand(BaseCommand):
 
         # Display summary
         if successful_results:
-            show_message(
-                f"Successfully processed {len(successful_results)} of {len(expanded_files)} files",
-                "success",
+            self.console.print_success(
+                f"Successfully processed {len(successful_results)} of {len(expanded_files)} files"
             )
 
         if failed_results:
-            show_message(f"Failed to process {len(failed_results)} files", "warning")
+            self.console.print_warning(f"Failed to process {len(failed_results)} files")
             for failed_result in failed_results:
                 self.console.print(
                     f"  • [red]{failed_result.get('error', 'Unknown error')}[/red]"
@@ -345,7 +347,7 @@ class GenCommand(BaseCommand):
         try:
             # Select template approach (decision point 4)
             if ai_enhanced:
-                template_processor = AIEnhancedTemplate(template_path)
+                template_processor = AIEnhancedTemplate(self.settings, template_path)
                 generation_method = "ai_enhanced_template"
             else:
                 # Use existing traditional template logic
@@ -422,7 +424,7 @@ class GenCommand(BaseCommand):
         """
         try:
             # Load and process template first
-            ai_template = AIEnhancedTemplate(template_path)
+            ai_template = AIEnhancedTemplate(self.settings, template_path)
             variables = self._create_template_variables(target_path)
 
             # Process template to get AI prompt structure
@@ -682,7 +684,7 @@ Initial AI-generated documentation.
         try:
             # Use the working SpecContentGenerator to actually write files
             generator = SpecContentGenerator(self.settings)
-            template_config = load_template()
+            template_config = load_template(self.settings)
 
             # Generate and write spec content files
             generated_files_dict = generator.generate_spec_content(
@@ -833,20 +835,20 @@ Initial AI-generated documentation.
                 )
             self.console.print()
 
-        show_message("This is a dry run. No files would be modified.", "info")
+        self.console.print_message(
+            "This is a dry run. No files would be modified.", "info"
+        )
 
     def _display_generation_results(self, result: GenerationResult) -> None:
         """Display generation results."""
         # Show summary
         if result.success:
-            show_message(
-                f"Generation completed successfully in {result.total_processing_time:.2f}s",
-                "success",
+            self.console.print_success(
+                f"Generation completed successfully in {result.total_processing_time:.2f}s"
             )
         else:
-            show_message(
-                f"Generation completed with errors in {result.total_processing_time:.2f}s",
-                "warning",
+            self.console.print_warning(
+                f"Generation completed with errors in {result.total_processing_time:.2f}s"
             )
 
         # Show statistics using simple formatting

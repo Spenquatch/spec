@@ -89,101 +89,6 @@ class TemplateSelector:
         return descriptions.get(template_name, "Custom template")
 
 
-class ConflictResolver:
-    """Interactive conflict resolution."""
-
-    def __init__(self, console: ConsoleType) -> None:
-        """Initialize conflict resolver with console interface.
-
-        Args:
-            console: Console instance for interactive prompts
-        """
-        self.console = console
-
-    def resolve_conflicts(
-        self,
-        source_file: Path,
-        existing_files: list[Path],
-        suggested_strategy: ConflictResolutionStrategy,
-    ) -> ConflictResolutionStrategy:
-        """Prompt user to resolve file conflicts.
-
-        Args:
-            source_file: Source file being processed
-            existing_files: Existing spec files that conflict
-            suggested_strategy: Suggested resolution strategy
-
-        Returns:
-            Selected conflict resolution strategy
-        """
-        self.console.print(
-            f"\n[bold yellow]Conflict detected for {source_file.name}[/bold yellow]"
-        )
-        self.console.print("Existing spec files:")
-
-        for file_path in existing_files:
-            self.console.print(f"  • [path]{file_path}[/path]")
-
-        # Show resolution options
-        options = [
-            ("backup", "Create backup and replace (recommended)"),
-            ("overwrite", "Overwrite existing files"),
-            ("skip", "Skip this file"),
-            ("fail", "Stop processing"),
-        ]
-
-        self.console.print("\n[bold cyan]Resolution options:[/bold cyan]")
-        for i, (strategy_name, description) in enumerate(options, 1):
-            marker = (
-                " (suggested)"
-                if strategy_name == suggested_strategy.value.lower()
-                else ""
-            )
-            self.console.print(
-                f"  {i}. [yellow]{strategy_name}[/yellow]{marker} - {description}"
-            )
-
-        # Get user selection
-        while True:
-            try:
-                choice = click.prompt(
-                    "\nSelect resolution strategy",
-                    type=int,
-                    default="1",  # Default to backup
-                )
-
-                if 1 <= choice <= len(options):
-                    selected_strategy_name = options[choice - 1][0]
-                    selected_strategy = self._name_to_strategy(selected_strategy_name)
-
-                    self.console.print(
-                        f"[green]Selected strategy: {selected_strategy_name}[/green]"
-                    )
-                    return selected_strategy
-                else:
-                    self.console.print(
-                        "[yellow]Invalid selection. Please try again.[/yellow]"
-                    )
-
-            except click.Abort:
-                # User cancelled - default to skip
-                return ConflictResolutionStrategy.SKIP
-            except (ValueError, IndexError):
-                self.console.print(
-                    "[yellow]Invalid input. Please enter a number.[/yellow]"
-                )
-
-    def _name_to_strategy(self, name: str) -> ConflictResolutionStrategy:
-        """Convert strategy name to enum."""
-        mapping = {
-            "backup": ConflictResolutionStrategy.BACKUP_AND_REPLACE,
-            "overwrite": ConflictResolutionStrategy.OVERWRITE,
-            "skip": ConflictResolutionStrategy.SKIP,
-            "fail": ConflictResolutionStrategy.FAIL,
-        }
-        return mapping.get(name, ConflictResolutionStrategy.BACKUP_AND_REPLACE)
-
-
 class GenerationPrompts:
     """Comprehensive generation prompts."""
 
@@ -275,8 +180,16 @@ class GenerationPrompts:
 
             if 1 <= choice <= len(conflict_options):
                 selected_strategy_name = conflict_options[choice - 1][0]
-                config["conflict_strategy"] = self.conflict_resolver._name_to_strategy(
-                    selected_strategy_name
+                # Convert strategy name to enum
+                strategy_mapping = {
+                    "backup": ConflictResolutionStrategy.BACKUP_AND_REPLACE,
+                    "overwrite": ConflictResolutionStrategy.OVERWRITE,
+                    "skip": ConflictResolutionStrategy.SKIP,
+                    "fail": ConflictResolutionStrategy.FAIL,
+                }
+                config["conflict_strategy"] = strategy_mapping.get(
+                    selected_strategy_name,
+                    ConflictResolutionStrategy.BACKUP_AND_REPLACE,
                 )
             else:
                 config["conflict_strategy"] = (
@@ -341,8 +254,21 @@ def resolve_conflicts(
     """
     if settings is None:
         raise ValueError("resolve_conflicts requires a settings instance")
-    resolver = ConflictResolver(console)
-    return resolver.resolve_conflicts(source_file, existing_files, suggested_strategy)
+    resolver = ConflictResolver(settings)
+    # The imported ConflictResolver has resolve_multiple_conflicts method
+    conflicts = []
+    for existing_file in existing_files:
+        conflict_info = resolver.detect_conflict(existing_file, "")
+        if conflict_info:
+            conflicts.append(conflict_info)
+
+    if conflicts:
+        results = resolver.resolve_multiple_conflicts(conflicts)
+        if results:
+            # Return the strategy from the first result
+            return results[0].strategy_used if results else suggested_strategy
+
+    return suggested_strategy
 
 
 def confirm_generation(
@@ -350,6 +276,7 @@ def confirm_generation(
     template_name: str,
     conflict_strategy: ConflictResolutionStrategy,
     console: ConsoleType,
+    settings: SpecSettings,
 ) -> bool:
     """Confirm generation operation.
 
@@ -358,9 +285,10 @@ def confirm_generation(
         template_name: Template name
         conflict_strategy: Conflict resolution strategy
         console: Console instance for interactive prompts
+        settings: Settings instance
 
     Returns:
         True if confirmed, False otherwise
     """
-    prompts = GenerationPrompts(console)
+    prompts = GenerationPrompts(console, settings)
     return prompts.confirm_generation(source_files, template_name, conflict_strategy)

@@ -147,7 +147,7 @@ class FileProcessingPipeline:
                     file_path, ProcessingStage.CONTENT_GENERATION
                 )
 
-                template = load_template()
+                template = load_template(self.conflict_resolver.settings)
                 generation_result = self._generate_content(
                     file_path, template, custom_variables
                 )

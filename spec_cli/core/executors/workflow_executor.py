@@ -154,7 +154,7 @@ class WorkflowExecutor:
 
         try:
             # Load template
-            template = load_template()
+            template = load_template(self.settings)
 
             # Generate content
             generated_files = self.content_generator.generate_spec_content(

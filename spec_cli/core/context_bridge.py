@@ -16,12 +16,22 @@ except ImportError:
     _original_debug_logger = None  # type: ignore[assignment]
 
 try:
-    from ..ui.console import get_console as _original_get_console
+    from ..ui.console import SpecConsole
+
+    def _get_console_wrapper() -> Any:
+        return SpecConsole()
+
+    _original_get_console = _get_console_wrapper
 except ImportError:
     _original_get_console = None  # type: ignore[assignment]
 
 try:
-    from ..config.settings import get_settings as _original_get_settings
+    from ..config.settings import SpecSettings
+
+    def _get_settings_wrapper() -> Any:
+        return SpecSettings()
+
+    _original_get_settings = _get_settings_wrapper
 except ImportError:
     _original_get_settings = None  # type: ignore[assignment]
 

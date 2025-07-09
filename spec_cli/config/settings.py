@@ -13,7 +13,7 @@ from rich.theme import Theme
 
 from ..core.context_bridge import debug_logger
 from ..exceptions import SpecConfigurationError
-from ..utils.path_utils import normalize_path, resolve_project_root
+from ..utils.path_utils import normalize_path
 
 # Rich theme for consistent styling throughout the application
 SPEC_THEME = Theme(
@@ -34,7 +34,7 @@ class SpecSettings:
     """Global settings for spec operations with Rich terminal styling."""
 
     # Directory paths
-    root_path: Path = field(default_factory=lambda: resolve_project_root())
+    root_path: Path = field(default_factory=lambda: Path.cwd())
 
     # Computed paths (set in __post_init__)
     spec_dir: Path = field(init=False)

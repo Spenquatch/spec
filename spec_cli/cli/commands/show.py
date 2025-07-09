@@ -7,7 +7,6 @@ import click
 
 from ...core.context import SpecContext
 from ...core.context_bridge import debug_logger
-from ...ui.error_display import show_message
 from ...utils.path_utils import is_specs_path
 from ..decorators import context_injection
 from ..options import files_argument, spec_command
@@ -81,7 +80,7 @@ def show_command(
                 debug_logger.log(
                     "ERROR", "Failed to show file", file=str(file_path), error=str(e)
                 )
-                show_message(f"Error showing {file_path}: {e}", "error")
+                context.console.print_error(f"Error showing {file_path}: {e}")
 
         debug_logger.log(
             "INFO", "Show command completed", files=len(file_paths), commit=commit
@@ -103,7 +102,7 @@ def _show_current_file(
 ) -> None:
     """Show current file content."""
     if not file_path.exists():
-        show_message(f"File not found: {file_path}", "error")
+        context.console.print_error(f"File not found: {file_path}")
         return
 
     try:
@@ -116,10 +115,10 @@ def _show_current_file(
             with open(file_path, encoding="latin-1") as f:
                 content = f.read()
         except Exception as e:
-            show_message(f"Error reading file {file_path}: {e}", "error")
+            context.console.print_error(f"Error reading file {file_path}: {e}")
             return
     except Exception as e:
-        show_message(f"Error reading file {file_path}: {e}", "error")
+        context.console.print_error(f"Error reading file {file_path}: {e}")
         return
 
     if raw:
@@ -128,11 +127,14 @@ def _show_current_file(
     else:
         # Check if it's a spec file
         if _is_spec_file(file_path):
-            _show_spec_file_content(file_path, content, no_syntax, no_line_numbers)
+            _show_spec_file_content(
+                file_path, content, no_syntax, no_line_numbers, context.console
+            )
         else:
             # Regular file display
             display_file_content(
                 file_path,
+                context.console,
                 content=content,
                 line_numbers=not no_line_numbers,
                 syntax_highlight=not no_syntax,
@@ -154,8 +156,8 @@ def _show_file_from_commit(
         content = repo.get_file_content_at_commit(str(file_path), commit)
 
         if content is None:
-            show_message(
-                f"File {file_path} not found in commit {commit[:8]}", "warning"
+            context.console.print_warning(
+                f"File {file_path} not found in commit {commit[:8]}"
             )
             return
 
@@ -170,21 +172,24 @@ def _show_file_from_commit(
         else:
             # Formatted display
             if _is_spec_file(file_path):
-                _show_spec_file_content(file_path, content, no_syntax, no_line_numbers)
+                _show_spec_file_content(
+                    file_path, content, no_syntax, no_line_numbers, context.console
+                )
             else:
                 display_file_content(
                     file_path,
+                    context.console,
                     content=content,
                     line_numbers=not no_line_numbers,
                     syntax_highlight=not no_syntax,
                 )
 
     except Exception as e:
-        show_message(f"Error retrieving file from commit: {e}", "error")
+        context.console.print_error(f"Error retrieving file from commit: {e}")
 
 
 def _show_spec_file_content(
-    file_path: Path, content: str, no_syntax: bool, no_line_numbers: bool
+    file_path: Path, content: str, no_syntax: bool, no_line_numbers: bool, console: Any
 ) -> None:
     """Show spec file with special formatting."""
     # Parse spec file metadata if present
@@ -192,11 +197,12 @@ def _show_spec_file_content(
 
     if spec_data and not no_syntax:
         # Use spec-specific display
-        display_spec_content(spec_data, show_metadata=True)
+        display_spec_content(spec_data, console, show_metadata=True)
     else:
         # Regular file display
         display_file_content(
             file_path,
+            console,
             content=content,
             line_numbers=not no_line_numbers,
             syntax_highlight=not no_syntax,

@@ -8,10 +8,15 @@ dependency injection support.
 from contextlib import AbstractContextManager
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from unittest.mock import Mock
 
 from ..core.context_bridge import debug_logger
+
+if TYPE_CHECKING:
+    from ..config.settings import SpecSettings
+    from ..ui.console import SpecConsole
+    from ..ui.progress_manager import ProgressManager
 from ..utils.context_utils import create_context_hash, validate_context_immutability
 from ..utils.error_utils import create_error_context
 from ..utils.factory_utils import validate_factory_inputs
@@ -289,9 +294,9 @@ class SpecContext:
     Provides immutable dependency injection with thread-safe access.
     """
 
-    settings: Any  # SpecSettingsInterface (temporarily Any for migration)
-    console: Any  # SpecConsoleInterface (temporarily Any for migration)
-    progress: Any  # SpecProgressInterface (temporarily Any for migration)
+    settings: "SpecSettings"
+    console: "SpecConsole"
+    progress: "ProgressManager"
 
     def __post_init__(self) -> None:
         """Validate context after initialization.
@@ -328,7 +333,9 @@ class SpecContext:
         """
         try:
             # Create new settings instance with overrides
-            new_settings = SpecSettingsInterface()
+            from ..config.settings import SpecSettings
+
+            new_settings = SpecSettings(self.settings.root_path)
 
             # Copy existing attributes
             for attr in [
@@ -357,7 +364,7 @@ class SpecContext:
                 f"Failed to create context with settings overrides: {e}", error_context
             ) from e
 
-    def with_console(self, console: SpecConsoleInterface) -> "SpecContext":
+    def with_console(self, console: "SpecConsole") -> "SpecContext":
         """Create new context with different console.
 
         Args:
@@ -376,7 +383,7 @@ class SpecContext:
             settings=self.settings, console=console, progress=self.progress
         )
 
-    def with_progress(self, progress: SpecProgressInterface) -> "SpecContext":
+    def with_progress(self, progress: "ProgressManager") -> "SpecContext":
         """Create new context with different progress handler.
 
         Args:
@@ -463,7 +470,7 @@ class SpecContext:
             from ..ui.console import SpecConsole
             from ..ui.progress_manager import ProgressManager
 
-            cli_settings = SpecSettings()  # Direct instantiation instead of singleton
+            cli_settings = SpecSettings(root_path)  # Pass root_path parameter
             cli_console = SpecConsole()
             cli_progress = ProgressManager(console=cli_console.console)
 
@@ -527,6 +534,20 @@ class SpecContext:
                         return
                     self._console.print_status(text, "warning")
 
+                def print_status(self, text: str, status: str = "info") -> None:
+                    """Print status message with given status type."""
+                    if not self._is_interactive:
+                        status_prefixes = {
+                            "success": "✓",
+                            "error": "✗",
+                            "warning": "⚠",
+                            "info": "i",
+                        }
+                        prefix = status_prefixes.get(status, "")
+                        print(f"{prefix} {text}" if prefix else text)
+                        return
+                    self._console.print_status(text, status)
+
                 def get_width(self) -> int:
                     return getattr(self._console, "width", 80)
 
@@ -543,7 +564,7 @@ class SpecContext:
             # Create and return context
             context = cls(
                 settings=cli_settings,
-                console=cli_console_adapter,
+                console=cli_console_adapter,  # type: ignore[arg-type]
                 progress=cli_progress,
             )
 
@@ -611,7 +632,9 @@ class SpecContext:
             )
 
             # Create mock settings with deterministic behavior
-            mock_settings = Mock(spec=SpecSettingsInterface)
+            from ..config.settings import SpecSettings
+
+            mock_settings = Mock(spec=SpecSettings)
             mock_settings.debug_enabled = validated_inputs.get("debug_mode", False)
             mock_settings.console_width = 80
             mock_settings.use_color = False  # Disable for testing consistency
@@ -621,32 +644,35 @@ class SpecContext:
 
             # Apply testing overrides to mock settings
             for key, value in overrides.items():
-                if hasattr(SpecSettingsInterface(), key):
+                if hasattr(SpecSettings, key):
                     setattr(mock_settings, key, value)
                     debug_logger.log(
                         "DEBUG", "Applied testing override", key=key, value=value
                     )
 
-            # Mock settings methods
-            mock_settings.get_setting.return_value = None
-            mock_settings.validate_configuration.return_value = {}
+            # Mock settings methods (none needed for basic SpecSettings)
 
             # Create mock console with deterministic behavior
-            mock_console = Mock(spec=SpecConsoleInterface)
+            from ..ui.console import SpecConsole
+
+            mock_console = Mock(spec=SpecConsole)
             mock_console.get_width.return_value = 80
-            mock_console.supports_color.return_value = False
+            mock_console.is_terminal.return_value = False
             # Mock console methods don't need return values (print operations)
+            mock_console.print.return_value = None
+            mock_console.print_status.return_value = None
             mock_console.print_message.return_value = None
             mock_console.print_error.return_value = None
             mock_console.print_success.return_value = None
             mock_console.print_warning.return_value = None
 
             # Create mock progress with deterministic behavior
-            mock_progress = Mock(spec=SpecProgressInterface)
-            mock_progress.start_operation.return_value = "test_op_001"
-            mock_progress.show_progress.return_value = None
-            mock_progress.update_status.return_value = None
+            from ..ui.progress_manager import ProgressManager
+
+            mock_progress = Mock(spec=ProgressManager)
+            mock_progress.start_indeterminate_operation.return_value = "test_op_001"
             mock_progress.finish_operation.return_value = None
+            mock_progress.cleanup.return_value = None
 
             # Create and return context
             context = cls(

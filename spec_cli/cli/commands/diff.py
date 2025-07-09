@@ -6,7 +6,6 @@ import click
 
 from ...core.context import SpecContext
 from ...core.context_bridge import debug_logger
-from ...ui.error_display import show_message
 from ...ui.tables import StatusTable
 from ..decorators import context_injection
 from ..options import optional_files_argument, spec_command
@@ -78,7 +77,9 @@ def diff_command(
 
         # Display results
         if not diff_data or not diff_data.get("files"):
-            show_message(f"No differences found in {diff_context}", "info")
+            context.console.print_message(
+                f"No differences found in {diff_context}", "info"
+            )
             return
 
         if stat:
@@ -86,7 +87,7 @@ def diff_command(
             _display_diff_stats(diff_data, context)
         else:
             # Show full diff
-            show_message(f"Showing {diff_context}:", "info")
+            context.console.print_message(f"Showing {diff_context}:", "info")
 
             if no_color:
                 _display_plain_diff(diff_data, context)

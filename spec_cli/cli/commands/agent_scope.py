@@ -52,7 +52,7 @@ def agent_scope_command(
 
         if result["success"]:
             context.console.print_status(f"✓ {result['message']}", "success")
-            if context.settings.verbose and result.get("data"):
+            if context.settings.debug_enabled and result.get("data"):
                 metadata = result["data"].get("project_metadata", {})
                 context.console.print_status(
                     f"  Project root: {metadata.get('project_root', 'Unknown')}", "info"

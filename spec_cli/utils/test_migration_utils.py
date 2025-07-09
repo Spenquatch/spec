@@ -364,6 +364,7 @@ def migrate_singleton_fixture(legacy_fixture_func: Callable) -> Callable:
             try:
                 # Determine what type of dependency this fixture provided
                 fixture_name = legacy_fixture_func.__name__.lower()
+                result: Any
 
                 if "setting" in fixture_name:
                     result = spec_context.settings

@@ -587,3 +587,222 @@ class SpecGitRepository(GitRepository):
             return result.stdout.strip() if result.stdout else None
         except Exception:
             return None
+
+    def get_working_diff(
+        self, files: list[str] | None = None, unified: int = 3
+    ) -> dict[str, Any]:
+        """Get diff of working directory changes.
+
+        Args:
+            files: Optional list of specific files to diff
+            unified: Number of context lines for unified diff
+
+        Returns:
+            Dictionary with diff data including files and changes
+        """
+        try:
+            cmd = ["diff", f"--unified={unified}"]
+            if files:
+                cmd.extend(files)
+
+            result = self.operations.run_git_command(cmd)
+            return self._parse_diff_output(result.stdout or "", "working")
+        except Exception as e:
+            debug_logger.log("ERROR", f"Failed to get working diff: {e}")
+            return {
+                "files": [],
+                "changes": [],
+                "stats": {"additions": 0, "deletions": 0},
+            }
+
+    def get_staged_diff(
+        self, files: list[str] | None = None, unified: int = 3
+    ) -> dict[str, Any]:
+        """Get diff of staged changes.
+
+        Args:
+            files: Optional list of specific files to diff
+            unified: Number of context lines for unified diff
+
+        Returns:
+            Dictionary with diff data including files and changes
+        """
+        try:
+            cmd = ["diff", "--cached", f"--unified={unified}"]
+            if files:
+                cmd.extend(files)
+
+            result = self.operations.run_git_command(cmd)
+            return self._parse_diff_output(result.stdout or "", "staged")
+        except Exception as e:
+            debug_logger.log("ERROR", f"Failed to get staged diff: {e}")
+            return {
+                "files": [],
+                "changes": [],
+                "stats": {"additions": 0, "deletions": 0},
+            }
+
+    def get_commit_diff(
+        self, commit: str, files: list[str] | None = None, unified: int = 3
+    ) -> dict[str, Any]:
+        """Get diff between working directory and specific commit.
+
+        Args:
+            commit: Commit hash or reference
+            files: Optional list of specific files to diff
+            unified: Number of context lines for unified diff
+
+        Returns:
+            Dictionary with diff data including files and changes
+        """
+        try:
+            cmd = ["diff", commit, f"--unified={unified}"]
+            if files:
+                cmd.extend(files)
+
+            result = self.operations.run_git_command(cmd)
+            return self._parse_diff_output(result.stdout or "", f"vs-{commit}")
+        except Exception as e:
+            debug_logger.log("ERROR", f"Failed to get commit diff: {e}")
+            return {
+                "files": [],
+                "changes": [],
+                "stats": {"additions": 0, "deletions": 0},
+            }
+
+    def get_commit_history(
+        self,
+        limit: int = 10,
+        files: list[str] | None = None,
+        since: str | None = None,
+        until: str | None = None,
+        author: str | None = None,
+        grep: str | None = None,
+        include_stats: bool = False,
+    ) -> list[dict[str, Any]]:
+        """Get commit history with filtering options.
+
+        Args:
+            limit: Number of commits to retrieve
+            files: Optional list of specific files to get history for
+            since: Show commits since date (YYYY-MM-DD)
+            until: Show commits until date (YYYY-MM-DD)
+            author: Filter commits by author
+            grep: Filter commits by message content
+            include_stats: Include file change statistics
+
+        Returns:
+            List of commit dictionaries with hash, message, author, date
+        """
+        try:
+            cmd = [
+                "log",
+                f"--max-count={limit}",
+                "--pretty=format:%H|%s|%an|%ad",
+                "--date=short",
+            ]
+
+            # Add date filters
+            if since:
+                cmd.append(f"--since={since}")
+            if until:
+                cmd.append(f"--until={until}")
+
+            # Add author filter
+            if author:
+                cmd.append(f"--author={author}")
+
+            # Add grep filter
+            if grep:
+                cmd.append(f"--grep={grep}")
+
+            # Add file paths if specified
+            if files:
+                cmd.append("--")
+                cmd.extend(files)
+
+            result = self.operations.run_git_command(cmd)
+            return self._parse_log_output(result.stdout or "")
+        except Exception as e:
+            debug_logger.log("ERROR", f"Failed to get commit history: {e}")
+            return []
+
+    def _parse_diff_output(self, output: str, context: str) -> dict[str, Any]:
+        """Parse Git diff output into structured data.
+
+        Args:
+            output: Raw Git diff output
+            context: Context of the diff (working, staged, vs-commit)
+
+        Returns:
+            Dictionary with parsed diff data
+        """
+        if not output.strip():
+            return {
+                "files": [],
+                "changes": [],
+                "stats": {"additions": 0, "deletions": 0},
+            }
+
+        files = []
+        changes = []
+        additions = 0
+        deletions = 0
+
+        # Simple parsing - this could be enhanced with proper diff parsing
+        lines = output.split("\n")
+        current_file = None
+
+        for line in lines:
+            if line.startswith("diff --git"):
+                # Extract file path
+                parts = line.split()
+                if len(parts) >= 4:
+                    file_path = parts[3][2:]  # Remove 'b/' prefix
+                    current_file = file_path
+                    files.append(file_path)
+            elif line.startswith("+") and not line.startswith("+++"):
+                additions += 1
+                changes.append(
+                    {"type": "addition", "line": line[1:], "file": current_file}
+                )
+            elif line.startswith("-") and not line.startswith("---"):
+                deletions += 1
+                changes.append(
+                    {"type": "deletion", "line": line[1:], "file": current_file}
+                )
+
+        return {
+            "files": files,
+            "changes": changes,
+            "stats": {"additions": additions, "deletions": deletions},
+            "context": context,
+        }
+
+    def _parse_log_output(self, output: str) -> list[dict[str, Any]]:
+        """Parse Git log output into structured commit data.
+
+        Args:
+            output: Raw Git log output
+
+        Returns:
+            List of commit dictionaries
+        """
+        if not output.strip():
+            return []
+
+        commits = []
+        for line in output.strip().split("\n"):
+            if "|" in line:
+                parts = line.split("|")
+                if len(parts) >= 4:
+                    commits.append(
+                        {
+                            "hash": parts[0],
+                            "message": parts[1],
+                            "author": parts[2],
+                            "date": parts[3],
+                        }
+                    )
+
+        return commits

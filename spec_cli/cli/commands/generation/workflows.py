@@ -230,7 +230,7 @@ class GenerationWorkflow:
             # Generate documentation
             from ....templates.loader import load_template
 
-            template_config = load_template()
+            template_config = load_template(self.settings)
 
             generated_files_dict = self.generator.generate_spec_content(
                 source_file, template_config
@@ -416,7 +416,7 @@ class RegenerationWorkflow(GenerationWorkflow):
 class AddWorkflow:
     """Workflow for adding files to spec tracking."""
 
-    def __init__(self, force: bool = False, settings: SpecSettings = None):
+    def __init__(self, force: bool = False, settings: SpecSettings | None = None):
         """Initialize add workflow.
 
         Args:

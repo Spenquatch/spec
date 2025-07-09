@@ -26,7 +26,7 @@ class SpecTable:
         show_lines: bool = False,
         show_edge: bool = True,
         expand: bool = False,
-        console: Console | None = None,
+        console: Any | None = None,
     ) -> None:
         """Initialize the spec table.
 
@@ -40,7 +40,20 @@ class SpecTable:
         """
         if console is None:
             raise ValueError("SpecTable requires a console instance")
-        self.console = console
+
+        # Handle both Console and SpecConsole objects
+        if hasattr(console, "_console"):
+            # SpecConsole object - use its themed console
+            self.console = console._console
+            self.spec_console = console  # Keep reference for themed printing
+        elif hasattr(console, "print"):
+            # Direct Console object or compatible interface
+            self.console = console
+            self.spec_console = None
+        else:
+            raise ValueError(
+                f"Console object {type(console)} is not compatible with SpecTable"
+            )
         self.title = title
         self.show_header = show_header
         self.show_lines = show_lines
@@ -53,9 +66,9 @@ class SpecTable:
             show_lines=show_lines,
             show_edge=show_edge,
             expand=expand,
-            title_style="title",
-            header_style="subtitle",
-            border_style="border",
+            title_style="bold cyan",
+            header_style="bold yellow",
+            border_style="dim",
         )
 
         debug_logger.log("INFO", "SpecTable initialized", title=title)
@@ -120,7 +133,12 @@ class SpecTable:
 
     def print(self) -> None:
         """Print the table to the console."""
-        self.console.print(self.table)
+        if self.spec_console:
+            # Use SpecConsole for themed printing
+            self.spec_console.print(self.table)
+        else:
+            # Use regular console
+            self.console.print(self.table)
         debug_logger.log("DEBUG", "Table printed to console")
 
     def get_table(self) -> Table:
@@ -146,9 +164,9 @@ class FileListTable(SpecTable):
 
         # Add standard columns for file listings
         self.add_column("Path", style="path", overflow="fold")
-        self.add_column("Type", style="muted", justify="center", width=8)
-        self.add_column("Size", style="value", justify="right", width=10)
-        self.add_column("Status", style="info", justify="center", width=12)
+        self.add_column("Type", style="dim", justify="center", width=8)
+        self.add_column("Size", style="cyan", justify="right", width=10)
+        self.add_column("Status", style="green", justify="center", width=12)
 
     def add_file(
         self,
@@ -220,9 +238,9 @@ class StatusTable(SpecTable):
         super().__init__(title=title, show_lines=True, **kwargs)
 
         # Add standard columns for status display
-        self.add_column("Item", style="label", width=20)
-        self.add_column("Value", style="value", overflow="fold")
-        self.add_column("Status", style="info", justify="center", width=12)
+        self.add_column("Item", style="bold white", width=20)
+        self.add_column("Value", style="cyan", overflow="fold")
+        self.add_column("Status", style="green", justify="center", width=12)
 
     def add_status_item(self, name: str, value: Any, status: str = "info") -> None:
         """Add a status item to the table.
@@ -259,10 +277,10 @@ class ComparisonTable(SpecTable):
         super().__init__(title=title, show_lines=True, **kwargs)
 
         # Add standard columns for comparison
-        self.add_column("Property", style="label", width=20)
-        self.add_column("Before", style="muted", justify="center")
-        self.add_column("After", style="value", justify="center")
-        self.add_column("Change", style="info", justify="center", width=10)
+        self.add_column("Property", style="bold white", width=20)
+        self.add_column("Before", style="dim", justify="center")
+        self.add_column("After", style="cyan", justify="center")
+        self.add_column("Change", style="green", justify="center", width=10)
 
     def add_comparison(
         self, property_name: str, before_value: Any, after_value: Any
@@ -389,7 +407,7 @@ def print_simple_table(
 
 
 def create_key_value_table(
-    data: dict[str, Any], title: str | None = None, console: Console | None = None
+    data: dict[str, Any], title: str | None = None, console: Any | None = None
 ) -> SpecTable:
     """Create a key-value table from a dictionary.
 
@@ -404,8 +422,8 @@ def create_key_value_table(
     if console is None:
         raise ValueError("create_key_value_table requires a console instance")
     table = SpecTable(title=title, console=console)
-    table.add_column("Key", style="label", width=20)
-    table.add_column("Value", style="value")
+    table.add_column("Key", style="bold white", width=20)
+    table.add_column("Value", style="cyan")
 
     for key, value in data.items():
         formatted_key = key.replace("_", " ").title()

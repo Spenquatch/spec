@@ -100,6 +100,48 @@ class SpecConsole:
         if content:
             self.print(content, **kwargs)
 
+    def print_message(
+        self, message: str, style: str | None = None, **kwargs: Any
+    ) -> None:
+        """Print a message with optional styling.
+
+        Args:
+            message: Message to print
+            style: Optional style to apply
+            **kwargs: Additional arguments for console.print
+        """
+        if style:
+            self.print_status(message, style, **kwargs)
+        else:
+            self.print(message, **kwargs)
+
+    def print_error(self, message: str, **kwargs: Any) -> None:
+        """Print an error message.
+
+        Args:
+            message: Error message to print
+            **kwargs: Additional arguments for console.print
+        """
+        self.print_status(message, "error", **kwargs)
+
+    def print_success(self, message: str, **kwargs: Any) -> None:
+        """Print a success message.
+
+        Args:
+            message: Success message to print
+            **kwargs: Additional arguments for console.print
+        """
+        self.print_status(message, "success", **kwargs)
+
+    def print_warning(self, message: str, **kwargs: Any) -> None:
+        """Print a warning message.
+
+        Args:
+            message: Warning message to print
+            **kwargs: Additional arguments for console.print
+        """
+        self.print_status(message, "warning", **kwargs)
+
     def _replace_emojis(self, text: str) -> str:
         """Replace emojis with styled text equivalents.
 
@@ -318,5 +360,5 @@ def reset_console() -> None:
 
 
 # Convenient alias for the global console
-def spec_console():
+def spec_console() -> SpecConsole:
     return create_console(cache=True)

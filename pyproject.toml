@@ -93,6 +93,12 @@ build-backend = "poetry.core.masonry.api"
 # Ruff replaces Black, isort, and many other tools
 line-length = 88
 target-version = "py310"
+exclude = [
+    "safe_to_delete/",
+    "templates/",
+    ".tmp*",
+    "_scratch*"
+]
 
 [tool.ruff.lint]
 select = [

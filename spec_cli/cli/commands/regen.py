@@ -7,7 +7,6 @@ import click
 from ...core.context import SpecContext
 from ...core.context_bridge import debug_logger
 from ...file_processing.conflict_resolver import ConflictResolutionStrategy
-from ...ui.error_display import show_message
 from ...utils.path_utils import safe_relative_to
 from ..decorators import context_injection
 from ..utils import get_user_confirmation, validate_file_paths
@@ -70,19 +69,25 @@ def regen_command(
             source_files = _find_all_spec_sources()
 
         if not source_files:
-            show_message("No source files with existing specs found", "warning")
+            context.console.print_warning("No source files with existing specs found")
             return
 
         # Filter to only files with existing specs
         files_with_specs = _filter_files_with_specs(source_files)
 
         if not files_with_specs:
-            show_message("No existing spec files found for regeneration", "warning")
+            context.console.print_warning(
+                "No existing spec files found for regeneration"
+            )
             if not all:
-                show_message("Use 'spec gen' to create new documentation", "info")
+                context.console.print_message(
+                    "Use 'spec gen' to create new documentation", "info"
+                )
             return
 
-        show_message(f"Found {len(files_with_specs)} files with existing specs", "info")
+        context.console.print_message(
+            f"Found {len(files_with_specs)} files with existing specs", "info"
+        )
 
         # Use default template if not specified
         if not template:
@@ -97,7 +102,7 @@ def regen_command(
         )
 
         if not validation_result["valid"]:
-            show_message("Validation failed:", "error")
+            context.console.print_error("Validation failed:")
             for error in validation_result["errors"]:
                 context.console.print(f"  • [red]{error}[/red]")
             return
@@ -126,7 +131,7 @@ def regen_command(
                 "\nProceed with regeneration? This will overwrite existing content.",
                 default=False,
             ):
-                show_message("Regeneration cancelled", "info")
+                context.console.print_message("Regeneration cancelled", "info")
                 return
 
         # Dry run mode
@@ -150,7 +155,7 @@ def regen_command(
             commit_message=commit_message,
         )
 
-        show_message(
+        context.console.print_message(
             f"Regenerating documentation using '{template}' template...", "info"
         )
 
@@ -290,4 +295,6 @@ def _show_regen_dry_run_preview(
                 )
         context.console.print()
 
-    show_message("This is a dry run. No files would be modified.", "info")
+    context.console.print_message(
+        "This is a dry run. No files would be modified.", "info"
+    )
