@@ -488,7 +488,7 @@ class TestMockHuggingFaceModel:
         """Test model generation."""
         model = MockHuggingFaceModel()
 
-        mock_input = Mock()
+        mock_input = Mock(spec=[])
         mock_input.shape = [1, 50]
 
         result = model.generate(mock_input, max_new_tokens=100, temperature=0.7)

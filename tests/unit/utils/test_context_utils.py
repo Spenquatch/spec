@@ -154,7 +154,7 @@ class TestCreateContextHash:
 
     def test_create_context_hash_when_complex_object_then_includes_class_info(self):
         """Test that complex objects include class information in hash."""
-        mock_obj = Mock()
+        mock_obj = Mock(spec=[])
         mock_obj.__class__.__name__ = "MockClass"
 
         @dataclass(frozen=True)

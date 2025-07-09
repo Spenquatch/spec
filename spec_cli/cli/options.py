@@ -140,9 +140,7 @@ def validate_spec_repository(
         # Get settings from Click context
         settings = ctx.obj.settings if ctx.obj else None
         if not settings:
-            raise click.ClickException(
-                "Settings not available in Click context"
-            )
+            raise click.ClickException("Settings not available in Click context")
 
         repo = SpecGitRepository(settings)
         if not repo.is_initialized():

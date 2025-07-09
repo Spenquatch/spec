@@ -37,7 +37,7 @@ class TestContextInjectionDecorator:
     def mock_click_context(self):
         """Mock Click context for testing."""
         click_ctx = Mock(spec=click.Context)
-        click_ctx.command = Mock()
+        click_ctx.command = Mock(spec=[])
         click_ctx.command.name = TEST_COMMAND_NAME
         click_ctx.params = {"debug": True}
         click_ctx.obj = {"spec_spec_context": Mock(spec=SpecContext)}
@@ -345,7 +345,7 @@ class TestContextInjectionError:
     ):
         """Test error adds Click context information."""
         mock_click_ctx = Mock(spec=click.Context)
-        mock_click_ctx.command = Mock()
+        mock_click_ctx.command = Mock(spec=[])
         mock_click_ctx.command.name = TEST_COMMAND_NAME
         mock_click_ctx.params = {"debug": True}
 

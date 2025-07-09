@@ -279,7 +279,7 @@ class TestFilePermissionMocker:
         # Don't mock any paths
 
         with patch("os.stat") as mock_real_stat, patch("os.access") as mock_real_access:
-            mock_real_stat.return_value = Mock()
+            mock_real_stat.return_value = Mock(spec=[])
             mock_real_access.return_value = True
 
             with self.mocker.mock_permissions():

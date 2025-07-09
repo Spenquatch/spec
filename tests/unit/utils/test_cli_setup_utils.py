@@ -29,7 +29,7 @@ class TestInitializeCLIContext:
         ) as mock_create:
             mock_context = Mock(spec=SpecContext)
             mock_context.get_context_hash.return_value = "test_hash_12345678"
-            mock_context.settings = Mock()
+            mock_context.settings = Mock(spec=[])
             mock_context.settings.root_path = tmp_path
             mock_create.return_value = mock_context
 
@@ -50,7 +50,7 @@ class TestInitializeCLIContext:
         ) as mock_create:
             mock_context = Mock(spec=SpecContext)
             mock_context.get_context_hash.return_value = "test_hash_12345678"
-            mock_context.settings = Mock()
+            mock_context.settings = Mock(spec=[])
             mock_context.settings.root_path = Path("/test/current")
             mock_create.return_value = mock_context
 
@@ -96,7 +96,7 @@ class TestSetupClickContextStorage:
         """Test setup_click_context_storage stores SpecContext successfully."""
         # Setup: Create mock contexts
         click_ctx = Mock(spec=click.Context)
-        click_ctx.command = Mock()
+        click_ctx.command = Mock(spec=[])
         click_ctx.command.name = "test"
 
         spec_ctx = Mock(spec=SpecContext)
@@ -140,7 +140,7 @@ class TestSetupClickContextStorage:
         """Test setup_click_context_storage raises CLISetupError when integration fails."""
         # Setup: Create mock contexts
         click_ctx = Mock(spec=click.Context)
-        click_ctx.command = Mock()
+        click_ctx.command = Mock(spec=[])
         click_ctx.command.name = "test"
 
         spec_ctx = Mock(spec=SpecContext)
@@ -237,13 +237,13 @@ class TestValidateCLIContextSetup:
         """Test validate_cli_context_setup returns valid result when context is available."""
         # Setup: Create mock Click context with SpecContext
         click_ctx = Mock(spec=click.Context)
-        click_ctx.command = Mock()
+        click_ctx.command = Mock(spec=[])
         click_ctx.command.name = "test"
 
         mock_spec_context = Mock(spec=SpecContext)
-        mock_spec_context.settings = Mock()
-        mock_spec_context.console = Mock()
-        mock_spec_context.progress = Mock()
+        mock_spec_context.settings = Mock(spec=[])
+        mock_spec_context.console = Mock(spec=[])
+        mock_spec_context.progress = Mock(spec=[])
         mock_spec_context.get_context_hash.return_value = "test_hash_12345678"
 
         # Mock retrieve_spec_context
@@ -267,7 +267,7 @@ class TestValidateCLIContextSetup:
         """Test validate_cli_context_setup returns invalid result when context is missing."""
         # Setup: Create mock Click context without SpecContext
         click_ctx = Mock(spec=click.Context)
-        click_ctx.command = Mock()
+        click_ctx.command = Mock(spec=[])
         click_ctx.command.name = "test"
 
         # Mock retrieve_spec_context to return None
@@ -299,7 +299,7 @@ class TestValidateCLIContextSetup:
         """Test validate_cli_context_setup raises CLISetupError when validation fails."""
         # Setup: Create mock Click context
         click_ctx = Mock(spec=click.Context)
-        click_ctx.command = Mock()
+        click_ctx.command = Mock(spec=[])
         click_ctx.command.name = "test"
 
         # Mock retrieve_spec_context to fail

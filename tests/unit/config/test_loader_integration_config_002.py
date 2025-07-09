@@ -14,7 +14,7 @@ import pytest
 import yaml
 
 from spec_cli.config.loader import ConfigurationLoader
-from spec_cli.config.settings import get_settings, reset_settings
+from spec_cli.config.settings import SettingsManager, SpecSettings, reset_settings
 from spec_cli.exceptions import SpecConfigurationError
 
 
@@ -109,6 +109,11 @@ history = "# {{filename}} History\\n\\nTOML content"
 
         return config_data
 
+    def get_fresh_settings(self, temp_project_root: Path) -> SpecSettings:
+        """Create fresh settings instance for testing."""
+        manager = SettingsManager()
+        return manager.get_settings(temp_project_root)
+
     # Environment variable integration tests
     def test_environment_variables_override_config_files(
         self, temp_project_root: Path, config_with_yaml: dict[str, Any]
@@ -123,7 +128,7 @@ history = "# {{filename}} History\\n\\nTOML content"
         # Load configuration and get integrated settings
         loader = ConfigurationLoader(temp_project_root)
         config = loader.load_configuration()
-        settings = get_settings(temp_project_root)
+        settings = self.get_fresh_settings(temp_project_root)
 
         # Verify environment variables override config file
         assert not settings.debug_enabled  # ENV: False overrides YAML: True
@@ -149,7 +154,7 @@ history = "# {{filename}} History\\n\\nTOML content"
         # Load configuration and get settings
         loader = ConfigurationLoader(temp_project_root)
         config = loader.load_configuration()
-        settings = get_settings(temp_project_root)
+        settings = self.get_fresh_settings(temp_project_root)
 
         # Verify environment variables are applied
         assert settings.debug_enabled
@@ -189,7 +194,8 @@ history = "# {{filename}} History\\n\\nTOML content"
             os.environ["SPEC_DEBUG"] = env_value
 
             # Get settings
-            settings = get_settings(temp_project_root)
+            manager = SettingsManager()
+            settings = manager.get_settings(temp_project_root)
 
             assert settings.debug_enabled == expected, (
                 f"Value '{env_value}' should parse to {expected}"
@@ -219,7 +225,8 @@ history = "# {{filename}} History\\n\\nTOML content"
                 os.environ["SPEC_CONSOLE_WIDTH"] = env_value
 
             # Get settings
-            settings = get_settings(temp_project_root)
+            manager = SettingsManager()
+            settings = manager.get_settings(temp_project_root)
 
             assert settings.console_width == expected, (
                 f"Width '{env_value}' should result in {expected}"
@@ -342,7 +349,7 @@ history = "# {{filename}} History\\n\\nTOML content"
         config = loader.load_configuration()
 
         # Get settings (which should integrate environment + config)
-        settings = get_settings(temp_project_root)
+        settings = self.get_fresh_settings(temp_project_root)
 
         # Verify settings integration
         assert settings.debug_enabled  # From environment
@@ -463,17 +470,18 @@ history = "# {{filename}} History\\n\\nTOML content"
         results = []
         errors = []
 
-        def load_and_get_settings() -> None:
+        def load_and_validate() -> None:
             try:
                 loader = ConfigurationLoader(temp_project_root)
                 config = loader.load_configuration()
-                settings = get_settings(temp_project_root)
+                manager = SettingsManager()
+                settings = manager.get_settings(temp_project_root)
                 results.append((config, settings.root_path))
             except Exception as e:
                 errors.append(e)
 
         # Create multiple threads
-        threads = [threading.Thread(target=load_and_get_settings) for _ in range(5)]
+        threads = [threading.Thread(target=load_and_validate) for _ in range(5)]
 
         # Start all threads
         for thread in threads:

@@ -14,9 +14,9 @@ import pytest
 with patch.dict(
     "sys.modules",
     {
-        "torch": Mock(),
-        "llama_cpp": Mock(),
-        "transformers": Mock(),
+        "torch": Mock(spec=[]),
+        "llama_cpp": Mock(spec=[]),
+        "transformers": Mock(spec=[]),
     },
 ):
     from spec_cli.config.settings import SpecSettings
@@ -49,7 +49,10 @@ class TestAITemplateIntegrator:
     def test_integrator_initialization_default_manager(self):
         """Test AITemplateIntegrator initialization requires manager."""
         # Should raise ValueError when no manager provided
-        with pytest.raises(ValueError, match="AITemplateIntegrator requires an AIContentManager instance"):
+        with pytest.raises(
+            ValueError,
+            match="AITemplateIntegrator requires an AIContentManager instance",
+        ):
             AITemplateIntegrator()
 
     def test_enhance_template_success_standard_level(self):

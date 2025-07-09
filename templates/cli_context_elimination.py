@@ -11,7 +11,7 @@ from spec_cli.core.context import get_context
 
 
 @click.command()
-@click.argument('file_path')
+@click.argument("file_path")
 def old_add_command(file_path):
     """OLD: Command using singleton context access."""
     # Anti-pattern: Global singleton access
@@ -31,6 +31,7 @@ def old_add_command(file_path):
     except Exception as e:
         console.show_error(f"Failed to add {file_path}: {e}")
 
+
 # ===== AFTER: Dependency Injection Pattern =====
 
 import click
@@ -40,7 +41,7 @@ from spec_cli.core.decorators import inject_context
 
 
 @inject_context
-@click.argument('file_path')
+@click.argument("file_path")
 def new_add_command(file_path: str, context: SpecContext):
     """NEW: Command using dependency injection."""
     # Target pattern: Injected dependencies
@@ -58,6 +59,7 @@ def new_add_command(file_path: str, context: SpecContext):
 
     except Exception as e:
         console.show_error(f"Failed to add {file_path}: {e}")
+
 
 # ===== MIGRATION STEPS =====
 
@@ -81,6 +83,7 @@ Step 4: Update tests
 
 # ===== TEST MIGRATION EXAMPLE =====
 
+
 # OLD TEST:
 def test_old_add_command():
     """OLD: Test with singleton context setup."""
@@ -89,8 +92,9 @@ def test_old_add_command():
     # Anti-pattern: Global context setup
     initialize_context(debug=True)
 
-    result = runner.invoke(old_add_command, ['test.txt'])
+    result = runner.invoke(old_add_command, ["test.txt"])
     assert result.exit_code == 0
+
 
 # NEW TEST:
 def test_new_add_command(mock_context):
@@ -98,5 +102,5 @@ def test_new_add_command(mock_context):
     # Target pattern: Injected mock context
     mock_context.settings.debug_enabled = True
 
-    result = runner.invoke(new_add_command, ['test.txt'], obj=mock_context)
+    result = runner.invoke(new_add_command, ["test.txt"], obj=mock_context)
     assert result.exit_code == 0

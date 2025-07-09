@@ -229,7 +229,9 @@ class ContentViewer:
 
 
 # Convenience functions
-def display_spec_content(spec_data: dict[str, Any], console: ConsoleType, show_metadata: bool = True) -> None:
+def display_spec_content(
+    spec_data: dict[str, Any], console: ConsoleType, show_metadata: bool = True
+) -> None:
     """Display spec file content with metadata.
 
     Args:

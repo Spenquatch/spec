@@ -140,10 +140,10 @@ class TestCLIAppContextSetup:
     def mock_spec_context(self) -> Mock:
         """Mock SpecContext for testing."""
         mock_context = Mock(spec=SpecContext)
-        mock_context.settings = Mock()
+        mock_context.settings = Mock(spec=[])
         mock_context.settings.root_path = Path("/test")
-        mock_context.console = Mock()
-        mock_context.progress = Mock()
+        mock_context.console = Mock(spec=[])
+        mock_context.progress = Mock(spec=[])
         mock_context.get_context_hash.return_value = "test_hash_12345678"
         return mock_context
 
@@ -151,7 +151,7 @@ class TestCLIAppContextSetup:
     def mock_click_context(self) -> Mock:
         """Mock Click context for testing."""
         mock_ctx = Mock(spec=click.Context)
-        mock_ctx.command = Mock()
+        mock_ctx.command = Mock(spec=[])
         mock_ctx.command.name = "test_command"
         mock_ctx.obj = {}
         return mock_ctx

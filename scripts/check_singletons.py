@@ -14,6 +14,7 @@ except ImportError as e:
     print(f"ERROR: Cannot import singleton detection: {e}")
     sys.exit(1)
 
+
 def main() -> int:
     """Run singleton detection on provided files."""
     if len(sys.argv) < 2:
@@ -54,6 +55,7 @@ def main() -> int:
         return 1
 
     return 0
+
 
 if __name__ == "__main__":
     sys.exit(main())

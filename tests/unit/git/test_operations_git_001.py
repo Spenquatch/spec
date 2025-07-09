@@ -196,7 +196,7 @@ class TestGitOperationsCommandExecution:
     ) -> None:
         """Test successful Git command execution."""
         mock_validate.return_value = (True, None)
-        mock_result = Mock()
+        mock_result = Mock(spec=[])
         mock_result.returncode = 0
         mock_result.stdout = "success"
         mock_result.stderr = ""
@@ -298,7 +298,7 @@ class TestGitOperationsCommandExecution:
     ) -> None:
         """Test that successful command execution is logged."""
         mock_validate.return_value = (True, None)
-        mock_result = Mock()
+        mock_result = Mock(spec=[])
         mock_result.returncode = 0
         mock_result.stdout = "success"
         mock_result.stderr = ""
@@ -337,7 +337,7 @@ class TestGitOperationsRepositoryInit:
         self, mock_run_git: Any, tmp_path
     ) -> None:
         """Test repository initialization creates bare repository."""
-        mock_result = Mock()
+        mock_result = Mock(spec=[])
         mock_result.stdout = "Initialized empty Git repository"
         mock_run_git.return_value = mock_result
 
@@ -394,7 +394,7 @@ class TestGitOperationsRepositoryInit:
         self, mock_logger: Any, mock_run_git: Any, tmp_path
     ) -> None:
         """Test that successful repository initialization is logged."""
-        mock_result = Mock()
+        mock_result = Mock(spec=[])
         mock_result.stdout = "Initialized empty Git repository"
         mock_run_git.return_value = mock_result
 
@@ -422,7 +422,7 @@ class TestGitOperationsUtilityMethods:
         self, mock_run_git: Any, tmp_path
     ) -> None:
         """Test check_git_available returns True when Git is available."""
-        mock_result = Mock()
+        mock_result = Mock(spec=[])
         mock_result.stdout = "git version 2.34.1"
         mock_run_git.return_value = mock_result
 
@@ -457,7 +457,7 @@ class TestGitOperationsUtilityMethods:
         self, mock_run_git: Any, tmp_path
     ) -> None:
         """Test get_git_version returns version string when Git is available."""
-        mock_result = Mock()
+        mock_result = Mock(spec=[])
         mock_result.stdout = "git version 2.34.1\n"
         mock_run_git.return_value = mock_result
 
@@ -493,7 +493,7 @@ class TestGitOperationsUtilityMethods:
         self, mock_logger: Any, mock_run_git: Any, tmp_path
     ) -> None:
         """Test that utility methods log debug information appropriately."""
-        mock_result = Mock()
+        mock_result = Mock(spec=[])
         mock_result.stdout = "git version 2.34.1"
         mock_run_git.return_value = mock_result
 
@@ -524,7 +524,7 @@ class TestGitOperationsEdgeCases:
         self, mock_run_git: Any, tmp_path: Path
     ) -> None:
         """Test that version string properly strips newlines."""
-        mock_result = Mock()
+        mock_result = Mock(spec=[])
         mock_result.stdout = "git version 2.34.1\n\n"
         mock_run_git.return_value = mock_result
 

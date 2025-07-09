@@ -8,7 +8,7 @@ from ...core.context import SpecContext
 from ...core.context_bridge import debug_logger
 from ...exceptions import SpecError
 from ...git.repository import SpecGitRepository
-from ...ui.error_display import show_message
+from ...ui.error_display import show_info, show_success, show_warning
 from ...utils.path_utils import safe_relative_to
 from ..base_command import BaseCommand
 from .generation import create_add_workflow
@@ -32,7 +32,7 @@ class AddCommand(BaseCommand):
         self.context = context
 
         # Set console from context
-        if context and hasattr(context, "console") and context.console:
+        if context and hasattr(context, "console") and context.console is not None:
             self.console = context.console
         else:
             raise ValueError("AddCommand requires a SpecContext with console")
@@ -64,20 +64,22 @@ class AddCommand(BaseCommand):
         expanded_files = self._expand_spec_files(files)
 
         if not expanded_files:
-            show_message("No spec files found in the specified paths", "warning")
+            show_warning(
+                "No spec files found in the specified paths", console=self.console
+            )
             return self.create_result(True, "No files to add", data={"added": []})
 
         # Filter to only spec files
         spec_files = self._filter_spec_files(expanded_files)
 
         if not spec_files:
-            show_message(
+            show_warning(
                 "No files in .specs/ directory found. Use 'spec gen' to create documentation first.",
-                "warning",
+                console=self.console,
             )
             return self.create_result(True, "No spec files found", data={"added": []})
 
-        show_message(f"Found {len(spec_files)} spec files to add", "info")
+        show_info(f"Found {len(spec_files)} spec files to add", console=self.console)
 
         # Check Git status for these files
         git_status = self._analyze_git_status(spec_files, repo)
@@ -87,7 +89,9 @@ class AddCommand(BaseCommand):
 
         # Dry run mode
         if dry_run:
-            show_message("This is a dry run. No files would be added.", "info")
+            show_info(
+                "This is a dry run. No files would be added.", console=self.console
+            )
             return self.create_result(
                 True,
                 f"Dry run completed - {len(spec_files)} files would be added",
@@ -100,8 +104,9 @@ class AddCommand(BaseCommand):
         ]
 
         if not files_to_add:
-            show_message(
-                "All specified files are already tracked and up to date", "info"
+            show_info(
+                "All specified files are already tracked and up to date",
+                console=self.console,
             )
             return self.create_result(
                 True, "All files already tracked", data={"added": []}
@@ -110,7 +115,10 @@ class AddCommand(BaseCommand):
         # Create and execute workflow
         workflow = create_add_workflow(force=force, settings=self.settings)
 
-        show_message(f"Adding {len(files_to_add)} files to spec repository...", "info")
+        show_info(
+            f"Adding {len(files_to_add)} files to spec repository...",
+            console=self.console,
+        )
 
         result = workflow.add_files(files_to_add)
 
@@ -254,13 +262,14 @@ class AddCommand(BaseCommand):
         """Display add operation results."""
         # Show summary
         if result["success"]:
-            show_message(
+            show_success(
                 f"Successfully added {len(result['added'])} files to spec repository",
-                "success",
+                console=self.console,
             )
         else:
-            show_message(
-                f"Add completed with {len(result['failed'])} failures", "warning"
+            show_warning(
+                f"Add completed with {len(result['failed'])} failures",
+                console=self.console,
             )
 
         # Show statistics

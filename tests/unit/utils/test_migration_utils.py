@@ -131,7 +131,7 @@ class TestMigrationUtils:
         migrated = migrate_command_signature(original_func, CONTEXT_PARAM_NAME)
 
         # Execute with context as first argument
-        mock_context = Mock()
+        mock_context = Mock(spec=[])
         result = migrated(mock_context, True, False)
 
         # Verify original function received correct arguments

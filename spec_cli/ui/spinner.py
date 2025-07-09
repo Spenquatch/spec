@@ -290,7 +290,9 @@ class SpinnerManager:
 
 
 # Convenience functions
-def create_spinner(text: str = "Loading...", console: Console | None = None, **kwargs: Any) -> SpecSpinner:
+def create_spinner(
+    text: str = "Loading...", console: Console | None = None, **kwargs: Any
+) -> SpecSpinner:
     """Create a new spinner with default settings.
 
     Args:
@@ -307,7 +309,10 @@ def create_spinner(text: str = "Loading...", console: Console | None = None, **k
 
 
 def timed_spinner(
-    text: str = "Loading...", timeout: float = 30.0, console: Console | None = None, **kwargs: Any
+    text: str = "Loading...",
+    timeout: float = 30.0,
+    console: Console | None = None,
+    **kwargs: Any,
 ) -> TimedSpinner:
     """Create a timed spinner.
 

@@ -287,7 +287,10 @@ class ComparisonTable(SpecTable):
 
 # Utility functions
 def create_file_table(
-    files: list[Path], title: str = "Files", console: Console | None = None, **kwargs: Any
+    files: list[Path],
+    title: str = "Files",
+    console: Console | None = None,
+    **kwargs: Any,
 ) -> FileListTable:
     """Create a table for displaying file information.
 
@@ -318,7 +321,10 @@ def create_file_table(
 
 
 def create_status_table(
-    data: dict[str, Any], title: str = "Status", console: Console | None = None, **kwargs: Any
+    data: dict[str, Any],
+    title: str = "Status",
+    console: Console | None = None,
+    **kwargs: Any,
 ) -> StatusTable:
     """Create a table for displaying status information.
 
@@ -382,7 +388,9 @@ def print_simple_table(
     table.print()
 
 
-def create_key_value_table(data: dict[str, Any], title: str | None = None, console: Console | None = None) -> SpecTable:
+def create_key_value_table(
+    data: dict[str, Any], title: str | None = None, console: Console | None = None
+) -> SpecTable:
     """Create a key-value table from a dictionary.
 
     Args:

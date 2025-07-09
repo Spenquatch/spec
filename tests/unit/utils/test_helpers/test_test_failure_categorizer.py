@@ -29,6 +29,7 @@ FIXTURE_ERROR_MESSAGE = "fixture 'test_fixture' not found"
 CONTEXT_ERROR_MESSAGE = "context injection failed in decorator"
 ASSERTION_ERROR_MESSAGE = "AssertionError: expected 5, got 3"
 
+
 class TestCategorizeTestFailure:
     """Test the main categorize_test_failure function."""
 
@@ -125,6 +126,7 @@ class TestCategorizeTestFailure:
         ):
             categorize_test_failure(failure_info)
 
+
 class TestAnalyzeFailureType:
     """Test the _analyze_failure_type function."""
 
@@ -212,6 +214,7 @@ class TestAnalyzeFailureType:
 
         assert result == FailureType.UNKNOWN
 
+
 class TestDetermineFailurePriority:
     """Test the _determine_failure_priority function."""
 
@@ -267,6 +270,7 @@ class TestDetermineFailurePriority:
 
         assert priority == FailurePriority.MEDIUM
 
+
 class TestGenerateRemediationNotes:
     """Test the _generate_remediation_notes function."""
 
@@ -306,6 +310,7 @@ class TestGenerateRemediationNotes:
         assert "manual analysis" in notes.lower()
         assert "stack trace" in notes.lower()
 
+
 class TestGetRemediationStrategy:
     """Test the _get_remediation_strategy function."""
 
@@ -328,6 +333,7 @@ class TestGetRemediationStrategy:
             result = _get_remediation_strategy(failure_type)
             assert result == expected_strategy
 
+
 class TestEstimateRemediationEffort:
     """Test the _estimate_remediation_effort function."""
 
@@ -349,6 +355,7 @@ class TestEstimateRemediationEffort:
         for failure_type, expected_effort in efforts.items():
             result = _estimate_remediation_effort(failure_type)
             assert result == expected_effort
+
 
 class TestDataClasses:
     """Test the data class definitions."""
@@ -397,6 +404,7 @@ class TestDataClasses:
         assert category.priority == FailurePriority.HIGH
         assert category.failure_count == 1
         assert len(category.failures) == 1
+
 
 class TestEnumDefinitions:
     """Test the enum definitions."""

@@ -170,11 +170,6 @@ class SettingsManager:
 # Convenience functions for getting settings and console
 
 
-def get_console(root_path: Path | None = None) -> Console:
-    """Get Rich console instance."""
-    return SettingsManager().get_console(root_path)
-
-
 def reset_settings() -> None:
     """Reset settings manager for testing."""
     manager = SettingsManager()

@@ -76,7 +76,6 @@ def _get_spec_context_from_click() -> SpecContext:
                 progress_type=type(spec_context.progress).__name__,
             )
 
-
         if not isinstance(spec_context, SpecContext):
             raise ContextInjectionError(
                 f"Invalid context type: expected SpecContext, got {type(spec_context)}"

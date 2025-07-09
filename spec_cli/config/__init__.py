@@ -8,14 +8,12 @@ from .loader import ConfigurationLoader
 from .settings import (
     SettingsManager,
     SpecSettings,
-    get_console,
 )
 from .validation import ConfigurationValidator
 
 __all__ = [
     "SpecSettings",
     "SettingsManager",
-    "get_console",
     "ConfigurationLoader",
     "ConfigurationValidator",
 ]

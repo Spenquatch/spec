@@ -166,11 +166,13 @@ def get_spec_repository(settings=None) -> Any:
         if settings is None:
             try:
                 import click
+
                 ctx = click.get_current_context()
                 settings = ctx.obj.settings
             except RuntimeError:
                 # Fallback to default settings for test compatibility
                 from ..config.settings import SpecSettings
+
                 settings = SpecSettings()
 
         repo = SpecGitRepository(settings)
@@ -198,7 +200,7 @@ def with_progress_context(operation_name: str) -> Callable[..., Any]:
 
             # Extract console from context (first argument in CLI commands)
             console = None
-            if args and hasattr(args[0], 'console'):
+            if args and hasattr(args[0], "console"):
                 console = args[0].console
 
             progress_manager = get_progress_manager(console)
@@ -246,11 +248,13 @@ def is_in_spec_repository(settings=None) -> bool:
         if settings is None:
             try:
                 import click
+
                 ctx = click.get_current_context()
                 settings = ctx.obj.settings
             except RuntimeError:
                 # Fallback to default settings for test compatibility
                 from ..config.settings import SpecSettings
+
                 settings = SpecSettings()
 
         repo = SpecGitRepository(settings)

@@ -255,7 +255,9 @@ class CommitFormatter:
 
 
 # Convenience functions
-def format_commit_log(commits: list[dict[str, Any]], console: ConsoleType, compact: bool = False) -> None:
+def format_commit_log(
+    commits: list[dict[str, Any]], console: ConsoleType, compact: bool = False
+) -> None:
     """Format commit log with Rich styling.
 
     Args:

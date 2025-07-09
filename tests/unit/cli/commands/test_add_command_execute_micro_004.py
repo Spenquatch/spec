@@ -27,6 +27,12 @@ class TestAddCommandExecuteMicro004:
         context.settings.spec_dir = Path(".spec")
         context.settings.index_file = Path(".spec-index")
         context.settings.debug_enabled = False
+
+        # Ensure console mock has required methods
+        context.console.print = Mock()
+        context.console.log = Mock()
+        context.console.rule = Mock()
+
         return context
 
     def setup_method(self):
@@ -40,12 +46,12 @@ class TestAddCommandExecuteMicro004:
 
     @patch("spec_cli.cli.commands.add_command.SpecGitRepository")
     @patch("spec_cli.cli.commands.add_command.create_add_workflow")
-    @patch("spec_cli.cli.commands.add_command.show_message")
+    @patch("spec_cli.cli.commands.add_command.show_info")
     @patch("spec_cli.cli.commands.add_command.debug_logger")
     def test_execute_with_valid_files_succeeds(
         self,
         mock_debug_logger,
-        mock_show_message,
+        mock_show_info,
         mock_create_workflow,
         mock_repo_class,
         spec_context,
@@ -105,9 +111,9 @@ class TestAddCommandExecuteMicro004:
             [Path("file1.md"), Path("file2.md")]
         )
 
-    @patch("spec_cli.cli.commands.add_command.show_message")
+    @patch("spec_cli.cli.commands.add_command.show_warning")
     def test_execute_with_no_expanded_files_returns_success_with_no_files_message(
-        self, mock_show_message, spec_context
+        self, mock_show_warning, spec_context
     ):
         """Test execute with no expanded files returns success with informative message."""
 
@@ -122,13 +128,13 @@ class TestAddCommandExecuteMicro004:
         assert result["success"] is True
         assert result["message"] == "No files to add"
         assert result["data"]["added"] == []
-        mock_show_message.assert_called_with(
-            "No spec files found in the specified paths", "warning"
+        mock_show_warning.assert_called_with(
+            "No spec files found in the specified paths", console=spec_context.console
         )
 
-    @patch("spec_cli.cli.commands.add_command.show_message")
+    @patch("spec_cli.cli.commands.add_command.show_warning")
     def test_execute_with_no_spec_files_returns_success_with_gen_suggestion(
-        self, mock_show_message, spec_context
+        self, mock_show_warning, spec_context
     ):
         """Test execute with no spec files suggests using 'spec gen' command."""
 
@@ -144,14 +150,14 @@ class TestAddCommandExecuteMicro004:
 
         assert result["success"] is True
         assert result["message"] == "No spec files found"
-        mock_show_message.assert_called_with(
+        mock_show_warning.assert_called_with(
             "No files in .specs/ directory found. Use 'spec gen' to create documentation first.",
-            "warning",
+            console=spec_context.console,
         )
 
-    @patch("spec_cli.cli.commands.add_command.show_message")
+    @patch("spec_cli.cli.commands.add_command.show_info")
     def test_execute_with_dry_run_returns_preview_without_adding_files(
-        self, mock_show_message, spec_context
+        self, mock_show_info, spec_context
     ):
         """Test execute with dry_run=True shows preview without adding files."""
         # Console comes from spec_context
@@ -179,14 +185,14 @@ class TestAddCommandExecuteMicro004:
         assert result["success"] is True
         assert "Dry run completed" in result["message"]
         assert result["data"]["files_to_add"] == [Path("file1.md")]
-        mock_show_message.assert_called_with(
-            "This is a dry run. No files would be added.", "info"
+        mock_show_info.assert_called_with(
+            "This is a dry run. No files would be added.", console=spec_context.console
         )
 
     @patch("spec_cli.cli.commands.add_command.SpecGitRepository")
-    @patch("spec_cli.cli.commands.add_command.show_message")
+    @patch("spec_cli.cli.commands.add_command.show_info")
     def test_execute_with_all_files_already_tracked_returns_success_message(
-        self, mock_show_message, mock_repo_class, spec_context
+        self, mock_show_info, mock_repo_class, spec_context
     ):
         """Test execute with all files already tracked returns informative message."""
         # Console comes from spec_context
@@ -214,18 +220,19 @@ class TestAddCommandExecuteMicro004:
 
         assert result["success"] is True
         assert result["message"] == "All files already tracked"
-        mock_show_message.assert_called_with(
-            "All specified files are already tracked and up to date", "info"
+        mock_show_info.assert_called_with(
+            "All specified files are already tracked and up to date",
+            console=spec_context.console,
         )
 
     @patch("spec_cli.cli.commands.add_command.SpecGitRepository")
     @patch("spec_cli.cli.commands.add_command.create_add_workflow")
-    @patch("spec_cli.cli.commands.add_command.show_message")
+    @patch("spec_cli.cli.commands.add_command.show_warning")
     @patch("spec_cli.cli.commands.add_command.debug_logger")
     def test_execute_with_workflow_failure_returns_failure_result(
         self,
         mock_debug_logger,
-        mock_show_message,
+        mock_show_warning,
         mock_create_workflow,
         mock_repo_class,
         spec_context,
@@ -299,7 +306,7 @@ class TestAddCommandExecuteMicro004:
 
                 command.execute(files=[Path("file1.md")])
 
-        mock_repo_class.assert_called_once_with(self.mock_settings)
+        mock_repo_class.assert_called_once_with(spec_context.settings)
 
     @patch("spec_cli.cli.commands.add_command.SpecGitRepository")
     @patch("spec_cli.cli.commands.add_command.create_add_workflow")
@@ -341,14 +348,14 @@ class TestAddCommandExecuteMicro004:
                                 command.execute(files=[Path("file1.md")], force=True)
 
         mock_create_workflow.assert_called_once_with(
-            force=True, settings=self.mock_settings
+            force=True, settings=spec_context.settings
         )
 
     @patch("spec_cli.cli.commands.add_command.SpecGitRepository")
-    @patch("spec_cli.cli.commands.add_command.show_message")
+    @patch("spec_cli.cli.commands.add_command.show_warning")
     @patch("spec_cli.cli.commands.add_command.debug_logger")
     def test_execute_logs_completion_information(
-        self, mock_debug_logger, mock_show_message, mock_repo_class, spec_context
+        self, mock_debug_logger, mock_show_warning, mock_repo_class, spec_context
     ):
         """Test execute logs completion information with correct context."""
         # Console comes from spec_context

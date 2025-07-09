@@ -409,7 +409,7 @@ class TestLlamaCppProviderErrorRecovery:
     def test_cleanup_with_partial_initialization(self):
         """Test cleanup when provider is partially initialized."""
         # Simulate partial initialization
-        self.provider._model = Mock()
+        self.provider._model = Mock(spec=[])
         self.provider._model_loaded = False  # Inconsistent state
 
         # Should handle cleanup gracefully
@@ -447,11 +447,11 @@ class TestLlamaCppProviderErrorRecovery:
                 "spec_cli.ai.providers.llamacpp.redirect_stderr"
             ) as mock_redirect:
                 # Setup mock context manager
-                mock_context = Mock()
+                mock_context = Mock(spec=[])
                 mock_redirect.return_value.__enter__ = Mock(return_value=mock_context)
                 mock_redirect.return_value.__exit__ = Mock(return_value=None)
 
-                mock_llama.return_value = Mock()
+                mock_llama.return_value = Mock(spec=[])
 
                 result = self.provider._load_model()
 
@@ -462,11 +462,11 @@ class TestLlamaCppProviderErrorRecovery:
         """Test handling of corrupted model response."""
         with patch.object(self.provider, "is_available", return_value=True):
             with patch.object(self.provider, "validate_request"):
-                self.provider.sanitizer.sanitize = Mock()
+                self.provider.sanitizer.sanitize = Mock(spec=[])
                 self.provider._model_loaded = True
 
                 # Mock corrupted response (not dict, not iterable)
-                mock_model = Mock()
+                mock_model = Mock(spec=[])
                 mock_model.return_value = object()  # Non-processable object
                 self.provider._model = mock_model
 
@@ -588,9 +588,9 @@ class TestLlamaCppProviderIntegrationValidation:
         test_response = fixtures.get_response("documentation_generation")
 
         # Mock the model to return fixture response
-        provider.sanitizer.sanitize = Mock()
+        provider.sanitizer.sanitize = Mock(spec=[])
         provider._model_loaded = True
-        mock_model = Mock()
+        mock_model = Mock(spec=[])
         mock_model.return_value = {
             "choices": [{"text": test_response}],
             "usage": {"completion_tokens": 50},
@@ -677,7 +677,7 @@ class TestLlamaCppProviderQualityValidation:
         provider = LlamaCppProvider()
 
         # Simulate loaded model
-        mock_model = Mock()
+        mock_model = Mock(spec=[])
         provider._model = mock_model
         provider._model_loaded = True
 

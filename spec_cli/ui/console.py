@@ -303,8 +303,6 @@ def create_console(
     return console
 
 
-
-
 def set_console(console: SpecConsole) -> None:
     """Set the cached console instance."""
     global _console_cache
@@ -320,4 +318,5 @@ def reset_console() -> None:
 
 
 # Convenient alias for the global console
-spec_console = lambda: create_console(cache=True)
+def spec_console():
+    return create_console(cache=True)

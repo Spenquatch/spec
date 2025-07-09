@@ -19,19 +19,26 @@ def old_analyze_pattern(file_path):
             content = f.read()
 
         # Analysis logic
-        if 'class' in content and '__new__' in content:
-            debug_logger.log("DEBUG", "Found potential singleton pattern",
-                           pattern_type="metaclass", line_count=len(content.split('\n')))
+        if "class" in content and "__new__" in content:
+            debug_logger.log(
+                "DEBUG",
+                "Found potential singleton pattern",
+                pattern_type="metaclass",
+                line_count=len(content.split("\n")),
+            )
             patterns.append("singleton")
 
-        debug_logger.log("INFO", "Pattern analysis completed",
-                        patterns_found=len(patterns))
+        debug_logger.log(
+            "INFO", "Pattern analysis completed", patterns_found=len(patterns)
+        )
         return patterns
 
     except Exception as e:
-        debug_logger.log("ERROR", "Pattern analysis failed",
-                        error=str(e), file_path=str(file_path))
+        debug_logger.log(
+            "ERROR", "Pattern analysis failed", error=str(e), file_path=str(file_path)
+        )
         raise
+
 
 def old_helper_function(data):
     """Helper function also using singleton logger."""
@@ -39,10 +46,11 @@ def old_helper_function(data):
     debug_logger.log("DEBUG", "Processing data", data_type=type(data).__name__)
 
     # Processing logic here
-    result = len(data) if hasattr(data, '__len__') else 1
+    result = len(data) if hasattr(data, "__len__") else 1
 
     debug_logger.log("DEBUG", "Data processed", result_size=result)
     return result
+
 
 # ===== AFTER: Injected Logger Pattern =====
 
@@ -62,19 +70,24 @@ def new_analyze_pattern(file_path, context: SpecContext):
             content = f.read()
 
         # Analysis logic
-        if 'class' in content and '__new__' in content:
-            logger.log("DEBUG", "Found potential singleton pattern",
-                      pattern_type="metaclass", line_count=len(content.split('\n')))
+        if "class" in content and "__new__" in content:
+            logger.log(
+                "DEBUG",
+                "Found potential singleton pattern",
+                pattern_type="metaclass",
+                line_count=len(content.split("\n")),
+            )
             patterns.append("singleton")
 
-        logger.log("INFO", "Pattern analysis completed",
-                  patterns_found=len(patterns))
+        logger.log("INFO", "Pattern analysis completed", patterns_found=len(patterns))
         return patterns
 
     except Exception as e:
-        logger.log("ERROR", "Pattern analysis failed",
-                  error=str(e), file_path=str(file_path))
+        logger.log(
+            "ERROR", "Pattern analysis failed", error=str(e), file_path=str(file_path)
+        )
         raise
+
 
 def new_helper_function(data, logger):
     """Helper function with injected logger."""
@@ -82,10 +95,11 @@ def new_helper_function(data, logger):
     logger.log("DEBUG", "Processing data", data_type=type(data).__name__)
 
     # Processing logic here
-    result = len(data) if hasattr(data, '__len__') else 1
+    result = len(data) if hasattr(data, "__len__") else 1
 
     logger.log("DEBUG", "Data processed", result_size=result)
     return result
+
 
 # Alternative: Helper with context
 def new_helper_with_context(data, context: SpecContext):
@@ -93,6 +107,7 @@ def new_helper_with_context(data, context: SpecContext):
     # Target pattern: Logger through context
     logger = context.logger
     return new_helper_function(data, logger)
+
 
 # ===== CONTEXT LOGGER SETUP =====
 
@@ -130,6 +145,7 @@ class SpecContext:
 
         return logger
 
+
 # ===== MIGRATION STEPS =====
 
 """
@@ -162,18 +178,21 @@ Step 5: Update Tests
 
 # ===== TEST MIGRATION EXAMPLE =====
 
+
 # OLD TEST:
 def test_old_analyze_pattern():
     """OLD: Test with global logger mocking."""
     from unittest.mock import patch
 
     # Anti-pattern: Mock global logger
-    with patch('spec_cli.logging.debug.debug_logger') as mock_logger:
-        result = old_analyze_pattern(Path('test.py'))
+    with patch("spec_cli.logging.debug.debug_logger") as mock_logger:
+        result = old_analyze_pattern(Path("test.py"))
 
-        mock_logger.log.assert_called_with("INFO", "Starting pattern analysis",
-                                         file_path="test.py")
+        mock_logger.log.assert_called_with(
+            "INFO", "Starting pattern analysis", file_path="test.py"
+        )
         assert len(result) >= 0
+
 
 # NEW TEST:
 def test_new_analyze_pattern():
@@ -185,11 +204,13 @@ def test_new_analyze_pattern():
     context = Mock()
     context.logger = mock_logger
 
-    result = new_analyze_pattern(Path('test.py'), context)
+    result = new_analyze_pattern(Path("test.py"), context)
 
-    mock_logger.log.assert_called_with("INFO", "Starting pattern analysis",
-                                     file_path="test.py")
+    mock_logger.log.assert_called_with(
+        "INFO", "Starting pattern analysis", file_path="test.py"
+    )
     assert len(result) >= 0
+
 
 # FIXTURE EXAMPLE:
 @pytest.fixture
@@ -203,11 +224,12 @@ def context_with_logger():
 
     return context, mock_logger
 
+
 def test_with_fixture(context_with_logger):
     """Test using logger fixture."""
     context, mock_logger = context_with_logger
 
-    new_analyze_pattern(Path('test.py'), context)
+    new_analyze_pattern(Path("test.py"), context)
 
     # Validate logging calls
     assert mock_logger.log.call_count > 0

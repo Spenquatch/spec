@@ -129,7 +129,9 @@ class GenCommand(BaseCommand):
             template = select_template(self.console, template)
 
             # Confirm configuration
-            if not confirm_generation(expanded_files, template, conflict_enum, self.console):
+            if not confirm_generation(
+                expanded_files, template, conflict_enum, self.console
+            ):
                 show_message("Generation cancelled by user", "info")
                 return self.create_result(False, "Generation cancelled by user")
 

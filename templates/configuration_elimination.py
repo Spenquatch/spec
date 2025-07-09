@@ -25,6 +25,7 @@ def old_process_files():
 
         process_single_file(file_path, output_format)
 
+
 def process_single_file(file_path, format):
     """Helper function that also needs configuration."""
     # Anti-pattern: Nested singleton access
@@ -35,6 +36,7 @@ def process_single_file(file_path, format):
 
     # Process file logic here
     pass
+
 
 # ===== AFTER: Factory Pattern with Injection =====
 
@@ -57,6 +59,7 @@ def new_process_files(context: SpecContext):
 
         process_single_file(file_path, format, context)
 
+
 def process_single_file(file_path, format, context: SpecContext):
     """Helper function with injected configuration."""
     # Target pattern: Configuration passed through
@@ -67,6 +70,7 @@ def process_single_file(file_path, format, context: SpecContext):
 
     # Process file logic here
     pass
+
 
 # ===== CONTEXT FACTORY PATTERN =====
 
@@ -86,6 +90,7 @@ class SpecContext:
         if self._settings is None:
             self._settings = self._settings_factory.create_settings()
         return self._settings
+
 
 # ===== MIGRATION STEPS =====
 
@@ -118,30 +123,36 @@ Step 5: Update Tests
 
 # ===== TEST MIGRATION EXAMPLE =====
 
+
 # OLD TEST:
 def test_old_process_files():
     """OLD: Test with global configuration setup."""
     from spec_cli.config.settings import configure_settings
 
     # Anti-pattern: Global configuration setup
-    configure_settings({
-        'max_file_size': 1024,
-        'debug_enabled': True,
-        'input_files': [Path('test.txt')]
-    })
+    configure_settings(
+        {
+            "max_file_size": 1024,
+            "debug_enabled": True,
+            "input_files": [Path("test.txt")],
+        }
+    )
 
     old_process_files()
     # Validation logic
+
 
 # NEW TEST:
 def test_new_process_files():
     """NEW: Test with factory-based configuration."""
     # Target pattern: Configuration through factory
-    settings_factory = SettingsFactory(overrides={
-        'max_file_size': 1024,
-        'debug_enabled': True,
-        'input_files': [Path('test.txt')]
-    })
+    settings_factory = SettingsFactory(
+        overrides={
+            "max_file_size": 1024,
+            "debug_enabled": True,
+            "input_files": [Path("test.txt")],
+        }
+    )
 
     context = SpecContext()
     context._settings_factory = settings_factory
@@ -149,15 +160,18 @@ def test_new_process_files():
     new_process_files(context)
     # Validation logic
 
+
 # FIXTURE EXAMPLE:
 @pytest.fixture
 def context_with_config():
     """Test fixture providing configured context."""
-    factory = SettingsFactory(overrides={
-        'debug_enabled': True,
-        'max_file_size': 2048,
-        'validate_files': False
-    })
+    factory = SettingsFactory(
+        overrides={
+            "debug_enabled": True,
+            "max_file_size": 2048,
+            "validate_files": False,
+        }
+    )
 
     context = SpecContext()
     context._settings_factory = factory

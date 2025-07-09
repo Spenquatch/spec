@@ -112,7 +112,7 @@ class TestCreateContextInjector:
         injector = create_context_injector(mock_context_retriever)
 
         # Create a mock function that fails signature inspection
-        mock_func = Mock()
+        mock_func = Mock(spec=[])
         mock_func.__name__ = "mock_func"
 
         with patch("inspect.signature", side_effect=ValueError("Cannot inspect")):
@@ -340,7 +340,7 @@ class TestValidateDecoratorTarget:
         self,
     ):
         """Test validate_decorator_target handles signature inspection errors."""
-        mock_func = Mock()
+        mock_func = Mock(spec=[])
         mock_func.__name__ = "mock_func"
 
         with patch("inspect.signature", side_effect=ValueError("Cannot inspect")):

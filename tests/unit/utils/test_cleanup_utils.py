@@ -32,6 +32,7 @@ def test_function():
     pass
 """
 
+
 class TestSafeFileRemoval:
     """Test safe_file_removal function."""
 
@@ -89,6 +90,7 @@ class TestSafeFileRemoval:
                 safe_file_removal(test_file)
 
             assert "Failed to remove file" in str(exc_info.value)
+
 
 class TestValidateNoReferences:
     """Test validate_no_references function."""
@@ -171,6 +173,7 @@ class TestValidateNoReferences:
             assert len(violations) == 1
             assert str(ref_file) in violations
 
+
 class TestCleanupSingletonInfrastructure:
     """Test cleanup_singleton_infrastructure function."""
 
@@ -217,6 +220,7 @@ class TestCleanupSingletonInfrastructure:
 
             assert "Singleton infrastructure cleanup failed" in str(exc_info.value)
 
+
 class TestCleanupCompatibilityLayer:
     """Test cleanup_compatibility_layer function."""
 
@@ -260,6 +264,7 @@ class TestCleanupCompatibilityLayer:
                 cleanup_compatibility_layer(Path(temp_dir))
 
             assert "Compatibility layer cleanup failed" in str(exc_info.value)
+
 
 class TestCleanupUtilsIntegration:
     """Integration tests for cleanup utilities."""

@@ -163,10 +163,10 @@ class TestLlamaCppProviderModelLoading:
     ):
         """Test successful model loading with valid configuration."""
         # Setup mocks
-        mock_model_instance = Mock()
+        mock_model_instance = Mock(spec=[])
         mock_llama_class.return_value = mock_model_instance
-        mock_redirect.return_value.__enter__ = Mock()
-        mock_redirect.return_value.__exit__ = Mock()
+        mock_redirect.return_value.__enter__ = Mock(spec=[])
+        mock_redirect.return_value.__exit__ = Mock(spec=[])
 
         config = LlamaCppConfig(
             model_path="/test/model.gguf", n_ctx=2048, n_threads=4, n_gpu_layers=0
@@ -232,9 +232,9 @@ class TestLlamaCppProviderModelLoading:
     ):
         """Test that model loading time measurement and logging works."""
         # Setup mocks
-        mock_llama_class.return_value = Mock()
-        mock_redirect.return_value.__enter__ = Mock()
-        mock_redirect.return_value.__exit__ = Mock()
+        mock_llama_class.return_value = Mock(spec=[])
+        mock_redirect.return_value.__enter__ = Mock(spec=[])
+        mock_redirect.return_value.__exit__ = Mock(spec=[])
 
         provider = LlamaCppProvider()
 
@@ -315,7 +315,7 @@ class TestLlamaCppProviderTextGeneration:
         mock_available.return_value = True
         mock_validate.return_value = None
         mock_load.return_value = False
-        self.provider.sanitizer.sanitize = Mock()
+        self.provider.sanitizer.sanitize = Mock(spec=[])
 
         result = self.provider.generate_documentation(self.test_request)
 
@@ -332,7 +332,7 @@ class TestLlamaCppProviderTextGeneration:
         mock_available.return_value = True
         mock_validate.return_value = None
         mock_load.return_value = True
-        self.provider.sanitizer.sanitize = Mock()
+        self.provider.sanitizer.sanitize = Mock(spec=[])
         self.provider._model_loaded = True
         self.provider._model = None  # Model is None despite _model_loaded being True
 
@@ -352,11 +352,11 @@ class TestLlamaCppProviderTextGeneration:
         mock_available.return_value = True
         mock_validate.return_value = None
         mock_time.side_effect = [100.0, 102.5]  # 2.5 second generation time
-        self.provider.sanitizer.sanitize = Mock()
+        self.provider.sanitizer.sanitize = Mock(spec=[])
         self.provider._model_loaded = True
 
         # Mock model response (dictionary format)
-        mock_model = Mock()
+        mock_model = Mock(spec=[])
         mock_response = {
             "choices": [
                 {
@@ -386,11 +386,11 @@ class TestLlamaCppProviderTextGeneration:
         """Test successful documentation generation with message.content format."""
         mock_available.return_value = True
         mock_validate.return_value = None
-        self.provider.sanitizer.sanitize = Mock()
+        self.provider.sanitizer.sanitize = Mock(spec=[])
         self.provider._model_loaded = True
 
         # Mock model response (message.content format)
-        mock_model = Mock()
+        mock_model = Mock(spec=[])
         mock_response = {
             "choices": [
                 {
@@ -416,11 +416,11 @@ class TestLlamaCppProviderTextGeneration:
         """Test documentation generation with streaming response iterator."""
         mock_available.return_value = True
         mock_validate.return_value = None
-        self.provider.sanitizer.sanitize = Mock()
+        self.provider.sanitizer.sanitize = Mock(spec=[])
         self.provider._model_loaded = True
 
         # Mock streaming response
-        mock_model = Mock()
+        mock_model = Mock(spec=[])
         streaming_chunks = [
             {"choices": [{"delta": {"content": "# Streaming "}}]},
             {"choices": [{"delta": {"content": "Documentation\n\n"}}]},
@@ -445,11 +445,11 @@ class TestLlamaCppProviderTextGeneration:
         """Test streaming response handling with text field in choices."""
         mock_available.return_value = True
         mock_validate.return_value = None
-        self.provider.sanitizer.sanitize = Mock()
+        self.provider.sanitizer.sanitize = Mock(spec=[])
         self.provider._model_loaded = True
 
         # Mock streaming response with text field
-        mock_model = Mock()
+        mock_model = Mock(spec=[])
         streaming_chunks = [
             {"choices": [{"text": "# Text Field "}]},
             {"choices": [{"text": "Documentation\n\n"}]},
@@ -474,11 +474,11 @@ class TestLlamaCppProviderTextGeneration:
         """Test failure handling with invalid response format."""
         mock_available.return_value = True
         mock_validate.return_value = None
-        self.provider.sanitizer.sanitize = Mock()
+        self.provider.sanitizer.sanitize = Mock(spec=[])
         self.provider._model_loaded = True
 
         # Mock invalid response format - use a type that can't be processed
-        mock_model = Mock()
+        mock_model = Mock(spec=[])
         mock_model.return_value = 12345  # Invalid non-dict, non-iterable response
         self.provider._model = mock_model
 
@@ -495,11 +495,11 @@ class TestLlamaCppProviderTextGeneration:
         """Test failure handling when response has no extractable text."""
         mock_available.return_value = True
         mock_validate.return_value = None
-        self.provider.sanitizer.sanitize = Mock()
+        self.provider.sanitizer.sanitize = Mock(spec=[])
         self.provider._model_loaded = True
 
         # Mock response with no text content
-        mock_model = Mock()
+        mock_model = Mock(spec=[])
         mock_response = {"choices": [{"data": "no_text_field"}]}
         mock_model.return_value = mock_response
         self.provider._model = mock_model
@@ -518,11 +518,11 @@ class TestLlamaCppProviderTextGeneration:
         """Test exception handling during text generation."""
         mock_available.return_value = True
         mock_validate.return_value = None
-        self.provider.sanitizer.sanitize = Mock()
+        self.provider.sanitizer.sanitize = Mock(spec=[])
         self.provider._model_loaded = True
 
         # Mock model to raise exception
-        mock_model = Mock()
+        mock_model = Mock(spec=[])
         mock_model.side_effect = RuntimeError("Model generation error")
         self.provider._model = mock_model
 
@@ -622,7 +622,7 @@ class TestLlamaCppProviderUtilityMethods:
     def test_cleanup_resets_model_state(self):
         """Test that cleanup properly resets model state."""
         # Setup loaded model state
-        self.provider._model = Mock()
+        self.provider._model = Mock(spec=[])
         self.provider._model_loaded = True
 
         self.provider.cleanup()
@@ -764,11 +764,11 @@ class TestLlamaCppProviderIntegrationWithHelpers:
         mock_available.return_value = True
 
         provider = LlamaCppProvider()
-        provider.sanitizer.sanitize = Mock()
+        provider.sanitizer.sanitize = Mock(spec=[])
         provider._model_loaded = True
 
         # Use mock model that behaves like MockLlamaCppProvider
-        mock_model = Mock()
+        mock_model = Mock(spec=[])
         mock_model.return_value = {
             "choices": [
                 {"text": "# Generated Documentation\n\nThis is mock documentation."}
@@ -802,11 +802,11 @@ class TestLlamaCppProviderErrorScenarios:
     def test_handle_timeout_during_generation(self, mock_available):
         """Test timeout handling during text generation."""
         mock_available.return_value = True
-        self.provider.sanitizer.sanitize = Mock()
+        self.provider.sanitizer.sanitize = Mock(spec=[])
         self.provider._model_loaded = True
 
         # Mock model that raises timeout
-        mock_model = Mock()
+        mock_model = Mock(spec=[])
         mock_model.side_effect = TimeoutError("Generation timeout")
         self.provider._model = mock_model
 
@@ -819,11 +819,11 @@ class TestLlamaCppProviderErrorScenarios:
     def test_handle_memory_error_during_generation(self, mock_available):
         """Test memory error handling during generation."""
         mock_available.return_value = True
-        self.provider.sanitizer.sanitize = Mock()
+        self.provider.sanitizer.sanitize = Mock(spec=[])
         self.provider._model_loaded = True
 
         # Mock model that raises memory error
-        mock_model = Mock()
+        mock_model = Mock(spec=[])
         mock_model.side_effect = MemoryError("Out of memory")
         self.provider._model = mock_model
 
@@ -915,11 +915,11 @@ class TestLlamaCppProviderQualityGates:
             return_value=True,
         ):
             provider = LlamaCppProvider()
-            provider.sanitizer.sanitize = Mock()
+            provider.sanitizer.sanitize = Mock(spec=[])
             provider._model_loaded = True
 
             # Mock model to raise exception
-            mock_model = Mock()
+            mock_model = Mock(spec=[])
             mock_model.side_effect = RuntimeError("Test error")
             provider._model = mock_model
 

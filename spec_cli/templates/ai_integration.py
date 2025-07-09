@@ -707,7 +707,9 @@ class AITemplateIntegrator:
             ai_manager: AI content manager instance (required)
         """
         if ai_manager is None:
-            raise ValueError("AITemplateIntegrator requires an AIContentManager instance")
+            raise ValueError(
+                "AITemplateIntegrator requires an AIContentManager instance"
+            )
         self.ai_manager = ai_manager
         debug_logger.log("INFO", "AITemplateIntegrator initialized")
 

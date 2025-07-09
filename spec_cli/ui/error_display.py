@@ -485,7 +485,9 @@ def show_message(
     """
     # show_message now requires console to be passed via other functions
     # This function should not be used directly without console injection
-    raise ValueError("show_message requires console dependency injection - use show_info, show_warning, show_success, or show_error with console parameter")
+    raise ValueError(
+        "show_message requires console dependency injection - use show_info, show_warning, show_success, or show_error with console parameter"
+    )
 
     if context:
         full_message = f"{context}: {message}"
@@ -502,7 +504,12 @@ def show_message(
         show_info(full_message)
 
 
-def format_data(data: Any, title: str | None = None, format_type: str = "auto", console: Console | None = None) -> None:
+def format_data(
+    data: Any,
+    title: str | None = None,
+    format_type: str = "auto",
+    console: Console | None = None,
+) -> None:
     """Format and display data using Rich formatting.
 
     Args:
@@ -512,7 +519,9 @@ def format_data(data: Any, title: str | None = None, format_type: str = "auto", 
         console: Console instance for output
     """
     if console is None:
-        raise ValueError("format_data requires a console instance - use console parameter")
+        raise ValueError(
+            "format_data requires a console instance - use console parameter"
+        )
 
     if title:
         console.print(f"\n[bold cyan]{title}[/bold cyan]")
