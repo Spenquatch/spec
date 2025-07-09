@@ -90,7 +90,7 @@ def _get_spec_context_from_click() -> SpecContext:
 
 
 def context_injection(func: F) -> F:
-    """Decorator to automatically inject SpecContext into CLI commands.
+    """Inject SpecContext automatically into CLI commands.
 
     This decorator automatically provides a SpecContext instance as the first
     parameter to decorated functions. The context is retrieved from the Click
@@ -184,7 +184,7 @@ def inject_context(context_param: str = "ctx") -> Callable[[F], F]:
 
 
 def with_context(func: F) -> F:
-    """Simple alias for context_injection decorator.
+    """Provide a shorter alias for context_injection decorator.
 
     Provides a shorter decorator name for common usage patterns.
 

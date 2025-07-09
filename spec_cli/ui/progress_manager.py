@@ -1,5 +1,4 @@
-"""
-Coordinate progress display across different UI components.
+"""Coordinate progress display across different UI components.
 
 Integrates with progress events and manages progress bars and spinners.
 """

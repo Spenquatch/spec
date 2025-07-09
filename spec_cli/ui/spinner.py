@@ -1,5 +1,4 @@
-"""
-Rich spinner components for indeterminate progress indication.
+"""Rich spinner components for indeterminate progress indication.
 
 Provides animated spinners with text updates and timeout management.
 """

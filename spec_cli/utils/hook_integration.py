@@ -15,6 +15,12 @@ class HookIntegrationError(SpecError):
     """Exception raised when hook integration fails."""
 
     def __init__(self, message: str, hook_config: dict[str, Any] | None = None) -> None:
+        """Initialize HookIntegrationError.
+
+        Args:
+            message: Error message
+            hook_config: Optional hook configuration that caused the error
+        """
         super().__init__(message)
         self.hook_config = hook_config
 

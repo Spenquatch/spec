@@ -361,4 +361,9 @@ def reset_console() -> None:
 
 # Convenient alias for the global console
 def spec_console() -> SpecConsole:
+    """Get the global SpecConsole instance.
+
+    Returns:
+        SpecConsole: The cached global console instance.
+    """
     return create_console(cache=True)

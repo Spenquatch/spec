@@ -15,6 +15,12 @@ class SingletonDetectionError(SpecError):
     """Exception raised when singleton detection fails."""
 
     def __init__(self, message: str, file_path: Path | None = None) -> None:
+        """Initialize SingletonDetectionError.
+
+        Args:
+            message: Error message
+            file_path: Optional file path where the error occurred
+        """
         super().__init__(message)
         self.file_path = file_path
 
@@ -64,6 +70,10 @@ class SingletonPatternDetector:
     }
 
     def __init__(self) -> None:
+        """Initialize SingletonDetector.
+
+        Sets up the detector with empty violations list and no current file.
+        """
         self.violations: list[SingletonViolation] = []
         self.current_file: Path | None = None
 

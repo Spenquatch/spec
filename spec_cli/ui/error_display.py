@@ -1,5 +1,4 @@
-"""
-Display error messages and diagnostics with Rich formatting.
+"""Display error messages and diagnostics with Rich formatting.
 
 Provides error panels, stack traces, and diagnostic information display.
 """

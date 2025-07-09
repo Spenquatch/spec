@@ -79,8 +79,7 @@ class LoggerProtocol(Protocol):
 
 
 class DebugLoggerFacade:
-    """
-    Facade for debug_logger that can use context or fall back to singleton.
+    """Facade for debug_logger that can use context or fall back to singleton.
 
     During migration, this allows both old singleton-based code and new
     context-based code to work simultaneously.

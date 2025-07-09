@@ -1,5 +1,4 @@
-"""
-Rich table components for displaying data in formatted tables.
+"""Rich table components for displaying data in formatted tables.
 
 Provides file lists, status tables, and comparison table utilities.
 """

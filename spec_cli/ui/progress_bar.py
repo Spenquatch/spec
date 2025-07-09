@@ -1,5 +1,4 @@
-"""
-Rich progress bar components for determinate progress tracking.
+"""Rich progress bar components for determinate progress tracking.
 
 Provides configurable progress bars with time estimates and task management.
 """

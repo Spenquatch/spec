@@ -1,5 +1,4 @@
-"""
-Global style helpers and utilities for consistent text formatting.
+"""Global style helpers and utilities for consistent text formatting.
 
 Provides style functions for paths, messages, and Rich text creation.
 """

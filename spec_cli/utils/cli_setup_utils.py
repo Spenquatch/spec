@@ -89,7 +89,7 @@ def initialize_cli_context(root_path: Path | None = None) -> SpecContext:
 def setup_click_context_storage(
     click_ctx: click.Context, spec_ctx: SpecContext
 ) -> None:
-    """Setup Click context storage for SpecContext.
+    """Configure Click context storage for SpecContext integration.
 
     Integrates SpecContext with Click context using utilities from P2.1b
     Click integration implementation.

@@ -1,5 +1,4 @@
-"""
-Utility functions and classes for progress tracking operations.
+"""Utility functions and classes for progress tracking operations.
 
 Provides time estimation, progress contexts, and operation tracking helpers.
 """

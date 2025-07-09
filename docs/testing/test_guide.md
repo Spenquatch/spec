@@ -37,10 +37,10 @@ class TestExampleComponent:
     def test_method_when_condition_then_expected_result(self, fixture_fxt):
         # Arrange
         component = ExampleComponent(fixture_fxt)
-        
+
         # Act
         result = component.method()
-        
+
         # Assert
         assert result == expected_value
 ```
