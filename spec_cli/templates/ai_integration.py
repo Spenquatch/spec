@@ -14,8 +14,8 @@ from typing import Any
 
 from ..ai.providers.base import GenerationRequest
 from ..config.settings import SpecSettings
-from ..core.context_bridge import debug_logger
 from ..exceptions import SpecTemplateError
+from ..logging.debug import debug_logger
 
 
 # Retry decorator with exponential backoff

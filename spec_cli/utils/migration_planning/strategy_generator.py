@@ -6,8 +6,8 @@ pipeline data structures and migration utilities.
 
 from typing import Any
 
-from ...core.context_bridge import debug_logger
 from ...exceptions import SpecError
+from ...logging.debug import debug_logger
 
 
 class StrategyGenerationError(SpecError):

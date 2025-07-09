@@ -6,7 +6,7 @@ from typing import Any, TypeVar
 import click
 
 from ..core.context import SpecContext
-from ..core.context_bridge import debug_logger
+from ..logging.debug import debug_logger
 from ..utils.click_utils import ClickIntegrationError, retrieve_context_data
 from ..utils.decorator_utils import (
     DecoratorError,

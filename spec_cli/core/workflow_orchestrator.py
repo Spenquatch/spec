@@ -18,9 +18,9 @@ from pathlib import Path
 from typing import Any
 
 from ..config.settings import SpecSettings
-from ..core.context_bridge import debug_logger
 from ..exceptions import SpecWorkflowError
 from ..file_system.directory_manager import DirectoryManager
+from ..logging.debug import debug_logger
 from ..templates.generator import SpecContentGenerator
 from ..utils.path_utils import safe_relative_to
 from .commit_manager import SpecCommitManager

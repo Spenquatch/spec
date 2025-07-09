@@ -11,8 +11,8 @@ from typing import Any
 
 from ..ai.providers.base import GenerationRequest
 from ..config.settings import SpecSettings
-from ..core.context_bridge import debug_logger
 from ..exceptions import SpecTemplateError
+from ..logging.debug import debug_logger
 from ..utils.error_handler import default_error_handler
 from ..utils.path_utils import normalize_path
 from .loader import TemplateLoader

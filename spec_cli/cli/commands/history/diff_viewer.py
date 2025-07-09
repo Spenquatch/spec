@@ -6,7 +6,7 @@ from typing import Any as ConsoleType
 from rich.columns import Columns
 from rich.panel import Panel
 
-from ....core.context_bridge import debug_logger
+from ....logging.debug import debug_logger
 
 
 class DiffViewer:

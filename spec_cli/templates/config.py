@@ -10,8 +10,8 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from ..core.context_bridge import debug_logger
 from ..exceptions import SpecTemplateError
+from ..logging.debug import debug_logger
 
 
 class TemplateConfig(BaseModel):

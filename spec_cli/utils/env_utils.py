@@ -8,7 +8,7 @@ import os
 from dataclasses import dataclass
 from typing import Any, cast
 
-from ..core.context_bridge import debug_logger
+from ..logging.debug import debug_logger
 
 
 def get_env_str(key: str, default: str = "") -> str:

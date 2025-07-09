@@ -9,7 +9,7 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Any
 
-from ..core.context_bridge import debug_logger
+from ..logging.debug import debug_logger
 from .progress_bar import simple_progress
 from .progress_manager import get_progress_manager
 from .spinner import spinner_context

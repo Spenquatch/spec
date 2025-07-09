@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 from unittest.mock import Mock
 
-from ..core.context_bridge import debug_logger
+from ..logging.debug import debug_logger
 
 if TYPE_CHECKING:
     from ..config.settings import SpecSettings

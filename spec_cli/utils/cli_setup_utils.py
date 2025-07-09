@@ -6,7 +6,7 @@ from typing import Any
 import click
 
 from ..core.context import SpecContext
-from ..core.context_bridge import debug_logger
+from ..logging.debug import debug_logger
 from .error_utils import create_error_context
 
 

@@ -13,7 +13,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Any
 
-from ..core.context_bridge import debug_logger
+from ..logging.debug import debug_logger
 
 
 class ProgressEventType(Enum):

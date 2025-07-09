@@ -6,7 +6,7 @@ from typing import Any
 import click
 
 from ...core.context import SpecContext
-from ...core.context_bridge import debug_logger
+from ...logging.debug import debug_logger
 from ...utils.path_utils import is_specs_path
 from ..decorators import context_injection
 from ..options import files_argument, spec_command

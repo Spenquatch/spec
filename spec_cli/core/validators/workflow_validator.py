@@ -9,8 +9,8 @@ from pathlib import Path
 from typing import Any
 
 from ...config.settings import SpecSettings
-from ...core.context_bridge import debug_logger
 from ...exceptions import SpecWorkflowError
+from ...logging.debug import debug_logger
 from ...utils.error_handler import ErrorHandler
 from ...utils.path_utils import ensure_path_permissions
 from ..repository_state import RepositoryStateChecker

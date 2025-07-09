@@ -17,8 +17,8 @@ from enum import Enum
 from typing import Any
 
 from ..config.settings import SpecSettings
-from ..core.context_bridge import debug_logger
 from ..git.repository import SpecGitRepository
+from ..logging.debug import debug_logger
 
 
 class RepositoryHealth(Enum):

@@ -67,7 +67,7 @@ def init_command(context: SpecContext, debug: bool, verbose: bool, force: bool) 
 
         # Log through facade bridge if debug mode enabled
         if context.settings.debug_enabled:
-            from ...core.context_bridge import debug_logger
+            from ...logging.debug import debug_logger
 
             debug_logger.log(
                 "INFO",
@@ -80,7 +80,7 @@ def init_command(context: SpecContext, debug: bool, verbose: bool, force: bool) 
         raise click.ClickException(f"Repository initialization failed: {e}") from e
     except Exception as e:
         if context.settings.debug_enabled:
-            from ...core.context_bridge import debug_logger
+            from ...logging.debug import debug_logger
 
             debug_logger.log("ERROR", "Initialization failed", error=str(e))
         raise click.ClickException(

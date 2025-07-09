@@ -7,8 +7,8 @@ and validating that no remaining references exist in the codebase.
 import re
 from pathlib import Path
 
-from ..core.context_bridge import debug_logger
 from ..exceptions import InfrastructureRemovalError
+from ..logging.debug import debug_logger
 from .error_utils import create_error_context
 
 

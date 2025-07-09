@@ -12,7 +12,7 @@ from typing import Any
 import pytest
 
 from ..core.context import SpecContext
-from ..core.context_bridge import debug_logger
+from ..logging.debug import debug_logger
 from .error_utils import SpecAnalysisError
 
 

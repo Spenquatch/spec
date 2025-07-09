@@ -11,7 +11,7 @@ from rich.console import Console
 from rich.table import Table
 from rich.text import Text
 
-from ..core.context_bridge import debug_logger
+from ..logging.debug import debug_logger
 from .styles import SpecStyles
 
 

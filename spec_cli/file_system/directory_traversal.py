@@ -11,8 +11,8 @@ from pathlib import Path
 from typing import Any
 
 from ..config.settings import SpecSettings
-from ..core.context_bridge import debug_logger
 from ..exceptions import SpecFileError, SpecValidationError
+from ..logging.debug import debug_logger
 from ..utils.path_utils import normalize_path, safe_relative_to
 from .file_metadata import FileMetadataExtractor
 from .file_type_detector import FileTypeDetector

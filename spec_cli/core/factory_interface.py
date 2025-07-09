@@ -11,7 +11,7 @@ from typing import Any, TypeVar
 
 from typing_extensions import Protocol
 
-from ..core.context_bridge import debug_logger
+from ..logging.debug import debug_logger
 
 
 class FactoryInterfaceError(Exception):

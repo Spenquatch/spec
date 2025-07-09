@@ -11,8 +11,8 @@ from datetime import datetime
 from typing import Any
 
 from ..config.settings import SpecSettings
-from ..core.context_bridge import debug_logger
 from ..exceptions import SpecTemplateError
+from ..logging.debug import debug_logger
 
 
 class TemplateSubstitution:

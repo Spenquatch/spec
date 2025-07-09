@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Any, cast
 
 from ..config.settings import SpecSettings
-from ..core.context_bridge import debug_logger
+from ..logging.debug import debug_logger
 from ..utils.error_utils import create_error_context, handle_os_error
 from .aggregators.result_aggregator import BatchResultAggregator
 from .change_detector import FileChangeDetector

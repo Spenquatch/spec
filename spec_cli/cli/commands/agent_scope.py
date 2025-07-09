@@ -6,7 +6,7 @@ from typing import Any
 import click
 
 from ...core.context import SpecContext
-from ...core.context_bridge import debug_logger
+from ...logging.debug import debug_logger
 from ...utils.path_utils import resolve_project_root, safe_relative_to
 from ...utils.platform_utils import get_environment_info
 from ..decorators import context_injection

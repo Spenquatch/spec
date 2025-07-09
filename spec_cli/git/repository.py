@@ -9,7 +9,7 @@ from abc import ABC, abstractmethod
 from typing import Any
 
 from ..config.settings import SpecSettings
-from ..core.context_bridge import debug_logger
+from ..logging.debug import debug_logger
 from ..utils.error_utils import create_error_context, handle_subprocess_error
 from .operations import GitOperations
 from .path_converter import GitPathConverter

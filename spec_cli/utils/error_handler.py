@@ -5,8 +5,8 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any, TypeVar
 
-from ..core.context_bridge import debug_logger
 from ..exceptions import SpecError
+from ..logging.debug import debug_logger
 from .error_utils import (
     create_error_context,
     handle_os_error,

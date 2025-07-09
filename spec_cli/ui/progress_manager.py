@@ -21,7 +21,6 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
 
-from ..core.context_bridge import debug_logger
 from ..file_processing.progress_events import (
     ProcessingStage,
     ProgressEvent,
@@ -29,6 +28,7 @@ from ..file_processing.progress_events import (
     ProgressReporter,
     progress_reporter,
 )
+from ..logging.debug import debug_logger
 from ..utils.error_handler import ErrorHandler
 from .progress_bar import SpecProgressBar
 from .spinner import SpinnerManager

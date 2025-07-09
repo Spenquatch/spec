@@ -8,7 +8,7 @@ try:
 except ImportError:
     structlog = None
 
-from spec_cli.core.context_bridge import debug_logger as default_debug_logger
+from spec_cli.logging.debug import debug_logger as default_debug_logger
 from spec_cli.utils.path_utils import normalize_path_separators
 
 if structlog:

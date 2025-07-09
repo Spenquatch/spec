@@ -10,10 +10,10 @@ from pathlib import Path
 from typing import Any
 
 from ..config.settings import SpecSettings
-from ..core.context_bridge import debug_logger
 from ..exceptions import SpecFileError, SpecTemplateError
 from ..file_system.directory_manager import DirectoryManager
 from ..file_system.file_metadata import FileMetadataExtractor
+from ..logging.debug import debug_logger
 from ..utils.path_utils import (
     ensure_directory,
     normalize_path,

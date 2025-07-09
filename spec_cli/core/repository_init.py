@@ -17,9 +17,9 @@ from pathlib import Path
 from typing import Any, cast
 
 from ..config.settings import SpecSettings
-from ..core.context_bridge import debug_logger
 from ..file_system.directory_manager import DirectoryManager
 from ..git.repository import SpecGitRepository
+from ..logging.debug import debug_logger
 from .repository_state import RepositoryHealth, RepositoryStateChecker
 
 

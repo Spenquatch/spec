@@ -5,8 +5,8 @@ from pathlib import Path
 import click
 
 from ...core.context import SpecContext
-from ...core.context_bridge import debug_logger
 from ...file_processing.conflict_resolver import ConflictResolutionStrategy
+from ...logging.debug import debug_logger
 from ...utils.path_utils import safe_relative_to
 from ..decorators import context_injection
 from ..utils import get_user_confirmation, validate_file_paths

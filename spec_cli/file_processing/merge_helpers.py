@@ -9,7 +9,7 @@ while incorporating new changes.
 import re
 from typing import Any
 
-from ..core.context_bridge import debug_logger
+from ..logging.debug import debug_logger
 
 
 class ContentMerger:

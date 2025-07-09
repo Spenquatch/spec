@@ -12,7 +12,7 @@ from spec_cli.ai.analysis.sanitizer import CodeSanitizer
 from spec_cli.ai.config.settings import AIConfig
 from spec_cli.ai.context.extractor import ContextExtractor
 from spec_cli.ai.context.ranking import RelevanceRanker
-from spec_cli.core.context_bridge import debug_logger as default_debug_logger
+from spec_cli.logging.debug import debug_logger as default_debug_logger
 from spec_cli.utils.path_utils import normalize_path_separators
 
 if structlog:

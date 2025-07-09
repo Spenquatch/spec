@@ -9,8 +9,8 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 
-from ..core.context_bridge import debug_logger
 from ..exceptions import PatternAnalysisError
+from ..logging.debug import debug_logger
 from .error_utils import handle_os_error
 
 

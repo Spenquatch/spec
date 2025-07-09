@@ -8,8 +8,8 @@ from typing import Any
 
 from rich.console import Console
 
-from ..core.context_bridge import debug_logger, get_current_theme
-from .theme import SpecTheme
+from ..logging.debug import debug_logger
+from .theme import SpecTheme, get_current_theme
 
 
 class SpecConsole:

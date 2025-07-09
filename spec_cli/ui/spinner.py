@@ -13,7 +13,7 @@ from rich.live import Live
 from rich.spinner import Spinner
 from rich.text import Text
 
-from ..core.context_bridge import debug_logger
+from ..logging.debug import debug_logger
 
 
 class SpecSpinner:

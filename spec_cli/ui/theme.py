@@ -10,7 +10,7 @@ from enum import Enum
 from rich.theme import Theme
 
 from ..config.settings import SpecSettings
-from ..core.context_bridge import debug_logger
+from ..logging.debug import debug_logger
 
 
 class ColorScheme(Enum):

@@ -3,9 +3,9 @@
 from pathlib import Path
 from typing import Any, cast
 
-from ....core.context_bridge import debug_logger
 from ....exceptions import SpecValidationError
 from ....file_processing.conflict_resolver import ConflictResolutionStrategy
+from ....logging.debug import debug_logger
 from ....utils.path_utils import safe_relative_to
 
 
