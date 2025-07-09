@@ -6,14 +6,12 @@ support, file loading, and Rich terminal console integration.
 
 from .loader import ConfigurationLoader
 from .settings import (
-    SettingsManager,
     SpecSettings,
 )
 from .validation import ConfigurationValidator
 
 __all__ = [
     "SpecSettings",
-    "SettingsManager",
     "ConfigurationLoader",
     "ConfigurationValidator",
 ]

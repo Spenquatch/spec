@@ -1,0 +1,152 @@
+=== DOCUMENTING CURRENT SINGLETON STATE ===
+SettingsManager references:
+spec_cli/config/__init__.py:    SettingsManager,
+spec_cli/config/__init__.py:    "SettingsManager",
+Binary file spec_cli/config/__pycache__/settings.cpython-311.pyc matches
+Binary file spec_cli/config/__pycache__/__init__.cpython-311.pyc matches
+spec_cli/config/settings.py.phase3_backup:Provides SpecSettings dataclass for application settings and SettingsManager
+spec_cli/config/settings.py.phase3_backup:class SettingsManager:
+spec_cli/config/settings.py.phase3_backup:    manager = SettingsManager()
+spec_cli/config/settings.py.backup:Provides SpecSettings dataclass for application settings and SettingsManager
+spec_cli/config/settings.py.backup:class SettingsManager:
+spec_cli/config/settings.py.backup:    manager = SettingsManager()
+spec_cli/config/settings.py:Provides SpecSettings dataclass for application settings and SettingsManager
+spec_cli/config/settings.py:class SettingsManager:
+spec_cli/config/settings.py:    manager = SettingsManager()
+
+ConsoleManager references:
+spec_cli/ui/console.py.backup:class ConsoleManager:
+spec_cli/ui/console.py.backup:    Factory: ConsoleManager
+spec_cli/ui/console.py:class ConsoleManager:
+spec_cli/ui/console.py:    Factory: ConsoleManager
+Binary file spec_cli/ui/__pycache__/console.cpython-311.pyc matches
+spec_cli/ui/console.py.phase3_backup:class ConsoleManager:
+spec_cli/ui/console.py.phase3_backup:    Factory: ConsoleManager
+
+Module-level cache references:
+spec_cli/ui/console.py.backup:_console_cache: SpecConsole | None = None
+spec_cli/ui/console.py.backup:def create_console(
+spec_cli/ui/console.py.backup:    global _console_cache
+spec_cli/ui/console.py.backup:    if cache and _console_cache is not None:
+spec_cli/ui/console.py.backup:        return _console_cache
+spec_cli/ui/console.py.backup:        _console_cache = console
+spec_cli/ui/console.py.backup:    global _console_cache
+spec_cli/ui/console.py.backup:    _console_cache = console
+spec_cli/ui/console.py.backup:    global _console_cache
+spec_cli/ui/console.py.backup:    _console_cache = None
+spec_cli/ui/console.py.backup:    return create_console(cache=True)
+spec_cli/ui/console.py:_console_cache: SpecConsole | None = None
+spec_cli/ui/console.py:def create_console(
+spec_cli/ui/console.py:    global _console_cache
+spec_cli/ui/console.py:    if cache and _console_cache is not None:
+spec_cli/ui/console.py:        return _console_cache
+spec_cli/ui/console.py:        _console_cache = console
+spec_cli/ui/console.py:    global _console_cache
+spec_cli/ui/console.py:    _console_cache = console
+spec_cli/ui/console.py:    global _console_cache
+spec_cli/ui/console.py:    _console_cache = None
+spec_cli/ui/console.py:    return create_console(cache=True)
+spec_cli/ui/__init__.py:    create_console,
+spec_cli/ui/__init__.py:    "create_console",
+Binary file spec_cli/ui/__pycache__/rich_imports.cpython-311.pyc matches
+Binary file spec_cli/ui/__pycache__/console.cpython-311.pyc matches
+Binary file spec_cli/ui/__pycache__/__init__.cpython-311.pyc matches
+spec_cli/ui/console.py.phase3_backup:_console_cache: SpecConsole | None = None
+spec_cli/ui/console.py.phase3_backup:def create_console(
+spec_cli/ui/console.py.phase3_backup:    global _console_cache
+spec_cli/ui/console.py.phase3_backup:    if cache and _console_cache is not None:
+spec_cli/ui/console.py.phase3_backup:        return _console_cache
+spec_cli/ui/console.py.phase3_backup:        _console_cache = console
+spec_cli/ui/console.py.phase3_backup:    global _console_cache
+spec_cli/ui/console.py.phase3_backup:    _console_cache = console
+spec_cli/ui/console.py.phase3_backup:    global _console_cache
+spec_cli/ui/console.py.phase3_backup:    _console_cache = None
+spec_cli/ui/console.py.phase3_backup:    return create_console(cache=True)
+spec_cli/ui/rich_imports.py:def create_console(
+spec_cli/ui/rich_imports.py:        console = create_console(width=120, force_terminal=True)
+spec_cli/ui/rich_imports.py:    "create_console",
+
+=== ANALYZING SETTINGSMANAGER REMOVAL ===
+Target: spec_cli/config/settings.py lines 127-177
+=== VALIDATING SETTINGSMANAGER REMOVAL ===
+Checking for remaining SettingsManager references...
+Binary file spec_cli/config/__pycache__/settings.cpython-311.pyc matches
+Binary file spec_cli/config/__pycache__/__init__.cpython-311.pyc matches
+spec_cli/config/settings.py.phase3_backup:Provides SpecSettings dataclass for application settings and SettingsManager
+spec_cli/config/settings.py.phase3_backup:class SettingsManager:
+spec_cli/config/settings.py.phase3_backup:    manager = SettingsManager()
+spec_cli/config/settings.py.backup:Provides SpecSettings dataclass for application settings and SettingsManager
+spec_cli/config/settings.py.backup:class SettingsManager:
+spec_cli/config/settings.py.backup:    manager = SettingsManager()
+spec_cli/config/settings.py:Provides SpecSettings dataclass for application settings and SettingsManager
+WARNING: SettingsManager references still found!
+=== ANALYZING CONSOLEMANAGER REMOVAL ===
+Target: spec_cli/ui/console.py lines 248-291 and 294-369
+=== VALIDATING CONSOLEMANAGER REMOVAL ===
+Checking for remaining ConsoleManager references...
+SUCCESS: No ConsoleManager/cache references found
+=== ANALYZING LEGACY GETTER REMOVAL ===
+Removing: get_settings() and get_console()
+Preserving: get_progress_manager() (justified)
+spec_cli/config/settings.py.phase3_backup:135:    def get_settings(self, root_path: Path | None = None) -> SpecSettings:
+spec_cli/config/settings.py.backup:135:    def get_settings(self, root_path: Path | None = None) -> SpecSettings:
+spec_cli/ui/console.py.backup:260:    def get_console(self) -> SpecConsole:
+spec_cli/ui/console.py.phase3_backup:260:    def get_console(self) -> SpecConsole:
+spec_cli/config/settings.py.phase3_backup:145:    def get_console(self, root_path: Path | None = None) -> Console:
+spec_cli/config/settings.py.backup:145:    def get_console(self, root_path: Path | None = None) -> Console:
+Confirming get_progress_manager() is preserved...
+spec_cli/ui/progress_manager.py:483:    def get_progress_manager(self, console: Any | None = None) -> ProgressManager:
+spec_cli/ui/progress_manager.py:524:def get_progress_manager(console: Any | None = None) -> ProgressManager:
+spec_cli/ui/progress_manager.py.phase3_backup:471:    def get_progress_manager(self, console: Any | None = None) -> ProgressManager:
+spec_cli/ui/progress_manager.py.phase3_backup:512:def get_progress_manager(console: Any | None = None) -> ProgressManager:
+spec_cli/ui/progress_manager.py.backup:471:    def get_progress_manager(self, console: Any | None = None) -> ProgressManager:
+spec_cli/ui/progress_manager.py.backup:512:def get_progress_manager(console: Any | None = None) -> ProgressManager:
+SUCCESS: get_progress_manager() preserved as intended
+=== FINAL ARCHITECTURE CONSISTENCY CHECK ===
+Scanning for any remaining singleton patterns...
+Remaining singleton classes:
+spec_cli/ui/theme.py:class ThemeManager:
+spec_cli/ui/progress_manager.py:class ProgressManager:
+spec_cli/ui/spinner.py:class SpinnerManager:
+spec_cli/core/commit_manager.py:class SpecCommitManager:
+spec_cli/core/workflow_state.py:class WorkflowStateManager:
+spec_cli/file_processing/file_cache.py:class FileCacheManager:
+spec_cli/file_system/directory_manager.py:class DirectoryManager:
+spec_cli/utils/detection_execution/comprehensive_scanner.py:class SingletonPattern:
+spec_cli/utils/compatibility_utils.py:class SingletonCompatibilityWrapper:
+spec_cli/utils/singleton_detection.py:class SingletonDetectionError(SpecError):
+spec_cli/utils/singleton_detection.py:class SingletonViolation:
+spec_cli/utils/singleton_detection.py:class SingletonPatternDetector:
+spec_cli/utils/command_analysis.py:class SingletonUsage:
+spec_cli/utils/pattern_analysis.py:class SingletonUsage:
+spec_cli/utils/pattern_analysis.py:    class SingletonVisitor(ast.NodeVisitor):
+spec_cli/utils/pattern_analysis.py:    # Check for metaclass=SingletonMeta
+spec_cli/utils/validation/detection_accuracy_validator.py:class SingletonPattern:
+spec_cli/ai/context/search_index.py:class FileIndexManager:
+spec_cli/ai/providers/manager.py:class ProviderManager:
+spec_cli/templates/ai_integration.py:class AIContentManager:
+Checking for actual singleton implementations...
+            color_scheme = ColorScheme.DEFAULT
+
+        return cls(color_scheme)
+
+
+class ThemeManager:
+    """Manages global theme instances."""
+
+    def __init__(self) -> None:
+        """Initialize theme manager."""
+        self._current_theme: SpecTheme | None = None
+Checking for remaining getter functions...
+spec_cli/ui/console.py:    def get_width(self) -> int:
+spec_cli/ui/theme.py:    def get_style(self, style_name: str) -> str:
+spec_cli/ui/theme.py:    def get_emoji_replacements(self) -> dict[str, str]:
+spec_cli/ui/theme.py:    def get_current_theme(self) -> SpecTheme:
+spec_cli/ui/theme.py:def get_current_theme() -> SpecTheme:
+spec_cli/ui/progress_manager.py:    def get_operation_state(self, operation_id: str) -> ProgressState | None:
+spec_cli/ui/tables.py:    def get_table(self) -> Table:
+spec_cli/ui/progress_bar.py:    def get_task_info(self, task_id: str) -> dict[str, Any] | None:
+spec_cli/ui/progress_utils.py:    def get_elapsed() -> float:
+spec_cli/ui/progress_utils.py:    def get_statistics(self) -> dict[str, Any]:
+Checking for unused imports...
+=== FINAL PHASE 3 VALIDATION ===

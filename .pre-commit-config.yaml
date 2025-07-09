@@ -48,9 +48,7 @@ repos:
     name: Test coverage check (80% minimum)
     entry: poetry run test
     language: system
-    types:
-    - python
-    files: ^spec_cli/
+    always_run: true
     pass_filenames: false
 - repo: https://github.com/pre-commit/pre-commit-hooks
   rev: v4.5.0
@@ -77,13 +75,3 @@ repos:
     - -lll
     - --exclude
     - tests,scripts
-- repo: local
-  hooks:
-  - id: auto-stage-formatted
-    name: Auto-stage formatted files
-    entry: python scripts/auto-stage-formatted.py
-    language: system
-    pass_filenames: false
-    always_run: true
-    stages:
-    - pre-commit

@@ -1,0 +1,257 @@
+=== PROGRESSMANAGERSINGLETON ANALYSIS ===
+
+### Current justification (lines 422-533):
+class ProgressManagerSingleton:
+    """Manages global progress manager instances.
+
+    SINGLETON JUSTIFICATION ANALYSIS
+    Date: 2025-01-08
+    Factory: ProgressManagerSingleton
+    Decision: KEEP_SINGLETON
+
+    EVALUATION CRITERIA:
+    Resource Management: HIGH - progress display coordination across threads
+    Performance: MEDIUM - 3.16ms/100 instances, reasonable for singleton
+    Thread Safety: HIGH - needs coordination across threads for progress display
+    State Management: HIGH - active operations, progress states, event handlers
+
+    DECISION RATIONALE:
+    High justification for singleton pattern. Progress management requires coordination
+    of UI resources (progress bars, spinners) across threads. Multiple instances would
+    create conflicting displays and lose state synchronization.
+
+    PERFORMANCE MEASUREMENTS:
+    Creation Time: 3.16ms for 100 instances
+    Memory Usage: Minimal - single instance with event handlers
+    Resource Impact: Critical - prevents UI conflicts
+
+    ALTERNATIVE APPROACHES CONSIDERED:
+    1. Dependency injection - rejected due to global progress coordination needs
+    2. Factory pattern - rejected due to thread safety and resource coordination
+    3. Module-level instance - rejected due to initialization complexity
+    """
+
+    _instance: "ProgressManagerSingleton | None" = None
+    _lock = threading.Lock()
+
+    def __new__(cls) -> "ProgressManagerSingleton":
+        """Ensure only one instance exists."""
+        if cls._instance is None:
+            with cls._lock:
+                if cls._instance is None:
+                    cls._instance = super().__new__(cls)
+        return cls._instance
+
+    def __init__(self) -> None:
+        """Initialize progress manager singleton."""
+        if hasattr(self, "_initialized"):
+            return
+        self._progress_manager: ProgressManager | None = None
+        self._manager_lock = threading.Lock()
+        self._initialized = True
+
+    def get_progress_manager(self, console: Any | None = None) -> ProgressManager:
+        """Get the global progress manager instance.
+
+        Args:
+            console: Console instance to use for progress display
+
+        Returns:
+            Global ProgressManager instance
+        """
+        if self._progress_manager is None:
+            with self._manager_lock:
+                if self._progress_manager is None:
+                    if console is None:
+                        raise ValueError(
+                            "ProgressManagerSingleton requires console parameter on first call"
+                        )
+                    self._progress_manager = ProgressManager(console=console)
+                    debug_logger.log("INFO", "Global progress manager initialized")
+
+        return self._progress_manager
+
+    def set_progress_manager(self, manager: ProgressManager) -> None:
+        """Set the global progress manager.
+
+        Args:
+            manager: ProgressManager instance to set as global
+        """
+        with self._manager_lock:
+            self._progress_manager = manager
+            debug_logger.log("INFO", "Global progress manager updated")
+
+    def reset(self) -> None:
+        """Reset the global progress manager."""
+        with self._manager_lock:
+            if self._progress_manager:
+                self._progress_manager.cleanup()
+            self._progress_manager = None
+            debug_logger.log("INFO", "Global progress manager reset")
+
+
+# Convenience functions for getting progress manager
+def get_progress_manager(console: Any | None = None) -> ProgressManager:
+    """Get the global progress manager instance.
+
+    Args:
+        console: Console instance required for first initialization
+
+    Returns:
+        Global ProgressManager instance
+    """
+    return ProgressManagerSingleton().get_progress_manager(console)
+
+
+def set_progress_manager(manager: ProgressManager) -> None:
+    """Set the global progress manager."""
+    ProgressManagerSingleton().set_progress_manager(manager)
+
+
+def reset_progress_manager() -> None:
+    """Reset the global progress manager."""
+    manager = ProgressManagerSingleton()
+    manager.reset()
+
+### Usage analysis:
+spec_cli/ui/progress_manager.py:class ProgressManagerSingleton:
+spec_cli/ui/progress_manager.py:    Factory: ProgressManagerSingleton
+spec_cli/ui/progress_manager.py:    _instance: "ProgressManagerSingleton | None" = None
+spec_cli/ui/progress_manager.py:    def __new__(cls) -> "ProgressManagerSingleton":
+spec_cli/ui/progress_manager.py:                            "ProgressManagerSingleton requires console parameter on first call"
+spec_cli/ui/progress_manager.py:    return ProgressManagerSingleton().get_progress_manager(console)
+spec_cli/ui/progress_manager.py:    ProgressManagerSingleton().set_progress_manager(manager)
+spec_cli/ui/progress_manager.py:    manager = ProgressManagerSingleton()
+spec_cli/utils/compatibility_utils.py:        >>> from spec_cli.ui.progress_manager import ProgressManagerSingleton
+spec_cli/utils/compatibility_utils.py:        >>> wrapper = create_singleton_wrapper(ProgressManagerSingleton)
+spec_cli/utils/compatibility_utils.py:        >>> wrapper = create_singleton_wrapper(ProgressManagerSingleton)
+spec_cli/utils/compatibility_utils.py:        >>> original = ProgressManagerSingleton()
+spec_cli/utils/pattern_analysis.py:        (r"ProgressManagerSingleton", "progress_singleton_instantiation"),
+spec_cli/utils/pattern_analysis.py:    singleton_indicators = ["Singleton", "ProgressManagerSingleton", "SingletonMeta"]
+spec_cli/utils/pattern_analysis.py:    if "ProgressManagerSingleton" in line:
+spec_cli/utils/pattern_analysis.py:        return "ProgressManagerSingleton"
+spec_cli/utils/pattern_analysis.py:        return "ProgressManagerSingleton"
+spec_cli/utils/pattern_analysis.py:        >>> report = document_access_patterns("ProgressManagerSingleton", usages)
+spec_cli/utils/pattern_analysis.py:    # Specific requirements for ProgressManagerSingleton
+
+### get_progress_manager() calls:
+spec_cli/ui/__init__.py:    get_progress_manager,
+spec_cli/ui/__init__.py:    "get_progress_manager",
+spec_cli/ui/progress_manager.py:    def get_progress_manager(self, console: Any | None = None) -> ProgressManager:
+spec_cli/ui/progress_manager.py:def get_progress_manager(console: Any | None = None) -> ProgressManager:
+spec_cli/ui/progress_manager.py:    return ProgressManagerSingleton().get_progress_manager(console)
+spec_cli/ui/progress_utils.py:from .progress_manager import get_progress_manager
+spec_cli/ui/progress_utils.py:    progress_manager = get_progress_manager(console)
+spec_cli/ui/progress_utils.py:        self.progress_manager = get_progress_manager(console)
+spec_cli/utils/compatibility_utils.py:        >>> manager = wrapper.get_progress_manager()
+spec_cli/utils/command_analysis.py:    singleton_functions = {"get_spec_repository", "get_console", "get_progress_manager"}
+spec_cli/utils/command_analysis.py:        "get_progress_manager": "ProgressManager",
+spec_cli/utils/pattern_analysis.py:        (r"get_progress_manager\(\)", "progress_singleton_access"),
+spec_cli/utils/pattern_analysis.py:        if "get_progress_manager" in usage.context:
+spec_cli/utils/pattern_analysis.py:                "Support get_progress_manager() function",
+spec_cli/cli/utils.py:            from ..ui.progress_manager import get_progress_manager
+spec_cli/cli/utils.py:            progress_manager = get_progress_manager(console)
+spec_cli/cli/commands/generation/workflows.py:from ....ui.progress_manager import get_progress_manager
+spec_cli/cli/commands/generation/workflows.py:        self.progress_manager = get_progress_manager(console)
+
+### Threading analysis:
+spec_cli/ui/progress_manager.py:import threading
+spec_cli/ui/progress_manager.py:    _lock = threading.Lock()
+spec_cli/ui/progress_manager.py:        self._manager_lock = threading.Lock()
+
+### Performance analysis mentioned:
+        # For now, just return the first active operation
+        # In the future, this could be more sophisticated
+        return next(iter(self.active_operations.keys()), None)
+
+    def _cleanup_operation(self, operation_id: str) -> None:
+        """Clean up resources for a completed operation."""
+        display_info = self.active_operations.get(operation_id)
+        if display_info:
+            if display_info.startswith("progress_bar:"):
+                task_id = display_info.split(":", 1)[1]
+                self.progress_bar.remove_task(task_id)
+                if not self.progress_bar.tasks:
+                    self.progress_bar.stop()
+
+            elif display_info.startswith("spinner:"):
+                spinner_id = display_info.split(":", 1)[1]
+--
+    Factory: ProgressManagerSingleton
+    Decision: KEEP_SINGLETON
+
+    EVALUATION CRITERIA:
+    Resource Management: HIGH - progress display coordination across threads
+    Performance: MEDIUM - 3.16ms/100 instances, reasonable for singleton
+    Thread Safety: HIGH - needs coordination across threads for progress display
+    State Management: HIGH - active operations, progress states, event handlers
+
+    DECISION RATIONALE:
+    High justification for singleton pattern. Progress management requires coordination
+    of UI resources (progress bars, spinners) across threads. Multiple instances would
+    create conflicting displays and lose state synchronization.
+
+    PERFORMANCE MEASUREMENTS:
+    Creation Time: 3.16ms for 100 instances
+    Memory Usage: Minimal - single instance with event handlers
+    Resource Impact: Critical - prevents UI conflicts
+
+    ALTERNATIVE APPROACHES CONSIDERED:
+    1. Dependency injection - rejected due to global progress coordination needs
+    2. Factory pattern - rejected due to thread safety and resource coordination
+    3. Module-level instance - rejected due to initialization complexity
+    """
+
+    _instance: "ProgressManagerSingleton | None" = None
+    _lock = threading.Lock()
+
+    def __new__(cls) -> "ProgressManagerSingleton":
+        """Ensure only one instance exists."""
+        if cls._instance is None:
+            with cls._lock:
+
+### DECISION MATRIX FOR PROGRESSMANAGERSINGLETON:
+
+1. RESOURCE MANAGEMENT ASSESSMENT:
+   - Does it coordinate scarce resources? YES - Progress display UI elements
+   - Is resource coordination critical? YES - Multiple progress bars would conflict
+   - Score: HIGH
+
+2. THREAD SAFETY ASSESSMENT:
+   - Are there concurrency concerns? YES - Uses threading.Lock
+   - Is shared state necessary? YES - Active operations, progress states
+   - Score: HIGH
+
+3. PERFORMANCE IMPACT ASSESSMENT:
+   - Creation time: 3.16ms for 100 instances
+   - Memory usage: Minimal - single instance
+   - Is performance benefit significant? MEDIUM - prevents duplicate resource allocation
+   - Score: MEDIUM
+
+4. STATE MANAGEMENT ASSESSMENT:
+   - Is shared state truly necessary? YES - Active operations tracking
+   - Are there coordination requirements? YES - Progress display coordination
+   - Score: HIGH
+
+5. ALTERNATIVE SOLUTIONS ASSESSMENT:
+   - Dependency injection: Would require global state management anyway
+   - Factory pattern: Would lose thread safety and resource coordination
+   - Module-level instance: Would have initialization complexity
+   - Score: ALTERNATIVES_INSUFFICIENT
+
+### FINAL RECOMMENDATION: KEEP
+
+### DETAILED JUSTIFICATION:
+Based on the analysis, ProgressManagerSingleton should be KEPT because:
+1. It serves a legitimate architectural purpose - progress display coordination
+2. The singleton pattern is appropriate for this use case
+3. Thread safety and resource coordination are genuine requirements
+4. Performance impact is minimal and justified
+5. Alternative patterns would not solve the same problems effectively
+
+### INTEGRATION WITH NEW SYSTEM:
+The ProgressManagerSingleton can coexist with the new SpecContext system because:
+- SpecContext can use get_progress_manager() for consistency
+- The singleton handles cross-cutting concerns (progress display)
+- It doesn't interfere with the dependency injection architecture
+- It provides legitimate global state management for UI coordination

@@ -17,10 +17,6 @@ if TYPE_CHECKING:
     from ..config.settings import SpecSettings
     from ..ui.console import SpecConsole
     from ..ui.progress_manager import ProgressManager
-# Direct imports for factory methods
-from ..config.settings import SpecSettings
-from ..ui.console import SpecConsole
-from ..ui.progress_manager import ProgressManager
 from ..utils.context_utils import create_context_hash, validate_context_immutability
 from ..utils.error_utils import create_error_context
 from ..utils.factory_utils import validate_factory_inputs
@@ -337,6 +333,8 @@ class SpecContext:
         """
         try:
             # Create new settings instance with overrides
+            from ..config.settings import SpecSettings
+
             new_settings = SpecSettings(self.settings.root_path)
 
             # Copy existing attributes
@@ -468,16 +466,12 @@ class SpecContext:
                 )
 
             # Create CLI settings with real configuration using actual implementations
+            from ..config.settings import SpecSettings
+            from ..ui.console import SpecConsole
+            from ..ui.progress_manager import ProgressManager
+
             cli_settings = SpecSettings(root_path)  # Pass root_path parameter
-
-            # Create console directly with settings-based configuration
-            cli_console = SpecConsole(
-                width=cli_settings.console_width,
-                no_color=not cli_settings.use_color,
-                force_terminal=cli_settings.use_color,
-            )
-
-            # Create progress manager directly with console dependency
+            cli_console = SpecConsole()
             cli_progress = ProgressManager(console=cli_console.console)
 
             debug_logger.log(
@@ -638,6 +632,8 @@ class SpecContext:
             )
 
             # Create mock settings with deterministic behavior
+            from ..config.settings import SpecSettings
+
             mock_settings = Mock(spec=SpecSettings)
             mock_settings.debug_enabled = validated_inputs.get("debug_mode", False)
             mock_settings.console_width = 80
@@ -657,6 +653,8 @@ class SpecContext:
             # Mock settings methods (none needed for basic SpecSettings)
 
             # Create mock console with deterministic behavior
+            from ..ui.console import SpecConsole
+
             mock_console = Mock(spec=SpecConsole)
             mock_console.get_width.return_value = 80
             mock_console.is_terminal.return_value = False
@@ -669,6 +667,8 @@ class SpecContext:
             mock_console.print_warning.return_value = None
 
             # Create mock progress with deterministic behavior
+            from ..ui.progress_manager import ProgressManager
+
             mock_progress = Mock(spec=ProgressManager)
             mock_progress.start_indeterminate_operation.return_value = "test_op_001"
             mock_progress.finish_operation.return_value = None

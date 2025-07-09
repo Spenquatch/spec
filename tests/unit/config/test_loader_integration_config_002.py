@@ -14,7 +14,7 @@ import pytest
 import yaml
 
 from spec_cli.config.loader import ConfigurationLoader
-from spec_cli.config.settings import SettingsManager, SpecSettings, reset_settings
+from spec_cli.config.settings import SpecSettings
 from spec_cli.exceptions import SpecConfigurationError
 
 
@@ -23,9 +23,6 @@ class TestConfigurationLoaderIntegration:
 
     def setup_method(self) -> None:
         """Setup test fixtures and reset environment."""
-        # Reset settings to clean state
-        reset_settings()
-
         # Store original environment variables
         self.original_env = {
             key: os.environ.get(key)
@@ -53,7 +50,8 @@ class TestConfigurationLoaderIntegration:
                 del os.environ[key]
 
         # Reset settings
-        reset_settings()
+
+    # No longer needed - SettingsManager removed
 
     @pytest.fixture
     def temp_project_root(self, tmp_path: Path) -> Path:
@@ -111,8 +109,8 @@ history = "# {{filename}} History\\n\\nTOML content"
 
     def get_fresh_settings(self, temp_project_root: Path) -> SpecSettings:
         """Create fresh settings instance for testing."""
-        manager = SettingsManager()
-        return manager.get_settings(temp_project_root)
+        # SettingsManager removed - testing direct SpecSettings usage
+        return SpecSettings(temp_project_root)
 
     # Environment variable integration tests
     def test_environment_variables_override_config_files(
@@ -188,14 +186,14 @@ history = "# {{filename}} History\\n\\nTOML content"
             for key in ["SPEC_DEBUG", "SPEC_USE_COLOR", "SPEC_DEBUG_TIMING"]:
                 if key in os.environ:
                     del os.environ[key]
-            reset_settings()
+            # No longer needed - SettingsManager removed
 
             # Set test value
             os.environ["SPEC_DEBUG"] = env_value
 
             # Get settings
-            manager = SettingsManager()
-            settings = manager.get_settings(temp_project_root)
+            # SettingsManager removed - testing direct SpecSettings usage
+            settings = SpecSettings(temp_project_root)
 
             assert settings.debug_enabled == expected, (
                 f"Value '{env_value}' should parse to {expected}"
@@ -218,15 +216,15 @@ history = "# {{filename}} History\\n\\nTOML content"
             # Clean environment
             if "SPEC_CONSOLE_WIDTH" in os.environ:
                 del os.environ["SPEC_CONSOLE_WIDTH"]
-            reset_settings()
+            # No longer needed - SettingsManager removed
 
             # Set test value
             if env_value:  # Don't set empty string as env var
                 os.environ["SPEC_CONSOLE_WIDTH"] = env_value
 
             # Get settings
-            manager = SettingsManager()
-            settings = manager.get_settings(temp_project_root)
+            # SettingsManager removed - testing direct SpecSettings usage
+            settings = SpecSettings(temp_project_root)
 
             assert settings.console_width == expected, (
                 f"Width '{env_value}' should result in {expected}"
@@ -339,7 +337,7 @@ history = "# {{filename}} History\\n\\nTOML content"
     def test_configuration_integration_with_settings_manager(
         self, temp_project_root: Path, config_with_yaml: dict[str, Any]
     ) -> None:
-        """Test configuration loader integration with SettingsManager."""
+        """Test configuration loader integration with SpecSettings."""
         # Set some environment variables
         os.environ["SPEC_DEBUG"] = "true"
         os.environ["SPEC_USE_COLOR"] = "false"
@@ -474,8 +472,8 @@ history = "# {{filename}} History\\n\\nTOML content"
             try:
                 loader = ConfigurationLoader(temp_project_root)
                 config = loader.load_configuration()
-                manager = SettingsManager()
-                settings = manager.get_settings(temp_project_root)
+                # SettingsManager removed - testing direct SpecSettings usage
+                settings = SpecSettings(temp_project_root)
                 results.append((config, settings.root_path))
             except Exception as e:
                 errors.append(e)

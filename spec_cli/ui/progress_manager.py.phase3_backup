@@ -1,18 +1,6 @@
 """Coordinate progress display across different UI components.
 
 Integrates with progress events and manages progress bars and spinners.
-
-ARCHITECTURAL DECISION: ProgressManagerSingleton is intentionally preserved.
-
-This singleton is retained after comprehensive analysis (Phase 1) because:
-1. Global progress coordination is legitimately required
-2. Thread safety across UI components is critical
-3. Alternative patterns do not solve the same coordination problems
-4. Performance impact is minimal and justified
-
-See: docs/adr/001-retain-progress-manager-singleton.md
-
-This is the ONLY remaining singleton in the codebase and is architecturally justified.
 """
 
 import threading

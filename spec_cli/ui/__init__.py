@@ -6,10 +6,6 @@ for error display and formatting components.
 
 from .console import (
     SpecConsole,
-    create_console,
-    reset_console,
-    set_console,
-    spec_console,
 )
 from .error_display import (
     DiagnosticDisplay,
@@ -76,11 +72,7 @@ from .theme import (
 
 __all__ = [
     # Console and theming
-    "create_console",
-    "spec_console",
     "SpecConsole",
-    "set_console",
-    "reset_console",
     "SpecTheme",
     "ColorScheme",
     "get_current_theme",

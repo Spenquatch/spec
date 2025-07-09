@@ -1,13 +1,14 @@
 """Configuration settings and management for spec CLI.
 
-Provides SpecSettings dataclass for application settings and Rich console
-instances with theming.
+Provides SpecSettings dataclass for application settings and SettingsManager
+singleton for managing global settings and Rich console instances with theming.
 """
 
 import os
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from rich.console import Console
 from rich.theme import Theme
 
 from ..core.context_bridge import debug_logger
@@ -121,3 +122,55 @@ class SpecSettings:
                     f"No write permission for {self.specs_dir}",
                     {"directory": str(self.specs_dir), "permission": "write"},
                 )
+
+
+class SettingsManager:
+    """Manages global settings and console instances."""
+
+    def __init__(self) -> None:
+        """Initialize settings manager."""
+        self._settings_instance: SpecSettings | None = None
+        self._console_instance: Console | None = None
+
+    def get_settings(self, root_path: Path | None = None) -> SpecSettings:
+        """Get global settings instance."""
+        if self._settings_instance is None or (
+            root_path and root_path != self._settings_instance.root_path
+        ):
+            self._settings_instance = SpecSettings(root_path or Path.cwd())
+            # Reset console when settings change
+            self._console_instance = None
+        return self._settings_instance
+
+    def get_console(self, root_path: Path | None = None) -> Console:
+        """Get Rich console instance with spec theming."""
+        settings = self.get_settings(root_path)
+
+        if self._console_instance is None:
+            self._console_instance = Console(
+                theme=SPEC_THEME,
+                force_terminal=settings.use_color,
+                width=settings.console_width,
+            )
+            debug_logger.log(
+                "INFO",
+                "Console initialized",
+                use_color=settings.use_color,
+                width=settings.console_width,
+            )
+
+        return self._console_instance
+
+    def reset(self) -> None:
+        """Reset settings and console for testing."""
+        self._settings_instance = None
+        self._console_instance = None
+
+
+# Convenience functions for getting settings and console
+
+
+def reset_settings() -> None:
+    """Reset settings manager for testing."""
+    manager = SettingsManager()
+    manager.reset()
